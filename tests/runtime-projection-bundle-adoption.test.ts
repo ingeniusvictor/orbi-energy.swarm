@@ -148,7 +148,7 @@ test("simulation refetches projection after wave transitions may replace runtime
 test("render visibility and storm paths reuse cached projections", () => {
   const render = section(
     "const renderCanvasScene =",
-    "// --- CAMPAIGN VICTORY INFINITE HANDOFF ---",
+    "// --- TOUCH AND COORDINATE POINTER MAPS ---",
   );
 
   assert.match(
