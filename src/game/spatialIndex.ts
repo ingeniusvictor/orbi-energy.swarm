@@ -40,6 +40,11 @@ export interface CollisionSpatialResult<T> {
   candidateChecks: number;
 }
 
+export interface MultiCollisionSpatialResult<T> {
+  entries: SpatialIndexEntry<T>[];
+  candidateChecks: number;
+}
+
 export const ENEMY_SPATIAL_CELL_SIZE = 128;
 
 const keyForCell = (cellX: number, cellY: number) =>
@@ -298,6 +303,62 @@ export const relocateSpatialIndexEntry = <T>(
   }
 
   return true;
+};
+
+export const findAllCollidingSpatialItems = <T>(
+  index: SpatialIndex<T>,
+  x: number,
+  y: number,
+  subjectRadius: number,
+  include?: (item: T) => boolean,
+): MultiCollisionSpatialResult<T> => {
+  if (
+    !Number.isFinite(x) ||
+    !Number.isFinite(y) ||
+    !Number.isFinite(subjectRadius) ||
+    subjectRadius < 0
+  ) {
+    return {
+      entries: [],
+      candidateChecks: 0,
+    };
+  }
+
+  const query = querySpatialIndex(
+    index,
+    x,
+    y,
+    subjectRadius + index.maxRadius,
+  );
+  const entries: SpatialIndexEntry<T>[] = [];
+
+  for (const entry of query.entries) {
+    if (include && !include(entry.item)) continue;
+
+    const dx = x - entry.x;
+    const dy = y - entry.y;
+    const collisionRadius =
+      subjectRadius + entry.radius;
+
+    if (
+      dx * dx + dy * dy <
+      collisionRadius * collisionRadius
+    ) {
+      entries.push(entry);
+    }
+  }
+
+  if (entries.length > 1) {
+    entries.sort(
+      (left, right) =>
+        left.order - right.order,
+    );
+  }
+
+  return {
+    entries,
+    candidateChecks: query.candidateChecks,
+  };
 };
 
 export const findFirstCollidingSpatialItem = <T>(
