@@ -3116,10 +3116,7 @@ export const EnergySwarmGame: React.FC = () => {
     formationUseCountsRef.current[activeFormation] =
       (formationUseCountsRef.current[activeFormation] ?? 0) +
       delta;
-    runMaxSwarmSizeRef.current = Math.max(
-      runMaxSwarmSizeRef.current,
-      swarmRef.current.length + 1,
-    );
+    updateRunMaxSwarmSize();
 
     const frameDescriptor =
       getCurrentRuntimeDescriptor();
