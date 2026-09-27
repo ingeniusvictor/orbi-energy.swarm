@@ -636,3 +636,384 @@ body {
     border-radius: 50%;
   }
 }
+
+
+/* ES-04B — Adaptive boss HUD + small-screen side decks */
+.orbi-boss-hud {
+  position: absolute;
+  top: max(0.75rem, env(safe-area-inset-top));
+  left: 0.75rem;
+  right: 0.75rem;
+  z-index: 22;
+  max-width: 34rem;
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.38rem;
+  color: white;
+}
+
+.orbi-boss-heading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.08rem;
+  text-align: center;
+}
+
+.orbi-boss-kicker {
+  font: 700 0.7rem/1.1 "Inter", ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: 0.16em;
+  color: #ec4899;
+  text-transform: uppercase;
+  animation: pulse 1.8s ease-in-out infinite;
+}
+
+.orbi-boss-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.orbi-boss-title {
+  margin: 0;
+  font: 800 1.05rem/1 "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.orbi-boss-phase {
+  flex: 0 0 auto;
+  padding: 0.14rem 0.38rem;
+  border-radius: 0.25rem;
+  border: 1px solid rgba(236, 72, 153, 0.3);
+  background: rgba(236, 72, 153, 0.13);
+  color: #f472b6;
+  font: 700 0.6rem/1.15 "JetBrains Mono", ui-monospace, monospace;
+}
+
+.orbi-boss-subtitle {
+  margin: 0;
+  color: #94a3b8;
+  font: 500 0.54rem/1.15 "JetBrains Mono", ui-monospace, monospace;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.orbi-boss-health {
+  width: 100%;
+  height: 0.88rem;
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  overflow: hidden;
+  border: 1px solid rgba(51, 65, 85, 0.8);
+  border-radius: 0.28rem;
+  background: rgba(2, 6, 23, 0.82);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 7px 22px rgba(0, 0, 0, 0.28);
+}
+
+.orbi-boss-health-segment {
+  position: relative;
+  flex: 1 1 0;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 0.12rem;
+  background: rgba(15, 23, 42, 0.94);
+}
+
+.orbi-boss-health-divider {
+  width: 1px;
+  height: 100%;
+  background: rgba(71, 85, 105, 0.8);
+}
+
+.orbi-boss-health-fill {
+  height: 100%;
+  transition: width 300ms ease;
+}
+
+.orbi-boss-health-fill--phase1 {
+  background: linear-gradient(90deg, #be185d, #ec4899);
+}
+
+.orbi-boss-health-fill--phase2 {
+  background: linear-gradient(90deg, #7e22ce, #a855f7);
+}
+
+.orbi-boss-health-fill--phase3 {
+  background: linear-gradient(90deg, #b91c1c, #ef4444);
+}
+
+.orbi-boss-integrity {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-inline: 0.2rem;
+  color: #cbd5e1;
+  font: 500 0.61rem/1.15 "JetBrains Mono", ui-monospace, monospace;
+}
+
+.orbi-boss-integrity strong {
+  color: #f472b6;
+}
+
+.orbi-boss-alerts {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.28rem;
+}
+
+.orbi-boss-alert {
+  min-height: 1.45rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.22rem 0.52rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(2, 6, 23, 0.68);
+  color: #cbd5e1;
+  font: 700 0.54rem/1.2 "JetBrains Mono", ui-monospace, monospace;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  backdrop-filter: blur(9px);
+}
+
+.orbi-boss-alert--intro {
+  border-color: rgba(236, 72, 153, 0.36);
+  color: #f9a8d4;
+}
+
+.orbi-boss-alert--intro button {
+  pointer-events: auto;
+  cursor: pointer;
+  border: 0;
+  border-radius: 999px;
+  padding: 0.2rem 0.48rem;
+  background: #db2777;
+  color: white;
+  font: 800 0.54rem/1.1 "Inter", ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: 0.06em;
+}
+
+.orbi-boss-alert--transition {
+  border-color: rgba(168, 85, 247, 0.36);
+  background: rgba(88, 28, 135, 0.56);
+  color: #d8b4fe;
+}
+
+.orbi-boss-alert--attack {
+  border-color: rgba(236, 72, 153, 0.24);
+  color: #f472b6;
+}
+
+.orbi-boss-alert-pulse {
+  width: 0.38rem;
+  height: 0.38rem;
+  border-radius: 999px;
+  background: #ec4899;
+  box-shadow: 0 0 12px rgba(236, 72, 153, 0.8);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+.orbi-boss-alert--shield {
+  border-color: rgba(59, 130, 246, 0.32);
+  background: rgba(23, 37, 84, 0.58);
+  color: #bfdbfe;
+}
+
+.orbi-boss-alert--shield strong {
+  color: #60a5fa;
+}
+
+.orbi-boss-alert--critical {
+  border-color: rgba(250, 204, 21, 0.55);
+  background: rgba(66, 32, 6, 0.8);
+  color: #fde68a;
+  box-shadow: 0 0 18px rgba(250, 204, 21, 0.14);
+  animation: orbi-boss-critical 850ms ease-in-out infinite alternate;
+}
+
+.orbi-side-deck-content {
+  min-height: 0;
+}
+
+@keyframes orbi-boss-critical {
+  from { transform: translateY(0); filter: brightness(1); }
+  to { transform: translateY(-1px); filter: brightness(1.16); }
+}
+
+@media (max-width: 719px) {
+  .orbi-boss-hud {
+    top: max(0.35rem, env(safe-area-inset-top));
+    left: max(0.42rem, env(safe-area-inset-left));
+    right: max(0.42rem, env(safe-area-inset-right));
+    gap: 0.22rem;
+    max-width: none;
+  }
+
+  .orbi-boss-heading {
+    width: 100%;
+  }
+
+  .orbi-boss-kicker,
+  .orbi-boss-subtitle {
+    display: none;
+  }
+
+  .orbi-boss-title-row {
+    width: 100%;
+    justify-content: space-between;
+    gap: 0.35rem;
+    padding-inline: 0.1rem;
+  }
+
+  .orbi-boss-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.75rem;
+  }
+
+  .orbi-boss-phase {
+    font-size: 0.52rem;
+  }
+
+  .orbi-boss-health {
+    height: 0.68rem;
+  }
+
+  .orbi-boss-integrity {
+    font-size: 0.52rem;
+  }
+
+  .orbi-boss-integrity-label {
+    display: none;
+  }
+
+  .orbi-boss-integrity {
+    justify-content: flex-end;
+    min-height: 0.65rem;
+  }
+
+  .orbi-boss-alerts {
+    justify-content: flex-end;
+    gap: 0.2rem;
+  }
+
+  .orbi-boss-alert {
+    min-height: 1.18rem;
+    max-width: 100%;
+    padding: 0.15rem 0.38rem;
+    font-size: 0.47rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .orbi-boss-alert-label,
+  .orbi-boss-desktop-hint {
+    display: none;
+  }
+
+  .orbi-boss-alert--intro button {
+    font-size: 0.48rem;
+  }
+
+  .orbi-side-deck-content {
+    max-height: min(34dvh, 21rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-right: 0.1rem;
+  }
+}
+
+@media (min-width: 720px) and (max-width: 1279px) {
+  .orbi-side-deck-content {
+    max-height: min(42dvh, 28rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 620px) {
+  .orbi-boss-hud {
+    top: max(0.24rem, env(safe-area-inset-top));
+    left: max(0.35rem, env(safe-area-inset-left));
+    right: max(0.35rem, env(safe-area-inset-right));
+    gap: 0.16rem;
+    max-width: min(36rem, 72vw);
+  }
+
+  .orbi-boss-kicker,
+  .orbi-boss-subtitle,
+  .orbi-boss-integrity-label {
+    display: none;
+  }
+
+  .orbi-boss-heading,
+  .orbi-boss-title-row {
+    width: 100%;
+  }
+
+  .orbi-boss-title-row {
+    justify-content: space-between;
+  }
+
+  .orbi-boss-title {
+    font-size: 0.7rem;
+  }
+
+  .orbi-boss-phase {
+    font-size: 0.48rem;
+  }
+
+  .orbi-boss-health {
+    height: 0.58rem;
+  }
+
+  .orbi-boss-integrity {
+    justify-content: flex-end;
+    font-size: 0.48rem;
+  }
+
+  .orbi-boss-alerts {
+    gap: 0.18rem;
+    justify-content: flex-end;
+  }
+
+  .orbi-boss-alert {
+    min-height: 1.05rem;
+    padding: 0.12rem 0.34rem;
+    font-size: 0.44rem;
+  }
+
+  .orbi-boss-desktop-hint,
+  .orbi-boss-alert-label {
+    display: none;
+  }
+
+  .orbi-side-deck-content {
+    max-height: min(24dvh, 12rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .orbi-boss-kicker,
+  .orbi-boss-alert-pulse,
+  .orbi-boss-alert--critical {
+    animation: none !important;
+  }
+}
