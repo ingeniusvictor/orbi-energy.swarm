@@ -47,7 +47,7 @@ test("spawn resolves evolution from descriptor type wave ordinal and living evol
 
   assert.match(
     spawn,
-    /const activeEvolvedEnemies =[\s\S]*!enemy\.isDead[\s\S]*!enemy\.isBoss[\s\S]*enemy\.evolvedVariantId/,
+    /const activeEvolvedEnemies =[\s\S]*countActiveEvolvedEnemies\([\s\S]*enemiesRef\.current/,
   );
   assert.match(
     spawn,
