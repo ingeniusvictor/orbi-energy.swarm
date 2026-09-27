@@ -5467,7 +5467,16 @@ export const EnergySwarmGame: React.FC = () => {
       flashProfile,
     );
 
-    // 7. Draw Orbi Foton leader eyeball
+    // 7. Draw reactive tactical Foton leader.
+    const fotonShieldMax =
+      SHIELD_MAX +
+      (upgradesLevel.hydrogen_deflector || 0) * 15 +
+      (activeRunUpgradesRef.current.foton_integrity || 0) *
+        30;
+    const fotonShieldRatio =
+      shieldRef.current /
+      Math.max(1, fotonShieldMax);
+
     drawFoton(
       ctx,
       playerPosRef.current,
@@ -5476,6 +5485,7 @@ export const EnergySwarmGame: React.FC = () => {
       pointerRef.current,
       (stats.bossVictories || 0) > 0,
       flashProfile,
+      fotonShieldRatio,
     );
 
     // 8. Draw active floating text feedback (such as CRITICAL or BLOCK)

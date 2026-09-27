@@ -6,13 +6,60 @@ export interface FotonTacticalPose {
   lensOffsetY: number;
 }
 
+export type FotonIntegrityStatus =
+  | "HEALTHY"
+  | "PRESSURED"
+  | "CRITICAL";
+
+export interface FotonIntegrityVisual {
+  ratio: number;
+  status: FotonIntegrityStatus;
+  color: string;
+  coreColor: string;
+}
+
 export interface FotonTacticalDrawOptions {
   x: number;
   y: number;
   time: number;
   pointerX: number;
   pointerY: number;
+  shieldRatio?: number;
+  damageHighlightStrength?: number;
 }
+
+export const projectFotonIntegrityVisual = (
+  shieldRatio: number,
+): FotonIntegrityVisual => {
+  const ratio = Number.isFinite(shieldRatio)
+    ? Math.max(0, Math.min(1, shieldRatio))
+    : 0;
+
+  if (ratio < 0.33) {
+    return {
+      ratio,
+      status: "CRITICAL",
+      color: "#fb7185",
+      coreColor: "#f43f5e",
+    };
+  }
+
+  if (ratio < 0.66) {
+    return {
+      ratio,
+      status: "PRESSURED",
+      color: "#fbbf24",
+      coreColor: "#f59e0b",
+    };
+  }
+
+  return {
+    ratio,
+    status: "HEALTHY",
+    color: "#67e8f9",
+    coreColor: "#22d3ee",
+  };
+};
 
 export const projectFotonTacticalPose = (
   time: number,
@@ -66,17 +113,55 @@ export const drawFotonTacticalAvatar = (
     options.pointerX,
     options.pointerY,
   );
+  const integrity = projectFotonIntegrityVisual(
+    options.shieldRatio ?? 1,
+  );
+  const damageHighlightStrength = Number.isFinite(
+    options.damageHighlightStrength,
+  )
+    ? Math.max(
+        0,
+        Math.min(1, options.damageHighlightStrength ?? 0),
+      )
+    : 0;
 
   ctx.save();
   ctx.translate(options.x, options.y);
   ctx.scale(pose.shellPulse, pose.shellPulse);
 
-  // Soft command-core aura. Kept as flat fills to avoid per-frame gradient
-  // allocations in the gameplay hot path.
-  ctx.globalAlpha = 0.2;
-  ctx.fillStyle = "#22d3ee";
+  // Real integrity ring: slate track + current shield arc.
+  ctx.strokeStyle = "rgba(30,41,59,0.9)";
+  ctx.lineWidth = 2.2;
   ctx.beginPath();
-  ctx.arc(0, 0, 18.5, 0, Math.PI * 2);
+  ctx.arc(0, 0, 19.1, 0, Math.PI * 2);
+  ctx.stroke();
+
+  if (integrity.ratio > 0) {
+    ctx.strokeStyle = integrity.color;
+    ctx.lineWidth = 2.2;
+    ctx.beginPath();
+    ctx.arc(
+      0,
+      0,
+      19.1,
+      -Math.PI / 2,
+      -Math.PI / 2 +
+        Math.PI * 2 * integrity.ratio,
+    );
+    ctx.stroke();
+  }
+
+  // Soft command-core aura follows real integrity state. Kept as flat fills
+  // to avoid per-frame gradient allocations in the gameplay hot path.
+  const criticalPulse =
+    integrity.status === "CRITICAL"
+      ? 0.04 +
+        (Math.sin(options.time * 0.01) + 1) * 0.025
+      : 0;
+  ctx.globalAlpha = 0.14 + criticalPulse;
+  ctx.fillStyle = integrity.color;
+  ctx.beginPath();
+  ctx.arc(0, 0, 17.8, 0, Math.PI * 2);
   ctx.fill();
   ctx.globalAlpha = 1;
 
@@ -100,6 +185,17 @@ export const drawFotonTacticalAvatar = (
   ctx.fill();
   ctx.stroke();
   ctx.shadowBlur = 0;
+
+  if (damageHighlightStrength > 0) {
+    ctx.save();
+    ctx.globalAlpha =
+      damageHighlightStrength * 0.42;
+    ctx.fillStyle = "#ffffff";
+    ctx.beginPath();
+    ctx.arc(0, 0, 13.7, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
 
   // Dark segmented seams.
   arcStroke(
@@ -201,7 +297,7 @@ export const drawFotonTacticalAvatar = (
   );
   ctx.fill();
 
-  ctx.fillStyle = "#67e8f9";
+  ctx.fillStyle = integrity.coreColor;
   ctx.beginPath();
   ctx.arc(
     pose.lensOffsetX,
