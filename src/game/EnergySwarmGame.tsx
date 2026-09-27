@@ -37,6 +37,7 @@ import {
 } from "./runtimeCompletionPolicy";
 import { projectRuntimeCombatPressure } from "./runtimeCombatPressure";
 import { resolveEvolvedEnemySpawn } from "./runtimeEnemyEvolution";
+import { projectEvolvedSignatureBehavior } from "./runtimeEnemySignatureBehavior";
 import {
   getRuntimeMutatedEnemyBudget,
   projectRuntimeMutatorEffects,
@@ -3588,6 +3589,12 @@ export const EnergySwarmGame: React.FC = () => {
     enemiesRef.current.forEach((enemy) => {
       if (enemy.isDead) return;
 
+      const signatureBehavior =
+        projectEvolvedSignatureBehavior(
+          enemy.evolvedSignature,
+          enemy.evolvedSpecialIntensity,
+        );
+
       if (
         !enemy.isBoss &&
         simulationMutatorEffects.enemyRegenFractionPerSecond > 0 &&
@@ -3708,8 +3715,17 @@ export const EnergySwarmGame: React.FC = () => {
             playDisruptorChargeSound();
           }
         } else if (enemy.type === EnemyType.PARASITE) {
-          // Twitchy lunging behavior
-          const lunge = Math.sin(timeElapsedRef.current * 0.015 + enemy.x) * 1.5;
+          // Twitchy lunging behavior. Evolved PHASE_LUNGE only scales
+          // the existing oscillation through the certified signature contract.
+          const lungePhase =
+            timeElapsedRef.current *
+              0.015 *
+              signatureBehavior.parasiteLungeFrequencyMultiplier +
+            enemy.x;
+          const lunge =
+            Math.sin(lungePhase) *
+            1.5 *
+            signatureBehavior.parasiteLungeAmplitudeMultiplier;
           enemy.x += ((dx / dist) * enemy.speed + lunge) * (delta / 16.6);
           enemy.y += (dy / dist) * enemy.speed * (delta / 16.6);
         } else {
@@ -3736,7 +3752,9 @@ export const EnergySwarmGame: React.FC = () => {
           
           // Trigger Disruptor electromagnetic pulse (Section 3.2)
           playDisruptorPulseSound();
-          disruptTimerRef.current = 2000; // 2.0s disruption window
+          disruptTimerRef.current =
+            2000 *
+            signatureBehavior.disruptDurationMultiplier;
 
           // Glowing cyan ring expansion particle effect
           triggerExplosion(
@@ -4039,44 +4057,76 @@ export const EnergySwarmGame: React.FC = () => {
   // --- SHOOT AI TRIGGER FROM ENEMY DRONE ---
   const shootFromEnemy = (enemy: Enemy) => {
     const combatPressure = getCurrentCombatPressure();
+    const signatureBehavior =
+      projectEvolvedSignatureBehavior(
+        enemy.evolvedSignature,
+        enemy.evolvedSpecialIntensity,
+      );
     const hostileProjectileCount =
       projectilesRef.current.filter(
         (projectile) => !projectile.fromPlayer,
       ).length;
     const hostileProjectileBudget =
       combatPressure.projectileBudget ?? MAX_PROJECTILES;
+    const availableProjectileSlots = Math.max(
+      0,
+      Math.min(
+        MAX_PROJECTILES - projectilesRef.current.length,
+        hostileProjectileBudget - hostileProjectileCount,
+      ),
+    );
 
-    if (
-      projectilesRef.current.length >= MAX_PROJECTILES ||
-      hostileProjectileCount >= hostileProjectileBudget
-    ) return;
+    if (availableProjectileSlots <= 0) return;
 
     if (enemy.type === EnemyType.DRONE || enemy.type === EnemyType.BOSS_DEVOURER) {
       const dx = playerPosRef.current.x - enemy.x;
       const dy = playerPosRef.current.y - enemy.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
 
-      if (dist < 320) {
+      if (dist > 0 && dist < 320) {
         const projectileSpeed =
           2.2 *
           (enemy.evolvedProjectileSpeedMultiplier ??
             1);
-        const vx = (dx / dist) * projectileSpeed;
-        const vy = (dy / dist) * projectileSpeed;
+        const projectileCount = Math.min(
+          signatureBehavior.droneVolleyProjectileCount,
+          availableProjectileSlots,
+        );
+        const baseAngle = Math.atan2(dy, dx);
+        const spread =
+          signatureBehavior.droneVolleySpreadRadians;
 
-        projectilesRef.current.push({
-          id: Math.random().toString(),
-          x: enemy.x,
-          y: enemy.y,
-          vx,
-          vy,
-          damage: 12,
-          color: "#f43f5e", // Bright rose plasma orb
-          size: enemy.isBoss ? 5 : 3.5,
-          fromPlayer: false,
-          life: 2500,
-          maxLife: 2500
-        });
+        for (
+          let index = 0;
+          index < projectileCount;
+          index += 1
+        ) {
+          const spreadOffset =
+            projectileCount === 1
+              ? 0
+              : index === 0
+                ? -spread / 2
+                : spread / 2;
+          const shotAngle = baseAngle + spreadOffset;
+          const vx =
+            Math.cos(shotAngle) * projectileSpeed;
+          const vy =
+            Math.sin(shotAngle) * projectileSpeed;
+
+          projectilesRef.current.push({
+            id: Math.random().toString(),
+            x: enemy.x,
+            y: enemy.y,
+            vx,
+            vy,
+            damage: 12,
+            color: "#f43f5e", // Bright rose plasma orb
+            size: enemy.isBoss ? 5 : 3.5,
+            fromPlayer: false,
+            life: 2500,
+            maxLife: 2500
+          });
+        }
 
         playEnemyShootSound();
       }
@@ -4269,7 +4319,20 @@ export const EnergySwarmGame: React.FC = () => {
 
             // Apply physical pushback/displacement (Section 4.1 - pequeño desplazamiento)
             const projAngle = Math.atan2(proj.vy, proj.vx);
-            const pushFactor = enemy.type === EnemyType.CRAWLER ? 5.5 : (isCrit ? 4.0 : 1.8);
+            const basePushFactor =
+              enemy.type === EnemyType.CRAWLER
+                ? 5.5
+                : isCrit
+                  ? 4.0
+                  : 1.8;
+            const signatureBehavior =
+              projectEvolvedSignatureBehavior(
+                enemy.evolvedSignature,
+                enemy.evolvedSpecialIntensity,
+              );
+            const pushFactor =
+              basePushFactor *
+              signatureBehavior.projectilePushbackMultiplier;
             enemy.x += Math.cos(projAngle) * pushFactor;
             enemy.y += Math.sin(projAngle) * pushFactor;
 
@@ -4366,8 +4429,7 @@ export const EnergySwarmGame: React.FC = () => {
                           spawnResource(otherEnemy.x + Math.random() * 16 - 8, otherEnemy.y + Math.random() * 16 - 8);
                         }
                         if (otherEnemy.type === EnemyType.SPLITTER) {
-                          spawnMinionSplit(otherEnemy.x - 10, otherEnemy.y, otherEnemy.size * 0.7);
-                          spawnMinionSplit(otherEnemy.x + 10, otherEnemy.y, otherEnemy.size * 0.7);
+                          spawnSplitterMinions(otherEnemy);
                         }
                       }
                     }
@@ -4430,8 +4492,7 @@ export const EnergySwarmGame: React.FC = () => {
                   }
                   // Splitter logic
                   if (enemy.type === EnemyType.SPLITTER) {
-                    spawnMinionSplit(enemy.x - 10, enemy.y, enemy.size * 0.7);
-                    spawnMinionSplit(enemy.x + 10, enemy.y, enemy.size * 0.7);
+                    spawnSplitterMinions(enemy);
                   }
                 }
               }
@@ -4525,6 +4586,47 @@ export const EnergySwarmGame: React.FC = () => {
       isBoss: false,
       flashTicks: 0
     });
+  };
+
+  const spawnSplitterMinions = (enemy: Enemy) => {
+    const minionSize = enemy.size * 0.7;
+    spawnMinionSplit(
+      enemy.x - 10,
+      enemy.y,
+      minionSize,
+    );
+    spawnMinionSplit(
+      enemy.x + 10,
+      enemy.y,
+      minionSize,
+    );
+
+    const signatureBehavior =
+      projectEvolvedSignatureBehavior(
+        enemy.evolvedSignature,
+        enemy.evolvedSpecialIntensity,
+      );
+    if (signatureBehavior.splitterExtraMinions < 1) {
+      return;
+    }
+
+    const descriptor = getCurrentRuntimeDescriptor();
+    const livingEnemyCount =
+      enemiesRef.current.filter(
+        (candidate) => !candidate.isDead,
+      ).length;
+    const effectiveEnemyCap = Math.min(
+      MAX_ENEMIES,
+      descriptor.spawn.maxConcurrentEnemies,
+    );
+
+    if (livingEnemyCount < effectiveEnemyCap) {
+      spawnMinionSplit(
+        enemy.x,
+        enemy.y + 10,
+        minionSize,
+      );
+    }
   };
 
   // --- DAMAGE PLAYER FROM BOSS SPECIFIC TELEMETRY ---
