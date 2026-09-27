@@ -41,7 +41,7 @@ export const EnergySwarmCanvas: React.FC<EnergySwarmCanvasProps> = ({
   // We perform drawing logic directly using requestAnimationFrame inside parent,
   // but let's provide a robust, responsive Canvas frame wrapper with CSS constraints.
   return (
-    <div className="relative w-full aspect-[5/3] max-h-[calc(100vh-210px)] lg:max-h-[calc(100vh-185px)] bg-slate-950 border border-slate-900 rounded-xl overflow-hidden shadow-2xl flex items-center justify-center">
+    <div className="orbi-game-stage relative w-full bg-slate-950 border border-slate-900 rounded-xl overflow-hidden shadow-2xl flex items-center justify-center">
       <canvas
         id="game-canvas"
         ref={canvasRef}
