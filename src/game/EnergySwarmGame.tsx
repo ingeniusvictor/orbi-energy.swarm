@@ -45,6 +45,11 @@ import {
   getResourceFieldProfile,
 } from "./runtimeEnvironmentalFields";
 import {
+  createElectricalStormRuntimeState,
+  getElectricalStormConfig,
+  stepElectricalStormRuntime,
+} from "./runtimeElectricalStorm";
+import {
   applyCampaignVictoryCheckpoint,
   applyFinalRunCommit,
   createRunCommitLedger,
@@ -297,6 +302,9 @@ export const EnergySwarmGame: React.FC = () => {
   const formationUseCountsRef = useRef<Record<string, number>>({});
   const hazardZonesRef = useRef<Array<{ x: number, y: number, r: number }>>([]);
   const formationCooldownRef = useRef(0);
+  const electricalStormStateRef = useRef(
+    createElectricalStormRuntimeState(),
+  );
 
   const getCurrentRuntimeDescriptor = () =>
     resolveRuntimeWaveDescriptor(runtimeProgressionRef.current);
@@ -855,6 +863,8 @@ export const EnergySwarmGame: React.FC = () => {
     formationUseCountsRef.current = {};
     hazardZonesRef.current = [];
     formationCooldownRef.current = 0;
+    electricalStormStateRef.current =
+      createElectricalStormRuntimeState();
     bossActiveRef.current = false;
     bossRef.current = null;
 
@@ -3033,6 +3043,89 @@ export const EnergySwarmGame: React.FC = () => {
       getRuntimeMutatedEnemyBudget(
         simulationDescriptor,
       );
+
+    const electricalStormConfig =
+      waveActiveRef.current &&
+      !bossActiveRef.current &&
+      simulationDescriptor.sourceMode === "INFINITE"
+        ? getElectricalStormConfig(
+            simulationMutatorEffects,
+            simulationCombatPressure,
+          )
+        : null;
+    const electricalStormStep =
+      stepElectricalStormRuntime(
+        electricalStormStateRef.current,
+        delta,
+        electricalStormConfig,
+        playerPosRef.current,
+      );
+    electricalStormStateRef.current =
+      electricalStormStep.state;
+
+    if (
+      electricalStormStep.telegraphStarted &&
+      electricalStormStep.state.targetX !== null &&
+      electricalStormStep.state.targetY !== null
+    ) {
+      playDroneChargeSound();
+      addFloatingText(
+        "⚡ GRID STRIKE LOCK",
+        electricalStormStep.state.targetX,
+        electricalStormStep.state.targetY - 18,
+        "#67e8f9",
+      );
+    }
+
+    if (
+      electricalStormStep.strikeTriggered &&
+      electricalStormStep.strikeTarget &&
+      electricalStormConfig
+    ) {
+      const strikeTarget =
+        electricalStormStep.strikeTarget;
+      const dx =
+        playerPosRef.current.x - strikeTarget.x;
+      const dy =
+        playerPosRef.current.y - strikeTarget.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      playDisruptorPulseSound();
+      screenShakeRef.current = Math.max(
+        screenShakeRef.current,
+        8,
+      );
+      triggerExplosion(
+        particlesRef.current,
+        getQualityConfig(stats.qualityPreset)
+          .maxParticles,
+        ParticleType.BIOME_PORTAL,
+        strikeTarget.x,
+        strikeTarget.y,
+        "#38bdf8",
+        24,
+        2.2,
+      );
+
+      if (
+        distance <=
+        electricalStormConfig.strikeRadius
+      ) {
+        damagePlayer(
+          electricalStormConfig.baseDamage *
+            simulationMutatorEffects
+              .incomingDamageMultiplier,
+        );
+      } else {
+        addFloatingText(
+          "DODGED",
+          playerPosRef.current.x,
+          playerPosRef.current.y - 24,
+          "#67e8f9",
+        );
+      }
+    }
+
     if (waveActiveRef.current && !bossActiveRef.current) {
       if (currentWaveRef.current === 1) {
         const waveDuration =
@@ -4348,7 +4441,92 @@ export const EnergySwarmGame: React.FC = () => {
       }
     }
 
-    // 10. Draw a tactical minimap (radar overlay) in the top-right corner if mode is not OFF
+    // 10. Electrical-storm telegraph renders above visibility fog.
+    const stormState =
+      electricalStormStateRef.current;
+    if (
+      stormState.phase === "TELEGRAPH" &&
+      stormState.targetX !== null &&
+      stormState.targetY !== null
+    ) {
+      const stormDescriptor =
+        getCurrentRuntimeDescriptor();
+      const stormEffects =
+        projectRuntimeMutatorEffects(
+          stormDescriptor,
+        );
+      const stormPressure =
+        projectRuntimeCombatPressure(
+          stormDescriptor,
+        );
+      const stormConfig =
+        stormDescriptor.sourceMode === "INFINITE"
+          ? getElectricalStormConfig(
+              stormEffects,
+              stormPressure,
+            )
+          : null;
+
+      if (stormConfig) {
+        const targetScreenX =
+          (stormState.targetX -
+            cameraStateRef.current.cameraX) *
+            cameraStateRef.current.zoom +
+          cameraOffsetRef.current.x;
+        const targetScreenY =
+          (stormState.targetY -
+            cameraStateRef.current.cameraY) *
+            cameraStateRef.current.zoom +
+          cameraOffsetRef.current.y;
+        const strikeRadiusPx =
+          stormConfig.strikeRadius *
+          cameraStateRef.current.zoom;
+        const telegraphProgress = Math.max(
+          0,
+          Math.min(
+            1,
+            1 -
+              stormState.remainingMs /
+                stormConfig.telegraphMs,
+          ),
+        );
+        const warningRadius =
+          strikeRadiusPx *
+          (1.35 - telegraphProgress * 0.35);
+
+        ctx.save();
+        ctx.fillStyle = "rgba(56, 189, 248, 0.10)";
+        ctx.strokeStyle = "rgba(103, 232, 249, 0.95)";
+        ctx.lineWidth = 2;
+        ctx.setLineDash([8, 6]);
+        ctx.beginPath();
+        ctx.arc(
+          targetScreenX,
+          targetScreenY,
+          strikeRadiusPx,
+          0,
+          Math.PI * 2,
+        );
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.setLineDash([]);
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.85)";
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(
+          targetScreenX,
+          targetScreenY,
+          warningRadius,
+          0,
+          Math.PI * 2,
+        );
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+
+    // 11. Draw a tactical minimap (radar overlay) in the top-right corner if mode is not OFF
     const minimapMode = statsRef.current?.minimapMode || stats.minimapMode || "COMPACT";
     if (minimapMode !== "OFF") {
       drawTacticalMinimap(ctx, minimapMode);
