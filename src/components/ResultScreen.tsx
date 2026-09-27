@@ -269,6 +269,35 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
           </div>
         </div>
 
+        {/* PERSISTENCE SUMMARY */}
+        <div className="bg-slate-950/55 rounded-xl p-3 border border-cyan-900/30 text-left font-mono text-[10px] space-y-2">
+          <div className="text-cyan-400 font-bold uppercase tracking-wide">
+            {language === "es" ? "ARCHIVO DE PROGRESO" : "PROGRESSION ARCHIVE"}
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="rounded-lg border border-emerald-900/40 bg-emerald-950/15 p-2">
+              <div className="text-emerald-400 font-bold uppercase mb-1">
+                {language === "es" ? "SE CONSERVA" : "PERSISTENT"}
+              </div>
+              <p className="text-slate-400 leading-relaxed">
+                {language === "es"
+                  ? "Nano Credits, récords y datos descubiertos del jefe quedan guardados para futuras partidas."
+                  : "Nano Credits, records and discovered boss data are saved for future runs."}
+              </p>
+            </div>
+            <div className="rounded-lg border border-amber-900/40 bg-amber-950/10 p-2">
+              <div className="text-amber-400 font-bold uppercase mb-1">
+                {language === "es" ? "SE REINICIA" : "RUN-ONLY"}
+              </div>
+              <p className="text-slate-400 leading-relaxed">
+                {language === "es"
+                  ? "Las mejoras tácticas de intermisión y la build temporal se reinician al comenzar una nueva partida."
+                  : "Intermission tactical upgrades and the temporary build reset when a new run begins."}
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* NOTIFY MEMENTO MESSAGE */}
         <div className="text-[10px] font-mono text-slate-500 leading-relaxed max-w-xs mx-auto">
           {victory
