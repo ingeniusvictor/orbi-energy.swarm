@@ -198,8 +198,11 @@ export const findNearestSpatialItem = <T>(
   include?: (item: T) => boolean,
 ): NearestSpatialResult<T> => {
   if (
+    !Number.isFinite(x) ||
+    !Number.isFinite(y) ||
     !Number.isFinite(maxRange) ||
-    maxRange <= 0
+    maxRange <= 0 ||
+    index.size === 0
   ) {
     return {
       item: null,
@@ -208,43 +211,70 @@ export const findNearestSpatialItem = <T>(
     };
   }
 
-  const query = querySpatialIndex(
-    index,
-    x,
-    y,
-    maxRange,
+  const minCellX = Math.floor(
+    (x - maxRange) / index.cellSize,
+  );
+  const maxCellX = Math.floor(
+    (x + maxRange) / index.cellSize,
+  );
+  const minCellY = Math.floor(
+    (y - maxRange) / index.cellSize,
+  );
+  const maxCellY = Math.floor(
+    (y + maxRange) / index.cellSize,
   );
   const maxRangeSquared = maxRange * maxRange;
   let bestEntry: SpatialIndexEntry<T> | null = null;
   let bestDistanceSquared =
     Number.POSITIVE_INFINITY;
+  let candidateChecks = 0;
 
-  for (const entry of query.entries) {
-    if (include && !include(entry.item)) continue;
-
-    const dx = entry.x - x;
-    const dy = entry.y - y;
-    const distanceSquared = dx * dx + dy * dy;
-
-    if (distanceSquared >= maxRangeSquared) {
-      continue;
-    }
-
-    if (
-      distanceSquared < bestDistanceSquared ||
-      (distanceSquared === bestDistanceSquared &&
-        bestEntry !== null &&
-        entry.order < bestEntry.order)
+  for (
+    let cellY = minCellY;
+    cellY <= maxCellY;
+    cellY += 1
+  ) {
+    for (
+      let cellX = minCellX;
+      cellX <= maxCellX;
+      cellX += 1
     ) {
-      bestEntry = entry;
-      bestDistanceSquared = distanceSquared;
+      const bucket = index.buckets.get(
+        keyForCell(cellX, cellY),
+      );
+      if (!bucket) continue;
+
+      candidateChecks += bucket.length;
+      for (const entry of bucket) {
+        if (include && !include(entry.item)) continue;
+
+        const dx = entry.x - x;
+        const dy = entry.y - y;
+        const distanceSquared = dx * dx + dy * dy;
+
+        if (distanceSquared >= maxRangeSquared) {
+          continue;
+        }
+
+        if (
+          distanceSquared < bestDistanceSquared ||
+          (
+            distanceSquared === bestDistanceSquared &&
+            bestEntry !== null &&
+            entry.order < bestEntry.order
+          )
+        ) {
+          bestEntry = entry;
+          bestDistanceSquared = distanceSquared;
+        }
+      }
     }
   }
 
   return {
     item: bestEntry?.item ?? null,
     distanceSquared: bestDistanceSquared,
-    candidateChecks: query.candidateChecks,
+    candidateChecks,
   };
 };
 
@@ -316,7 +346,8 @@ export const findAllCollidingSpatialItems = <T>(
     !Number.isFinite(x) ||
     !Number.isFinite(y) ||
     !Number.isFinite(subjectRadius) ||
-    subjectRadius < 0
+    subjectRadius < 0 ||
+    index.size === 0
   ) {
     return {
       entries: [],
@@ -324,27 +355,54 @@ export const findAllCollidingSpatialItems = <T>(
     };
   }
 
-  const query = querySpatialIndex(
-    index,
-    x,
-    y,
-    subjectRadius + index.maxRadius,
+  const queryRadius =
+    subjectRadius + index.maxRadius;
+  const minCellX = Math.floor(
+    (x - queryRadius) / index.cellSize,
+  );
+  const maxCellX = Math.floor(
+    (x + queryRadius) / index.cellSize,
+  );
+  const minCellY = Math.floor(
+    (y - queryRadius) / index.cellSize,
+  );
+  const maxCellY = Math.floor(
+    (y + queryRadius) / index.cellSize,
   );
   const entries: SpatialIndexEntry<T>[] = [];
+  let candidateChecks = 0;
 
-  for (const entry of query.entries) {
-    if (include && !include(entry.item)) continue;
-
-    const dx = x - entry.x;
-    const dy = y - entry.y;
-    const collisionRadius =
-      subjectRadius + entry.radius;
-
-    if (
-      dx * dx + dy * dy <
-      collisionRadius * collisionRadius
+  for (
+    let cellY = minCellY;
+    cellY <= maxCellY;
+    cellY += 1
+  ) {
+    for (
+      let cellX = minCellX;
+      cellX <= maxCellX;
+      cellX += 1
     ) {
-      entries.push(entry);
+      const bucket = index.buckets.get(
+        keyForCell(cellX, cellY),
+      );
+      if (!bucket) continue;
+
+      candidateChecks += bucket.length;
+      for (const entry of bucket) {
+        if (include && !include(entry.item)) continue;
+
+        const dx = x - entry.x;
+        const dy = y - entry.y;
+        const collisionRadius =
+          subjectRadius + entry.radius;
+
+        if (
+          dx * dx + dy * dy <
+          collisionRadius * collisionRadius
+        ) {
+          entries.push(entry);
+        }
+      }
     }
   }
 
@@ -357,7 +415,7 @@ export const findAllCollidingSpatialItems = <T>(
 
   return {
     entries,
-    candidateChecks: query.candidateChecks,
+    candidateChecks,
   };
 };
 
@@ -372,7 +430,8 @@ export const findFirstCollidingSpatialItem = <T>(
     !Number.isFinite(x) ||
     !Number.isFinite(y) ||
     !Number.isFinite(subjectRadius) ||
-    subjectRadius < 0
+    subjectRadius < 0 ||
+    index.size === 0
   ) {
     return {
       item: null,
@@ -382,38 +441,65 @@ export const findFirstCollidingSpatialItem = <T>(
     };
   }
 
-  const query = querySpatialIndex(
-    index,
-    x,
-    y,
-    subjectRadius + index.maxRadius,
+  const queryRadius =
+    subjectRadius + index.maxRadius;
+  const minCellX = Math.floor(
+    (x - queryRadius) / index.cellSize,
+  );
+  const maxCellX = Math.floor(
+    (x + queryRadius) / index.cellSize,
+  );
+  const minCellY = Math.floor(
+    (y - queryRadius) / index.cellSize,
+  );
+  const maxCellY = Math.floor(
+    (y + queryRadius) / index.cellSize,
   );
   let firstEntry: SpatialIndexEntry<T> | null = null;
   let firstDistanceSquared =
     Number.POSITIVE_INFINITY;
+  let candidateChecks = 0;
 
-  for (const entry of query.entries) {
-    if (include && !include(entry.item)) continue;
-
-    const dx = x - entry.x;
-    const dy = y - entry.y;
-    const distanceSquared = dx * dx + dy * dy;
-    const collisionRadius =
-      subjectRadius + entry.radius;
-
-    if (
-      distanceSquared >=
-      collisionRadius * collisionRadius
+  for (
+    let cellY = minCellY;
+    cellY <= maxCellY;
+    cellY += 1
+  ) {
+    for (
+      let cellX = minCellX;
+      cellX <= maxCellX;
+      cellX += 1
     ) {
-      continue;
-    }
+      const bucket = index.buckets.get(
+        keyForCell(cellX, cellY),
+      );
+      if (!bucket) continue;
 
-    if (
-      firstEntry === null ||
-      entry.order < firstEntry.order
-    ) {
-      firstEntry = entry;
-      firstDistanceSquared = distanceSquared;
+      candidateChecks += bucket.length;
+      for (const entry of bucket) {
+        if (include && !include(entry.item)) continue;
+
+        const dx = x - entry.x;
+        const dy = y - entry.y;
+        const distanceSquared = dx * dx + dy * dy;
+        const collisionRadius =
+          subjectRadius + entry.radius;
+
+        if (
+          distanceSquared >=
+          collisionRadius * collisionRadius
+        ) {
+          continue;
+        }
+
+        if (
+          firstEntry === null ||
+          entry.order < firstEntry.order
+        ) {
+          firstEntry = entry;
+          firstDistanceSquared = distanceSquared;
+        }
+      }
     }
   }
 
@@ -421,6 +507,6 @@ export const findFirstCollidingSpatialItem = <T>(
     item: firstEntry?.item ?? null,
     entry: firstEntry,
     distanceSquared: firstDistanceSquared,
-    candidateChecks: query.candidateChecks,
+    candidateChecks,
   };
 };
