@@ -77,7 +77,15 @@ export const GameHud: React.FC<GameHudProps> = ({
           <Shield size={11} className="text-cyan-400" />
           {t("hud.shield")}
         </span>
-        <div className="w-20 bg-slate-900 rounded h-1.5 overflow-hidden border border-slate-850 shrink-0">
+        <div
+          className="w-20 bg-slate-900 rounded h-1.5 overflow-hidden border border-slate-850 shrink-0"
+          role="progressbar"
+          aria-label={language === "es" ? "Integridad del escudo" : "Shield integrity"}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={Math.round(Math.max(0, Math.min(100, shieldPercent)))}
+          aria-valuetext={`${Math.round(Math.max(0, Math.min(100, shieldPercent)))}%`}
+        >
           <div
             className={`h-full rounded transition-all duration-150 ${shieldColorClass}`}
             style={{ width: `${Math.max(0, Math.min(100, shieldPercent))}%` }}
@@ -142,6 +150,8 @@ export const GameHud: React.FC<GameHudProps> = ({
               : "bg-slate-900 border border-slate-850 hover:bg-slate-800 text-slate-300"
           }`}
           title={isPaused ? (language === "es" ? "Reanudar" : "Resume") : (language === "es" ? "Pausar" : "Pause")}
+          aria-label={isPaused ? (language === "es" ? "Reanudar simulación" : "Resume simulation") : (language === "es" ? "Pausar simulación" : "Pause simulation")}
+          aria-pressed={isPaused}
         >
           {isPaused ? <Play size={10} fill="currentColor" /> : <Pause size={10} />}
         </button>
@@ -154,6 +164,8 @@ export const GameHud: React.FC<GameHudProps> = ({
               : "bg-slate-900 border border-slate-850 hover:bg-slate-800 text-slate-300"
           }`}
           title={audioMuted ? (language === "es" ? "Activar Audio" : "Unmute Audio") : (language === "es" ? "Silenciar Audio" : "Mute Audio")}
+          aria-label={audioMuted ? (language === "es" ? "Activar audio" : "Unmute audio") : (language === "es" ? "Silenciar audio" : "Mute audio")}
+          aria-pressed={audioMuted}
         >
           {audioMuted ? <VolumeX size={10} /> : <Volume2 size={10} />}
         </button>
