@@ -79,7 +79,12 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
   };
 
   return (
-    <div className="absolute inset-0 z-50 flex flex-col items-center justify-center p-4 bg-slate-950/95 text-white select-none backdrop-blur-md overflow-y-auto">
+    <div
+      className="absolute inset-0 z-50 flex flex-col items-center justify-center p-4 bg-slate-950/95 text-white select-none backdrop-blur-md overflow-y-auto"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="run-result-title"
+    >
       {/* RESULT ANNOUNCEMENT CARD */}
       <div className="w-full max-w-md bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-2xl relative space-y-4 text-center backdrop-blur-xl my-8">
         {/* GLOWING ICON HEADER */}
@@ -89,7 +94,7 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
               <div className="w-14 h-14 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center mx-auto shadow-[0_0_20px_rgba(16,185,129,0.3)] text-emerald-400 animate-bounce">
                 <Flame size={28} className="animate-pulse" />
               </div>
-              <h2 className="text-xl md:text-2xl font-sans font-black tracking-tight text-emerald-400 drop-shadow-[0_0_10px_rgba(16,185,129,0.4)] uppercase">
+              <h2 id="run-result-title" className="text-xl md:text-2xl font-sans font-black tracking-tight text-emerald-400 drop-shadow-[0_0_10px_rgba(16,185,129,0.4)] uppercase">
                 {language === "es" ? "CUADRÍCULA PURIFICADA" : "GRID PURIFIED"}
               </h2>
               <div className="text-[10px] font-mono text-emerald-500 font-bold uppercase tracking-wide">
@@ -101,7 +106,7 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
               <div className="w-14 h-14 rounded-full bg-rose-500/10 border border-rose-500/30 flex items-center justify-center mx-auto shadow-[0_0_20px_rgba(239,68,68,0.3)] text-rose-500">
                 <RotateCcw size={28} />
               </div>
-              <h2 className="text-xl md:text-2xl font-sans font-black tracking-tight text-rose-500 drop-shadow-[0_0_10px_rgba(239,68,68,0.4)] uppercase">
+              <h2 id="run-result-title" className="text-xl md:text-2xl font-sans font-black tracking-tight text-rose-500 drop-shadow-[0_0_10px_rgba(239,68,68,0.4)] uppercase">
                 {language === "es" ? "NÚCLEO ENIGMA COLAPSADO" : "ENIGM-CORE CRASHED"}
               </h2>
               <div className="text-[10px] font-mono text-rose-400 tracking-wide uppercase">
@@ -363,6 +368,7 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
         <div className="space-y-2 pt-1">
           {/* PLAY AGAIN */}
           <button
+            autoFocus
             onClick={() => {
               playClickSound();
               onRestart();

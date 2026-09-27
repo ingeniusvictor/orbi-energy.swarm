@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { UpgradeDefinition } from "../game/upgrades";
 import { useGameTranslation } from "../i18n";
 
@@ -18,6 +18,16 @@ export const UpgradeSelector: React.FC<UpgradeSelectorProps> = ({
   activeRunUpgrades
 }) => {
   const { language, t } = useGameTranslation();
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const firstEnabledControl =
+      dialogRef.current?.querySelector<HTMLButtonElement>(
+        "button:not(:disabled)",
+      );
+    (firstEnabledControl ?? dialogRef.current)?.focus();
+  }, [choices, rerollsRemaining]);
+
 
   const getCategoryStyles = (category: string) => {
     switch (category) {
@@ -61,17 +71,25 @@ export const UpgradeSelector: React.FC<UpgradeSelectorProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md select-none animate-fadeIn">
+    <div
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md select-none animate-fadeIn"
+      ref={dialogRef}
+      role="dialog"
+      aria-modal="true"
+      tabIndex={-1}
+      aria-labelledby="upgrade-selector-title"
+      aria-describedby="upgrade-selector-description"
+    >
       <div className="w-full max-w-4xl space-y-6 text-center">
         {/* Header Title */}
         <div className="space-y-1.5">
           <span className="text-xs font-mono font-black tracking-[0.25em] text-amber-400 uppercase">
             ⚡ {language === "es" ? "SINCRONIZADOR DE INTERMISIÓN" : "INTERMISSION SYNCHRONIZER"} ⚡
           </span>
-          <h2 className="text-2xl md:text-4xl font-black text-white tracking-tight font-sans uppercase">
+          <h2 id="upgrade-selector-title" className="text-2xl md:text-4xl font-black text-white tracking-tight font-sans uppercase">
             {t("upgrades.chooseTitle")}
           </h2>
-          <p className="text-xs md:text-sm text-slate-400 max-w-lg mx-auto">
+          <p id="upgrade-selector-description" className="text-xs md:text-sm text-slate-400 max-w-lg mx-auto">
             {language === "es"
               ? "Selecciona una mejora táctica para potenciar a FOTON y tu enjambre. Estas modificaciones duran solo en la partida actual."
               : "Choose a tactical retrofit to enhance FOTON and your swarm for the remaining sectors. These upgrades last for this run only."}

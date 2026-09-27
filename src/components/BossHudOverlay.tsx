@@ -62,19 +62,27 @@ export const BossHudOverlay: React.FC<BossHudOverlayProps> = ({
   return (
     <div
       className="orbi-boss-hud pointer-events-none"
-      role="status"
-      aria-label={`${BLACKOUT_DEVOURER_CANON.displayName}, phase ${bossPhase}, ${healthPercent}% integrity`}
+      role="region"
+      aria-labelledby="orbi-boss-title"
     >
       <div className="orbi-boss-heading">
         <span className="orbi-boss-kicker">⚠ MAJOR COLLAPSE DETECTED</span>
         <div className="orbi-boss-title-row">
-          <h2 className="orbi-boss-title">{BLACKOUT_DEVOURER_CANON.displayName}</h2>
+          <h2 id="orbi-boss-title" className="orbi-boss-title">{BLACKOUT_DEVOURER_CANON.displayName}</h2>
           <span className="orbi-boss-phase">PHASE {bossPhase}</span>
         </div>
         <p className="orbi-boss-subtitle">{BLACKOUT_DEVOURER_CANON.subtitle}</p>
       </div>
 
-      <div className="orbi-boss-health" aria-label={`Boss integrity ${healthPercent}%`}>
+      <div
+        className="orbi-boss-health"
+        role="progressbar"
+        aria-label={language === "es" ? "Integridad del jefe" : "Boss integrity"}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={healthPercent}
+        aria-valuetext={`${healthPercent}%`}
+      >
         <div className="orbi-boss-health-segment">
           <div
             className="orbi-boss-health-fill orbi-boss-health-fill--phase1"
@@ -108,6 +116,21 @@ export const BossHudOverlay: React.FC<BossHudOverlayProps> = ({
           INTEGRITY: {Math.ceil(bossHp)} / {bossMaxHp}
         </span>
         <strong>{healthPercent}%</strong>
+      </div>
+
+      <div
+        className="sr-only"
+        role="status"
+        aria-live="assertive"
+        aria-atomic="true"
+      >
+        {bossTransitionName
+          ? `${language === "es" ? "Mutación" : "Mutation"}: ${bossTransitionName}`
+          : showAttack && bossAttackName
+            ? `${language === "es" ? "Ataque" : "Attack"}: ${bossAttackName}${counterHint ? `. ${language === "es" ? "Respuesta" : "Counter"}: ${counterHint}` : ""}`
+            : isCoreExposed
+              ? (language === "es" ? "Núcleo expuesto. Daño doble." : "Core exposed. Double damage.")
+              : `${language === "es" ? "Fase" : "Phase"} ${bossPhase}`}
       </div>
 
       <div className="orbi-boss-alerts">

@@ -51,14 +51,21 @@ export const PauseMenu: React.FC<PauseMenuProps> = ({
   };
 
   return (
-    <div className="absolute inset-0 z-40 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4 text-white animate-fadeIn" id="pause-menu-backdrop">
+    <div
+      className="absolute inset-0 z-40 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4 text-white animate-fadeIn"
+      id="pause-menu-backdrop"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="pause-menu-title"
+      aria-describedby="pause-menu-state"
+    >
       <div className="w-full max-w-sm bg-slate-900/95 border border-slate-800 rounded-xl p-6 shadow-2xl relative space-y-5 animate-scaleUp" id="pause-menu-container">
         {/* HEADER */}
         <div className="text-center">
-          <h2 className="text-xl font-bold font-sans tracking-wide text-amber-500">
+          <h2 id="pause-menu-title" className="text-xl font-bold font-sans tracking-wide text-amber-500">
             ORBI ENERGY SWARM
           </h2>
-          <p className="text-[10px] font-mono text-slate-500 tracking-widest mt-0.5 uppercase">
+          <p id="pause-menu-state" className="text-[10px] font-mono text-slate-500 tracking-widest mt-0.5 uppercase">
             {language === "es" ? "SIMULACIÓN PAUSADA" : "SIMULATION PAUSED"}
           </p>
         </div>
@@ -69,6 +76,7 @@ export const PauseMenu: React.FC<PauseMenuProps> = ({
             {/* 1. RESUME */}
             <button
               id="resume-btn"
+              autoFocus
               onClick={() => {
                 playClickSound();
                 onResume();
@@ -192,6 +200,7 @@ export const PauseMenu: React.FC<PauseMenuProps> = ({
               </button>
               <button
                 id="confirm-restart-no"
+                autoFocus
                 onClick={cancelRestart}
                 className="py-2 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs uppercase"
               >
@@ -316,6 +325,7 @@ export const PauseMenu: React.FC<PauseMenuProps> = ({
 
             <button
               id="back-from-settings"
+              autoFocus
               onClick={() => {
                 playClickSound();
                 setShowSettings(false);
@@ -357,6 +367,7 @@ export const PauseMenu: React.FC<PauseMenuProps> = ({
             </div>
             <button
               id="back-from-controls"
+              autoFocus
               onClick={() => {
                 playClickSound();
                 setShowKeys(false);
