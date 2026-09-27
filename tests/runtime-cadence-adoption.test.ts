@@ -64,7 +64,7 @@ test("all frame-counted flash decay paths are delta-aware", () => {
     game.split("decayFrameTicks(").length - 1;
   assert.equal(
     decayUses,
-    4,
+    5,
     "player cinematic, player invulnerability, shield nodes, swarm and enemies should share refresh-neutral decay",
   );
 
