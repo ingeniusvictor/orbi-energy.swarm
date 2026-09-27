@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { UpgradeDefinition } from "../game/upgrades";
 import { useGameTranslation } from "../i18n";
 
@@ -18,12 +18,15 @@ export const UpgradeSelector: React.FC<UpgradeSelectorProps> = ({
   activeRunUpgrades
 }) => {
   const { language, t } = useGameTranslation();
-  const firstSelectableUpgradeId =
-    choices.find(
-      (upgrade) =>
-        (activeRunUpgrades[upgrade.id] || 0) <
-        upgrade.maxStacks,
-    )?.id;
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const firstEnabledControl =
+      dialogRef.current?.querySelector<HTMLButtonElement>(
+        "button:not(:disabled)",
+      );
+    (firstEnabledControl ?? dialogRef.current)?.focus();
+  }, [choices, rerollsRemaining]);
 
 
   const getCategoryStyles = (category: string) => {
@@ -70,8 +73,10 @@ export const UpgradeSelector: React.FC<UpgradeSelectorProps> = ({
   return (
     <div
       className="fixed inset-0 z-50 flex flex-col items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md select-none animate-fadeIn"
+      ref={dialogRef}
       role="dialog"
       aria-modal="true"
+      tabIndex={-1}
       aria-labelledby="upgrade-selector-title"
       aria-describedby="upgrade-selector-description"
     >
@@ -107,7 +112,6 @@ export const UpgradeSelector: React.FC<UpgradeSelectorProps> = ({
               <button
                 key={upgrade.id}
                 disabled={isMaxed}
-                autoFocus={upgrade.id === firstSelectableUpgradeId}
                 onClick={() => onSelect(upgrade)}
                 className={`relative group flex flex-col items-center text-center p-5 rounded-xl border text-white transition-all duration-300 ${
                   isMaxed
