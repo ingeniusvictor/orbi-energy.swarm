@@ -244,6 +244,39 @@ export enum QualityPreset {
   ULTRA = "ULTRA"
 }
 
+export type RunArchiveOutcome =
+  | "DEFEAT"
+  | "CAMPAIGN_CLEARED";
+
+export type RunArchiveAffinity =
+  | "solar"
+  | "hydro"
+  | "wind"
+  | "thermal"
+  | "nuclear"
+  | "quantum"
+  | "none";
+
+export type RunArchiveFormation =
+  | FormationType
+  | "none";
+
+export interface RunArchiveEntry {
+  runId: string;
+  completedAt: string;
+  outcome: RunArchiveOutcome;
+  score: number;
+  campaignWaveReached: number;
+  infiniteSectorReached?: number;
+  infiniteWaveReached?: number;
+  durationMs: number;
+  enemiesDestroyed: number;
+  maxSwarmSize: number;
+  strongestAffinity: RunArchiveAffinity;
+  mostUsedFormation: RunArchiveFormation;
+  temporaryBuild: Record<string, number>;
+}
+
 export interface GameStats {
   highScore: number;
   bestWave: number;
@@ -278,6 +311,7 @@ export interface GameStats {
   bestInfiniteWave: number;
   infiniteMinibossesDefeated: number;
   infiniteBossRematchesDefeated: number;
+  recentRunArchive: RunArchiveEntry[];
 }
 
 export interface DialogueMessage {
