@@ -336,7 +336,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({
               </div>
             </aside>
           </div>
-        ))}
+        )}
 
         {/* TAB 2: HOW TO PLAY */}
         {activeTab === "HOW_TO" && (
