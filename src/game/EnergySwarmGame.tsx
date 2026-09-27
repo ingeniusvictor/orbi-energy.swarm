@@ -105,6 +105,12 @@ import {
   drawEnemiesList, drawProjectilesList 
 } from "./EnergySwarmCanvas";
 import { projectFlashAccessibility } from "./flashAccessibility";
+import {
+  decayFrameTicks,
+  projectFrameDamping,
+  projectFrameProbability,
+  stepCadenceAccumulator,
+} from "./runtimeCadence";
 
 import { StartScreen } from "../components/StartScreen";
 import { GameHud } from "../components/GameHud";
@@ -349,8 +355,8 @@ export const EnergySwarmGame: React.FC = () => {
     });
   };
 
-  // Throttling React updates to 10-frame intervals
-  const reactUpdateTimerRef = useRef(0);
+  // Historical 10-frame @ 60 Hz HUD cadence, now time-based for 60/90/120 Hz parity.
+  const reactUpdateAccumulatorMsRef = useRef(0);
 
   // Mid-run upgrades refs
   const activeRunUpgradesRef = useRef<Record<string, number>>({});
@@ -979,6 +985,7 @@ export const EnergySwarmGame: React.FC = () => {
     runEndTimeRef.current = 0;
     runCommitLedgerRef.current = createRunCommitLedger();
     runMaxSwarmSizeRef.current = 1;
+    reactUpdateAccumulatorMsRef.current = 0;
     bossDamageDealtRef.current = 0;
     bossShieldNodesDestroyedRef.current = 0;
     bossDamageTakenRef.current = 0;
@@ -2429,7 +2436,10 @@ export const EnergySwarmGame: React.FC = () => {
       cam.cameraX += (targetX - cam.cameraX) * 0.05 * (delta / 16.6);
       cam.cameraY += (targetY - cam.cameraY) * 0.05 * (delta / 16.6);
 
-      if (Math.random() < 0.15) {
+      if (
+        Math.random() <
+        projectFrameProbability(0.15, delta)
+      ) {
         triggerExplosion(
           particlesRef.current,
           getQualityConfig(stats.qualityPreset).maxParticles,
@@ -2467,9 +2477,15 @@ export const EnergySwarmGame: React.FC = () => {
         node.x = boss.x + Math.cos(node.angle) * 110;
         node.y = boss.y + Math.sin(node.angle) * 110;
         
-        if (node.flashTicks > 0) node.flashTicks--;
+        node.flashTicks = decayFrameTicks(
+          node.flashTicks,
+          delta,
+        );
 
-        if (Math.random() < 0.1) {
+        if (
+          Math.random() <
+          projectFrameProbability(0.1, delta)
+        ) {
           const px = node.x + (Math.random() - 0.5) * 8;
           const py = node.y + (Math.random() - 0.5) * 8;
           pushVfxParticle({
@@ -2727,7 +2743,10 @@ export const EnergySwarmGame: React.FC = () => {
           damagePlayerFromBoss(1.6 * (delta / 16.6), "devourer_beam");
         }
         
-        if (Math.random() < 0.4) {
+        if (
+          Math.random() <
+          projectFrameProbability(0.4, delta)
+        ) {
           const randDist = Math.random() * beamLength;
           pushVfxParticle({
             id: Math.random().toString(),
@@ -2775,7 +2794,10 @@ export const EnergySwarmGame: React.FC = () => {
           }
         });
 
-        if (Math.random() < 0.3) {
+        if (
+          Math.random() <
+          projectFrameProbability(0.3, delta)
+        ) {
           const pAngle = Math.random() * Math.PI * 2;
           const pDist = 30 + Math.random() * (pullRadius - 30);
           pushVfxParticle({
@@ -2841,7 +2863,10 @@ export const EnergySwarmGame: React.FC = () => {
           damagePlayerFromBoss(1.0 * (delta / 16.6), "blackout_sweep");
         }
 
-        if (Math.random() < 0.4) {
+        if (
+          Math.random() <
+          projectFrameProbability(0.4, delta)
+        ) {
           const pAngle = bossAttackAngleRef.current + 0.5 + Math.random() * (Math.PI * 2 - 1.0);
           const pDist = 50 + Math.random() * 300;
           pushVfxParticle({
@@ -2918,7 +2943,10 @@ export const EnergySwarmGame: React.FC = () => {
       }
 
       case "devourer_charge": {
-        if (Math.random() < 0.4) {
+        if (
+          Math.random() <
+          projectFrameProbability(0.4, delta)
+        ) {
           pushVfxParticle({
             id: Math.random().toString(),
             type: ParticleType.FUSION,
@@ -2987,10 +3015,14 @@ export const EnergySwarmGame: React.FC = () => {
     updateEnginePhysics(delta);
     renderCanvasScene();
 
-    // Throttled React HUD state sync (Once every 10 frames)
-    reactUpdateTimerRef.current += 1;
-    if (reactUpdateTimerRef.current >= 10) {
-      reactUpdateTimerRef.current = 0;
+    // Preserve the historical 10-frame @ 60 Hz HUD sync cadence by elapsed time.
+    const hudCadence = stepCadenceAccumulator(
+      reactUpdateAccumulatorMsRef.current,
+      delta,
+    );
+    reactUpdateAccumulatorMsRef.current =
+      hudCadence.nextAccumulatorMs;
+    if (hudCadence.shouldFlush) {
       setScore(scoreRef.current);
       setShield(shieldRef.current);
       setSwarmSize(swarmRef.current.length + 1);
@@ -3020,7 +3052,10 @@ export const EnergySwarmGame: React.FC = () => {
       boss.color = `rgba(147, 51, 234, ${Math.max(0.1, bossDefeatedSequenceTimerRef.current / 5000)})`;
 
       // 1. Staged Explosions: Generate spectacular random particle bursts
-      if (Math.random() < 0.25) {
+      if (
+        Math.random() <
+        projectFrameProbability(0.25, delta)
+      ) {
         const angle = Math.random() * Math.PI * 2;
         const radius = Math.random() * boss.size;
         const ex = boss.x + Math.cos(angle) * radius;
@@ -3041,7 +3076,10 @@ export const EnergySwarmGame: React.FC = () => {
       }
 
       // 2. HEROIC MOMENT FEEDBACK: Make Orbi Foton leader extremely bright & ring active
-      if (Math.random() < 0.20) {
+      if (
+        Math.random() <
+        projectFrameProbability(0.20, delta)
+      ) {
         playCriticalHitSound();
         const startX = playerPosRef.current.x;
         const startY = playerPosRef.current.y;
@@ -3122,8 +3160,11 @@ export const EnergySwarmGame: React.FC = () => {
       });
       particlesRef.current = particlesRef.current.filter((p) => p.life > 0);
 
-      // Also update player leader flash ticks
-      if (playerFlashRef.current > 0) playerFlashRef.current--;
+      // Also update player leader flash ticks using refresh-rate-neutral cadence.
+      playerFlashRef.current = decayFrameTicks(
+        playerFlashRef.current,
+        delta,
+      );
       
       // Return early to freeze rest of physical ticks!
       return;
@@ -3142,7 +3183,10 @@ export const EnergySwarmGame: React.FC = () => {
     // 1. Invincibility timer ticks
     if (invincibilityTimerRef.current > 0) {
       invincibilityTimerRef.current -= delta;
-      playerFlashRef.current = Math.max(0, playerFlashRef.current - 1);
+      playerFlashRef.current = decayFrameTicks(
+        playerFlashRef.current,
+        delta,
+      );
     }
 
     // 2. CAMERA AND SCREEN SHAKE UPDATES
@@ -3248,8 +3292,11 @@ export const EnergySwarmGame: React.FC = () => {
 
     // Apply Screen Shake context parameters
     if (screenShakeRef.current > 0) {
-      screenShakeRef.current *= 0.9;
-      if (screenShakeRef.current < 0.1) screenShakeRef.current = 0;
+      screenShakeRef.current *=
+        projectFrameDamping(0.9, delta);
+      if (screenShakeRef.current < 0.1) {
+        screenShakeRef.current = 0;
+      }
       
       const shakeMode = statsRef.current?.screenShakeMode || stats.screenShakeMode || "FULL";
       const shakeMod = shakeMode === "FULL" ? 1.0 : (shakeMode === "REDUCED" ? 0.35 : 0);
@@ -3346,12 +3393,29 @@ export const EnergySwarmGame: React.FC = () => {
     );
 
     swarmRef.current.forEach((member, idx) => {
-      // Decelerate shooting recoil and flash ticks
-      if (member.recoilX && Math.abs(member.recoilX) > 0.05) member.recoilX *= 0.82;
-      else member.recoilX = 0;
-      if (member.recoilY && Math.abs(member.recoilY) > 0.05) member.recoilY *= 0.82;
-      else member.recoilY = 0;
-      if (member.flashTicks && member.flashTicks > 0) member.flashTicks--;
+      // Decelerate shooting recoil and flash ticks with 60 Hz baseline parity.
+      const recoilDamping =
+        projectFrameDamping(0.82, delta);
+      if (
+        member.recoilX &&
+        Math.abs(member.recoilX) > 0.05
+      ) {
+        member.recoilX *= recoilDamping;
+      } else {
+        member.recoilX = 0;
+      }
+      if (
+        member.recoilY &&
+        Math.abs(member.recoilY) > 0.05
+      ) {
+        member.recoilY *= recoilDamping;
+      } else {
+        member.recoilY = 0;
+      }
+      member.flashTicks = decayFrameTicks(
+        member.flashTicks ?? 0,
+        delta,
+      );
 
       const offsets = calculateSwarmOffset(
         activeFormation,
@@ -3694,8 +3758,11 @@ export const EnergySwarmGame: React.FC = () => {
         );
       }
 
-      // Handle white hit flash ticks decay
-      if (enemy.flashTicks > 0) enemy.flashTicks--;
+      // Handle white hit flash ticks with refresh-rate-neutral decay.
+      enemy.flashTicks = decayFrameTicks(
+        enemy.flashTicks,
+        delta,
+      );
 
       // Decelerate slowTimer if active (Hydro element effect)
       if (enemy.slowTimer !== undefined && enemy.slowTimer > 0) {
