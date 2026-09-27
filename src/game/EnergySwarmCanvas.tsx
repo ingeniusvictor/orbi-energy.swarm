@@ -1,7 +1,7 @@
 import React from "react";
 import { 
   OrbiMember, Enemy, Projectile, Resource, BiomeType, 
-  FormationType, EnemyType, OrbiType
+  FormationType, EnemyType, OrbiType, QualityPreset
 } from "./types";
 import { CANVAS_WIDTH, CANVAS_HEIGHT } from "./constants";
 import { getCanvasBackingStoreSize } from "./canvasResolution";
@@ -11,7 +11,16 @@ import {
   type FlashIntensityMode,
 } from "./flashAccessibility";
 import { getActiveLanguage } from "../i18n";
-import { drawFotonTacticalAvatar } from "./fotonTacticalRenderer";
+import {
+  drawFotonTacticalAvatar,
+  projectFotonIntegrityVisual,
+} from "./fotonTacticalRenderer";
+import {
+  disposeFotonGameplay3D,
+  FOTON_GAMEPLAY_DRAW_SIZE,
+  getFotonGameplay3DFrame,
+  prewarmFotonGameplay3D,
+} from "./fotonGameplay3DRenderer";
 
 interface EnergySwarmCanvasProps {
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
@@ -25,6 +34,7 @@ interface EnergySwarmCanvasProps {
   drawNebula: boolean;
   drawPlanets: boolean;
   maxDpr: number;
+  qualityPreset: QualityPreset;
   screenShake: number;
   swarm: OrbiMember[];
   enemies: Enemy[];
@@ -44,6 +54,7 @@ export const EnergySwarmCanvas: React.FC<EnergySwarmCanvasProps> = ({
   playerFlash,
   flashIntensity,
   maxDpr,
+  qualityPreset,
   onPointerMove,
   onPointerDown,
   onPointerUp
@@ -79,6 +90,13 @@ export const EnergySwarmCanvas: React.FC<EnergySwarmCanvasProps> = ({
       window.visualViewport?.removeEventListener("resize", syncBackingStore);
     };
   }, [canvasRef, maxDpr]);
+
+  React.useEffect(() => {
+    prewarmFotonGameplay3D(qualityPreset);
+    return () => {
+      disposeFotonGameplay3D();
+    };
+  }, [qualityPreset]);
 
   // We perform drawing logic directly using requestAnimationFrame inside parent,
   // but let's provide a robust, responsive Canvas frame wrapper with CSS constraints.
@@ -136,6 +154,8 @@ export function drawFoton(
   flashProfile: FlashAccessibilityProfile =
     projectFlashAccessibility("FULL"),
   shieldRatio: number = 1,
+  qualityPreset: QualityPreset = QualityPreset.HIGH,
+  isPaused: boolean = false,
 ) {
   // Historical FULL mode preserves the original invincibility flicker.
   if (
@@ -177,6 +197,64 @@ export function drawFoton(
         )
       : 0;
 
+  const glbFrame = getFotonGameplay3DFrame({
+    nowMs: time,
+    qualityPreset,
+    paused: isPaused,
+  });
+
+  if (glbFrame) {
+    const integrity =
+      projectFotonIntegrityVisual(shieldRatio);
+
+    ctx.save();
+
+    // Keep live shield integrity readable around the real 3D protagonist.
+    ctx.strokeStyle = "rgba(30,41,59,0.9)";
+    ctx.lineWidth = 2.2;
+    ctx.beginPath();
+    ctx.arc(x, y, 20.5, 0, Math.PI * 2);
+    ctx.stroke();
+
+    if (integrity.ratio > 0) {
+      ctx.strokeStyle = integrity.color;
+      ctx.beginPath();
+      ctx.arc(
+        x,
+        y,
+        20.5,
+        -Math.PI / 2,
+        -Math.PI / 2 +
+          Math.PI * 2 * integrity.ratio,
+      );
+      ctx.stroke();
+    }
+
+    const half =
+      FOTON_GAMEPLAY_DRAW_SIZE / 2;
+    ctx.drawImage(
+      glbFrame,
+      x - half,
+      y - half,
+      FOTON_GAMEPLAY_DRAW_SIZE,
+      FOTON_GAMEPLAY_DRAW_SIZE,
+    );
+
+    if (damageHighlightStrength > 0) {
+      ctx.globalAlpha =
+        damageHighlightStrength * 0.34;
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.arc(x, y, 16.5, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    ctx.restore();
+    return;
+  }
+
+  // Loading/failure fallback only. The normal gameplay body is the real GLB.
   drawFotonTacticalAvatar(ctx, {
     x,
     y,
