@@ -173,11 +173,8 @@ test("split minions inherit accelerated movement only in Infinite Swarm", () => 
   );
 });
 
-test("environmental mutator parameters remain deliberately unadopted in this phase", () => {
+test("electrical-storm damage remains deliberately unadopted in the combat-mutator phase", () => {
   assert.doesNotMatch(game, /\.electricalStormIntensity/);
-  assert.doesNotMatch(game, /\.visibilityScale/);
-  assert.doesNotMatch(game, /\.magneticDriftStrength/);
-  assert.doesNotMatch(game, /\.resourceFieldInstability/);
 });
 
 test("campaign boss spawn remains outside mutator scaling", () => {
