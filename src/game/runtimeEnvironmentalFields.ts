@@ -108,8 +108,12 @@ export const getResourceFieldProfile = (
     attractionRadiusMultiplier,
     attractionSpeedMultiplier,
     driftXPerFrame:
-      crossWave * magneticStrength * 2,
+      magneticStrength === 0
+        ? 0
+        : crossWave * magneticStrength * 2,
     driftYPerFrame:
-      slowWave * magneticStrength * 1.5,
+      magneticStrength === 0
+        ? 0
+        : slowWave * magneticStrength * 1.5,
   };
 };
