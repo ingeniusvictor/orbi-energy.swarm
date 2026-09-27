@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import {
@@ -105,10 +106,8 @@ test("game skips the intermission selector when no upgrade choices remain", () =
 });
 
 function readGameSource() {
-  return requireSource("../../src/game/EnergySwarmGame.tsx");
-}
-
-function requireSource(relativePath: string) {
-  const { readFileSync } = require("node:fs") as typeof import("node:fs");
-  return readFileSync(new URL(relativePath, import.meta.url), "utf8");
+  return readFileSync(
+    new URL("../../src/game/EnergySwarmGame.tsx", import.meta.url),
+    "utf8",
+  );
 }
