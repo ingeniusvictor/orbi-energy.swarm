@@ -1,11 +1,17 @@
 import React, { useState } from "react";
 import { useGameTranslation } from "../i18n";
 
-export const OrientationHint: React.FC = () => {
+interface OrientationHintProps {
+  enabled?: boolean;
+}
+
+export const OrientationHint: React.FC<OrientationHintProps> = ({
+  enabled = true,
+}) => {
   const { language } = useGameTranslation();
   const [dismissed, setDismissed] = useState(false);
 
-  if (dismissed) return null;
+  if (!enabled || dismissed) return null;
 
   const title = language === "es" ? "Mejor en horizontal" : "Best in landscape";
   const body =
