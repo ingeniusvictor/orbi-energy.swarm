@@ -41,6 +41,10 @@ import {
   projectRuntimeMutatorEffects,
 } from "./runtimeMutatorEffects";
 import {
+  getReducedVisibilityOverlayProfile,
+  getResourceFieldProfile,
+} from "./runtimeEnvironmentalFields";
+import {
   applyCampaignVictoryCheckpoint,
   applyFinalRunCommit,
   createRunCommitLedger,
@@ -3274,20 +3278,63 @@ export const EnergySwarmGame: React.FC = () => {
     resourcesRef.current.forEach((res) => {
       if (res.consumed || res.size <= 0) return;
 
+      const fieldProfile = getResourceFieldProfile(
+        simulationMutatorEffects,
+        timeElapsedRef.current,
+        res.id,
+      );
+      const environmentalFieldActive =
+        waveActiveRef.current &&
+        simulationDescriptor.sourceMode === "INFINITE";
+
+      if (environmentalFieldActive) {
+        res.x = Math.max(
+          WORLD_BOUNDS.minX,
+          Math.min(
+            WORLD_BOUNDS.maxX,
+            res.x +
+              fieldProfile.driftXPerFrame *
+                (delta / 16.6),
+          ),
+        );
+        res.y = Math.max(
+          WORLD_BOUNDS.minY,
+          Math.min(
+            WORLD_BOUNDS.maxY,
+            res.y +
+              fieldProfile.driftYPerFrame *
+                (delta / 16.6),
+          ),
+        );
+      }
+
       const dx = playerPosRef.current.x - res.x;
       const dy = playerPosRef.current.y - res.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
 
-      // Apply pull magnet threshold based on Nano Catalyst levels
-      const pullRadius = 45 + (upgradesLevel.nano_catalyst || 0) * 18;
+      // Apply Nano Catalyst plus bounded unstable-field attraction.
+      const basePullRadius =
+        45 + (upgradesLevel.nano_catalyst || 0) * 18;
+      const pullRadius =
+        basePullRadius *
+        (environmentalFieldActive
+          ? fieldProfile.attractionRadiusMultiplier
+          : 1);
+      const pullSpeed =
+        2.8 *
+        (environmentalFieldActive
+          ? fieldProfile.attractionSpeedMultiplier
+          : 1);
 
-      if (dist < pullRadius) {
+      if (dist > 0.001 && dist < pullRadius) {
         // pull towards player
-        res.x += (dx / dist) * 2.8 * (delta / 16.6);
-        res.y += (dy / dist) * 2.8 * (delta / 16.6);
+        res.x +=
+          (dx / dist) * pullSpeed * (delta / 16.6);
+        res.y +=
+          (dy / dist) * pullSpeed * (delta / 16.6);
       }
 
-      // Collision pickup trigger
+      // Collision pickup trigger remains unchanged and always reachable.
       if (dist < 15) {
         triggerResourceCollect(res);
       }
@@ -4247,7 +4294,61 @@ export const EnergySwarmGame: React.FC = () => {
 
     ctx.restore(); // Restore camera transformation matrix context
 
-    // 9. Draw a tactical minimap (radar overlay) in the top-right corner if mode is not OFF
+    // 9. Infinite reduced-visibility field: battlefield only.
+    // HUD and tactical radar render after this overlay and stay readable.
+    if (waveActiveRef.current) {
+      const renderDescriptor =
+        getCurrentRuntimeDescriptor();
+      const renderMutatorEffects =
+        projectRuntimeMutatorEffects(renderDescriptor);
+      const visibilityProfile =
+        getReducedVisibilityOverlayProfile(
+          renderMutatorEffects,
+          cameraStateRef.current.viewportWidth,
+          cameraStateRef.current.viewportHeight,
+        );
+
+      if (
+        renderDescriptor.sourceMode === "INFINITE" &&
+        visibilityProfile
+      ) {
+        const playerScreenX =
+          (playerPosRef.current.x -
+            cameraStateRef.current.cameraX) *
+            cameraStateRef.current.zoom +
+          cameraOffsetRef.current.x;
+        const playerScreenY =
+          (playerPosRef.current.y -
+            cameraStateRef.current.cameraY) *
+            cameraStateRef.current.zoom +
+          cameraOffsetRef.current.y;
+
+        ctx.save();
+        const fog = ctx.createRadialGradient(
+          playerScreenX,
+          playerScreenY,
+          visibilityProfile.innerRadius,
+          playerScreenX,
+          playerScreenY,
+          visibilityProfile.outerRadius,
+        );
+        fog.addColorStop(0, "rgba(2, 6, 23, 0)");
+        fog.addColorStop(
+          1,
+          `rgba(2, 6, 23, ${visibilityProfile.outerAlpha})`,
+        );
+        ctx.fillStyle = fog;
+        ctx.fillRect(
+          0,
+          0,
+          cameraStateRef.current.viewportWidth,
+          cameraStateRef.current.viewportHeight,
+        );
+        ctx.restore();
+      }
+    }
+
+    // 10. Draw a tactical minimap (radar overlay) in the top-right corner if mode is not OFF
     const minimapMode = statsRef.current?.minimapMode || stats.minimapMode || "COMPACT";
     if (minimapMode !== "OFF") {
       drawTacticalMinimap(ctx, minimapMode);
