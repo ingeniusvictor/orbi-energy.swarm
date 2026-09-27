@@ -5,6 +5,7 @@ import {defineConfig} from 'vite';
 
 export default defineConfig(() => {
   return {
+    base: process.env.ORBI_PUBLIC_BASE || '/',
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
