@@ -21,7 +21,7 @@ const section = (
 test("campaign runtime imports the unified certified descriptor router", () => {
   assert.match(
     game,
-    /resolveRuntimeWaveDescriptor.*runtimeProgressionRouter/,
+    /resolveRuntimeWaveDescriptor[\\s\\S]*runtimeProgressionRouter/,
   );
   assert.match(game, /createCampaignRuntimeState/);
   assert.doesNotMatch(game, /createCampaignRuntimeWaveDescriptor/);
