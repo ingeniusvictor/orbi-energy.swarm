@@ -1,56 +1,42 @@
 import React from "react";
-
-export type CampaignGuideLanguage = "es" | "en";
+import {
+  CAMPAIGN_GUIDE_STAGES,
+  type CampaignGuideLanguage,
+} from "../game/campaignGuide";
 
 interface CampaignArcProps {
   language: CampaignGuideLanguage;
 }
 
-const COPY = {
+const HEADER = {
   es: {
     title: "ARCO DE CAMPAÑA",
     subtitle: "10 sectores para dominar el enjambre antes del modo infinito.",
-    stages: [
-      { range: "01–02", title: "SINCRONIZACIÓN", desc: "Movimiento, recolección y lectura del campo." },
-      { range: "03–04", title: "FORMACIONES", desc: "Aprende cuándo cambiar la geometría del enjambre." },
-      { range: "05–06", title: "ADAPTACIÓN", desc: "Combina afinidades, upgrades y control de amenazas." },
-      { range: "07–08", title: "PRESIÓN", desc: "Disrupción, élites y decisiones bajo mayor densidad." },
-      { range: "09", title: "ASEDIO FINAL", desc: "Consolida tu build antes del último sector." },
-      { range: "10", title: "BLACKOUT DEVOURER", desc: "Prueba final de lectura, movilidad y control del enjambre." },
-    ],
   },
   en: {
     title: "CAMPAIGN ARC",
     subtitle: "10 sectors to master the swarm before endless mode.",
-    stages: [
-      { range: "01–02", title: "SYNCHRONIZATION", desc: "Movement, harvesting and battlefield reading." },
-      { range: "03–04", title: "FORMATIONS", desc: "Learn when to reshape the swarm." },
-      { range: "05–06", title: "ADAPTATION", desc: "Combine affinities, upgrades and threat control." },
-      { range: "07–08", title: "PRESSURE", desc: "Disruption, elites and higher-density decisions." },
-      { range: "09", title: "FINAL SIEGE", desc: "Consolidate your build before the last sector." },
-      { range: "10", title: "BLACKOUT DEVOURER", desc: "Final test of reading, mobility and swarm control." },
-    ],
   },
 } as const;
 
 export const CampaignArc: React.FC<CampaignArcProps> = ({ language }) => {
-  const copy = COPY[language];
+  const header = HEADER[language];
 
   return (
-    <section className="orbi-campaign-arc" aria-label={copy.title}>
+    <section className="orbi-campaign-arc" aria-label={header.title}>
       <div className="orbi-campaign-arc__header">
-        <span className="orbi-campaign-arc__eyebrow">{copy.title}</span>
-        <p>{copy.subtitle}</p>
+        <span className="orbi-campaign-arc__eyebrow">{header.title}</span>
+        <p>{header.subtitle}</p>
       </div>
       <div className="orbi-campaign-arc__grid">
-        {copy.stages.map((stage, index) => (
+        {CAMPAIGN_GUIDE_STAGES.map((stage) => (
           <article
-            key={stage.range}
-            className={`orbi-campaign-stage ${index === copy.stages.length - 1 ? "orbi-campaign-stage--boss" : ""}`}
+            key={stage.id}
+            className={`orbi-campaign-stage ${stage.boss ? "orbi-campaign-stage--boss" : ""}`}
           >
-            <span className="orbi-campaign-stage__range">SECTOR {stage.range}</span>
-            <strong>{stage.title}</strong>
-            <p>{stage.desc}</p>
+            <span className="orbi-campaign-stage__range">SECTOR {stage.rangeLabel}</span>
+            <strong>{stage.title[language]}</strong>
+            <p>{stage.description[language]}</p>
           </article>
         ))}
       </div>
