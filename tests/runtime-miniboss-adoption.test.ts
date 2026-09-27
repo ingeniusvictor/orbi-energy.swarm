@@ -313,13 +313,24 @@ test("campaign Devourer runtime remains isolated from miniboss metadata", () => 
     "const skipBossIntro =",
   );
 
-  assert.doesNotMatch(boss, /milestoneKind/);
   assert.doesNotMatch(
     boss,
     /minibossGateRef/,
   );
   assert.match(
     boss,
-    /const health = BLACKOUT_DEVOURER_CANON\.maxHealth/,
+    /milestoneKind: isRematch \? "BOSS_REMATCH" : undefined/,
+  );
+  assert.match(
+    boss,
+    /const isRematch = rematchProfile !== null/,
+  );
+  assert.match(
+    boss,
+    /if \(!isRematch\)[\s\S]*bossAttempts/,
+  );
+  assert.match(
+    boss,
+    /BLACKOUT_DEVOURER_CANON\.maxHealth \*[\s\S]*\(rematchProfile\?\.healthMultiplier \?\? 1\)/,
   );
 });
