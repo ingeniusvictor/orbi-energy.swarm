@@ -36,6 +36,7 @@ import {
   shouldTickRuntimeTimer,
 } from "./runtimeCompletionPolicy";
 import { projectRuntimeCombatPressure } from "./runtimeCombatPressure";
+import { resolveEvolvedEnemySpawn } from "./runtimeEnemyEvolution";
 import {
   getRuntimeMutatedEnemyBudget,
   projectRuntimeMutatorEffects,
@@ -1890,6 +1891,24 @@ export const EnergySwarmGame: React.FC = () => {
         : forcedType ||
           (comp[Math.floor(Math.random() * comp.length)] ||
             EnemyType.CRAWLER);
+    const activeEvolvedEnemies =
+      enemiesRef.current.filter(
+        (enemy) =>
+          !enemy.isDead &&
+          !enemy.isBoss &&
+          Boolean(enemy.evolvedVariantId),
+      ).length;
+    const evolvedProfile =
+      spawningMiniboss
+        ? null
+        : resolveEvolvedEnemySpawn({
+            descriptor,
+            enemyType: type,
+            spawnOrdinal:
+              waveBudgetSpawnedRef.current,
+            activeEvolvedEnemies,
+          });
+
     const healthMultiplier =
       combatPressure.enemyHealthMultiplier;
     const movementSpeedMultiplier =
@@ -1976,6 +1995,11 @@ export const EnergySwarmGame: React.FC = () => {
       color = "#3b82f6"; // Blue elite armored
     }
 
+    if (evolvedProfile) {
+      health *= evolvedProfile.healthMultiplier;
+      speed *= evolvedProfile.movementSpeedMultiplier;
+    }
+
     if (spawningMiniboss && minibossProfile) {
       health *= minibossProfile.healthMultiplier;
       speed *=
@@ -1993,6 +2017,7 @@ export const EnergySwarmGame: React.FC = () => {
     );
     const isElite =
       !spawningMiniboss &&
+      !evolvedProfile &&
       Math.random() < effectiveEliteChance;
     if (isElite) {
       health *= 1.8;
@@ -2030,6 +2055,18 @@ export const EnergySwarmGame: React.FC = () => {
       isDead: false,
       isBoss: false,
       flashTicks: 0,
+      evolvedVariantId: evolvedProfile?.id,
+      evolvedSignature: evolvedProfile?.signature,
+      evolvedContactDamageMultiplier:
+        evolvedProfile?.contactDamageMultiplier,
+      evolvedAttackRateMultiplier:
+        evolvedProfile?.attackRateMultiplier,
+      evolvedProjectileSpeedMultiplier:
+        evolvedProfile?.projectileSpeedMultiplier,
+      evolvedRewardMultiplier:
+        evolvedProfile?.rewardMultiplier,
+      evolvedSpecialIntensity:
+        evolvedProfile?.specialIntensity,
       milestoneKind:
         spawningMiniboss ? "MINIBOSS" : undefined,
       milestoneId:
@@ -3688,7 +3725,8 @@ export const EnergySwarmGame: React.FC = () => {
       // Shoot & pulse attack timers
       enemy.shootCooldown -=
         (delta / 16.6) *
-        simulationCombatPressure.enemyAttackRateMultiplier;
+        simulationCombatPressure.enemyAttackRateMultiplier *
+        (enemy.evolvedAttackRateMultiplier ?? 1);
       if (enemy.shootCooldown <= 0) {
         if (enemy.type === EnemyType.DRONE) {
           enemy.shootCooldown = 110 + Math.random() * 80;
@@ -4019,8 +4057,12 @@ export const EnergySwarmGame: React.FC = () => {
       const dist = Math.sqrt(dx * dx + dy * dy);
 
       if (dist < 320) {
-        const vx = (dx / dist) * 2.2;
-        const vy = (dy / dist) * 2.2;
+        const projectileSpeed =
+          2.2 *
+          (enemy.evolvedProjectileSpeedMultiplier ??
+            1);
+        const vx = (dx / dist) * projectileSpeed;
+        const vy = (dy / dist) * projectileSpeed;
 
         projectilesRef.current.push({
           id: Math.random().toString(),
@@ -4052,7 +4094,8 @@ export const EnergySwarmGame: React.FC = () => {
 
     return Math.round(
       baseReward *
-        (enemy.milestoneRewardMultiplier ?? 1),
+        (enemy.milestoneRewardMultiplier ?? 1) *
+        (enemy.evolvedRewardMultiplier ?? 1),
     );
   };
 
@@ -4440,6 +4483,8 @@ export const EnergySwarmGame: React.FC = () => {
               combatPressure.contactDamageMultiplier *
               mutatorEffects.incomingDamageMultiplier *
               (enemy.milestoneContactDamageMultiplier ??
+                1) *
+              (enemy.evolvedContactDamageMultiplier ??
                 1),
           );
         }
