@@ -233,7 +233,7 @@ test("monitor clamps pathological active deltas to its safe sample ceiling", () 
   assert.equal(next.state.elapsedMs, 100);
 });
 
-test("reset clears in-progress sampling but preserves sustained-history context", () => {
+test("reset clears sampling and sustained-pressure continuity", () => {
   let state = createFrameHealthState();
   state = stepFrameHealthMonitor(
     state,
@@ -257,6 +257,6 @@ test("reset clears in-progress sampling but preserves sustained-history context"
 
   assert.deepEqual(reset.samples, []);
   assert.equal(reset.elapsedMs, 0);
-  assert.equal(reset.consecutivePressuredWindows, 1);
-  assert.equal(reset.lastWindow?.status, "PRESSURED");
+  assert.equal(reset.consecutivePressuredWindows, 0);
+  assert.equal(reset.lastWindow, undefined);
 });
