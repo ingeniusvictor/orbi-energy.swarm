@@ -22,6 +22,7 @@ import { getQualityConfig } from "./quality";
 import { triggerExplosion, updateParticle, drawParticle } from "./particleSystem";
 import { backgroundRenderer } from "./backgroundRenderer";
 import { getWaveConfig, INTER_WAVE_DURATION, BOSS_WAVE_NUMBER, BLACKOUT_DEVOURER_CANON } from "./waveDirector";
+import { createCampaignRuntimeWaveDescriptor } from "./runtimeWaveDescriptor";
 import { MID_RUN_UPGRADES, UpgradeDefinition, generateUpgradeChoices } from "./upgrades";
 
 import { 
@@ -1360,16 +1361,20 @@ export const EnergySwarmGame: React.FC = () => {
       if (waveBreakTimerRef.current <= 0) {
         // Start the wave!
         waveActiveRef.current = true;
-        const cfg = getWaveConfig(currentWaveRef.current);
-        waveTimeRemainingRef.current = cfg.duration;
+        const descriptor = createCampaignRuntimeWaveDescriptor(currentWaveRef.current);
+        const cfg = getWaveConfig(currentWaveRef.current); // presentation-only WaveIntro contract
+        waveTimeRemainingRef.current =
+          descriptor.completionPolicy.type === "TIMEBOX"
+            ? descriptor.completionPolicy.durationMs
+            : cfg.duration;
         waveBudgetSpawnedRef.current = 0;
         setIsWaveBreak(false);
-        setWaveName(cfg.name);
+        setWaveName(descriptor.display.name);
 
-        postDialogue("SYSTEM", `OLEADA ${currentWaveRef.current} ACTIVA: ${cfg.name}`);
+        postDialogue("SYSTEM", `OLEADA ${currentWaveRef.current} ACTIVA: ${descriptor.display.name}`);
 
         // Set up hazards if applicable
-        if (cfg.environmentalModifier === "BLACKOUT_HAZARD_ZONES") {
+        if (descriptor.modifiers.includes("BLACKOUT_HAZARD_ZONES")) {
           hazardZonesRef.current = [
             { x: WORLD_WIDTH * 0.25 + Math.random() * 100, y: WORLD_HEIGHT * 0.25 + Math.random() * 100, r: 80 },
             { x: WORLD_WIDTH * 0.75 + Math.random() * 100, y: WORLD_HEIGHT * 0.25 + Math.random() * 100, r: 80 },
@@ -1386,7 +1391,7 @@ export const EnergySwarmGame: React.FC = () => {
           setWaveIntroConfig(null);
         }, 2500);
 
-        if (currentWaveRef.current === BOSS_WAVE_NUMBER) {
+        if (descriptor.completionPolicy.type === "BOSS_DEFEAT") {
           spawnBoss();
         } else {
           // Increase background tracks
@@ -1402,14 +1407,19 @@ export const EnergySwarmGame: React.FC = () => {
 
   // --- SPAWN REGULAR ENEMY ---
   const spawnEnemy = (forcedType?: EnemyType) => {
-    const cfg = getWaveConfig(currentWaveRef.current);
-    if (enemiesRef.current.length >= Math.min(MAX_ENEMIES, cfg.maxConcurrentEnemies)) return;
+    const descriptor = createCampaignRuntimeWaveDescriptor(currentWaveRef.current);
+    if (
+      enemiesRef.current.length >=
+      Math.min(MAX_ENEMIES, descriptor.spawn.maxConcurrentEnemies)
+    ) return;
 
     const biomeCfg = getBiomeConfig(activeBiome);
 
     // Pick a random enemy type or use the forced type
-    const comp = cfg.enemyComposition;
+    const comp = descriptor.spawn.enemyComposition;
     const type = forcedType || (comp[Math.floor(Math.random() * comp.length)] || EnemyType.CRAWLER);
+    const difficultyMultiplier =
+      descriptor.pressure.legacyDifficultyMultiplier ?? 1;
 
     // Pick spawn boundaries (coherently outside the camera viewport but within 1600x960 world)
     const cam = cameraStateRef.current;
@@ -1447,51 +1457,51 @@ export const EnergySwarmGame: React.FC = () => {
     }
 
     // Class Attributes
-    let health = 15 * cfg.difficultyMultiplier;
+    let health = 15 * difficultyMultiplier;
     let speed = (0.8 + Math.random() * 0.6) * biomeCfg.enemySpeedMultiplier;
     let size = 10;
     let color = "#ef4444"; // standard Red crawler
 
     if (type === EnemyType.PARASITE) {
-      health = 8 * cfg.difficultyMultiplier;
+      health = 8 * difficultyMultiplier;
       let baseSpeed = 1.8 * biomeCfg.enemySpeedMultiplier;
-      if (cfg.environmentalModifier === "PARASITE_SPEED_SURGE") {
+      if (descriptor.modifiers.includes("PARASITE_SPEED_SURGE")) {
         baseSpeed *= 1.4;
       }
       speed = baseSpeed;
       size = 8;
       color = "#f43f5e"; // rose pink parasite
     } else if (type === EnemyType.DRONE) {
-      health = 20 * cfg.difficultyMultiplier;
+      health = 20 * difficultyMultiplier;
       speed = 0.7 * biomeCfg.enemySpeedMultiplier;
       size = 11;
       color = "#a855f7"; // purple drone
     } else if (type === EnemyType.SPLITTER) {
-      health = 18 * cfg.difficultyMultiplier;
+      health = 18 * difficultyMultiplier;
       speed = 0.9 * biomeCfg.enemySpeedMultiplier;
       size = 12;
       color = "#22c55e"; // Green splitter
     } else if (type === EnemyType.DISRUPTOR) {
-      health = 25 * cfg.difficultyMultiplier;
+      health = 25 * difficultyMultiplier;
       speed = 0.9 * biomeCfg.enemySpeedMultiplier;
       size = 11;
       color = "#eab308"; // Amber disruptor
     } else if (type === EnemyType.BLACKOUT_ELITE) {
-      health = 45 * cfg.difficultyMultiplier;
+      health = 45 * difficultyMultiplier;
       speed = 0.5 * biomeCfg.enemySpeedMultiplier;
       size = 15;
       color = "#3b82f6"; // Blue elite armored
     }
 
     // Elite size scaling roll
-    const isElite = Math.random() < cfg.eliteChance;
+    const isElite = Math.random() < descriptor.spawn.eliteChance;
     if (isElite) {
       health *= 1.8;
       size *= 1.4;
       color = "#f43f5e";
     }
 
-    if (type === EnemyType.BLACKOUT_ELITE && cfg.environmentalModifier === "ELITE_SUPPORT") {
+    if (type === EnemyType.BLACKOUT_ELITE && descriptor.modifiers.includes("ELITE_SUPPORT")) {
       setTimeout(() => {
         spawnEnemy(EnemyType.DRONE);
       }, 150);
@@ -1509,7 +1519,7 @@ export const EnergySwarmGame: React.FC = () => {
       speed,
       size,
       color,
-      shootCooldown: (type === EnemyType.DRONE && cfg.environmentalModifier === "DRONE_TARGETING_DENSITY") 
+      shootCooldown: (type === EnemyType.DRONE && descriptor.modifiers.includes("DRONE_TARGETING_DENSITY")) 
         ? (80 + Math.random() * 80) * 0.6 
         : 80 + Math.random() * 80,
       pulseCooldown: 120,
@@ -2745,10 +2755,15 @@ export const EnergySwarmGame: React.FC = () => {
     // 5. Spawning script & wave transition timers
     handleWaveTransitions(delta);
 
-    const cfg = getWaveConfig(currentWaveRef.current);
+    const simulationDescriptor =
+      createCampaignRuntimeWaveDescriptor(currentWaveRef.current);
     if (waveActiveRef.current && !bossActiveRef.current) {
       if (currentWaveRef.current === 1) {
-        const waveElapsed = cfg.duration - waveTimeRemainingRef.current;
+        const waveDuration =
+          simulationDescriptor.completionPolicy.type === "TIMEBOX"
+            ? simulationDescriptor.completionPolicy.durationMs
+            : 0;
+        const waveElapsed = waveDuration - waveTimeRemainingRef.current;
 
         // Custom start pacing sequence for Wave 1:
         // - Game start (0.0s) -> visual intermission of 2.5s
@@ -2769,9 +2784,9 @@ export const EnergySwarmGame: React.FC = () => {
         // - 8.0s+ (waveElapsed >= 5500ms): Standard interval-based spawning rhythm
         else if (waveElapsed >= 5500) {
           spawnTimerRef.current += delta / 16.6;
-          if (spawnTimerRef.current >= cfg.spawnInterval) {
+          if (spawnTimerRef.current >= simulationDescriptor.spawn.spawnIntervalFrames) {
             spawnTimerRef.current = 0;
-            if (waveBudgetSpawnedRef.current < cfg.enemyBudget) {
+            if (waveBudgetSpawnedRef.current < simulationDescriptor.spawn.enemyBudget) {
               spawnEnemy();
             }
           }
@@ -2779,9 +2794,9 @@ export const EnergySwarmGame: React.FC = () => {
       } else {
         // Subsequent waves: use standard interval-based spawning rhythm immediately
         spawnTimerRef.current += delta / 16.6;
-        if (spawnTimerRef.current >= cfg.spawnInterval) {
+        if (spawnTimerRef.current >= simulationDescriptor.spawn.spawnIntervalFrames) {
           spawnTimerRef.current = 0;
-          if (waveBudgetSpawnedRef.current < cfg.enemyBudget) {
+          if (waveBudgetSpawnedRef.current < simulationDescriptor.spawn.enemyBudget) {
             spawnEnemy();
           }
         }
@@ -3432,8 +3447,9 @@ export const EnergySwarmGame: React.FC = () => {
                       // Only spawn drops & splits if not a minion (Section 2.4 - sin recompensa duplicada)
                       if (!otherEnemy.isMinion) {
                         spawnResource(otherEnemy.x, otherEnemy.y);
-                        const currentWaveCfg = getWaveConfig(currentWaveRef.current);
-                        if (currentWaveCfg.environmentalModifier === "CORE_DROP_BOOST") {
+                        const currentWaveDescriptor =
+                          createCampaignRuntimeWaveDescriptor(currentWaveRef.current);
+                        if (currentWaveDescriptor.modifiers.includes("CORE_DROP_BOOST")) {
                           spawnResource(otherEnemy.x + Math.random() * 16 - 8, otherEnemy.y + Math.random() * 16 - 8);
                         }
                         if (otherEnemy.type === EnemyType.SPLITTER) {
@@ -3479,8 +3495,9 @@ export const EnergySwarmGame: React.FC = () => {
                 // Only spawn resource or splits if NOT a minion (Section 2.4)
                 if (!enemy.isMinion) {
                   spawnResource(enemy.x, enemy.y);
-                  const currentWaveCfg = getWaveConfig(currentWaveRef.current);
-                  if (currentWaveCfg.environmentalModifier === "CORE_DROP_BOOST") {
+                  const currentWaveDescriptor =
+                    createCampaignRuntimeWaveDescriptor(currentWaveRef.current);
+                  if (currentWaveDescriptor.modifiers.includes("CORE_DROP_BOOST")) {
                     spawnResource(enemy.x + Math.random() * 16 - 8, enemy.y + Math.random() * 16 - 8);
                   }
                   // Splitter logic
