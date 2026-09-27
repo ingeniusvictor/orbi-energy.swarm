@@ -172,13 +172,10 @@ test("dominant affinity telemetry covers all six playable affinities", () => {
     helper,
     /counts\[member\.affinity\] \+= 1/,
   );
-  assert.match(
+  assert.doesNotMatch(
     helper,
-    /upgrades\.nuclear_density/,
-  );
-  assert.match(
-    helper,
-    /upgrades\.quantum_fracture/,
+    /upgrades\.nuclear_density|upgrades\.quantum_fracture/,
+    "general-purpose upgrades must not impersonate affinity-specific build weight",
   );
 });
 
