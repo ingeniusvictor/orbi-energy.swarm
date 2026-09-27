@@ -180,7 +180,7 @@ export function drawFoton(
     ctx.arc(
       x,
       y,
-      20 + Math.sin(time * 0.005) * 1.5,
+      29 + Math.sin(time * 0.005) * 1.5,
       0,
       Math.PI * 2,
     );
@@ -213,7 +213,7 @@ export function drawFoton(
     ctx.strokeStyle = "rgba(30,41,59,0.9)";
     ctx.lineWidth = 2.2;
     ctx.beginPath();
-    ctx.arc(x, y, 20.5, 0, Math.PI * 2);
+    ctx.arc(x, y, 27.5, 0, Math.PI * 2);
     ctx.stroke();
 
     if (integrity.ratio > 0) {
@@ -246,7 +246,7 @@ export function drawFoton(
       ctx.strokeStyle = "#ffffff";
       ctx.lineWidth = 2.5;
       ctx.beginPath();
-      ctx.arc(x, y, 16.5, 0, Math.PI * 2);
+      ctx.arc(x, y, 26.5, 0, Math.PI * 2);
       ctx.stroke();
     }
 
