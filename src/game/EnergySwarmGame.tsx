@@ -37,6 +37,10 @@ import {
 } from "./runtimeCompletionPolicy";
 import { projectRuntimeCombatPressure } from "./runtimeCombatPressure";
 import {
+  getRuntimeMutatedEnemyBudget,
+  projectRuntimeMutatorEffects,
+} from "./runtimeMutatorEffects";
+import {
   applyCampaignVictoryCheckpoint,
   applyFinalRunCommit,
   createRunCommitLedger,
@@ -295,6 +299,11 @@ export const EnergySwarmGame: React.FC = () => {
 
   const getCurrentCombatPressure = () =>
     projectRuntimeCombatPressure(
+      getCurrentRuntimeDescriptor(),
+    );
+
+  const getCurrentMutatorEffects = () =>
+    projectRuntimeMutatorEffects(
       getCurrentRuntimeDescriptor(),
     );
 
@@ -1426,6 +1435,18 @@ export const EnergySwarmGame: React.FC = () => {
 
     if (waveActiveRef.current) {
       const descriptor = getCurrentRuntimeDescriptor();
+      const effectiveEnemyBudget =
+        getRuntimeMutatedEnemyBudget(descriptor);
+      const completionDescriptor =
+        effectiveEnemyBudget === descriptor.spawn.enemyBudget
+          ? descriptor
+          : {
+              ...descriptor,
+              spawn: {
+                ...descriptor.spawn,
+                enemyBudget: effectiveEnemyBudget,
+              },
+            };
 
       if (shouldTickRuntimeTimer(descriptor)) {
         waveTimeRemainingRef.current -= delta;
@@ -1435,12 +1456,15 @@ export const EnergySwarmGame: React.FC = () => {
         (enemy) => !enemy.isDead && !enemy.isBoss,
       ).length;
 
-      const waveComplete = isRuntimeWaveComplete(descriptor, {
+      const waveComplete = isRuntimeWaveComplete(
+        completionDescriptor,
+        {
         remainingTimeMs: waveTimeRemainingRef.current,
         spawnedEnemyCount: waveBudgetSpawnedRef.current,
         livingEnemyCount,
-        bossDefeated: false,
-      });
+          bossDefeated: false,
+        },
+      );
 
       if (waveComplete) {
         // Wave complete! Transition into intermission
@@ -1622,6 +1646,8 @@ export const EnergySwarmGame: React.FC = () => {
     const biomeCfg = getBiomeConfig(activeBiome);
     const combatPressure =
       projectRuntimeCombatPressure(descriptor);
+    const mutatorEffects =
+      projectRuntimeMutatorEffects(descriptor);
 
     // Pick a random enemy type or use the forced type
     const comp = descriptor.spawn.enemyComposition;
@@ -1629,7 +1655,8 @@ export const EnergySwarmGame: React.FC = () => {
     const healthMultiplier =
       combatPressure.enemyHealthMultiplier;
     const movementSpeedMultiplier =
-      combatPressure.enemyMovementSpeedMultiplier;
+      combatPressure.enemyMovementSpeedMultiplier *
+      mutatorEffects.enemySpeedMultiplier;
 
     // Pick spawn boundaries (coherently outside the camera viewport but within 1600x960 world)
     const cam = cameraStateRef.current;
@@ -1712,7 +1739,13 @@ export const EnergySwarmGame: React.FC = () => {
     }
 
     // Elite size scaling roll
-    const isElite = Math.random() < descriptor.spawn.eliteChance;
+    const effectiveEliteChance = Math.min(
+      0.75,
+      descriptor.spawn.eliteChance +
+        mutatorEffects.eliteChanceBonus,
+    );
+    const isElite =
+      Math.random() < effectiveEliteChance;
     if (isElite) {
       health *= 1.8;
       size *= 1.4;
@@ -2602,6 +2635,11 @@ export const EnergySwarmGame: React.FC = () => {
       return;
     }
 
+    const frameDescriptor =
+      getCurrentRuntimeDescriptor();
+    const frameMutatorEffects =
+      projectRuntimeMutatorEffects(frameDescriptor);
+
     // 1. Invincibility timer ticks
     if (invincibilityTimerRef.current > 0) {
       invincibilityTimerRef.current -= delta;
@@ -2857,6 +2895,10 @@ export const EnergySwarmGame: React.FC = () => {
       const LEASH_DISTANCE_HARD = 280;
 
       let followRate = (0.12 + (upgradesLevel.quantum_core || 0) * 0.02) * disruptRecoveryRef.current;
+      if (waveActiveRef.current) {
+        followRate *=
+          frameMutatorEffects.formationCohesionMultiplier;
+      }
 
       // Swarm Overscale temporary upgrade: +25% cohesion and follow recovery speed per stack
       const overscaleStacks = activeRunUpgradesRef.current.swarm_overscale || 0;
@@ -2979,6 +3021,14 @@ export const EnergySwarmGame: React.FC = () => {
       projectRuntimeCombatPressure(
         simulationDescriptor,
       );
+    const simulationMutatorEffects =
+      projectRuntimeMutatorEffects(
+        simulationDescriptor,
+      );
+    const simulationEnemyBudget =
+      getRuntimeMutatedEnemyBudget(
+        simulationDescriptor,
+      );
     if (waveActiveRef.current && !bossActiveRef.current) {
       if (currentWaveRef.current === 1) {
         const waveDuration =
@@ -3008,7 +3058,7 @@ export const EnergySwarmGame: React.FC = () => {
           spawnTimerRef.current += delta / 16.6;
           if (spawnTimerRef.current >= simulationDescriptor.spawn.spawnIntervalFrames) {
             spawnTimerRef.current = 0;
-            if (waveBudgetSpawnedRef.current < simulationDescriptor.spawn.enemyBudget) {
+            if (waveBudgetSpawnedRef.current < simulationEnemyBudget) {
               spawnEnemy();
             }
           }
@@ -3018,7 +3068,7 @@ export const EnergySwarmGame: React.FC = () => {
         spawnTimerRef.current += delta / 16.6;
         if (spawnTimerRef.current >= simulationDescriptor.spawn.spawnIntervalFrames) {
           spawnTimerRef.current = 0;
-          if (waveBudgetSpawnedRef.current < simulationDescriptor.spawn.enemyBudget) {
+          if (waveBudgetSpawnedRef.current < simulationEnemyBudget) {
             spawnEnemy();
           }
         }
@@ -3028,6 +3078,20 @@ export const EnergySwarmGame: React.FC = () => {
     // 6. Enemies logic & Shoot mechanics
     enemiesRef.current.forEach((enemy) => {
       if (enemy.isDead) return;
+
+      if (
+        !enemy.isBoss &&
+        simulationMutatorEffects.enemyRegenFractionPerSecond > 0 &&
+        enemy.health < enemy.maxHealth
+      ) {
+        enemy.health = Math.min(
+          enemy.maxHealth,
+          enemy.health +
+            enemy.maxHealth *
+              simulationMutatorEffects.enemyRegenFractionPerSecond *
+              (delta / 1000),
+        );
+      }
 
       // Handle white hit flash ticks decay
       if (enemy.flashTicks > 0) enemy.flashTicks--;
@@ -3084,8 +3148,14 @@ export const EnergySwarmGame: React.FC = () => {
 
               // Direct charge vector towards Foton leader
               const tAngle = Math.atan2(playerPosRef.current.y - enemy.y, playerPosRef.current.x - enemy.x);
-              enemy.vx = Math.cos(tAngle) * 7.5;
-              enemy.vy = Math.sin(tAngle) * 7.5;
+              enemy.vx =
+                Math.cos(tAngle) *
+                7.5 *
+                simulationMutatorEffects.enemySpeedMultiplier;
+              enemy.vy =
+                Math.sin(tAngle) *
+                7.5 *
+                simulationMutatorEffects.enemySpeedMultiplier;
 
               playEliteChargeSound();
             }
@@ -3455,6 +3525,7 @@ export const EnergySwarmGame: React.FC = () => {
   const detectAndResolveCollisions = () => {
     const quality = getQualityConfig(stats.qualityPreset);
     const combatPressure = getCurrentCombatPressure();
+    const mutatorEffects = getCurrentMutatorEffects();
 
     // 1. PROJECTILES vs ENEMIES / PLAYER
     projectilesRef.current.forEach((proj) => {
@@ -3763,7 +3834,14 @@ export const EnergySwarmGame: React.FC = () => {
           if (proj.color === "#3b82f6") {
             damagePlayerFromBoss(proj.damage, "orbital_shards");
           } else {
-            damagePlayer(proj.damage);
+            const regularIncomingDamageMultiplier =
+              bossActiveRef.current
+                ? 1
+                : mutatorEffects.incomingDamageMultiplier;
+            damagePlayer(
+              proj.damage *
+                regularIncomingDamageMultiplier,
+            );
           }
         }
       }
@@ -3786,7 +3864,8 @@ export const EnergySwarmGame: React.FC = () => {
         } else {
           damagePlayer(
             baseDamage *
-              combatPressure.contactDamageMultiplier,
+              combatPressure.contactDamageMultiplier *
+              mutatorEffects.incomingDamageMultiplier,
           );
         }
       }
@@ -3797,13 +3876,15 @@ export const EnergySwarmGame: React.FC = () => {
   const spawnMinionSplit = (x: number, y: number, size: number) => {
     if (enemiesRef.current.length >= MAX_ENEMIES) return;
     const combatPressure = getCurrentCombatPressure();
+    const mutatorEffects = getCurrentMutatorEffects();
     const splitHealthMultiplier =
       combatPressure.sourceMode === "INFINITE"
         ? combatPressure.enemyHealthMultiplier
         : 1;
     const splitSpeedMultiplier =
       combatPressure.sourceMode === "INFINITE"
-        ? combatPressure.enemyMovementSpeedMultiplier
+        ? combatPressure.enemyMovementSpeedMultiplier *
+          mutatorEffects.enemySpeedMultiplier
         : 1;
     enemiesRef.current.push({
       id: Math.random().toString(),
