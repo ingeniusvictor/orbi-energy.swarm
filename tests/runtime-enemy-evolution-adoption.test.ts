@@ -334,7 +334,7 @@ test("live signature adoption remains contract-driven without duplicated signatu
 
   assert.match(
     physics,
-    /projectEvolvedSignatureBehavior/,
+    /enemySignatureBehaviorCacheRef\.current\.get\(enemy\)/,
   );
   assert.doesNotMatch(
     physics,
