@@ -44,7 +44,11 @@ test("regular enemy spawning no longer reads WaveConfig directly", () => {
   );
   assert.match(
     spawnEnemy,
-    /descriptor\.pressure\.legacyDifficultyMultiplier/,
+    /projectRuntimeCombatPressure\(descriptor\)/,
+  );
+  assert.match(
+    spawnEnemy,
+    /combatPressure\.enemyHealthMultiplier/,
   );
   assert.match(
     spawnEnemy,
