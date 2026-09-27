@@ -69,7 +69,11 @@ test("wave spawn cadence and budget are descriptor-backed", () => {
   );
   assert.match(
     physics,
-    /simulationDescriptor\.spawn\.enemyBudget/,
+    /getRuntimeMutatedEnemyBudget\([\s\S]*simulationDescriptor/,
+  );
+  assert.match(
+    physics,
+    /simulationEnemyBudget/,
   );
   assert.doesNotMatch(
     physics,
