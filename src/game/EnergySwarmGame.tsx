@@ -3392,10 +3392,11 @@ export const EnergySwarmGame: React.FC = () => {
       pointerRef.current.x - playerPosRef.current.x
     );
 
+    const recoilDamping =
+      projectFrameDamping(0.82, delta);
+
     swarmRef.current.forEach((member, idx) => {
       // Decelerate shooting recoil and flash ticks with 60 Hz baseline parity.
-      const recoilDamping =
-        projectFrameDamping(0.82, delta);
       if (
         member.recoilX &&
         Math.abs(member.recoilX) > 0.05
