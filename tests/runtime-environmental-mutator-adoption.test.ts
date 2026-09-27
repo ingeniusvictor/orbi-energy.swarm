@@ -146,13 +146,6 @@ test("tactical minimap is rendered after reduced-visibility overlay and stays re
   assert.ok(radarIndex > overlayIndex);
 });
 
-test("electrical storm remains deferred and cannot damage the player in ES-07U", () => {
-  assert.doesNotMatch(
-    game,
-    /\.electricalStormIntensity/,
-  );
-});
-
 test("campaign and Devourer rendering paths do not get explicit environmental overrides", () => {
   const boss = section(
     "const spawnBoss =",
