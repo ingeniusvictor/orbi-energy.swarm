@@ -3305,8 +3305,6 @@ export const EnergySwarmGame: React.FC = () => {
 
     const frameRuntimeProjection =
       getCurrentRuntimeProjection();
-    const frameDescriptor =
-      frameRuntimeProjection.descriptor;
     const frameMutatorEffects =
       frameRuntimeProjection.mutatorEffects;
 
