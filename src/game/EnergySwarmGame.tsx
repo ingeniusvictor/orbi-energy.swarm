@@ -50,6 +50,7 @@ import { UpgradeSelector } from "../components/UpgradeSelector";
 import { MobileTouchOverlay } from "../components/MobileTouchOverlay";
 import { OrientationHint } from "../components/OrientationHint";
 import { BossHudOverlay } from "../components/BossHudOverlay";
+import { shouldPauseForLifecycle, shouldResetFrameClock, type LifecycleSignal } from "./lifecyclePolicy";
 
 export const EnergySwarmGame: React.FC = () => {
   // --- REACT VIEWPORT GAME STATES (Low-frequency updates) ---
@@ -113,6 +114,12 @@ export const EnergySwarmGame: React.FC = () => {
   const loopActiveRef = useRef(false);
   const lastTimeRef = useRef(0);
   const timeElapsedRef = useRef(0);
+  const isPausedRef = useRef(false);
+
+  const setPausedState = useCallback((nextPaused: boolean) => {
+    isPausedRef.current = nextPaused;
+    setIsPaused(nextPaused);
+  }, []);
 
   const playerPosRef = useRef({ x: WORLD_WIDTH / 2, y: WORLD_HEIGHT / 2 });
   const pointerRef = useRef({ x: WORLD_WIDTH / 2, y: WORLD_HEIGHT / 2 });
@@ -424,6 +431,10 @@ export const EnergySwarmGame: React.FC = () => {
     statsRef.current = stats;
   }, [stats]);
 
+  useEffect(() => {
+    isPausedRef.current = isPaused;
+  }, [isPaused]);
+
   const updateStatsAndSave = (nextStats: GameStats) => {
     setStats(nextStats);
     statsRef.current = nextStats;
@@ -567,23 +578,76 @@ export const EnergySwarmGame: React.FC = () => {
       keysPressedRef.current[key] = false;
     };
 
-    const handleBlur = () => {
-      // Clear key stucks on blur
-      keysPressedRef.current = {};
-    };
-
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("keyup", handleKeyUp);
-    window.addEventListener("blur", handleBlur);
-    document.addEventListener("visibilitychange", handleBlur);
 
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
-      window.removeEventListener("blur", handleBlur);
-      document.removeEventListener("visibilitychange", handleBlur);
     };
   }, [isPlaying, isPaused, upgradesLevel]);
+
+  // --- ANDROID / WEB APP LIFECYCLE SAFETY ---
+  useEffect(() => {
+    const resetTransientInput = () => {
+      keysPressedRef.current = {};
+      isMouseDownRef.current = false;
+      mouseDownPosRef.current = { x: 0, y: 0, time: 0 };
+      lastInputTypeRef.current = "NONE";
+      clickToMoveTargetRef.current = null;
+      pointerRef.current = {
+        x: playerPosRef.current.x,
+        y: playerPosRef.current.y,
+      };
+    };
+
+    const applyLifecycleSignal = (signal: LifecycleSignal) => {
+      resetTransientInput();
+
+      if (shouldResetFrameClock(signal)) {
+        lastTimeRef.current = performance.now();
+      }
+
+      const shouldPause = shouldPauseForLifecycle(
+        {
+          isPlaying,
+          isPaused: isPausedRef.current,
+          isGameOver,
+          isModalSuspended: isUpgradeSelectionOpenRef.current,
+        },
+        signal,
+      );
+
+      if (shouldPause) {
+        setPausedState(true);
+        stopBgm();
+      }
+    };
+
+    const handleWindowBlur = () => applyLifecycleSignal("WINDOW_BLUR");
+    const handleWindowFocus = () => applyLifecycleSignal("WINDOW_FOCUS");
+    const handleVisibilityChange = () => {
+      applyLifecycleSignal(
+        document.visibilityState === "hidden"
+          ? "DOCUMENT_HIDDEN"
+          : "DOCUMENT_VISIBLE",
+      );
+    };
+    const handleOrientationChange = () =>
+      applyLifecycleSignal("ORIENTATION_CHANGE");
+
+    window.addEventListener("blur", handleWindowBlur);
+    window.addEventListener("focus", handleWindowFocus);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.screen.orientation?.addEventListener("change", handleOrientationChange);
+
+    return () => {
+      window.removeEventListener("blur", handleWindowBlur);
+      window.removeEventListener("focus", handleWindowFocus);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.screen.orientation?.removeEventListener("change", handleOrientationChange);
+    };
+  }, [isPlaying, isGameOver, setPausedState]);
 
   const changeMinimapMode = (mode: "FULL" | "COMPACT" | "OFF") => {
     const next = { ...stats, minimapMode: mode };
@@ -636,7 +700,7 @@ export const EnergySwarmGame: React.FC = () => {
   const startGame = () => {
     initAudio();
     setIsPlaying(true);
-    setIsPaused(false);
+    setPausedState(false);
     setIsGameOver(false);
     setVictory(false);
 
@@ -757,9 +821,9 @@ export const EnergySwarmGame: React.FC = () => {
   const togglePause = () => {
     if (!isPlaying || isGameOver) return;
     
-    if (isPaused) {
+    if (isPausedRef.current) {
       playUnpauseSound();
-      setIsPaused(false);
+      setPausedState(false);
       lastTimeRef.current = performance.now();
       // Resume background music based on current combat tension
       if (bossActiveRef.current) {
@@ -771,7 +835,7 @@ export const EnergySwarmGame: React.FC = () => {
       }
     } else {
       playPauseSound();
-      setIsPaused(true);
+      setPausedState(true);
       stopBgm();
     }
   };
@@ -1434,7 +1498,7 @@ export const EnergySwarmGame: React.FC = () => {
     const knownThreats = statsRef.current?.discoveredThreats || stats.discoveredThreats || [];
     const targetThreats = [EnemyType.DRONE, EnemyType.DISRUPTOR, EnemyType.BLACKOUT_ELITE, EnemyType.BOSS_DEVOURER];
     if (targetThreats.includes(type) && !knownThreats.includes(type)) {
-      setIsPaused(true);
+      setPausedState(true);
       setActiveThreatIntel(type);
       
       const nextThreats = [...knownThreats, type];
@@ -2128,7 +2192,7 @@ export const EnergySwarmGame: React.FC = () => {
   const gameLoop = (timestamp: number) => {
     if (!loopActiveRef.current) return;
 
-    if (isPaused || isUpgradeSelectionOpenRef.current) {
+    if (isPausedRef.current || isUpgradeSelectionOpenRef.current) {
       lastTimeRef.current = timestamp;
       requestAnimationFrame(gameLoop);
       return;
@@ -3974,7 +4038,7 @@ export const EnergySwarmGame: React.FC = () => {
           onExitToMenu={() => {
             stopBgm();
             setIsPlaying(false);
-            setIsPaused(false);
+            setPausedState(false);
           }}
           audioMuted={audioMuted}
           onToggleMute={toggleMute}
@@ -4429,7 +4493,7 @@ export const EnergySwarmGame: React.FC = () => {
             <button
               onClick={() => {
                 setActiveThreatIntel(null);
-                setIsPaused(false);
+                setPausedState(false);
                 playClickSound();
               }}
               className="w-full bg-cyan-500 hover:bg-cyan-400 text-black py-2.5 rounded font-bold transition duration-200 active:scale-[0.98] shadow-lg shadow-cyan-500/20 text-center text-xs tracking-wider uppercase border border-cyan-300/30 cursor-pointer"
