@@ -344,3 +344,162 @@ body {
     animation: none !important;
   }
 }
+
+
+/* ES-03B — Responsive gameplay workspace */
+.orbi-game-root {
+  min-height: 100dvh;
+  padding-top: max(0.5rem, env(safe-area-inset-top));
+  padding-right: max(0.5rem, env(safe-area-inset-right));
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+  padding-left: max(0.5rem, env(safe-area-inset-left));
+}
+
+.orbi-game-shell {
+  width: min(1880px, 100%);
+  margin-inline: auto;
+}
+
+.orbi-game-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "battlefield"
+    "tactical"
+    "logistics";
+  gap: 0.75rem;
+}
+
+.orbi-tactical-rail {
+  grid-area: tactical;
+  width: 100% !important;
+  min-width: 0;
+}
+
+.orbi-battlefield {
+  grid-area: battlefield;
+  min-width: 0;
+}
+
+.orbi-logistics-deck {
+  grid-area: logistics;
+  width: 100% !important;
+  min-width: 0;
+}
+
+.orbi-game-stage {
+  width: 100%;
+  aspect-ratio: 5 / 3;
+  min-height: 0;
+}
+
+.orbi-game-hud {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-areas:
+    "shield wave"
+    "swarm score"
+    "actions actions";
+  align-items: center;
+  gap: 0.45rem 0.6rem;
+  min-height: 42px;
+  height: auto;
+}
+
+.orbi-hud-shield { grid-area: shield; min-width: 0; }
+.orbi-hud-wave { grid-area: wave; min-width: 0; }
+.orbi-hud-swarm { grid-area: swarm; min-width: 0; }
+.orbi-hud-score { grid-area: score; min-width: 0; }
+.orbi-hud-actions {
+  grid-area: actions;
+  justify-self: end;
+}
+
+@media (min-width: 720px) and (max-width: 1279px) {
+  .orbi-game-workspace {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      "battlefield battlefield"
+      "tactical logistics";
+    gap: 0.9rem;
+  }
+
+  .orbi-game-hud {
+    grid-template-columns: 1.25fr 1fr 0.8fr;
+    grid-template-areas:
+      "shield wave actions"
+      "score score swarm";
+  }
+}
+
+@media (min-width: 1280px) {
+  .orbi-game-workspace {
+    grid-template-columns:
+      minmax(220px, 260px)
+      minmax(0, 1fr)
+      minmax(280px, 330px);
+    grid-template-areas: "tactical battlefield logistics";
+    gap: 0.85rem;
+  }
+
+  .orbi-tactical-rail.orbi-side-deck--collapsed,
+  .orbi-logistics-deck.orbi-side-deck--collapsed {
+    width: 2.75rem !important;
+    min-width: 2.75rem;
+  }
+
+  .orbi-game-hud {
+    grid-template-columns:
+      minmax(150px, 1.35fr)
+      minmax(170px, 1.25fr)
+      auto
+      auto
+      auto;
+    grid-template-areas: "shield wave swarm score actions";
+    gap: 0.75rem;
+  }
+}
+
+@media (max-width: 719px) {
+  .orbi-game-root {
+    justify-content: flex-start;
+    overflow-x: clip;
+  }
+
+  .orbi-game-shell {
+    padding-inline: 0;
+  }
+
+  .orbi-game-hud {
+    padding: 0.55rem 0.65rem;
+    border-radius: 0.8rem;
+  }
+
+  .orbi-hud-shield,
+  .orbi-hud-wave,
+  .orbi-hud-swarm,
+  .orbi-hud-score {
+    justify-self: stretch;
+  }
+
+  .orbi-hud-wave,
+  .orbi-hud-score {
+    justify-content: flex-end;
+  }
+
+  .orbi-game-stage {
+    border-radius: 0.85rem;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 620px) {
+  .orbi-game-root {
+    padding-top: max(0.25rem, env(safe-area-inset-top));
+    padding-bottom: max(0.25rem, env(safe-area-inset-bottom));
+  }
+
+  .orbi-game-stage {
+    aspect-ratio: auto;
+    height: min(68dvh, 480px);
+  }
+}
