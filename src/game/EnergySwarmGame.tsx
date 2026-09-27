@@ -3923,7 +3923,7 @@ export const EnergySwarmGame: React.FC = () => {
   };
 
   return (
-    <div className="w-full min-h-screen bg-slate-950 flex flex-col items-center justify-center p-2 md:p-4 overflow-x-hidden relative select-none">
+    <div className="orbi-game-root w-full min-h-screen bg-slate-950 flex flex-col items-center justify-center overflow-x-hidden relative select-none">
       
       {/* INITIAL START SCREEN MENUS */}
       {!isPlaying && (
@@ -4096,15 +4096,13 @@ export const EnergySwarmGame: React.FC = () => {
 
       {/* CORE ACTIVE HUD IN-GAME BAR */}
       {isPlaying && (
-        <div className="w-full max-w-[1800px] mx-auto space-y-2.5 animate-fadeIn flex flex-col flex-1 justify-center px-1 md:px-2 game-shell">
+        <div className="orbi-game-shell w-full mx-auto space-y-2.5 animate-fadeIn flex flex-col flex-1 justify-center">
           
           {/* MAIN GAME WORKSPACE GRID (Section 3: layout-workspace) */}
-          <div className="w-full grid grid-cols-1 lg:grid-cols-[auto_1fr_auto] gap-3 items-start game-workspace">
+          <div className="orbi-game-workspace w-full items-start">
             
             {/* COLUMN 1: TACTICAL RAIL (Left Column) */}
-            <div className={`flex flex-col gap-3 transition-all duration-300 ${
-              isLeftPanelCollapsed ? "w-11 overflow-hidden" : "w-full lg:w-[260px]"
-            } shrink-0 bg-slate-950/70 border border-slate-900 rounded-xl p-3 shadow-xl backdrop-blur-md text-white`}>
+            <div className={`orbi-tactical-rail ${isLeftPanelCollapsed ? "orbi-side-deck--collapsed overflow-hidden" : "orbi-side-deck--expanded"} flex flex-col gap-3 transition-all duration-300 shrink-0 bg-slate-950/70 border border-slate-900 rounded-xl p-3 shadow-xl backdrop-blur-md text-white`}>
               
               <div className="flex justify-between items-center border-b border-slate-900 pb-2">
                 {!isLeftPanelCollapsed ? (
@@ -4270,7 +4268,7 @@ export const EnergySwarmGame: React.FC = () => {
             </div>
 
             {/* COLUMN 2: BATTLEFIELD CORE (Center Column) */}
-            <div className="flex-1 flex flex-col gap-2">
+            <div className="orbi-battlefield flex-1 flex flex-col gap-2">
               <GameHud
                 score={score}
                 shield={shield}
@@ -4453,9 +4451,7 @@ export const EnergySwarmGame: React.FC = () => {
             </div>
 
             {/* COLUMN 3: LOGISTICS DECK (Right Column) */}
-            <div className={`flex flex-col gap-2 transition-all duration-300 ${
-              isRightPanelCollapsed ? "w-11 overflow-hidden" : "w-full lg:w-[330px]"
-            } shrink-0`}>
+            <div className={`orbi-logistics-deck ${isRightPanelCollapsed ? "orbi-side-deck--collapsed overflow-hidden" : "orbi-side-deck--expanded"} flex flex-col gap-2 transition-all duration-300 shrink-0`}>
               
               <div className="flex justify-between items-center bg-slate-950/70 border border-slate-900 rounded-lg p-2 text-white">
                 {!isRightPanelCollapsed ? (
