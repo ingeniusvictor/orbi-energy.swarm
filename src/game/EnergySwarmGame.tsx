@@ -23,6 +23,12 @@ import { triggerExplosion, updateParticle, drawParticle } from "./particleSystem
 import { backgroundRenderer } from "./backgroundRenderer";
 import { getWaveConfig, INTER_WAVE_DURATION, BOSS_WAVE_NUMBER, BLACKOUT_DEVOURER_CANON } from "./waveDirector";
 import { createCampaignRuntimeWaveDescriptor } from "./runtimeWaveDescriptor";
+import {
+  applyCampaignVictoryCheckpoint,
+  applyFinalRunCommit,
+  createRunCommitLedger,
+  type RunCommitLedger,
+} from "./runPersistence";
 import { MID_RUN_UPGRADES, UpgradeDefinition, generateUpgradeChoices } from "./upgrades";
 
 import { 
@@ -203,6 +209,7 @@ export const EnergySwarmGame: React.FC = () => {
   const runEnemiesDestroyedRef = useRef<number>(0);
   const runResourcesCollectedRef = useRef<number>(0);
   const runNanoCreditsEarnedRef = useRef<number>(0);
+  const runCommitLedgerRef = useRef<RunCommitLedger>(createRunCommitLedger());
   const bossAttacksSeenThisRunRef = useRef<string[]>([]);
 
 
@@ -469,63 +476,69 @@ export const EnergySwarmGame: React.FC = () => {
   // --- SAVE CURRENT PROGRESSION HELPER ---
   const commitStats = (isVictory: boolean, currentScore: number) => {
     const fresh = loadGameStats();
-    const peakSwarm = Math.max(fresh.bestSwarmSize, swarmRef.current.length + 1);
-    const peakWave = Math.max(fresh.bestWave, currentWaveRef.current);
-    const topScore = Math.max(fresh.highScore, currentScore);
-
-    // Serialize upgrades back to memories list
+    const bestSwarmSize = swarmRef.current.length + 1;
+    const bestWaveReached = currentWaveRef.current;
     const memories = Object.entries(upgradesLevel).map(([k, v]) => `${k}:${v}`);
 
-    const isBossFightAttempted = bossSessionStartTimeRef.current > 0;
-    const fightDuration = isVictory && isBossFightAttempted && bossSessionEndTimeRef.current > bossSessionStartTimeRef.current
-      ? bossSessionEndTimeRef.current - bossSessionStartTimeRef.current
-      : 0;
+    let workingStats = fresh;
+    let workingLedger = runCommitLedgerRef.current;
 
-    const playerMaxShield = SHIELD_MAX + (upgradesLevel.hydrogen_deflector || 0) * 15;
-    const currentIntegrityPercent = Math.round((shieldRef.current / playerMaxShield) * 100);
+    if (isVictory) {
+      const isBossFightAttempted = bossSessionStartTimeRef.current > 0;
+      const bossFightDurationMs =
+        isBossFightAttempted &&
+        bossSessionEndTimeRef.current > bossSessionStartTimeRef.current
+          ? bossSessionEndTimeRef.current - bossSessionStartTimeRef.current
+          : 0;
 
-    const currentSeenPhases = fresh.bossCodexSeenPhases || [];
-    const newSeenPhases = Array.from(new Set([
-      ...currentSeenPhases,
-      ...Array.from({ length: bossMaxPhaseReachedRef.current }, (_, i) => i + 1)
-    ]));
+      const playerMaxShield =
+        SHIELD_MAX + (upgradesLevel.hydrogen_deflector || 0) * 15;
+      const remainingIntegrityPercent = Math.round(
+        (shieldRef.current / playerMaxShield) * 100,
+      );
 
-    const currentSeenAttacks = fresh.bossCodexSeenAttacks || [];
-    const newSeenAttacks = Array.from(new Set([
-      ...currentSeenAttacks,
-      ...bossAttacksSeenThisRunRef.current
-    ]));
+      const checkpoint = applyCampaignVictoryCheckpoint(
+        workingStats,
+        {
+          currentScore,
+          bestWaveReached,
+          bestSwarmSize,
+          nanoCreditsBalance: nanoCreditsRef.current,
+          gameMemories: memories,
+          bossFightDurationMs,
+          remainingIntegrityPercent,
+          preferredBossFormation: getFormationMostUsed(),
+          bossCodexSeenPhases: Array.from(
+            { length: bossMaxPhaseReachedRef.current },
+            (_, i) => i + 1,
+          ),
+          bossCodexSeenAttacks: bossAttacksSeenThisRunRef.current,
+          firstVictoryAt: new Date().toISOString(),
+        },
+        workingLedger,
+      );
 
-    const updated: GameStats = {
-      ...fresh,
-      highScore: topScore,
-      bestWave: peakWave,
-      bestSwarmSize: peakSwarm,
-      totalRuns: fresh.totalRuns + 1,
-      totalVictories: isVictory ? fresh.totalVictories + 1 : fresh.totalVictories,
-      totalEnemiesDestroyed: fresh.totalEnemiesDestroyed + runEnemiesDestroyedRef.current,
-      totalResourcesCollected: fresh.totalResourcesCollected + runResourcesCollectedRef.current,
-      totalNanoCredits: nanoCreditsRef.current, // persistent balance
-      bossDefeated: isVictory || fresh.bossDefeated,
-      gameMemories: memories,
+      workingStats = checkpoint.stats;
+      workingLedger = checkpoint.ledger;
+    }
 
-      // Boss Specific Persistent Codex Telemetry
-      bossVictories: isVictory ? (fresh.bossVictories || 0) + 1 : (fresh.bossVictories || 0),
-      firstBossVictoryAt: (isVictory && !fresh.firstBossVictoryAt) ? new Date().toISOString() : fresh.firstBossVictoryAt,
-      fastestBossVictory: fightDuration > 0
-        ? Math.min(fresh.fastestBossVictory || 9999999, fightDuration)
-        : fresh.fastestBossVictory,
-      bestBossRemainingIntegrity: isVictory
-        ? Math.max(fresh.bestBossRemainingIntegrity || 0, currentIntegrityPercent)
-        : fresh.bestBossRemainingIntegrity,
-      preferredBossFormation: isBossFightAttempted ? getFormationMostUsed() : fresh.preferredBossFormation,
-      bossCodexSeenPhases: newSeenPhases,
-      bossCodexSeenAttacks: newSeenAttacks
-    };
+    const finalCommit = applyFinalRunCommit(
+      workingStats,
+      {
+        currentScore,
+        bestWaveReached,
+        bestSwarmSize,
+        nanoCreditsBalance: nanoCreditsRef.current,
+        gameMemories: memories,
+        enemiesDestroyed: runEnemiesDestroyedRef.current,
+        resourcesCollected: runResourcesCollectedRef.current,
+      },
+      workingLedger,
+    );
 
-    saveGameStats(updated);
-    setStats(updated);
-    setHighScore(topScore);
+    runCommitLedgerRef.current = finalCommit.ledger;
+    updateStatsAndSave(finalCommit.stats);
+    setHighScore(finalCommit.stats.highScore);
   };
 
   // --- KEY LISTENER LISTENERS ---
@@ -733,6 +746,7 @@ export const EnergySwarmGame: React.FC = () => {
     // Initial run start and telemetry setups
     runStartTimeRef.current = Date.now();
     runEndTimeRef.current = 0;
+    runCommitLedgerRef.current = createRunCommitLedger();
     bossDamageDealtRef.current = 0;
     bossShieldNodesDestroyedRef.current = 0;
     bossDamageTakenRef.current = 0;

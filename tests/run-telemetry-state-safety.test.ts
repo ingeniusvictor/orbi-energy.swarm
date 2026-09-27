@@ -6,6 +6,10 @@ const game = readFileSync(
   new URL("../src/game/EnergySwarmGame.tsx", import.meta.url),
   "utf8",
 );
+const runPersistence = readFileSync(
+  new URL("../src/game/runPersistence.ts", import.meta.url),
+  "utf8",
+);
 
 test("run counters use dedicated refs instead of mutating persistent stats", () => {
   assert.match(game, /runEnemiesDestroyedRef = useRef<number>\(0\)/);
@@ -23,11 +27,23 @@ test("new runs reset telemetry refs explicitly", () => {
 test("persistent totals accumulate from run-local counters exactly once", () => {
   assert.match(
     game,
-    /totalEnemiesDestroyed:\s*fresh\.totalEnemiesDestroyed \+ runEnemiesDestroyedRef\.current/,
+    /enemiesDestroyed:\s*runEnemiesDestroyedRef\.current/,
   );
   assert.match(
     game,
-    /totalResourcesCollected:\s*fresh\.totalResourcesCollected \+ runResourcesCollectedRef\.current/,
+    /resourcesCollected:\s*runResourcesCollectedRef\.current/,
+  );
+  assert.match(
+    runPersistence,
+    /fresh\.totalEnemiesDestroyed \+[\s\S]*integerNonNegative\(input\.enemiesDestroyed\)/,
+  );
+  assert.match(
+    runPersistence,
+    /fresh\.totalResourcesCollected \+[\s\S]*integerNonNegative\(input\.resourcesCollected\)/,
+  );
+  assert.match(
+    runPersistence,
+    /commitTelemetry = !nextLedger\.telemetryCommitted/,
   );
 });
 
