@@ -109,6 +109,7 @@ export interface Enemy {
   chargeTimer?: number; // Universal attack/charge telegraph timer
   milestoneKind?: "MINIBOSS" | "BOSS_REMATCH";
   milestoneId?: string;
+  milestoneMovementSpeedMultiplier?: number;
   milestoneContactDamageMultiplier?: number;
   milestoneRewardMultiplier?: number;
 }
