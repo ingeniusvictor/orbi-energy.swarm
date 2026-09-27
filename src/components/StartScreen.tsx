@@ -288,8 +288,8 @@ export const StartScreen: React.FC<StartScreenProps> = ({
               <label className="text-xs font-mono text-slate-400 flex items-center gap-1.5 uppercase">
                 <Cpu size={12} /> {t("startScreen.graphicsLabel")}
               </label>
-              <div className="grid grid-cols-3 gap-2">
-                {(["LOW", "MEDIUM", "HIGH"] as QualityPreset[]).map((preset) => (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                {([QualityPreset.LOW, QualityPreset.MEDIUM, QualityPreset.HIGH, QualityPreset.ULTRA]).map((preset) => (
                   <button
                     key={preset}
                     onClick={() => {
