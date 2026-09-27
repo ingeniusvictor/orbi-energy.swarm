@@ -107,6 +107,7 @@ import { UpgradeSelector } from "../components/UpgradeSelector";
 import { MobileTouchOverlay } from "../components/MobileTouchOverlay";
 import { MobileFormationCarousel } from "../components/MobileFormationCarousel";
 import { OrientationHint } from "../components/OrientationHint";
+import { useViewportComposition } from "../components/useViewportComposition";
 import { BossHudOverlay } from "../components/BossHudOverlay";
 import { shouldPauseForLifecycle, shouldResetFrameClock, type LifecycleSignal } from "./lifecyclePolicy";
 import { createTouchDirectionState, getTouchMovementVector, hasActiveTouchDirection, type TouchDirection } from "./touchControls";
@@ -117,6 +118,8 @@ type InfiniteBossRematchProfile = Extract<
 >;
 
 export const EnergySwarmGame: React.FC = () => {
+  const viewportProfile = useViewportComposition();
+
   // --- REACT VIEWPORT GAME STATES (Low-frequency updates) ---
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
@@ -5168,7 +5171,23 @@ export const EnergySwarmGame: React.FC = () => {
     getCurrentRuntimeDescriptor();
 
   return (
-    <div className="orbi-game-root w-full min-h-screen bg-slate-950 flex flex-col items-center justify-center overflow-x-hidden relative select-none">
+    <div
+      className="orbi-game-root w-full min-h-screen bg-slate-950 flex flex-col items-center justify-center overflow-x-hidden relative select-none"
+      data-viewport-class={viewportProfile.className}
+      data-viewport-orientation={viewportProfile.orientation}
+      data-shell-density={viewportProfile.shellDensity}
+      data-auxiliary-decks={viewportProfile.auxiliaryDeckMode}
+      data-touch-controls={
+        viewportProfile.touchControlsRecommended
+          ? "recommended"
+          : "fallback"
+      }
+      data-short-landscape={
+        viewportProfile.shortLandscape
+          ? "true"
+          : "false"
+      }
+    >
       
       {/* INITIAL START SCREEN MENUS */}
       {!isPlaying && (
@@ -5606,7 +5625,11 @@ export const EnergySwarmGame: React.FC = () => {
                   onChangeFormation={triggerFormationChange}
                   disabled={isPaused || isGameOver || isUpgradeSelectionOpen}
                 />
-                <OrientationHint />
+                <OrientationHint
+                  enabled={
+                    viewportProfile.landscapeAdvisoryRecommended
+                  }
+                />
               </div>
             </div>
 
