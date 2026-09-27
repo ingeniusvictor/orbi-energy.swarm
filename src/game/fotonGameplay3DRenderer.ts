@@ -129,7 +129,10 @@ const createRuntime = (
     alpha: true,
     antialias: config.antialias,
     powerPreference: "high-performance",
-    preserveDrawingBuffer: false,
+    // The 2D battlefield reuses the latest GLB frame between bounded 3D ticks.
+    // The buffer is tiny (80–112 px), so preserving it is cheap and avoids
+    // re-rendering Three.js at the 60 Hz battlefield cadence.
+    preserveDrawingBuffer: true,
   });
   renderer.setClearColor(0x000000, 0);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
