@@ -688,6 +688,37 @@ export function drawEnemiesList(
       ctx.restore();
     }
 
+    if (enemy.evolvedVariantId) {
+      const evolvedPulse =
+        1.5 + Math.sin(time * 0.01 + enemy.x * 0.01) * 1.5;
+      ctx.save();
+      ctx.strokeStyle = "#22d3ee";
+      ctx.lineWidth = 1.25;
+      ctx.shadowColor = "#22d3ee";
+      ctx.shadowBlur = 10;
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath();
+      ctx.arc(
+        0,
+        0,
+        enemy.size * 1.45 + evolvedPulse,
+        0,
+        Math.PI * 2,
+      );
+      ctx.stroke();
+
+      ctx.setLineDash([]);
+      ctx.fillStyle = "rgba(165, 243, 252, 0.92)";
+      ctx.font = "bold 6px monospace";
+      ctx.textAlign = "center";
+      ctx.fillText(
+        enemy.evolvedVariantId.replace(/_/g, " "),
+        0,
+        -enemy.size * 1.65,
+      );
+      ctx.restore();
+    }
+
     // Apply white hit flashing (for high intensity impact frames)
     if (enemy.flashTicks > 0) {
       ctx.shadowBlur = enemy.size * 2.5;
