@@ -1,0 +1,352 @@
+import { WaveConfig, EnemyType, FormationType, BossDefinition } from "./types";
+
+export const WAVES: WaveConfig[] = [
+  {
+    waveNumber: 1,
+    id: "scout_signal",
+    name: "Scout Signal",
+    displayName: "Scout Signal",
+    subtitle: "Basic hostile reconnaissance",
+    description: "Crawlers detected probing outer sectors. Defensive operations initiated.",
+    tacticalAdvice: "Use Defensive Ring or Line formation to guard Foton's vital vectors.",
+    duration: 35000,
+    enemyBudget: 12,
+    spawnInterval: 140,
+    maxConcurrentEnemies: 8,
+    enemyComposition: [EnemyType.CRAWLER],
+    eliteChance: 0.0,
+    recommendedFormation: FormationType.LINE,
+    introColor: "#3b82f6",
+    warningLevel: "LOW",
+    resourceMultiplier: 1.0,
+    difficultyMultiplier: 1.0
+  },
+  {
+    waveNumber: 2,
+    id: "parasite_drift",
+    name: "Parasite Drift",
+    displayName: "Parasite Drift",
+    subtitle: "Hostile drift patterns",
+    description: "Parasitic high-velocity vectors seeking leader. Fast collision threats.",
+    tacticalAdvice: "Maintain spacing. Use Energy Halo or Float Walkers to intercept them early.",
+    duration: 40000,
+    enemyBudget: 18,
+    spawnInterval: 110,
+    maxConcurrentEnemies: 12,
+    enemyComposition: [EnemyType.PARASITE, EnemyType.CRAWLER],
+    eliteChance: 0.05,
+    environmentalModifier: "PARASITE_SPEED_SURGE",
+    recommendedFormation: FormationType.SHIELD,
+    introColor: "#f43f5e",
+    warningLevel: "MEDIUM",
+    resourceMultiplier: 1.0,
+    difficultyMultiplier: 1.15
+  },
+  {
+    waveNumber: 3,
+    id: "drone_lock",
+    name: "Drone Lock",
+    displayName: "Drone Lock",
+    subtitle: "Long-range vector threat",
+    description: "Targeting drones locked onto ORBI FOTON. High-density aiming lines.",
+    tacticalAdvice: "Cover with Front Shield. Reposition dynamically before lock fires.",
+    duration: 45000,
+    enemyBudget: 22,
+    spawnInterval: 95,
+    maxConcurrentEnemies: 14,
+    enemyComposition: [EnemyType.DRONE, EnemyType.CRAWLER],
+    eliteChance: 0.1,
+    environmentalModifier: "DRONE_TARGETING_DENSITY",
+    recommendedFormation: FormationType.V_SHAPE,
+    introColor: "#a855f7",
+    warningLevel: "MEDIUM",
+    resourceMultiplier: 1.2,
+    difficultyMultiplier: 1.25
+  },
+  {
+    waveNumber: 4,
+    id: "swarm_encirclement",
+    name: "Swarm Encirclement",
+    displayName: "Swarm Encirclement",
+    subtitle: "Omni-directional siege",
+    description: "Hostile forces advancing rapidly from alternate sectors.",
+    tacticalAdvice: "Establish Defensive Ring or Dynamic Spiral to repel encirclement from corners.",
+    duration: 45000,
+    enemyBudget: 28,
+    spawnInterval: 85,
+    maxConcurrentEnemies: 16,
+    enemyComposition: [EnemyType.CRAWLER, EnemyType.PARASITE, EnemyType.SPLITTER],
+    eliteChance: 0.12,
+    environmentalModifier: "MULTI_DIRECTIONAL_SPAWN",
+    recommendedFormation: FormationType.LINE,
+    introColor: "#eab308",
+    warningLevel: "HIGH",
+    resourceMultiplier: 1.25,
+    difficultyMultiplier: 1.4
+  },
+  {
+    waveNumber: 5,
+    id: "elite_breach",
+    name: "Elite Breach",
+    displayName: "Elite Breach",
+    subtitle: "Heavily armored blackout unit",
+    description: "Blackout Elite breaching. Front shield protects core from front attacks.",
+    tacticalAdvice: "Use Arrowhead V or Float Walkers to flank its side armor.",
+    duration: 50000,
+    enemyBudget: 25,
+    spawnInterval: 100,
+    maxConcurrentEnemies: 12,
+    enemyComposition: [EnemyType.BLACKOUT_ELITE, EnemyType.DRONE, EnemyType.CRAWLER],
+    eliteChance: 0.2,
+    environmentalModifier: "ELITE_SUPPORT",
+    recommendedFormation: FormationType.CIRCLE,
+    introColor: "#ef4444",
+    warningLevel: "HIGH",
+    resourceMultiplier: 1.4,
+    difficultyMultiplier: 1.6
+  },
+  {
+    waveNumber: 6,
+    id: "disruptor_storm",
+    name: "Disruptor Storm",
+    displayName: "Disruptor Storm",
+    subtitle: "Electromagnetic interference active",
+    description: "Disruptor units pulsing waves that scatter swarm cohesion.",
+    tacticalAdvice: "Spread into Float Walkers or use Energy Halo to absorb shocks and stay wide.",
+    duration: 50000,
+    enemyBudget: 30,
+    spawnInterval: 90,
+    maxConcurrentEnemies: 15,
+    enemyComposition: [EnemyType.DISRUPTOR, EnemyType.PARASITE],
+    eliteChance: 0.22,
+    environmentalModifier: "DISRUPTION_INTENSITY",
+    recommendedFormation: FormationType.SCATTERED,
+    introColor: "#06b6d4",
+    warningLevel: "HIGH",
+    resourceMultiplier: 1.5,
+    difficultyMultiplier: 1.85
+  },
+  {
+    waveNumber: 7,
+    id: "grid_collapse",
+    name: "Grid Collapse",
+    displayName: "Grid Collapse",
+    subtitle: "Sector integrity failing",
+    description: "Unstable environment. Active hazard zones emerging on map.",
+    tacticalAdvice: "Mobility is key. Change formations frequently and avoid the red blackout pools.",
+    duration: 55000,
+    enemyBudget: 35,
+    spawnInterval: 80,
+    maxConcurrentEnemies: 18,
+    enemyComposition: [EnemyType.SPLITTER, EnemyType.DRONE, EnemyType.CRAWLER],
+    eliteChance: 0.25,
+    environmentalModifier: "BLACKOUT_HAZARD_ZONES",
+    recommendedFormation: FormationType.DELTA,
+    introColor: "#f97316",
+    warningLevel: "CRITICAL",
+    resourceMultiplier: 1.7,
+    difficultyMultiplier: 2.1
+  },
+  {
+    waveNumber: 8,
+    id: "titan_warning",
+    name: "Titan Warning",
+    displayName: "Titan Warning",
+    subtitle: "Pre-Devourer heavy assault",
+    description: "Intensified telegraphs. High core drop rate detected.",
+    tacticalAdvice: "Switch between Front Shield and Arrowhead V dynamically to protect and destroy.",
+    duration: 55000,
+    enemyBudget: 40,
+    spawnInterval: 75,
+    maxConcurrentEnemies: 20,
+    enemyComposition: [EnemyType.BLACKOUT_ELITE, EnemyType.DISRUPTOR, EnemyType.SPLITTER],
+    eliteChance: 0.3,
+    environmentalModifier: "CORE_DROP_BOOST",
+    recommendedFormation: FormationType.V_SHAPE,
+    introColor: "#ec4899",
+    warningLevel: "CRITICAL",
+    resourceMultiplier: 1.8,
+    difficultyMultiplier: 2.4
+  },
+  {
+    waveNumber: 9,
+    id: "blackout_siege",
+    name: "Blackout Siege",
+    displayName: "Blackout Siege",
+    subtitle: "Final coordinated siege",
+    description: "All blackout hostiles converging. No safe quadrant remaining.",
+    tacticalAdvice: "Adapt fully. Mobilize and fire fusions. Clear target lock-ons instantly.",
+    duration: 60000,
+    enemyBudget: 48,
+    spawnInterval: 65,
+    maxConcurrentEnemies: 22,
+    enemyComposition: [
+      EnemyType.CRAWLER, EnemyType.PARASITE, EnemyType.DRONE,
+      EnemyType.SPLITTER, EnemyType.DISRUPTOR, EnemyType.BLACKOUT_ELITE
+    ],
+    eliteChance: 0.35,
+    environmentalModifier: "FINAL_SIEGE",
+    recommendedFormation: FormationType.LINE,
+    introColor: "#ef4444",
+    warningLevel: "CRITICAL",
+    resourceMultiplier: 2.0,
+    difficultyMultiplier: 2.8
+  },
+  {
+    waveNumber: 10,
+    id: "blackout_devourer",
+    name: "Blackout Devourer",
+    displayName: "Blackout Devourer",
+    subtitle: "Colossal core predator",
+    description: "The Devourer has emerged. Destroy its shielding segments.",
+    tacticalAdvice: "Flank and target vulnerable segments. Maintain shield integrity at all costs.",
+    duration: 999999,
+    enemyBudget: 999,
+    spawnInterval: 220,
+    maxConcurrentEnemies: 16,
+    enemyComposition: [EnemyType.CRAWLER, EnemyType.PARASITE, EnemyType.DRONE],
+    eliteChance: 0.4,
+    environmentalModifier: "FINAL_SIEGE",
+    recommendedFormation: FormationType.CIRCLE,
+    introColor: "#ec4899",
+    warningLevel: "CRITICAL",
+    resourceMultiplier: 3.0,
+    difficultyMultiplier: 3.5
+  }
+];
+
+export function getWaveConfig(waveNum: number): WaveConfig {
+  const index = Math.max(1, Math.min(waveNum, WAVES.length)) - 1;
+  return WAVES[index];
+}
+
+export const MAX_TOTAL_WAVES = WAVES.length;
+export const INTER_WAVE_DURATION = 8000; // 8 seconds of break between waves
+export const BOSS_WAVE_NUMBER = 10;
+
+export const BLACKOUT_DEVOURER_CANON: BossDefinition = {
+  id: "blackout_devourer_boss",
+  displayName: "Blackout Devourer",
+  subtitle: "Singularity Class Threat",
+  maxHealth: 1500,
+  phaseThresholds: [0.70, 0.35],
+  introDuration: 3500,
+  arenaMode: "FULL_GRID",
+  attacks: [
+    {
+      id: "devourer_beam",
+      displayName: "Devourer Beam",
+      description: "A colossal concentrated dark plasma laser sweeps across the battlefield.",
+      counterAdvice: "Move perpendicularly and change your tactical formation dynamically.",
+      telegraphDuration: 1200,
+      cooldown: 8000,
+      minimumPhase: 1,
+      weight: 1.0,
+      warningColor: "#f43f5e",
+      audioCue: "playDroneChargeSound"
+    },
+    {
+      id: "gravity_well",
+      displayName: "Gravity Well",
+      description: "An unstable singularity zone pulls the entire swarm inward.",
+      counterAdvice: "Marked field pulls swarm. Escape before collapse and rebuild formation.",
+      telegraphDuration: 1500,
+      cooldown: 9000,
+      minimumPhase: 1,
+      weight: 1.0,
+      warningColor: "#a855f7",
+      audioCue: "playDisruptorChargeSound"
+    },
+    {
+      id: "orbital_shards",
+      displayName: "Orbital Shards",
+      description: "Launches shards of dark physical structures from multiple vectors.",
+      counterAdvice: "Engage Defensive Ring formation to block off-screen projectile threats.",
+      telegraphDuration: 1000,
+      cooldown: 5000,
+      minimumPhase: 1,
+      weight: 0.8,
+      warningColor: "#3b82f6",
+      audioCue: "playEnemyShootSound"
+    },
+    {
+      id: "blackout_sweep",
+      displayName: "Blackout Sweep",
+      description: "A dark veil of void energies consumes wide sectors, leaving small safe lanes.",
+      counterAdvice: "Identify the safe lane quickly and move into it to avoid total disruption.",
+      telegraphDuration: 1600,
+      cooldown: 12000,
+      minimumPhase: 2,
+      weight: 1.2,
+      warningColor: "#fb923c",
+      audioCue: "playDisruptorPulseSound"
+    },
+    {
+      id: "singularity_pulse",
+      displayName: "Singularity Pulse",
+      description: "A hyper-dense concentric energy discharge repelling all close followers.",
+      counterAdvice: "Keep your distance. Utilize Float Walkers or Foton Integrity for defense.",
+      telegraphDuration: 1300,
+      cooldown: 10000,
+      minimumPhase: 3,
+      weight: 1.3,
+      warningColor: "#ec4899",
+      audioCue: "playHeavyImpactSound"
+    },
+    {
+      id: "rotating_eclipse_lanes",
+      displayName: "Rotating Eclipse Lanes",
+      description: "Spawns 3 radial dangerous sectors rotating smoothly across the screen.",
+      counterAdvice: "Reposition within the safe lanes and navigate around the center pre-rotation.",
+      telegraphDuration: 1500,
+      cooldown: 11000,
+      minimumPhase: 3,
+      weight: 1.1,
+      warningColor: "#eab308",
+      audioCue: "playDisruptorPulseSound"
+    },
+    {
+      id: "devourer_charge",
+      displayName: "Devourer Charge",
+      description: "Locked target vector indicators precede a direct colossal charge that leaves dark paths.",
+      counterAdvice: "Dodge laterally immediately. Use Arrowhead V for a quick counter-assault.",
+      telegraphDuration: 1100,
+      cooldown: 7000,
+      minimumPhase: 3,
+      weight: 1.0,
+      warningColor: "#e11d48",
+      audioCue: "playEliteChargeSound"
+    }
+  ],
+  summonRules: [
+    {
+      phase: 2,
+      enemyType: EnemyType.CRAWLER,
+      maxCount: 4,
+      cooldown: 6000
+    },
+    {
+      phase: 2,
+      enemyType: EnemyType.DRONE,
+      maxCount: 1,
+      cooldown: 10000
+    },
+    {
+      phase: 3,
+      enemyType: EnemyType.PARASITE,
+      maxCount: 4,
+      cooldown: 5000
+    },
+    {
+      phase: 3,
+      enemyType: EnemyType.DISRUPTOR,
+      maxCount: 1,
+      cooldown: 14000
+    }
+  ],
+  defeatSequence: {
+    visualDuration: 4000,
+    explosionCount: 12
+  }
+};
+

@@ -1,0 +1,3060 @@
+====================================================================================================
+FILE: package.json
+====================================================================================================
+{
+  "name": "react-example",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port=3000 --host=0.0.0.0",
+    "build": "vite build",
+    "preview": "vite preview",
+    "clean": "rm -rf dist server.js",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@google/genai": "^2.4.0",
+    "@tailwindcss/vite": "^4.1.14",
+    "@vitejs/plugin-react": "^5.0.4",
+    "dotenv": "^17.2.3",
+    "express": "^4.21.2",
+    "lucide-react": "^0.546.0",
+    "motion": "^12.23.24",
+    "react": "^19.0.1",
+    "react-dom": "^19.0.1",
+    "vite": "^6.2.3"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.14.0",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "autoprefixer": "^10.4.21",
+    "esbuild": "^0.25.0",
+    "tailwindcss": "^4.1.14",
+    "tsx": "^4.21.0",
+    "typescript": "~5.8.2",
+    "vite": "^6.2.3"
+  }
+}
+
+
+====================================================================================================
+FILE: index.html
+====================================================================================================
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Google AI Studio App</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
+
+
+====================================================================================================
+FILE: vite.config.ts
+====================================================================================================
+import tailwindcss from '@tailwindcss/vite';
+import react from '@vitejs/plugin-react';
+import path from 'path';
+import {defineConfig} from 'vite';
+
+export default defineConfig(() => {
+  return {
+    plugins: [react(), tailwindcss()],
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, '.'),
+      },
+    },
+    server: {
+      // HMR is disabled in AI Studio via DISABLE_HMR env var.
+      // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
+      hmr: process.env.DISABLE_HMR !== 'true',
+      // Disable file watching when DISABLE_HMR is true to save CPU during agent edits.
+      watch: process.env.DISABLE_HMR === 'true' ? null : {},
+    },
+  };
+});
+
+
+====================================================================================================
+FILE: tsconfig.json
+====================================================================================================
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "experimentalDecorators": true,
+    "useDefineForClassFields": false,
+    "module": "ESNext",
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "allowJs": true,
+    "jsx": "react-jsx",
+    "paths": {
+      "@/*": [
+        "./*"
+      ]
+    },
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true
+  }
+}
+
+
+====================================================================================================
+FILE: tsconfig.app.json
+====================================================================================================
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "useDefineForClassFields": true,
+    "lib": ["DOM", "DOM.Iterable", "ES2022"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true
+  },
+  "include": ["src"]
+}
+
+
+====================================================================================================
+FILE: tsconfig.node.json
+====================================================================================================
+{
+  "compilerOptions": {
+    "skipLibCheck": true,
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true
+  },
+  "include": ["vite.config.ts"]
+}
+
+
+====================================================================================================
+FILE: src/main.tsx
+====================================================================================================
+import {StrictMode} from 'react';
+import {createRoot} from 'react-dom/client';
+import App from './App.tsx';
+import './styles/index.css';
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
+);
+
+
+====================================================================================================
+FILE: src/App.tsx
+====================================================================================================
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+import EnergySwarmGame from "./game/EnergySwarmGame";
+
+export default function App() {
+  return <EnergySwarmGame />;
+}
+
+
+====================================================================================================
+FILE: src/game/EnergySwarmGame.tsx
+====================================================================================================
+import React, { useEffect, useRef, useState, useCallback } from "react";
+import { 
+  Shield, Award, Coins, Zap, Play, RotateCcw, Volume2, VolumeX, 
+  Pause, Users, Database, BookOpen, Sparkles, Compass, Cpu
+} from "lucide-react";
+
+import { 
+  BiomeType, FormationType, OrbiType, EnemyType, 
+  OrbiMember, Enemy, Projectile, Resource, Particle, GameStats, DialogueMessage 
+} from "./types";
+
+import { 
+  CANVAS_WIDTH, CANVAS_HEIGHT, PLAYER_SPEED, PLAYER_MAX_SHIELD, 
+  PLAYER_SHIELD_REGEN, DAMAGE_INVINCIBILITY_DURATION,
+  MAX_SWARM_MEMBERS, MAX_ENEMIES, MAX_PROJECTILES, MAX_RESOURCES, MAX_PARTICLES,
+  BIOMES, FORMATIONS, ORBI_TEMPLATES, COMPANION_QUOTES
+} from "./constants";
+
+import { loadGameStats, saveGameStats } from "./storage";
+
+import { 
+  playShootSound, playEnemyShootSound, playDamageSound, playEnemyExplodeSound, 
+  playRecruitSound, playCrystalSound, playBiomeChangeSound, playClickSound, 
+  playPauseSound, playUnpauseSound, playGameOverSound, setMuteState, initAudio 
+} from "./audio";
+
+export const EnergySwarmGame: React.FC = () => {
+  // --- REACT OVERLAY STATES (Updated at a throttled frequency) ---
+  const [activeTab, setActiveTab] = useState<"swarm" | "civ" | "mementos" | "relics">("swarm");
+  const [hudShield, setHudShield] = useState(100);
+  const [hudScore, setHudScore] = useState(0);
+  const [hudHighScore, setHudHighScore] = useState(0);
+  const [hudPopulation, setHudPopulation] = useState(1);
+  const [hudNano, setHudNano] = useState(0);
+  const [hudEnergy, setHudEnergy] = useState(0);
+  const [hudBiome, setHudBiome] = useState<BiomeType>(BiomeType.SOLAR_PLAINS);
+  const [hudFormation, setHudFormation] = useState<FormationType>(FormationType.CIRCLE);
+  const [isPaused, setIsPaused] = useState(false);
+  const [isGameOver, setIsGameOver] = useState(false);
+  const [isGameStarted, setIsGameStarted] = useState(false);
+  const [muted, setMuted] = useState(false);
+  const [dialogueLog, setDialogueLog] = useState<DialogueMessage[]>([]);
+  const [stats, setStats] = useState<GameStats | null>(null);
+
+  // Relic Upgrade State
+  const [unlockedRelics, setUnlockedRelics] = useState<string[]>([]);
+
+  // Companion avatar animations
+  const [companionDialogue, setCompanionDialogue] = useState<string>(
+    "Welcome Foton! Tap START core synchronization."
+  );
+
+  // --- CANVAS & STATE REFS (High-Frequency updates) ---
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
+  const playerRef = useRef({
+    x: CANVAS_WIDTH / 2,
+    y: CANVAS_HEIGHT / 2,
+    shield: PLAYER_MAX_SHIELD,
+    maxShield: PLAYER_MAX_SHIELD,
+    invincibilityTimer: 0,
+    speed: PLAYER_SPEED,
+    radius: 12
+  });
+
+  const pointerRef = useRef({ x: CANVAS_WIDTH / 2, y: CANVAS_HEIGHT / 2 });
+  const usingKeyboardRef = useRef(false);
+  const keysPressedRef = useRef<Record<string, boolean>>({});
+
+  const swarmRef = useRef<OrbiMember[]>([]);
+  const enemiesRef = useRef<Enemy[]>([]);
+  const projectilesRef = useRef<Projectile[]>([]);
+  const resourcesRef = useRef<Resource[]>([]);
+  const particlesRef = useRef<Particle[]>([]);
+
+  const scoreRef = useRef(0);
+  const nanoCreditsRef = useRef(0);
+  const purifiedEnergyRef = useRef(0);
+  const activeBiomeRef = useRef<BiomeType>(BiomeType.SOLAR_PLAINS);
+  const activeFormationRef = useRef<FormationType>(FormationType.CIRCLE);
+  const isPausedRef = useRef(false);
+  const isGameOverRef = useRef(false);
+  const isGameStartedRef = useRef(false);
+  
+  const frameCountRef = useRef(0);
+  const loopIdRef = useRef<number | null>(null);
+  const lastTimeRef = useRef<number>(0);
+  const lastDialogueTimeRef = useRef<number>(0);
+  const biomeProgressRef = useRef(0); // Progress to next biome
+
+  // Grid offsets for scrolling grid visual effect
+  const gridOffsetRef = useRef({ x: 0, y: 0 });
+
+  // --- COORDINATE MAPPING ---
+  const handleCanvasPointer = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * CANVAS_WIDTH;
+    const y = ((e.clientY - rect.top) / rect.height) * CANVAS_HEIGHT;
+    pointerRef.current = { x, y };
+  };
+
+  // --- COMPANION LOGIC ---
+  const postDialogue = useCallback((sender: "FOTON" | "COMPANION" | "SYSTEM", text: string) => {
+    const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const newMessage: DialogueMessage = {
+      id: Math.random().toString(),
+      sender,
+      text,
+      timestamp
+    };
+    setDialogueLog(prev => [newMessage, ...prev].slice(0, 30));
+    if (sender === "COMPANION") {
+      setCompanionDialogue(text);
+    }
+  }, []);
+
+  // --- LOAD GAME STATS ---
+  useEffect(() => {
+    const loaded = loadGameStats();
+    setStats(loaded);
+    setHudHighScore(loaded.highScore);
+    setMuted(loaded.audioMuted);
+    setMuteState(loaded.audioMuted);
+    
+    // Load unlocked relics from saved memories/relics system
+    const relics: string[] = [];
+    loaded.gameMemories.forEach(mem => {
+      if (mem.startsWith("Relic Unlocked: ")) {
+        relics.push(mem.replace("Relic Unlocked: ", ""));
+      }
+    });
+    setUnlockedRelics(relics);
+  }, []);
+
+  // --- AUDIO MUTING TOGGLE ---
+  const handleToggleMute = useCallback(() => {
+    playClickSound();
+    const newMute = !muted;
+    setMuted(newMute);
+    setMuteState(newMute);
+    saveGameStats({ audioMuted: newMute });
+    postDialogue("SYSTEM", `Audio system ${newMute ? "Deactivated" : "Activated"}.`);
+  }, [muted, postDialogue]);
+
+  // --- KEYBOARD / CONTROLS BINDINGS ---
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!isGameStartedRef.current) return;
+
+      const key = e.key.toLowerCase();
+      keysPressedRef.current[key] = true;
+
+      // Prevent scroll with Arrow keys & Space
+      if (["arrowup", "arrowdown", "arrowleft", "arrowright", " "].includes(e.key)) {
+        e.preventDefault();
+      }
+
+      // Trigger Keyboard Mode
+      if (["w", "a", "s", "d", "arrowup", "arrowdown", "arrowleft", "arrowright"].includes(key)) {
+        usingKeyboardRef.current = true;
+      }
+
+      // 1-6 keys for formations
+      if (["1", "2", "3", "4", "5", "6"].includes(key)) {
+        playClickSound();
+        const formationsList = Object.values(FormationType);
+        const index = parseInt(key) - 1;
+        const nextForm = formationsList[index];
+        activeFormationRef.current = nextForm;
+        setHudFormation(nextForm);
+        postDialogue("COMPANION", `Recalibrated Swarm formation to: ${FORMATIONS[nextForm].name}.`);
+      }
+
+      // Pause toggle (P or Escape)
+      if (key === "p" || key === "escape") {
+        e.preventDefault();
+        togglePause();
+      }
+
+      // Restart (R)
+      if (key === "r" && isGameOverRef.current) {
+        e.preventDefault();
+        restartGame();
+      }
+
+      // Mute toggle (M)
+      if (key === "m") {
+        e.preventDefault();
+        handleToggleMute();
+      }
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      const key = e.key.toLowerCase();
+      keysPressedRef.current[key] = false;
+    };
+
+    const handleBlur = () => {
+      keysPressedRef.current = {};
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+    window.addEventListener("blur", handleBlur);
+    document.addEventListener("visibilitychange", handleBlur);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+      window.removeEventListener("blur", handleBlur);
+      document.removeEventListener("visibilitychange", handleBlur);
+    };
+  }, [handleToggleMute, postDialogue]);
+
+  // --- TOGGLE PAUSE ---
+  const togglePause = () => {
+    if (isGameOverRef.current) return;
+    const nextPaused = !isPausedRef.current;
+    isPausedRef.current = nextPaused;
+    setIsPaused(nextPaused);
+    if (nextPaused) {
+      playPauseSound();
+      postDialogue("COMPANION", "Swarm synchronization Suspended. Game Paused.");
+    } else {
+      playUnpauseSound();
+      postDialogue("COMPANION", "Swarm synchronization Restored. Game Resumed.");
+      lastTimeRef.current = performance.now(); // reset time to avoid huge deltaTime jump
+    }
+  };
+
+  // --- ENTITY CREATORS & FX SHOWER ---
+  const spawnExplosion = (x: number, y: number, color: string, count = 10) => {
+    for (let i = 0; i < count; i++) {
+      if (particlesRef.current.length >= MAX_PARTICLES) {
+        particlesRef.current.shift();
+      }
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 1 + Math.random() * 4;
+      particlesRef.current.push({
+        id: Math.random().toString(),
+        x,
+        y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        color,
+        size: 2 + Math.random() * 3,
+        life: 0,
+        maxLife: 30 + Math.random() * 30
+      });
+    }
+  };
+
+  const spawnBiomeWarpFX = () => {
+    const colors = ["#f59e0b", "#06b6d4", "#8b5cf6", "#10b981", "#ef4444", "#ec4899"];
+    for (let i = 0; i < 40; i++) {
+      if (particlesRef.current.length >= MAX_PARTICLES) particlesRef.current.shift();
+      particlesRef.current.push({
+        id: Math.random().toString(),
+        x: Math.random() * CANVAS_WIDTH,
+        y: Math.random() * CANVAS_HEIGHT,
+        vx: (Math.random() - 0.5) * 8,
+        vy: (Math.random() - 0.5) * 8,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        size: 2 + Math.random() * 4,
+        life: 0,
+        maxLife: 40 + Math.random() * 40
+      });
+    }
+  };
+
+  const spawnResource = (type: "NANO" | "ENERGY" | "ORBI") => {
+    if (resourcesRef.current.length >= MAX_RESOURCES) return;
+
+    const x = 30 + Math.random() * (CANVAS_WIDTH - 60);
+    const y = 30 + Math.random() * (CANVAS_HEIGHT - 60);
+    
+    let color = "#f59e0b"; // amber
+    let amount = 1;
+    let orbiType: OrbiType | undefined;
+
+    if (type === "ENERGY") {
+      color = "#06b6d4"; // cyan
+    } else if (type === "ORBI") {
+      color = "#ec4899"; // pink
+      amount = 1;
+      const typesList = [OrbiType.AURA, OrbiType.PULSE, OrbiType.SHIELD, OrbiType.BEAM, OrbiType.ECHO];
+      orbiType = typesList[Math.floor(Math.random() * typesList.length)];
+    }
+
+    resourcesRef.current.push({
+      id: Math.random().toString(),
+      type,
+      x,
+      y,
+      size: type === "ORBI" ? 10 : 6,
+      color,
+      amount,
+      orbiType
+    });
+  };
+
+  // --- BIOME SHIFTER ---
+  const shiftToBiome = (biome: BiomeType) => {
+    activeBiomeRef.current = biome;
+    setHudBiome(biome);
+    playBiomeChangeSound();
+    spawnBiomeWarpFX();
+    
+    const config = BIOMES[biome];
+    postDialogue("SYSTEM", `Warp completed: Arrived at [${config.name}].`);
+    postDialogue("COMPANION", config.description);
+  };
+
+  // --- START THE GAME ---
+  const startGame = () => {
+    initAudio();
+    isGameStartedRef.current = true;
+    setIsGameStarted(true);
+    
+    scoreRef.current = 0;
+    nanoCreditsRef.current = 0;
+    purifiedEnergyRef.current = 0;
+    
+    playerRef.current.shield = PLAYER_MAX_SHIELD;
+    playerRef.current.x = CANVAS_WIDTH / 2;
+    playerRef.current.y = CANVAS_HEIGHT / 2;
+    playerRef.current.invincibilityTimer = 0;
+    
+    // Check if player unlocked the Starting Orbi upgrade (Mitosis Relic)
+    const startingOrbisCount = unlockedRelics.includes("Mitosis Relic") ? 3 : 1;
+    
+    swarmRef.current = [];
+    // Add starting Foton leader
+    swarmRef.current.push({
+      id: "leader-foton",
+      type: OrbiType.FOTON,
+      name: ORBI_TEMPLATES[OrbiType.FOTON].name,
+      x: playerRef.current.x,
+      y: playerRef.current.y,
+      targetX: playerRef.current.x,
+      targetY: playerRef.current.y,
+      color: ORBI_TEMPLATES[OrbiType.FOTON].color,
+      size: ORBI_TEMPLATES[OrbiType.FOTON].size,
+      shootCooldown: 0,
+      pulseTimer: 0
+    });
+
+    // Add extra starter orbis if upgrade unlocked
+    if (startingOrbisCount > 1) {
+      for (let i = 1; i < startingOrbisCount; i++) {
+        const types = [OrbiType.AURA, OrbiType.PULSE];
+        const t = types[i - 1] || OrbiType.AURA;
+        swarmRef.current.push({
+          id: `starter-follower-${i}`,
+          type: t,
+          name: ORBI_TEMPLATES[t].name,
+          x: playerRef.current.x + (Math.random() - 0.5) * 40,
+          y: playerRef.current.y + (Math.random() - 0.5) * 40,
+          targetX: playerRef.current.x,
+          targetY: playerRef.current.y,
+          color: ORBI_TEMPLATES[t].color,
+          size: ORBI_TEMPLATES[t].size,
+          shootCooldown: 0,
+          pulseTimer: 0
+        });
+      }
+    }
+
+    enemiesRef.current = [];
+    projectilesRef.current = [];
+    resourcesRef.current = [];
+    particlesRef.current = [];
+    
+    activeBiomeRef.current = BiomeType.SOLAR_PLAINS;
+    setHudBiome(BiomeType.SOLAR_PLAINS);
+    activeFormationRef.current = FormationType.CIRCLE;
+    setHudFormation(FormationType.CIRCLE);
+    
+    isPausedRef.current = false;
+    setIsPaused(false);
+    isGameOverRef.current = false;
+    setIsGameOver(false);
+
+    // Initial resources
+    for (let i = 0; i < 10; i++) spawnResource("NANO");
+    for (let i = 0; i < 5; i++) spawnResource("ENERGY");
+    spawnResource("ORBI");
+
+    lastTimeRef.current = performance.now();
+    postDialogue("SYSTEM", "Grid connection established successfully.");
+    postDialogue("COMPANION", "Foton active! Protect our enigm-core and absorb glowing crystals.");
+  };
+
+  // --- RESTART GAME ---
+  const restartGame = () => {
+    playClickSound();
+    startGame();
+  };
+
+  // --- END GAME (DEFEAT) ---
+  const handleGameOver = () => {
+    if (isGameOverRef.current) return;
+    isGameOverRef.current = true;
+    setIsGameOver(true);
+    playGameOverSound();
+
+    // Calculate final stats and persistent storage updates
+    const currentHighScore = Math.max(hudHighScore, scoreRef.current);
+    setHudHighScore(currentHighScore);
+
+    const loaded = loadGameStats();
+    const totalRuns = loaded.totalRuns + 1;
+    const totalNano = loaded.totalNanoCredits + nanoCreditsRef.current;
+    const totalEnergy = loaded.totalPurifiedEnergy + purifiedEnergyRef.current;
+    const bestSwarm = Math.max(loaded.bestSwarmSize, swarmRef.current.length);
+
+    // Create a new memory sometimes
+    const newMemories = [...loaded.gameMemories];
+    if (scoreRef.current > 2000 && !newMemories.includes("Quantum Leap: Surpassed 2000 Units of Grid Energy.")) {
+      newMemories.push("Quantum Leap: Surpassed 2000 Units of Grid Energy.");
+    }
+    if (swarmRef.current.length >= 10 && !newMemories.includes("Megaswarm: Orchestrated 10+ Orbis simultanously.")) {
+      newMemories.push("Megaswarm: Orchestrated 10+ Orbis simultanously.");
+    }
+
+    saveGameStats({
+      highScore: currentHighScore,
+      totalNanoCredits: totalNano,
+      totalPurifiedEnergy: totalEnergy,
+      bestSwarmSize: bestSwarm,
+      totalRuns: totalRuns,
+      gameMemories: newMemories
+    });
+
+    // Sync React Upgrade state
+    setStats({
+      ...loaded,
+      highScore: currentHighScore,
+      totalNanoCredits: totalNano,
+      totalPurifiedEnergy: totalEnergy,
+      bestSwarmSize: bestSwarm,
+      totalRuns: totalRuns,
+      gameMemories: newMemories
+    });
+
+    postDialogue("SYSTEM", "CRITICAL ERROR: Connection to Orbi Grid dropped.");
+    postDialogue("COMPANION", "Foton! Orbi core shattered... Press [R] to reboot our grid connection.");
+  };
+
+  // --- UPGRADE RELIC HANDLER ---
+  const handleBuyRelic = (relicName: string, cost: number) => {
+    const loaded = loadGameStats();
+    if (loaded.totalNanoCredits >= cost && !unlockedRelics.includes(relicName)) {
+      playRecruitSound();
+      const updatedCredits = loaded.totalNanoCredits - cost;
+      const updatedMemories = [...loaded.gameMemories, `Relic Unlocked: ${relicName}`];
+      
+      saveGameStats({
+        totalNanoCredits: updatedCredits,
+        gameMemories: updatedMemories
+      });
+
+      setStats(prev => prev ? {
+        ...prev,
+        totalNanoCredits: updatedCredits,
+        gameMemories: updatedMemories
+      } : null);
+
+      setUnlockedRelics(prev => [...prev, relicName]);
+      postDialogue("COMPANION", `Unlocked relic: ${relicName}. Swarm stats hardened!`);
+    } else {
+      playDamageSound();
+    }
+  };
+
+  // --- MOBILE DIRECTION PAD INTERACTION ---
+  const handleDPadPress = (dx: number, dy: number) => {
+    if (!isGameStartedRef.current || isPausedRef.current || isGameOverRef.current) return;
+    usingKeyboardRef.current = true;
+    playerRef.current.x += dx * 20;
+    playerRef.current.y += dy * 20;
+    
+    // Keep inside bounds
+    playerRef.current.x = Math.max(15, Math.min(CANVAS_WIDTH - 15, playerRef.current.x));
+    playerRef.current.y = Math.max(15, Math.min(CANVAS_HEIGHT - 15, playerRef.current.y));
+    
+    pointerRef.current = { x: playerRef.current.x, y: playerRef.current.y };
+  };
+
+  // --- CORE SIMULATION & MAIN GAME LOOP (unified requestAnimationFrame) ---
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const mainGameLoop = (timestamp: number) => {
+      loopIdRef.current = requestAnimationFrame(mainGameLoop);
+
+      if (!lastTimeRef.current) {
+        lastTimeRef.current = timestamp;
+      }
+      // Limit delta time to prevent giant frame leaps during tab suspension
+      let delta = timestamp - lastTimeRef.current;
+      if (delta > 100) delta = 16.66; // fallback roughly 60fps
+      lastTimeRef.current = timestamp;
+
+      // Clear Canvas
+      const currentBiome = activeBiomeRef.current;
+      const biomeConfig = BIOMES[currentBiome];
+      ctx.fillStyle = biomeConfig.bgColor;
+      ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+      // Scroll background grid lines
+      drawGrid(ctx, biomeConfig.gridColor);
+
+      if (!isGameStartedRef.current) {
+        // Just draw nice star background on initial screen
+        updateAndDrawParticles(ctx, delta, false);
+        return;
+      }
+
+      const isGamePaused = isPausedRef.current;
+      const isGameEnded = isGameOverRef.current;
+
+      // 1. UPDATE GAME STATS (Throttled synchronization to React State)
+      frameCountRef.current++;
+      if (frameCountRef.current % 10 === 0) {
+        setHudShield(Math.round(playerRef.current.shield));
+        setHudScore(scoreRef.current);
+        setHudPopulation(swarmRef.current.length);
+        setHudNano(nanoCreditsRef.current);
+        setHudEnergy(purifiedEnergyRef.current);
+      }
+
+      // Propose random dialogues from LUX-8 companion every 15 seconds
+      if (timestamp - lastDialogueTimeRef.current > 15000 && !isGamePaused && !isGameEnded) {
+        lastDialogueTimeRef.current = timestamp;
+        const randomQuote = COMPANION_QUOTES[Math.floor(Math.random() * COMPANION_QUOTES.length)];
+        postDialogue("COMPANION", randomQuote);
+      }
+
+      if (!isGamePaused && !isGameEnded) {
+        // --- HIGH FREQUENCY PHYSICS UPDATES (ONLY when active) ---
+
+        // A. Apply Player Invincibility Frame Countdowns
+        if (playerRef.current.invincibilityTimer > 0) {
+          playerRef.current.invincibilityTimer -= delta;
+        }
+
+        // B. Dynamic Player Movement (Keys OR pointer follow)
+        let moveX = 0;
+        let moveY = 0;
+
+        if (keysPressedRef.current["w"] || keysPressedRef.current["arrowup"]) moveY -= 1;
+        if (keysPressedRef.current["s"] || keysPressedRef.current["arrowdown"]) moveY += 1;
+        if (keysPressedRef.current["a"] || keysPressedRef.current["arrowleft"]) moveX -= 1;
+        if (keysPressedRef.current["d"] || keysPressedRef.current["arrowright"]) moveX += 1;
+
+        // Apply Speed Upgrades if Relic purchased
+        let speedMultiplier = 1.0;
+        if (unlockedRelics.includes("Quantum Core")) speedMultiplier = 1.15;
+
+        // Apply Biome Speeds
+        const biomeSpeedMod = biomeConfig.enemySpeedMultiplier; // Water slows, Swamp speeds
+
+        if (moveX !== 0 || moveY !== 0) {
+          usingKeyboardRef.current = true;
+          // Normalize movement vector
+          const len = Math.sqrt(moveX * moveX + moveY * moveY);
+          const finalSpeed = playerRef.current.speed * speedMultiplier * (biomeSpeedMod < 1 ? 0.75 : 1);
+          playerRef.current.x += (moveX / len) * finalSpeed;
+          playerRef.current.y += (moveY / len) * finalSpeed;
+
+          // Keep within bounds
+          playerRef.current.x = Math.max(15, Math.min(CANVAS_WIDTH - 15, playerRef.current.x));
+          playerRef.current.y = Math.max(15, Math.min(CANVAS_HEIGHT - 15, playerRef.current.y));
+
+          // Feed keyboard location to grid scroll offset
+          gridOffsetRef.current.x -= (moveX / len) * finalSpeed * 0.5;
+          gridOffsetRef.current.y -= (moveY / len) * finalSpeed * 0.5;
+        } else if (!usingKeyboardRef.current) {
+          // Smooth Mouse/Touch tracking
+          const dx = pointerRef.current.x - playerRef.current.x;
+          const dy = pointerRef.current.y - playerRef.current.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist > 3) {
+            const dragSpeed = 0.08 * (biomeSpeedMod < 1 ? 0.75 : 1);
+            playerRef.current.x += dx * dragSpeed;
+            playerRef.current.y += dy * dragSpeed;
+            
+            gridOffsetRef.current.x -= dx * dragSpeed * 0.5;
+            gridOffsetRef.current.y -= dy * dragSpeed * 0.5;
+          }
+        }
+
+        // C. Regenerate Player Shield
+        if (playerRef.current.shield < PLAYER_MAX_SHIELD) {
+          // Increase regen rate if Deep Water biome active OR deflector relic unlocked
+          let regen = PLAYER_SHIELD_REGEN;
+          if (currentBiome === BiomeType.DEEP_WATER) regen *= 2;
+          if (unlockedRelics.includes("Hydrogen Deflector")) regen *= 1.5;
+          playerRef.current.shield = Math.min(PLAYER_MAX_SHIELD, playerRef.current.shield + regen);
+        }
+
+        // D. Calculate Follower Trailing Targets based on active Formation
+        updateSwarmFormations(timestamp);
+
+        // E. Automatic Follower Weapon Systems
+        handleSwarmWeapons();
+
+        // F. Simulate enemies
+        handleEnemies(delta);
+
+        // G. Projectile physics and bounds
+        handleProjectiles(delta);
+
+        // H. Resources collection and attraction
+        handleResources();
+
+        // I. Periodically spawn enemies & resources
+        if (frameCountRef.current % 180 === 0) {
+          // spawn resources
+          const rng = Math.random();
+          if (rng < 0.6) spawnResource("NANO");
+          else if (rng < 0.9) spawnResource("ENERGY");
+          else spawnResource("ORBI");
+        }
+
+        if (Math.random() < biomeConfig.enemySpawnRate && enemiesRef.current.length < MAX_ENEMIES) {
+          spawnRandomEnemy();
+        }
+      }
+
+      // 2. RENDERING GAME OBJECTS (Continuous visual processing)
+      // A. Particles
+      updateAndDrawParticles(ctx, delta, !isGamePaused && !isGameEnded);
+
+      // B. Draw Resources
+      drawResources(ctx);
+
+      // C. Draw Player Projectiles
+      drawProjectiles(ctx);
+
+      // D. Draw Enemies
+      drawEnemies(ctx);
+
+      // E. Draw Swarm Followers & Leader
+      drawSwarm(ctx, timestamp);
+
+      // F. Invincibility flash overlay
+      if (playerRef.current.invincibilityTimer > 0 && Math.floor(timestamp / 100) % 2 === 0) {
+        ctx.fillStyle = "rgba(239, 68, 68, 0.15)"; // Soft red flashing indicator
+        ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+      }
+    };
+
+    loopIdRef.current = requestAnimationFrame(mainGameLoop);
+
+    return () => {
+      if (loopIdRef.current) {
+        cancelAnimationFrame(loopIdRef.current);
+      }
+    };
+  }, [unlockedRelics, postDialogue]);
+
+  // --- DRAW HORIZON GRID LINES ---
+  const drawGrid = (ctx: CanvasRenderingContext2D, gridColor: string) => {
+    ctx.strokeStyle = gridColor;
+    ctx.lineWidth = 1;
+
+    const spacing = 40;
+    const scrollX = gridOffsetRef.current.x % spacing;
+    const scrollY = gridOffsetRef.current.y % spacing;
+
+    // Draw vertical grid lines
+    for (let x = scrollX; x < CANVAS_WIDTH; x += spacing) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, CANVAS_HEIGHT);
+      ctx.stroke();
+    }
+
+    // Draw horizontal grid lines
+    for (let y = scrollY; y < CANVAS_HEIGHT; y += spacing) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(CANVAS_WIDTH, y);
+      ctx.stroke();
+    }
+  };
+
+  // --- SWARM FORMATION POSITIONING CALCULATOR ---
+  const updateSwarmFormations = (time: number) => {
+    const leader = playerRef.current;
+    const members = swarmRef.current;
+    const formType = activeFormationRef.current;
+    const spacing = FORMATIONS[formType].spacing;
+    const N = members.length;
+
+    if (N === 0) return;
+
+    // Position Foton exactly at Player
+    members[0].x = leader.x;
+    members[0].y = leader.y;
+
+    if (N === 1) return;
+
+    // Calculate movement vector angle of leader for rotating formations
+    let angle = 0;
+    if (usingKeyboardRef.current) {
+      // Calculate angle from pressed keys
+      let mx = 0; let my = 0;
+      if (keysPressedRef.current["w"] || keysPressedRef.current["arrowup"]) my -= 1;
+      if (keysPressedRef.current["s"] || keysPressedRef.current["arrowdown"]) my += 1;
+      if (keysPressedRef.current["a"] || keysPressedRef.current["arrowleft"]) mx -= 1;
+      if (keysPressedRef.current["d"] || keysPressedRef.current["arrowright"]) mx += 1;
+      if (mx !== 0 || my !== 0) {
+        angle = Math.atan2(my, mx);
+      }
+    } else {
+      // Calculate angle from mouse vector
+      angle = Math.atan2(pointerRef.current.y - leader.y, pointerRef.current.x - leader.x);
+    }
+
+    for (let i = 1; i < N; i++) {
+      let targetX = leader.x;
+      let targetY = leader.y;
+
+      switch (formType) {
+        case FormationType.LINE: {
+          // Linear sweep offset, spaced on left/right vectors relative to movement direction
+          const offsetIndex = Math.ceil(i / 2) * (i % 2 === 0 ? 1 : -1);
+          const localDx = offsetIndex * spacing;
+          const localDy = 25; // slightly behind Foton
+
+          // Rotate local offset vectors
+          const rotX = localDx * Math.cos(angle - Math.PI/2) - localDy * Math.sin(angle - Math.PI/2);
+          const rotY = localDx * Math.sin(angle - Math.PI/2) + localDy * Math.cos(angle - Math.PI/2);
+
+          targetX = leader.x + rotX;
+          targetY = leader.y + rotY;
+          break;
+        }
+        case FormationType.CIRCLE: {
+          // Spinning ring around the leader
+          const speed = 0.0015;
+          const offsetAngle = (i * 2 * Math.PI) / (N - 1) + time * speed;
+          targetX = leader.x + Math.cos(offsetAngle) * spacing;
+          targetY = leader.y + Math.sin(offsetAngle) * spacing;
+          break;
+        }
+        case FormationType.DELTA: {
+          // Sharp triangular delta spearhead trailing behind leader
+          const row = Math.floor((Math.sqrt(8 * i + 1) - 1) / 2);
+          const col = i - (row * (row + 1)) / 2;
+          const rowSpacing = spacing;
+          const colSpacing = spacing;
+
+          const localDx = (col - row / 2) * colSpacing;
+          const localDy = -row * rowSpacing - 10; // trail behind
+
+          // Rotate vectors
+          const rotX = localDx * Math.cos(angle + Math.PI) - localDy * Math.sin(angle + Math.PI);
+          const rotY = localDx * Math.sin(angle + Math.PI) + localDy * Math.cos(angle + Math.PI);
+
+          targetX = leader.x + rotX;
+          targetY = leader.y + rotY;
+          break;
+        }
+        case FormationType.SHIELD: {
+          // Tight halo protective shield
+          const offsetAngle = (i * 2 * Math.PI) / (N - 1);
+          targetX = leader.x + Math.cos(offsetAngle) * spacing;
+          targetY = leader.y + Math.sin(offsetAngle) * spacing;
+          break;
+        }
+        case FormationType.V_SHAPE: {
+          // Classic fighter jet V-Shape flanking
+          const side = i % 2 === 0 ? 1 : -1;
+          const indexOffset = Math.ceil(i / 2);
+          const localDx = side * indexOffset * spacing * 0.7;
+          const localDy = -indexOffset * spacing;
+
+          // Rotate vectors
+          const rotX = localDx * Math.cos(angle + Math.PI) - localDy * Math.sin(angle + Math.PI);
+          const rotY = localDx * Math.sin(angle + Math.PI) + localDy * Math.cos(angle + Math.PI);
+
+          targetX = leader.x + rotX;
+          targetY = leader.y + rotY;
+          break;
+        }
+        case FormationType.SCATTERED: {
+          // Loosely floating organic offset using sine waves
+          const phase = i * 137.5 * (Math.PI / 180);
+          const offsetDist = spacing + Math.sin(time * 0.002 + i) * 12;
+          targetX = leader.x + Math.cos(phase + Math.sin(time * 0.001 + i) * 0.5) * offsetDist;
+          targetY = leader.y + Math.sin(phase + Math.cos(time * 0.001 + i) * 0.5) * offsetDist;
+          break;
+        }
+      }
+
+      // Interpolate position smoothly to prevent sudden visual jumping
+      members[i].x += (targetX - members[i].x) * 0.08;
+      members[i].y += (targetY - members[i].y) * 0.08;
+    }
+  };
+
+  // --- SWARM AUTOSHOOT LOGIC ---
+  const handleSwarmWeapons = () => {
+    // Collect non-dead enemies
+    const activeEnemies = enemiesRef.current.filter(e => !e.isDead);
+    if (activeEnemies.length === 0) return;
+
+    // Relic speed modifier
+    let cdModifier = 1.0;
+    if (unlockedRelics.includes("Quantum Core")) cdModifier = 0.75; // 25% faster weapon cycles
+
+    swarmRef.current.forEach((member) => {
+      // Weapon cooldown cycle
+      if (member.shootCooldown > 0) {
+        member.shootCooldown--;
+        return;
+      }
+
+      // Find closest enemy
+      let closestEnemy: Enemy | null = null;
+      let minDist = 300; // max shoot range
+
+      activeEnemies.forEach((enemy) => {
+        const dx = enemy.x - member.x;
+        const dy = enemy.y - member.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < minDist) {
+          minDist = dist;
+          closestEnemy = enemy;
+        }
+      });
+
+      if (closestEnemy) {
+        // Aim and fire
+        const enemy: Enemy = closestEnemy;
+        const dx = enemy.x - member.x;
+        const dy = enemy.y - member.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        // Set speed of projectile
+        const projSpeed = 8;
+        const vx = (dx / dist) * projSpeed;
+        const vy = (dy / dist) * projSpeed;
+
+        if (projectilesRef.current.length < MAX_PROJECTILES) {
+          projectilesRef.current.push({
+            id: Math.random().toString(),
+            x: member.x,
+            y: member.y,
+            vx,
+            vy,
+            damage: member.type === OrbiType.FOTON ? 15 : 10,
+            color: member.color,
+            size: member.type === OrbiType.FOTON ? 5 : 3.5,
+            fromPlayer: true,
+            life: 0,
+            maxLife: 60
+          });
+          playShootSound();
+        }
+
+        // Set base cooldown (Foton fires faster, followers slower)
+        const baseCd = member.type === OrbiType.FOTON ? 25 : 45;
+        member.shootCooldown = Math.round(baseCd * cdModifier);
+      }
+    });
+  };
+
+  // --- SPAWN RANDOM ENEMIES ---
+  const spawnRandomEnemy = () => {
+    const side = Math.floor(Math.random() * 4);
+    let x = 0; let y = 0;
+    
+    // Pick borders
+    if (side === 0) { // Top
+      x = Math.random() * CANVAS_WIDTH;
+      y = -10;
+    } else if (side === 1) { // Right
+      x = CANVAS_WIDTH + 10;
+      y = Math.random() * CANVAS_HEIGHT;
+    } else if (side === 2) { // Bottom
+      x = Math.random() * CANVAS_WIDTH;
+      y = CANVAS_HEIGHT + 10;
+    } else { // Left
+      x = -10;
+      y = Math.random() * CANVAS_HEIGHT;
+    }
+
+    const types = [EnemyType.CRAWLER, EnemyType.PARASITE, EnemyType.DRONE];
+    const pickedType = types[Math.floor(Math.random() * types.length)];
+    
+    let hp = 20;
+    let speed = 1.5;
+    let size = 10;
+    let color = "#ef4444"; // red Crawler
+
+    if (pickedType === EnemyType.PARASITE) {
+      hp = 10;
+      speed = 2.4;
+      size = 7;
+      color = "#a855f7"; // purple Parasite
+    } else if (pickedType === EnemyType.DRONE) {
+      hp = 30;
+      speed = 1.0;
+      size = 12;
+      color = "#3b82f6"; // blue Drone
+    }
+
+    // Multiply speeds and health slightly over score
+    const scaling = 1 + (scoreRef.current / 4000);
+
+    enemiesRef.current.push({
+      id: Math.random().toString(),
+      type: pickedType,
+      x,
+      y,
+      vx: 0,
+      vy: 0,
+      health: hp * scaling,
+      maxHealth: hp * scaling,
+      speed: speed * (BIOMES[activeBiomeRef.current].enemySpeedMultiplier),
+      size,
+      color,
+      shootCooldown: Math.round(90 + Math.random() * 90),
+      contactDamageCooldown: 0,
+      isDead: false
+    });
+  };
+
+  // --- ENEMIES TICK & AI ---
+  const handleEnemies = (delta: number) => {
+    const player = playerRef.current;
+    
+    enemiesRef.current.forEach((enemy) => {
+      if (enemy.isDead) return;
+
+      // Update contact cooldowns
+      if (enemy.contactDamageCooldown > 0) {
+        enemy.contactDamageCooldown -= delta;
+      }
+
+      const dx = player.x - enemy.x;
+      const dy = player.y - enemy.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      switch (enemy.type) {
+        case EnemyType.CRAWLER: {
+          // Direct relentless pursuit
+          enemy.vx = (dx / dist) * enemy.speed;
+          enemy.vy = (dy / dist) * enemy.speed;
+          break;
+        }
+        case EnemyType.PARASITE: {
+          // Jumpy behavior
+          const jumpPhase = Math.sin(frameCountRef.current * 0.08) * 0.5 + 1.0;
+          enemy.vx = (dx / dist) * enemy.speed * jumpPhase;
+          enemy.vy = (dy / dist) * enemy.speed * jumpPhase;
+          break;
+        }
+        case EnemyType.DRONE: {
+          // Keep distant and orbit
+          if (dist > 220) {
+            enemy.vx = (dx / dist) * enemy.speed;
+            enemy.vy = (dy / dist) * enemy.speed;
+          } else if (dist < 150) {
+            enemy.vx = -(dx / dist) * enemy.speed;
+            enemy.vy = -(dy / dist) * enemy.speed;
+          } else {
+            // Orbit circle around Foton
+            enemy.vx = (-dy / dist) * enemy.speed;
+            enemy.vy = (dx / dist) * enemy.speed;
+          }
+
+          // Shoot drone projectile occasionally
+          if (enemy.shootCooldown > 0) {
+            enemy.shootCooldown--;
+          } else {
+            enemy.shootCooldown = 150 + Math.random() * 100;
+            if (projectilesRef.current.length < MAX_PROJECTILES) {
+              const projSpeed = 4.5;
+              projectilesRef.current.push({
+                id: Math.random().toString(),
+                x: enemy.x,
+                y: enemy.y,
+                vx: (dx / dist) * projSpeed,
+                vy: (dy / dist) * projSpeed,
+                damage: 12,
+                color: "#f43f5e", // dangerous rose laser
+                size: 4,
+                fromPlayer: false,
+                life: 0,
+                maxLife: 180
+              });
+              playEnemyShootSound();
+            }
+          }
+          break;
+        }
+      }
+
+      // Apply positions
+      enemy.x += enemy.vx;
+      enemy.y += enemy.vy;
+
+      // Contact Damage check (Foton invincibility frame respected)
+      if (dist < (player.radius + enemy.size)) {
+        if (player.invincibilityTimer <= 0) {
+          let damage = 20;
+          if (enemy.type === EnemyType.PARASITE) damage = 12; // lower
+          player.shield = Math.max(0, player.shield - damage);
+          player.invincibilityTimer = DAMAGE_INVINCIBILITY_DURATION;
+          playDamageSound();
+          spawnExplosion(player.x, player.y, "#ef4444", 8);
+
+          if (player.shield <= 0) {
+            handleGameOver();
+          }
+        }
+      }
+    });
+
+    // Clean up dead enemies or out of bounds
+    enemiesRef.current = enemiesRef.current.filter((e) => {
+      if (e.isDead) return false;
+      // If incredibly far offbounds, remove
+      if (e.x < -100 || e.x > CANVAS_WIDTH + 100 || e.y < -100 || e.y > CANVAS_HEIGHT + 100) {
+        return false;
+      }
+      return true;
+    });
+  };
+
+  // --- PROJECTILE SYSTEMS PHYSICS & SAFE COLLISIONS ---
+  const handleProjectiles = (_delta: number) => {
+    projectilesRef.current.forEach((proj) => {
+      proj.x += proj.vx;
+      proj.y += proj.vy;
+      proj.life += 1;
+
+      // Collisions checks
+      if (proj.fromPlayer) {
+        // Player weapon hitting enemies
+        enemiesRef.current.forEach((enemy) => {
+          if (enemy.isDead) return;
+          const dx = enemy.x - proj.x;
+          const dy = enemy.y - proj.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist < (enemy.size + proj.size)) {
+            // SAFE HIT COLLISION: Mark projectile as dead instantly to prevent hit repetitions
+            proj.life = proj.maxLife + 1;
+            enemy.health -= proj.damage;
+            
+            // Spawn hit sparks
+            spawnExplosion(proj.x, proj.y, proj.color, 3);
+
+            if (enemy.health <= 0) {
+              enemy.isDead = true;
+              playEnemyExplodeSound();
+              spawnExplosion(enemy.x, enemy.y, enemy.color, 12);
+              
+              // Increment score & award credits
+              const crystalMultiplier = BIOMES[activeBiomeRef.current].crystalValueMultiplier;
+              const pointsGained = Math.round((enemy.type === EnemyType.DRONE ? 150 : 80) * crystalMultiplier);
+              scoreRef.current += pointsGained;
+
+              // Progress towards next biome shifts
+              biomeProgressRef.current += pointsGained;
+              if (biomeProgressRef.current >= 2000) {
+                biomeProgressRef.current = 0;
+                // Shift to random new biome
+                const types = Object.values(BiomeType);
+                const filtered = types.filter(t => t !== activeBiomeRef.current);
+                const randomNext = filtered[Math.floor(Math.random() * filtered.length)];
+                shiftToBiome(randomNext);
+              }
+            }
+          }
+        });
+      } else {
+        // Enemy weapon hitting Foton player
+        const player = playerRef.current;
+        const dx = player.x - proj.x;
+        const dy = player.y - proj.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist < (player.radius + proj.size)) {
+          proj.life = proj.maxLife + 1; // kill proj
+          if (player.invincibilityTimer <= 0) {
+            player.shield = Math.max(0, player.shield - proj.damage);
+            player.invincibilityTimer = DAMAGE_INVINCIBILITY_DURATION;
+            playDamageSound();
+            spawnExplosion(player.x, player.y, "#ef4444", 8);
+
+            if (player.shield <= 0) {
+              handleGameOver();
+            }
+          }
+        }
+      }
+    });
+
+    // Remove dead projectiles
+    projectilesRef.current = projectilesRef.current.filter((p) => {
+      if (p.life > p.maxLife) return false;
+      if (p.x < 0 || p.x > CANVAS_WIDTH || p.y < 0 || p.y > CANVAS_HEIGHT) return false;
+      return true;
+    });
+  };
+
+  // --- RESOURCES MANAGEMENT AND ATTRACTION (MAGNET EFFECT) ---
+  const handleResources = () => {
+    const player = playerRef.current;
+    
+    // Attraction radius (Magnetic Relic increases it)
+    let magnetRadius = 60;
+    if (unlockedRelics.includes("Fusion Resonator")) magnetRadius = 110;
+
+    resourcesRef.current.forEach((res) => {
+      const dx = player.x - res.x;
+      const dy = player.y - res.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      // Magnetic pull to player
+      if (dist < magnetRadius) {
+        const pullPower = (magnetRadius - dist) / magnetRadius * 4;
+        res.x += (dx / dist) * pullPower;
+        res.y += (dy / dist) * pullPower;
+      }
+
+      // Collect items
+      if (dist < (player.radius + res.size)) {
+        res.size = 0; // mark collected
+
+        if (res.type === "NANO") {
+          let value = res.amount;
+          // Solar biome doubles nano credits
+          if (activeBiomeRef.current === BiomeType.SOLAR_PLAINS) value *= 2;
+          // Nano catalyst relic upgrade doubles nano credits
+          if (unlockedRelics.includes("Nano Catalyst")) value *= 2;
+          
+          nanoCreditsRef.current += value;
+          scoreRef.current += 50;
+          playCrystalSound();
+          spawnExplosion(res.x, res.y, res.color, 5);
+        } else if (res.type === "ENERGY") {
+          let value = res.amount;
+          if (unlockedRelics.includes("Nano Catalyst")) value *= 1.5;
+          
+          purifiedEnergyRef.current += Math.round(value);
+          scoreRef.current += 150;
+          playCrystalSound();
+          spawnExplosion(res.x, res.y, res.color, 5);
+        } else if (res.type === "ORBI") {
+          // Recruit a new Orbi member
+          if (swarmRef.current.length < MAX_SWARM_MEMBERS) {
+            const newType = res.orbiType || OrbiType.AURA;
+            swarmRef.current.push({
+              id: Math.random().toString(),
+              type: newType,
+              name: ORBI_TEMPLATES[newType].name,
+              x: res.x,
+              y: res.y,
+              targetX: player.x,
+              targetY: player.y,
+              color: ORBI_TEMPLATES[newType].color,
+              size: ORBI_TEMPLATES[newType].size,
+              shootCooldown: 30,
+              pulseTimer: 0
+            });
+            playRecruitSound();
+            spawnExplosion(res.x, res.y, "#ec4899", 15); // Big pink sparks
+            postDialogue("COMPANION", `Recruited wild [${ORBI_TEMPLATES[newType].name}]! Firepower increased.`);
+          }
+        }
+      }
+    });
+
+    // Remove collected resources
+    resourcesRef.current = resourcesRef.current.filter(r => r.size > 0);
+  };
+
+  // --- PARTICLE ANIMATION AND DRAWING ---
+  const updateAndDrawParticles = (ctx: CanvasRenderingContext2D, delta: number, simulate: boolean) => {
+    particlesRef.current.forEach((p) => {
+      if (simulate) {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life += delta * 0.06; // age particles relative to time
+      } else {
+        // slow drift when paused
+        p.x += p.vx * 0.05;
+        p.y += p.vy * 0.05;
+      }
+
+      const alpha = Math.max(0, 1 - (p.life / p.maxLife));
+      ctx.fillStyle = p.color;
+      ctx.globalAlpha = alpha;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    ctx.globalAlpha = 1.0; // reset transparency
+
+    // Filter dead particles
+    particlesRef.current = particlesRef.current.filter(p => p.life < p.maxLife);
+  };
+
+  // --- CANVAS DRAWING SYSTEMS ---
+  const drawResources = (ctx: CanvasRenderingContext2D) => {
+    resourcesRef.current.forEach((res) => {
+      ctx.save();
+      
+      // Draw outer glowing ring
+      ctx.shadowBlur = 10;
+      ctx.shadowColor = res.color;
+      
+      if (res.type === "ORBI") {
+        // Draw spinning hexagon star for Orbi crystals
+        const angle = (frameCountRef.current * 0.03);
+        ctx.strokeStyle = res.color;
+        ctx.fillStyle = "rgba(236, 72, 153, 0.3)";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        for (let i = 0; i < 6; i++) {
+          const a = angle + (i * Math.PI) / 3;
+          const rx = res.x + Math.cos(a) * res.size;
+          const ry = res.y + Math.sin(a) * res.size;
+          if (i === 0) ctx.moveTo(rx, ry);
+          else ctx.lineTo(rx, ry);
+        }
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        // Inner core
+        ctx.fillStyle = "#fff";
+        ctx.beginPath();
+        ctx.arc(res.x, res.y, 4, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        // Draw triangular or diamond crystals
+        ctx.fillStyle = res.color;
+        ctx.beginPath();
+        ctx.moveTo(res.x, res.y - res.size);
+        ctx.lineTo(res.x + res.size, res.y);
+        ctx.lineTo(res.x, res.y + res.size);
+        ctx.lineTo(res.x - res.size, res.y);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      ctx.restore();
+    });
+  };
+
+  const drawProjectiles = (ctx: CanvasRenderingContext2D) => {
+    projectilesRef.current.forEach((proj) => {
+      ctx.save();
+      ctx.strokeStyle = proj.color;
+      ctx.lineWidth = proj.size;
+      ctx.beginPath();
+      // Draw a line reflecting flight direction (velocity tail)
+      const lenFactor = 1.5;
+      ctx.moveTo(proj.x - proj.vx * lenFactor, proj.y - proj.vy * lenFactor);
+      ctx.lineTo(proj.x, proj.y);
+      ctx.stroke();
+      ctx.restore();
+    });
+  };
+
+  const drawEnemies = (ctx: CanvasRenderingContext2D) => {
+    enemiesRef.current.forEach((enemy) => {
+      ctx.save();
+      ctx.shadowBlur = 8;
+      ctx.shadowColor = enemy.color;
+      ctx.fillStyle = enemy.color;
+
+      if (enemy.type === EnemyType.CRAWLER) {
+        // Draw a slithery serpent segmented head & tail
+        const segmentCount = 4;
+        const speedOffset = frameCountRef.current * 0.1;
+        for (let j = 0; j < segmentCount; j++) {
+          const lagFactor = j * 8;
+          // Estimate tail lagging back from movement direction
+          const angle = Math.atan2(enemy.vy, enemy.vx);
+          const xOffset = Math.cos(angle) * lagFactor;
+          const yOffset = Math.sin(angle) * lagFactor;
+          const lateralWobble = Math.sin(speedOffset + j) * 4;
+
+          const sx = enemy.x - xOffset + Math.cos(angle + Math.PI/2) * lateralWobble;
+          const sy = enemy.y - yOffset + Math.sin(angle + Math.PI/2) * lateralWobble;
+
+          ctx.beginPath();
+          ctx.arc(sx, sy, enemy.size * (1 - j * 0.2), 0, Math.PI * 2);
+          ctx.fill();
+        }
+      } else if (enemy.type === EnemyType.PARASITE) {
+        // Insect-like spikes with rapid twitchy legs
+        ctx.beginPath();
+        ctx.arc(enemy.x, enemy.y, enemy.size, 0, Math.PI * 2);
+        ctx.fill();
+
+        // draw twitchy leg bristles
+        ctx.strokeStyle = enemy.color;
+        ctx.lineWidth = 1.5;
+        const twitchAngle = Math.sin(frameCountRef.current * 0.5) * 0.3;
+        for (let i = 0; i < 4; i++) {
+          const a = (i * Math.PI) / 2 + twitchAngle;
+          ctx.beginPath();
+          ctx.moveTo(enemy.x, enemy.y);
+          ctx.lineTo(enemy.x + Math.cos(a) * (enemy.size + 4), enemy.y + Math.sin(a) * (enemy.size + 4));
+          ctx.stroke();
+        }
+      } else if (enemy.type === EnemyType.DRONE) {
+        // Diamond hovering sentinel body
+        ctx.beginPath();
+        ctx.moveTo(enemy.x, enemy.y - enemy.size * 1.3);
+        ctx.lineTo(enemy.x + enemy.size * 1.1, enemy.y);
+        ctx.lineTo(enemy.x, enemy.y + enemy.size * 1.3);
+        ctx.lineTo(enemy.x - enemy.size * 1.1, enemy.y);
+        ctx.closePath();
+        ctx.fill();
+
+        // Core eye
+        ctx.fillStyle = "#ffffff";
+        ctx.beginPath();
+        ctx.arc(enemy.x, enemy.y, 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.restore();
+    });
+  };
+
+  const drawSwarm = (ctx: CanvasRenderingContext2D, _time: number) => {
+    swarmRef.current.forEach((member, idx) => {
+      ctx.save();
+      
+      // Glow FX
+      ctx.shadowBlur = idx === 0 ? 18 : 10;
+      ctx.shadowColor = member.color;
+
+      // Draw member body
+      ctx.fillStyle = member.color;
+      ctx.beginPath();
+      ctx.arc(member.x, member.y, member.size, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Orbi Glowing Eyeballs! (eyes that look toward the direction of target movement)
+      const angle = Math.atan2(pointerRef.current.y - member.y, pointerRef.current.x - member.x);
+      const lookDist = member.size * 0.35;
+      const eyeRadius = member.size * 0.18;
+      const pupilRadius = eyeRadius * 0.5;
+
+      // Left Eye
+      const lx = member.x + Math.cos(angle - 0.5) * lookDist;
+      const ly = member.y + Math.sin(angle - 0.5) * lookDist;
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.arc(lx, ly, eyeRadius, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Pupil
+      const plx = lx + Math.cos(angle) * (eyeRadius * 0.4);
+      const ply = ly + Math.sin(angle) * (eyeRadius * 0.4);
+      ctx.fillStyle = "#090d16";
+      ctx.beginPath();
+      ctx.arc(plx, ply, pupilRadius, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Right Eye
+      const rx = member.x + Math.cos(angle + 0.5) * lookDist;
+      const ry = member.y + Math.sin(angle + 0.5) * lookDist;
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.arc(rx, ry, eyeRadius, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Pupil
+      const prx = rx + Math.cos(angle) * (eyeRadius * 0.4);
+      const pry = ry + Math.sin(angle) * (eyeRadius * 0.4);
+      ctx.fillStyle = "#090d16";
+      ctx.beginPath();
+      ctx.arc(prx, pry, pupilRadius, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Foton leader extra details (glowing orbital tech shield)
+      if (idx === 0) {
+        ctx.strokeStyle = "rgba(245, 158, 11, 0.4)";
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.arc(member.x, member.y, member.size * 2, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+
+      ctx.restore();
+    });
+  };
+
+  return (
+    <div className="w-full min-h-screen bg-slate-950 text-slate-100 font-sans flex flex-col selection:bg-cyan-500/30 selection:text-cyan-300">
+      
+      {/* HUD MAIN HEADER BAR */}
+      <header className="w-full bg-slate-900/80 backdrop-blur-md border-b border-slate-800 py-3 px-4 sm:px-6 flex flex-wrap items-center justify-between gap-4 z-20">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-gradient-to-tr from-amber-500 to-rose-500 rounded-lg flex items-center justify-center shadow-lg shadow-amber-500/10">
+            <Zap className="w-6 h-6 text-slate-950 stroke-[2.5]" />
+          </div>
+          <div>
+            <h1 className="font-display font-bold text-lg tracking-wider bg-gradient-to-r from-amber-400 via-cyan-400 to-pink-500 bg-clip-text text-transparent">
+              ORBI ENERGY SWARM
+            </h1>
+            <p className="text-[10px] font-mono tracking-widest text-slate-500">
+              v0.1.0-prototype-recovery-baseline
+            </p>
+          </div>
+        </div>
+
+        {/* TOP STATUS AND STATS GRID */}
+        {isGameStarted && (
+          <div className="flex items-center flex-wrap gap-4 sm:gap-6 text-sm">
+            
+            {/* SCORE */}
+            <div className="flex items-center gap-2 px-3 py-1 bg-slate-950/50 rounded-md border border-slate-800">
+              <Award className="w-4 h-4 text-amber-500" />
+              <div className="font-mono">
+                <span className="text-[10px] text-slate-500 block leading-none font-sans uppercase">Grid Score</span>
+                <span className="text-amber-400 font-bold">{hudScore}</span>
+              </div>
+            </div>
+
+            {/* HIGH SCORE */}
+            <div className="flex items-center gap-2 px-3 py-1 bg-slate-950/50 rounded-md border border-slate-800">
+              <Sparkles className="w-4 h-4 text-pink-400" />
+              <div className="font-mono">
+                <span className="text-[10px] text-slate-500 block leading-none font-sans uppercase">High Score</span>
+                <span className="text-pink-400 font-bold">{hudHighScore}</span>
+              </div>
+            </div>
+
+            {/* SWARM COUNT */}
+            <div className="flex items-center gap-2 px-3 py-1 bg-slate-950/50 rounded-md border border-slate-800">
+              <Users className="w-4 h-4 text-cyan-400" />
+              <div className="font-mono">
+                <span className="text-[10px] text-slate-500 block leading-none font-sans uppercase">Swarm Size</span>
+                <span className="text-cyan-400 font-bold">{hudPopulation} Orbis</span>
+              </div>
+            </div>
+
+            {/* NANO CREDITS */}
+            <div className="flex items-center gap-2 px-3 py-1 bg-slate-950/50 rounded-md border border-slate-800">
+              <Coins className="w-4 h-4 text-violet-400" />
+              <div className="font-mono">
+                <span className="text-[10px] text-slate-500 block leading-none font-sans uppercase">Nano Credits</span>
+                <span className="text-violet-400 font-bold">{hudNano}</span>
+              </div>
+            </div>
+
+          </div>
+        )}
+
+        {/* UTILITY BUTTONS */}
+        <div className="flex items-center gap-2">
+          <button 
+            onClick={handleToggleMute}
+            className="p-2 bg-slate-800/80 hover:bg-slate-700 hover:text-cyan-400 text-slate-400 rounded-md border border-slate-700 transition"
+            title="Toggle Mute (M)"
+          >
+            {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+          </button>
+          {isGameStarted && (
+            <button 
+              onClick={togglePause}
+              disabled={isGameOver}
+              className="p-2 bg-slate-800/80 hover:bg-slate-700 hover:text-amber-400 text-slate-400 rounded-md border border-slate-700 transition disabled:opacity-50"
+              title="Toggle Pause (P / Esc)"
+            >
+              <Pause className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+      </header>
+
+      {/* CORE BODY WRAPPER */}
+      <main className="flex-1 max-w-7xl mx-auto w-full p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-4 gap-6">
+        
+        {/* LEFT COLUMN: THE GAME GRID CONTAINER */}
+        <div className="lg:col-span-3 flex flex-col gap-4">
+          
+          {/* TOP HUD ROW */}
+          {isGameStarted && (
+            <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-3">
+              
+              {/* SHIELD PROGRESS BAR */}
+              <div className="glass-panel p-3 rounded-lg flex flex-col justify-center border-l-4 border-l-rose-500">
+                <div className="flex justify-between items-center text-xs mb-1">
+                  <span className="flex items-center gap-1 font-semibold text-rose-400 uppercase tracking-wider">
+                    <Shield className="w-3.5 h-3.5" />
+                    Enigm-Core Integrity
+                  </span>
+                  <span className="font-mono text-rose-400 font-bold">{hudShield}%</span>
+                </div>
+                <div className="w-full bg-slate-950 h-2.5 rounded-full overflow-hidden border border-slate-800">
+                  <div 
+                    className="bg-gradient-to-r from-rose-600 to-amber-500 h-full transition-all duration-100"
+                    style={{ width: `${hudShield}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* CURRENT ACTIVE BIOME */}
+              <div className="glass-panel p-3 rounded-lg flex items-center justify-between border-l-4 border-l-cyan-500">
+                <div>
+                  <span className="text-[10px] text-slate-500 uppercase tracking-widest block font-sans">Active Sector</span>
+                  <span className="text-cyan-400 font-display font-bold text-sm">{BIOMES[hudBiome].name}</span>
+                </div>
+                <Compass className="w-6 h-6 text-cyan-400/80 animate-spin-slow" />
+              </div>
+
+              {/* FORMATION PATTERN */}
+              <div className="glass-panel p-3 rounded-lg flex items-center justify-between border-l-4 border-l-violet-500">
+                <div>
+                  <span className="text-[10px] text-slate-500 uppercase tracking-widest block font-sans">Enjambre Vector</span>
+                  <span className="text-violet-400 font-display font-bold text-sm">{FORMATIONS[hudFormation].name}</span>
+                </div>
+                <span className="text-[10px] font-mono bg-violet-500/20 text-violet-300 px-2 py-1 rounded border border-violet-500/30">
+                  FORM [1-6]
+                </span>
+              </div>
+
+            </div>
+          )}
+
+          {/* MAIN JUGABLE CANVAS CONTAINER */}
+          <div 
+            ref={containerRef}
+            className="relative w-full aspect-[4/3] rounded-xl overflow-hidden border border-slate-800 bg-slate-900 shadow-2xl touch-action-none"
+            style={{ touchAction: "none" }}
+          >
+            {/* CANVAS ELEMENT */}
+            <canvas
+              ref={canvasRef}
+              width={800}
+              height={600}
+              className="w-full h-full block cursor-crosshair"
+              onPointerMove={handleCanvasPointer}
+              onPointerDown={() => {
+                initAudio();
+                usingKeyboardRef.current = false;
+              }}
+            />
+
+            {/* SCANLINES VISUAL LAYER */}
+            <div className="absolute inset-0 scanlines pointer-events-none z-10" />
+
+            {/* SCREEN OVERLAY: GAME INITIAL START SCREEN */}
+            {!isGameStarted && (
+              <div className="absolute inset-0 bg-slate-950/90 z-20 flex flex-col items-center justify-center p-6 text-center">
+                <div className="max-w-md space-y-6">
+                  <div className="space-y-2 animate-bounce-slow">
+                    <div className="w-16 h-16 mx-auto bg-gradient-to-tr from-amber-500 to-rose-500 rounded-2xl flex items-center justify-center shadow-2xl shadow-amber-500/20">
+                      <Zap className="w-10 h-10 text-slate-950 stroke-[2.5]" />
+                    </div>
+                    <h2 className="font-display font-extrabold text-3xl tracking-wider text-glow-amber text-amber-400">
+                      ORBI ENERGY SWARM
+                    </h2>
+                    <p className="font-mono text-xs text-slate-400 tracking-widest uppercase">
+                      Standalone Hardened Prototype
+                    </p>
+                  </div>
+
+                  <p className="text-slate-400 text-sm leading-relaxed">
+                    Lead <span className="text-amber-400 font-bold">Orbi Foton</span> through modular cybernetic sectors. 
+                    Synchronize your tactical glowing swarm, harvest crystallized core energies, and repel rogue virus codes on the Grid.
+                  </p>
+
+                  <div className="glass-panel-amber p-4 rounded-xl text-left space-y-2 border border-amber-500/30">
+                    <h4 className="text-xs font-bold text-amber-300 uppercase tracking-wider font-display">TUTORIAL DE MANIOBRA</h4>
+                    <ul className="text-[11px] text-slate-400 space-y-1 list-disc list-inside font-mono">
+                      <li>Movimiento: Mueve el Mouse / desliza Touch o teclas <span className="text-amber-400">WASD / Flechas</span></li>
+                      <li>Tactical Formations: Presiona teclas numéricas <span className="text-amber-400">1 al 6</span></li>
+                      <li>Mute: Tecla <span className="text-amber-400">M</span> / Pausa: Tecla <span className="text-amber-400">P / Esc</span></li>
+                      <li>Recluta Orbis: Pasa cerca de núcleos <span className="text-pink-400">Rosas</span> flotantes</li>
+                    </ul>
+                  </div>
+
+                  <button
+                    onClick={startGame}
+                    className="w-full py-3.5 px-6 font-display font-bold text-slate-950 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 rounded-lg hover:brightness-110 active:scale-95 transition shadow-lg shadow-amber-500/25 flex items-center justify-center gap-2 text-base cursor-pointer"
+                  >
+                    <Play className="w-5 h-5 fill-slate-950" />
+                    ACTIVAR SINCRONIZACIÓN
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* SCREEN OVERLAY: GAME OVER DEFEAT SCREEN */}
+            {isGameOver && (
+              <div className="absolute inset-0 bg-slate-950/95 z-20 flex flex-col items-center justify-center p-6 text-center animate-fade-in">
+                <div className="max-w-md space-y-6">
+                  <div className="space-y-1">
+                    <span className="text-rose-500 font-mono text-xs uppercase tracking-widest block font-bold">
+                      [ GRID CONNECTION LOSS ]
+                    </span>
+                    <h2 className="font-display font-extrabold text-4xl text-rose-500 tracking-wide">
+                      CORE DE-SYNCHRONIZED
+                    </h2>
+                  </div>
+
+                  <p className="text-slate-400 text-sm">
+                    Foton's enigm-shield structure failed to absorb rogue contacts. 
+                    Grid energies have de-crystallized.
+                  </p>
+
+                  <div className="grid grid-cols-2 gap-4 text-left">
+                    <div className="bg-slate-900/60 p-3 rounded-lg border border-slate-800">
+                      <span className="text-[10px] text-slate-500 uppercase block font-sans">Final Score</span>
+                      <span className="text-2xl font-mono text-amber-400 font-bold">{hudScore}</span>
+                    </div>
+                    <div className="bg-slate-900/60 p-3 rounded-lg border border-slate-800">
+                      <span className="text-[10px] text-slate-500 uppercase block font-sans">Swarm Recruits</span>
+                      <span className="text-2xl font-mono text-cyan-400 font-bold">{hudPopulation} Orbis</span>
+                    </div>
+                    <div className="bg-slate-900/60 p-3 rounded-lg border border-slate-800">
+                      <span className="text-[10px] text-slate-500 uppercase block font-sans">Nano Credits</span>
+                      <span className="text-2xl font-mono text-violet-400 font-bold">+{hudNano}</span>
+                    </div>
+                    <div className="bg-slate-900/60 p-3 rounded-lg border border-slate-800">
+                      <span className="text-[10px] text-slate-500 uppercase block font-sans">Energy Purified</span>
+                      <span className="text-2xl font-mono text-emerald-400 font-bold">+{hudEnergy}</span>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={restartGame}
+                    className="w-full py-3 px-6 font-display font-bold text-slate-950 bg-gradient-to-r from-rose-500 to-amber-500 rounded-lg hover:brightness-110 active:scale-95 transition shadow-lg shadow-rose-500/20 flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <RotateCcw className="w-5 h-5" />
+                    REBOOT ENIGM-GRID [R]
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* SCREEN OVERLAY: PAUSE STATUS */}
+            {isPaused && (
+              <div className="absolute inset-0 bg-slate-950/70 z-20 flex flex-col items-center justify-center text-center">
+                <div className="glass-panel p-6 rounded-2xl max-w-sm space-y-4 border border-amber-500/30">
+                  <Pause className="w-12 h-12 text-amber-400 mx-auto animate-pulse" />
+                  <div>
+                    <h3 className="font-display font-bold text-xl text-amber-400">SINCRONIZACIÓN PAUSADA</h3>
+                    <p className="text-slate-400 text-xs font-mono mt-1">Grid frequency is held in stasis.</p>
+                  </div>
+                  <button
+                    onClick={togglePause}
+                    className="px-6 py-2 bg-amber-500 text-slate-950 font-display font-bold rounded-md hover:bg-amber-400 transition"
+                  >
+                    REANUDAR CONEXIÓN
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* LOWER INTERACTIVE ROW: D-PAD MOBILE CONTROLS & COMPANION FLOATING PANEL */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            
+            {/* MOBILE VIRTUAL D-PAD CONTROLS */}
+            <div className="glass-panel p-4 rounded-xl flex flex-col items-center justify-center border border-slate-800">
+              <span className="text-[10px] text-slate-500 font-mono tracking-widest uppercase mb-2 block">
+                Virtual D-Pad Vector Control
+              </span>
+              <div className="grid grid-cols-3 gap-1.5 w-32 h-32">
+                <div />
+                <button 
+                  onClick={() => handleDPadPress(0, -1)}
+                  className="bg-slate-800 hover:bg-slate-700 active:bg-cyan-500 active:text-slate-950 text-slate-400 border border-slate-700 rounded-md flex items-center justify-center font-bold text-xs"
+                >
+                  ▲
+                </button>
+                <div />
+                <button 
+                  onClick={() => handleDPadPress(-1, 0)}
+                  className="bg-slate-800 hover:bg-slate-700 active:bg-cyan-500 active:text-slate-950 text-slate-400 border border-slate-700 rounded-md flex items-center justify-center font-bold text-xs"
+                >
+                  ◀
+                </button>
+                <div className="bg-slate-950/80 rounded-md flex items-center justify-center text-[9px] text-slate-500 font-mono font-bold">
+                  PAD
+                </div>
+                <button 
+                  onClick={() => handleDPadPress(1, 0)}
+                  className="bg-slate-800 hover:bg-slate-700 active:bg-cyan-500 active:text-slate-950 text-slate-400 border border-slate-700 rounded-md flex items-center justify-center font-bold text-xs"
+                >
+                  ▶
+                </button>
+                <div />
+                <button 
+                  onClick={() => handleDPadPress(0, 1)}
+                  className="bg-slate-800 hover:bg-slate-700 active:bg-cyan-500 active:text-slate-950 text-slate-400 border border-slate-700 rounded-md flex items-center justify-center font-bold text-xs"
+                >
+                  ▼
+                </button>
+                <div />
+              </div>
+            </div>
+
+            {/* COMPANION DIALOGUE DIALOG BOX */}
+            <div className="md:col-span-2 glass-panel p-4 rounded-xl flex items-start gap-4 border border-slate-800 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/5 rounded-full blur-2xl pointer-events-none" />
+              
+              {/* Companion holographic avatar */}
+              <div className="w-14 h-14 rounded-full border border-cyan-500/30 bg-slate-950/80 flex items-center justify-center relative flex-shrink-0 animate-pulse-slow">
+                <div className="w-10 h-10 rounded-full bg-cyan-500/20 flex items-center justify-center">
+                  <Cpu className="w-6 h-6 text-cyan-400" />
+                </div>
+                <span className="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-slate-950" />
+              </div>
+
+              <div className="space-y-1 flex-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-display font-bold text-cyan-400">LUX-8 COMPANION</span>
+                  <span className="text-[9px] font-mono text-slate-500">[ COMP-AI-ONLINE ]</span>
+                </div>
+                <div className="bg-slate-950/50 p-2.5 rounded-lg border border-slate-800">
+                  <p className="text-xs text-slate-300 leading-relaxed font-mono">
+                    "{companionDialogue}"
+                  </p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+        {/* RIGHT COLUMN: TACTICAL SIDE PANEL (Swarm, Civ, Mementos, Relics) */}
+        <div className="glass-panel rounded-xl border border-slate-800 flex flex-col h-full overflow-hidden">
+          
+          {/* TAB HEADERS */}
+          <div className="grid grid-cols-4 bg-slate-900 border-b border-slate-800 p-1">
+            <button
+              onClick={() => { playClickSound(); setActiveTab("swarm"); }}
+              className={`py-2 text-[10px] font-display font-bold tracking-wider rounded uppercase transition flex flex-col items-center justify-center gap-1 cursor-pointer ${
+                activeTab === "swarm" 
+                  ? "bg-slate-800 text-cyan-400 border border-slate-700/50" 
+                  : "text-slate-400 hover:text-slate-200"
+              }`}
+            >
+              <Users className="w-3.5 h-3.5" />
+              Swarm
+            </button>
+            <button
+              onClick={() => { playClickSound(); setActiveTab("civ"); }}
+              className={`py-2 text-[10px] font-display font-bold tracking-wider rounded uppercase transition flex flex-col items-center justify-center gap-1 cursor-pointer ${
+                activeTab === "civ" 
+                  ? "bg-slate-800 text-violet-400 border border-slate-700/50" 
+                  : "text-slate-400 hover:text-slate-200"
+              }`}
+            >
+              <Database className="w-3.5 h-3.5" />
+              Civ
+            </button>
+            <button
+              onClick={() => { playClickSound(); setActiveTab("mementos"); }}
+              className={`py-2 text-[10px] font-display font-bold tracking-wider rounded uppercase transition flex flex-col items-center justify-center gap-1 cursor-pointer ${
+                activeTab === "mementos" 
+                  ? "bg-slate-800 text-emerald-400 border border-slate-700/50" 
+                  : "text-slate-400 hover:text-slate-200"
+              }`}
+            >
+              <BookOpen className="w-3.5 h-3.5" />
+              Log
+            </button>
+            <button
+              onClick={() => { playClickSound(); setActiveTab("relics"); }}
+              className={`py-2 text-[10px] font-display font-bold tracking-wider rounded uppercase transition flex flex-col items-center justify-center gap-1 cursor-pointer ${
+                activeTab === "relics" 
+                  ? "bg-slate-800 text-amber-400 border border-slate-700/50" 
+                  : "text-slate-400 hover:text-slate-200"
+              }`}
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              Relics
+            </button>
+          </div>
+
+          {/* TAB CONTENTS (Scrollable area) */}
+          <div className="flex-1 overflow-y-auto p-4 min-h-[300px] lg:max-h-[640px]">
+            
+            {/* SWARM TAB */}
+            {activeTab === "swarm" && (
+              <div className="space-y-4">
+                <div className="space-y-1">
+                  <h3 className="font-display font-bold text-sm text-cyan-400 uppercase tracking-wider">Grid Active Swarm</h3>
+                  <p className="text-xs text-slate-400">Detailed readouts of Foton's linked drones.</p>
+                </div>
+
+                {!isGameStarted ? (
+                  <div className="text-center py-10 text-xs text-slate-500 font-mono">
+                    [ Synchronize Core to display linked Orbis ]
+                  </div>
+                ) : (
+                  <div className="space-y-2 font-mono text-xs">
+                    {swarmRef.current.map((member, idx) => (
+                      <div 
+                        key={member.id}
+                        className="p-2.5 bg-slate-950/60 rounded-md border border-slate-800 flex items-center justify-between"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span 
+                            className="w-3 h-3 rounded-full block animate-pulse"
+                            style={{ backgroundColor: member.color, boxShadow: `0 0 6px ${member.color}` }}
+                          />
+                          <div>
+                            <span className="font-semibold text-slate-200 block">
+                              {member.name} {idx === 0 ? "(LIDER)" : ""}
+                            </span>
+                            <span className="text-[10px] text-slate-500">Vector node: {member.type}</span>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-[10px] text-slate-400 block">Dmg: {member.type === OrbiType.FOTON ? "15" : "10"}</span>
+                          <span className="text-[9px] text-slate-600 block">Freq: {member.type === OrbiType.FOTON ? "0.4s" : "0.75s"}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* CIV TAB */}
+            {activeTab === "civ" && (
+              <div className="space-y-4">
+                <div className="space-y-1">
+                  <h3 className="font-display font-bold text-sm text-violet-400 uppercase tracking-wider">Orbi Civilization</h3>
+                  <p className="text-xs text-slate-400">Overview of Sector 0A colony development progress.</p>
+                </div>
+
+                <div className="space-y-3 font-mono text-xs">
+                  <div className="p-3 bg-slate-950/60 rounded-md border border-slate-800 space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-400">Total Runs Completed</span>
+                      <span className="text-violet-400 font-bold">{stats?.totalRuns || 0}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-400">Best Swarm Formed</span>
+                      <span className="text-cyan-400 font-bold">{stats?.bestSwarmSize || 1} Orbis</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-400">Accumulated Nano Credits</span>
+                      <span className="text-amber-400 font-bold">{stats?.totalNanoCredits || 0} NC</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-400">Total Purified Energy</span>
+                      <span className="text-emerald-400 font-bold">{stats?.totalPurifiedEnergy || 0} PE</span>
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-slate-950/60 rounded-md border border-slate-800 space-y-2">
+                    <span className="text-[10px] text-slate-500 uppercase block font-sans tracking-widest font-semibold">
+                      Colony Restore Sectors
+                    </span>
+                    <div className="space-y-1.5 text-[11px]">
+                      <div className="flex justify-between items-center">
+                        <span>Solar Plains Grid Node</span>
+                        <span className="text-emerald-400">[ ONLINE ]</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span>Deep Hydrogen Filters</span>
+                        <span className="text-emerald-400">[ ONLINE ]</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span>Cyber Void Warp Matrix</span>
+                        <span className="text-slate-600">[ UNSTABLE ]</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* MEMENTOS LOG TAB */}
+            {activeTab === "mementos" && (
+              <div className="space-y-4">
+                <div className="space-y-1">
+                  <h3 className="font-display font-bold text-sm text-emerald-400 uppercase tracking-wider">System Dialogue Log</h3>
+                  <p className="text-xs text-slate-400">Holographic network dialogue transmissions list.</p>
+                </div>
+
+                <div className="space-y-2 font-mono text-[11px] max-h-[480px] overflow-y-auto pr-1">
+                  {dialogueLog.length === 0 ? (
+                    <div className="text-center py-10 text-slate-600">
+                      [ No data transmissions logged ]
+                    </div>
+                  ) : (
+                    dialogueLog.map((msg) => (
+                      <div 
+                        key={msg.id}
+                        className="p-2 bg-slate-950/40 rounded border border-slate-800/80 text-left space-y-0.5"
+                      >
+                        <div className="flex justify-between items-center">
+                          <span className={`font-bold ${
+                            msg.sender === "COMPANION" 
+                              ? "text-cyan-400" 
+                              : msg.sender === "SYSTEM" 
+                                ? "text-rose-400" 
+                                : "text-amber-400"
+                          }`}>
+                            {msg.sender}
+                          </span>
+                          <span className="text-[9px] text-slate-600">{msg.timestamp}</span>
+                        </div>
+                        <p className="text-slate-300">{msg.text}</p>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* RELICS TAB */}
+            {activeTab === "relics" && (
+              <div className="space-y-4">
+                <div className="space-y-1">
+                  <h3 className="font-display font-bold text-sm text-amber-400 uppercase tracking-wider">Persistent Grid Relics</h3>
+                  <p className="text-xs text-slate-400">Unlock modules with accumulated Nano Credits from runs.</p>
+                </div>
+
+                <div className="space-y-2.5">
+                  
+                  {/* Total Credits display */}
+                  <div className="p-2 bg-slate-950/80 rounded border border-slate-800 text-center flex items-center justify-between font-mono text-xs">
+                    <span className="text-slate-500">Available Credits:</span>
+                    <span className="text-amber-400 font-bold flex items-center gap-1">
+                      <Coins className="w-3.5 h-3.5" />
+                      {stats?.totalNanoCredits || 0} NC
+                    </span>
+                  </div>
+
+                  {/* Hydrogen Deflector Relic */}
+                  <div className="p-3 bg-slate-950/60 rounded-md border border-slate-800 space-y-2">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <span className="text-xs font-bold text-slate-200 block">Hydrogen Deflector</span>
+                        <span className="text-[10px] text-slate-400 block font-mono">Shield regen speed +50%</span>
+                      </div>
+                      {unlockedRelics.includes("Hydrogen Deflector") ? (
+                        <span className="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded font-mono font-bold uppercase">
+                          Armed
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => handleBuyRelic("Hydrogen Deflector", 25)}
+                          disabled={(stats?.totalNanoCredits || 0) < 25}
+                          className="px-2 py-1 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-slate-950 rounded text-[10px] font-bold font-mono transition cursor-pointer"
+                        >
+                          Buy 25 NC
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Quantum Core Relic */}
+                  <div className="p-3 bg-slate-950/60 rounded-md border border-slate-800 space-y-2">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <span className="text-xs font-bold text-slate-200 block">Quantum Core</span>
+                        <span className="text-[10px] text-slate-400 block font-mono">Swarm fire rate +25%</span>
+                      </div>
+                      {unlockedRelics.includes("Quantum Core") ? (
+                        <span className="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded font-mono font-bold uppercase">
+                          Armed
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => handleBuyRelic("Quantum Core", 40)}
+                          disabled={(stats?.totalNanoCredits || 0) < 40}
+                          className="px-2 py-1 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-slate-950 rounded text-[10px] font-bold font-mono transition cursor-pointer"
+                        >
+                          Buy 40 NC
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Fusion Resonator Relic */}
+                  <div className="p-3 bg-slate-950/60 rounded-md border border-slate-800 space-y-2">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <span className="text-xs font-bold text-slate-200 block">Fusion Resonator</span>
+                        <span className="text-[10px] text-slate-400 block font-mono">Resource pull radius +80%</span>
+                      </div>
+                      {unlockedRelics.includes("Fusion Resonator") ? (
+                        <span className="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded font-mono font-bold uppercase">
+                          Armed
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => handleBuyRelic("Fusion Resonator", 15)}
+                          disabled={(stats?.totalNanoCredits || 0) < 15}
+                          className="px-2 py-1 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-slate-950 rounded text-[10px] font-bold font-mono transition cursor-pointer"
+                        >
+                          Buy 15 NC
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Nano Catalyst Relic */}
+                  <div className="p-3 bg-slate-950/60 rounded-md border border-slate-800 space-y-2">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <span className="text-xs font-bold text-slate-200 block">Nano Catalyst</span>
+                        <span className="text-[10px] text-slate-400 block font-mono">Double crystals value yield</span>
+                      </div>
+                      {unlockedRelics.includes("Nano Catalyst") ? (
+                        <span className="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded font-mono font-bold uppercase">
+                          Armed
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => handleBuyRelic("Nano Catalyst", 30)}
+                          disabled={(stats?.totalNanoCredits || 0) < 30}
+                          className="px-2 py-1 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-slate-950 rounded text-[10px] font-bold font-mono transition cursor-pointer"
+                        >
+                          Buy 30 NC
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Starting Orbi Upgrade */}
+                  <div className="p-3 bg-slate-950/60 rounded-md border border-slate-800 space-y-2">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <span className="text-xs font-bold text-slate-200 block">Mitosis Relic</span>
+                        <span className="text-[10px] text-slate-400 block font-mono">Start game with 3 Orbis</span>
+                      </div>
+                      {unlockedRelics.includes("Mitosis Relic") ? (
+                        <span className="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded font-mono font-bold uppercase">
+                          Armed
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => handleBuyRelic("Mitosis Relic", 50)}
+                          disabled={(stats?.totalNanoCredits || 0) < 50}
+                          className="px-2 py-1 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-slate-950 rounded text-[10px] font-bold font-mono transition cursor-pointer"
+                        >
+                          Buy 50 NC
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            )}
+
+          </div>
+
+          {/* BOTTOM QUICK FOOTER */}
+          <div className="bg-slate-900 border-t border-slate-800 p-3 flex justify-between items-center text-[10px] text-slate-500 font-mono">
+            <span>Core: Active</span>
+            <span className="text-emerald-400 animate-pulse">● Grid connection synced</span>
+          </div>
+
+        </div>
+
+      </main>
+
+      {/* GLOBAL BACKGROUND DESIGN DECORATIONS */}
+      <footer className="w-full bg-slate-950 border-t border-slate-900 py-4 text-center text-xs text-slate-600 font-mono mt-auto">
+        <p>© 2026 ORBI ENERGY SWARM. PROTOTYPE BASELINE RECOVERY COMPLETED.</p>
+      </footer>
+
+    </div>
+  );
+};
+
+export default EnergySwarmGame;
+
+
+====================================================================================================
+FILE: src/game/types.ts
+====================================================================================================
+export enum BiomeType {
+  SOLAR_PLAINS = "SOLAR_PLAINS",
+  DEEP_WATER = "DEEP_WATER",
+  CYBER_VOID = "CYBER_VOID",
+  ACID_SWAMP = "ACID_SWAMP",
+  MAGMA_CHAMBER = "MAGMA_CHAMBER",
+  QUANTUM_NEXUS = "QUANTUM_NEXUS"
+}
+
+export interface BiomeConfig {
+  type: BiomeType;
+  name: string;
+  description: string;
+  bgColor: string;
+  gridColor: string;
+  particleColor: string;
+  enemySpawnRate: number;
+  enemySpeedMultiplier: number;
+  crystalValueMultiplier: number;
+}
+
+export enum FormationType {
+  LINE = "LINE",
+  CIRCLE = "CIRCLE",
+  DELTA = "DELTA",
+  SHIELD = "SHIELD",
+  V_SHAPE = "V_SHAPE",
+  SCATTERED = "SCATTERED"
+}
+
+export interface FormationConfig {
+  type: FormationType;
+  name: string;
+  description: string;
+  spacing: number;
+}
+
+export enum OrbiType {
+  FOTON = "FOTON", // Leader
+  AURA = "AURA",
+  PULSE = "PULSE",
+  SHIELD = "SHIELD",
+  BEAM = "BEAM",
+  ECHO = "ECHO"
+}
+
+export interface OrbiMember {
+  id: string;
+  type: OrbiType;
+  name: string;
+  x: number;
+  y: number;
+  targetX: number;
+  targetY: number;
+  color: string;
+  size: number;
+  shootCooldown: number;
+  pulseTimer: number;
+}
+
+export enum EnemyType {
+  CRAWLER = "CRAWLER",
+  PARASITE = "PARASITE",
+  DRONE = "DRONE"
+}
+
+export interface Enemy {
+  id: string;
+  type: EnemyType;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  health: number;
+  maxHealth: number;
+  speed: number;
+  size: number;
+  color: string;
+  shootCooldown: number;
+  contactDamageCooldown: number;
+  isDead: boolean;
+}
+
+export interface Projectile {
+  id: string;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  damage: number;
+  color: string;
+  size: number;
+  fromPlayer: boolean;
+  life: number;
+  maxLife: number;
+}
+
+export interface Resource {
+  id: string;
+  type: "NANO" | "ENERGY" | "ORBI";
+  x: number;
+  y: number;
+  size: number;
+  color: string;
+  amount: number;
+  orbiType?: OrbiType; // If type is ORBI, which type to recruit
+}
+
+export interface Particle {
+  id: string;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  color: string;
+  size: number;
+  life: number;
+  maxLife: number;
+}
+
+export interface GameStats {
+  score: number;
+  highScore: number;
+  nanoCredits: number;
+  purifiedEnergy: number;
+  swarmSize: number;
+  bestSwarmSize: number;
+  totalNanoCredits: number;
+  totalPurifiedEnergy: number;
+  totalRuns: number;
+  gameMemories: string[];
+  audioMuted: boolean;
+}
+
+export interface DialogueMessage {
+  id: string;
+  sender: "FOTON" | "COMPANION" | "SYSTEM";
+  text: string;
+  timestamp: string;
+}
+
+
+====================================================================================================
+FILE: src/game/constants.ts
+====================================================================================================
+import { BiomeType, BiomeConfig, FormationType, FormationConfig, OrbiType } from "./types";
+
+export const CANVAS_WIDTH = 800;
+export const CANVAS_HEIGHT = 600;
+
+export const PLAYER_SPEED = 4;
+export const PLAYER_MAX_SHIELD = 100;
+export const PLAYER_SHIELD_REGEN = 0.05; // regen per frame if no damage
+export const DAMAGE_INVINCIBILITY_DURATION = 1000; // 1 second
+
+// Entity limits to avoid performance degradation
+export const MAX_SWARM_MEMBERS = 50;
+export const MAX_ENEMIES = 40;
+export const MAX_PROJECTILES = 100;
+export const MAX_RESOURCES = 50;
+export const MAX_PARTICLES = 150;
+
+export const BIOMES: Record<BiomeType, BiomeConfig> = {
+  [BiomeType.SOLAR_PLAINS]: {
+    type: BiomeType.SOLAR_PLAINS,
+    name: "Solar Plains",
+    description: "An open expanse of high energetic solar wind and amber crystal nodes.",
+    bgColor: "#0f172a", // slate-900
+    gridColor: "rgba(245, 158, 11, 0.15)", // amber-500
+    particleColor: "#f59e0b",
+    enemySpawnRate: 0.015,
+    enemySpeedMultiplier: 1.0,
+    crystalValueMultiplier: 1.0
+  },
+  [BiomeType.DEEP_WATER]: {
+    type: BiomeType.DEEP_WATER,
+    name: "Deep Water",
+    description: "Viscous liquid currents that slow down movement but enhance hydrogen shields.",
+    bgColor: "#090d16",
+    gridColor: "rgba(6, 182, 212, 0.15)", // cyan-500
+    particleColor: "#06b6d4",
+    enemySpawnRate: 0.012,
+    enemySpeedMultiplier: 0.8,
+    crystalValueMultiplier: 1.2
+  },
+  [BiomeType.CYBER_VOID]: {
+    type: BiomeType.CYBER_VOID,
+    name: "Cyber Void",
+    description: "An abstract technological field of dense nodes and violet electrical arcs.",
+    bgColor: "#0b0614",
+    gridColor: "rgba(139, 92, 246, 0.15)", // violet-500
+    particleColor: "#8b5cf6",
+    enemySpawnRate: 0.02,
+    enemySpeedMultiplier: 1.1,
+    crystalValueMultiplier: 1.5
+  },
+  [BiomeType.ACID_SWAMP]: {
+    type: BiomeType.ACID_SWAMP,
+    name: "Acid Swamp",
+    description: "Hazardous toxic fumes. Corrosive terrain increases enemy aggressiveness.",
+    bgColor: "#040d0a",
+    gridColor: "rgba(16, 185, 129, 0.15)", // emerald-500
+    particleColor: "#10b981",
+    enemySpawnRate: 0.025,
+    enemySpeedMultiplier: 1.2,
+    crystalValueMultiplier: 1.3
+  },
+  [BiomeType.MAGMA_CHAMBER]: {
+    type: BiomeType.MAGMA_CHAMBER,
+    name: "Magma Chamber",
+    description: "Superheated sulfur chambers. Unstable thermal vents fire warning thermal bursts.",
+    bgColor: "#140505",
+    gridColor: "rgba(239, 68, 68, 0.15)", // red-500
+    particleColor: "#ef4444",
+    enemySpawnRate: 0.022,
+    enemySpeedMultiplier: 1.15,
+    crystalValueMultiplier: 1.8
+  },
+  [BiomeType.QUANTUM_NEXUS]: {
+    type: BiomeType.QUANTUM_NEXUS,
+    name: "Quantum Nexus",
+    description: "An unstable dimensional boundary. Probability ripples fluctuate constantly.",
+    bgColor: "#0d020d",
+    gridColor: "rgba(236, 72, 153, 0.15)", // pink-500
+    particleColor: "#ec4899",
+    enemySpawnRate: 0.018,
+    enemySpeedMultiplier: 1.05,
+    crystalValueMultiplier: 2.0
+  }
+};
+
+export const FORMATIONS: Record<FormationType, FormationConfig> = {
+  [FormationType.LINE]: {
+    type: FormationType.LINE,
+    name: "Horizontal Sweep",
+    description: "Positions members side-by-side to sweep a wide horizontal area.",
+    spacing: 35
+  },
+  [FormationType.CIRCLE]: {
+    type: FormationType.CIRCLE,
+    name: "Orbiting Vanguard",
+    description: "Members orbit around Foton, forming an offensive spinning wheel.",
+    spacing: 50
+  },
+  [FormationType.DELTA]: {
+    type: FormationType.DELTA,
+    name: "Delta Wedge",
+    description: "A sharp spearhead formation that focuses firepower directly forward.",
+    spacing: 30
+  },
+  [FormationType.SHIELD]: {
+    type: FormationType.SHIELD,
+    name: "Guardian Halo",
+    description: "Clings closely to the leader, forming a tight defensive perimeter.",
+    spacing: 25
+  },
+  [FormationType.V_SHAPE]: {
+    type: FormationType.V_SHAPE,
+    name: "Flanking Vees",
+    description: "Creates trailing flanks to cover diagonal and rear vector attacks.",
+    spacing: 40
+  },
+  [FormationType.SCATTERED]: {
+    type: FormationType.SCATTERED,
+    name: "Swarm Chaos",
+    description: "Loose organic spacing, letting members hover autonomously.",
+    spacing: 60
+  }
+};
+
+export const ORBI_TEMPLATES: Record<OrbiType, { name: string; color: string; size: number }> = {
+  [OrbiType.FOTON]: { name: "Orbi Foton", color: "#f59e0b", size: 10 }, // Amber
+  [OrbiType.AURA]: { name: "Orbi Aura", color: "#06b6d4", size: 8 },   // Cyan
+  [OrbiType.PULSE]: { name: "Orbi Pulse", color: "#8b5cf6", size: 8 },  // Violet
+  [OrbiType.SHIELD]: { name: "Orbi Shield", color: "#10b981", size: 9 }, // Emerald
+  [OrbiType.BEAM]: { name: "Orbi Beam", color: "#ef4444", size: 7 },   // Red
+  [OrbiType.ECHO]: { name: "Orbi Echo", color: "#ec4899", size: 8 }    // Pink
+};
+
+export const COMPANION_QUOTES = [
+  "Foton, our energy signature is fluctuating! Keep gathering crystals.",
+  "Warning: Hostile entities are converging in this quadrant.",
+  "By pressing 1 to 6 we can shift our swarm formation on the fly!",
+  "Look, a wild Orbi! Guide me near it to recruit them to our swarm.",
+  "We are entering a new biome segment! Be prepared for thermal shifts.",
+  "Excellent! The grid energy grid is starting to crystallize.",
+  "Don't worry, Foton. I am scanning the cyber void for stability pathways.",
+  "Keep moving! Static targets are easier for Parasites to latch onto."
+];
+
+
+====================================================================================================
+FILE: src/game/storage.ts
+====================================================================================================
+import { GameStats } from "./types";
+
+const STORAGE_KEY = "orbi_energy_swarm_save_v1";
+
+const DEFAULT_STATS: GameStats = {
+  score: 0,
+  highScore: 0,
+  nanoCredits: 0,
+  purifiedEnergy: 0,
+  swarmSize: 1,
+  bestSwarmSize: 1,
+  totalNanoCredits: 0,
+  totalPurifiedEnergy: 0,
+  totalRuns: 0,
+  gameMemories: [
+    "Grid Connection Established.",
+    "First Swarm Synthesis Activated."
+  ],
+  audioMuted: false
+};
+
+export const loadGameStats = (): GameStats => {
+  try {
+    const data = localStorage.getItem(STORAGE_KEY);
+    if (!data) return { ...DEFAULT_STATS };
+    const parsed = JSON.parse(data);
+    return {
+      ...DEFAULT_STATS,
+      ...parsed,
+      // Ensure arrays and primitive fields are present
+      gameMemories: Array.isArray(parsed.gameMemories) ? parsed.gameMemories : DEFAULT_STATS.gameMemories
+    };
+  } catch (error) {
+    console.error("Failed to load ORBI ENERGY SWARM local storage:", error);
+    return { ...DEFAULT_STATS };
+  }
+};
+
+export const saveGameStats = (stats: Partial<GameStats>): void => {
+  try {
+    const current = loadGameStats();
+    const updated = { ...current, ...stats };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+  } catch (error) {
+    console.error("Failed to save ORBI ENERGY SWARM local storage:", error);
+  }
+};
+
+
+====================================================================================================
+FILE: src/game/audio.ts
+====================================================================================================
+let audioCtx: AudioContext | null = null;
+let isMuted = false;
+
+export const initAudio = (): AudioContext | null => {
+  if (isMuted) return null;
+  if (!audioCtx) {
+    try {
+      const AudioCtxClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      audioCtx = new AudioCtxClass();
+    } catch (e) {
+      console.error("Web Audio API not supported:", e);
+    }
+  }
+  if (audioCtx && audioCtx.state === "suspended") {
+    audioCtx.resume().catch((err) => console.warn("Failed to resume AudioContext:", err));
+  }
+  return audioCtx;
+};
+
+export const setMuteState = (muted: boolean) => {
+  isMuted = muted;
+  if (muted && audioCtx) {
+    audioCtx.suspend().catch((err) => console.warn("Failed to suspend AudioContext on mute:", err));
+  } else if (!muted && audioCtx) {
+    audioCtx.resume().catch((err) => console.warn("Failed to resume AudioContext on unmute:", err));
+  }
+};
+
+export const getMuteState = (): boolean => {
+  return isMuted;
+};
+
+const playSynthTone = (
+  frequencies: number[],
+  duration: number,
+  type: OscillatorType = "sine",
+  volume = 0.1,
+  frequencySweep?: { endFreq: number; duration: number }
+) => {
+  const ctx = initAudio();
+  if (!ctx || ctx.state === "suspended" || isMuted) return;
+
+  try {
+    const time = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+
+    osc.type = type;
+    
+    // Set starting frequency
+    if (frequencies.length > 0) {
+      osc.frequency.setValueAtTime(frequencies[0], time);
+      // If there are multiple tones (arpeggio), schedule them
+      frequencies.forEach((freq, idx) => {
+        if (idx > 0) {
+          osc.frequency.setValueAtTime(freq, time + (idx * duration) / frequencies.length);
+        }
+      });
+    }
+
+    // Apply frequency sweep
+    if (frequencySweep && frequencies.length > 0) {
+      osc.frequency.exponentialRampToValueAtTime(
+        frequencySweep.endFreq,
+        time + frequencySweep.duration
+      );
+    }
+
+    // Gain envelope
+    gainNode.gain.setValueAtTime(volume, time);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, time + duration);
+
+    osc.connect(gainNode);
+    gainNode.connect(ctx.destination);
+
+    osc.start(time);
+    osc.stop(time + duration);
+  } catch (err) {
+    console.warn("Failed to play synth sound:", err);
+  }
+};
+
+export const playShootSound = () => {
+  // Laser sound: brief sweep down
+  playSynthTone([880], 0.15, "triangle", 0.05, { endFreq: 220, duration: 0.15 });
+};
+
+export const playEnemyShootSound = () => {
+  // Enemy shoot: lower triangle wave sweep
+  playSynthTone([440], 0.2, "sawtooth", 0.03, { endFreq: 110, duration: 0.2 });
+};
+
+export const playDamageSound = () => {
+  // Heavy low rumble
+  playSynthTone([150], 0.3, "sawtooth", 0.15, { endFreq: 40, duration: 0.3 });
+};
+
+export const playEnemyExplodeSound = () => {
+  // High-frequency burst down
+  playSynthTone([300], 0.25, "triangle", 0.08, { endFreq: 80, duration: 0.25 });
+};
+
+export const playRecruitSound = () => {
+  // Ascending digital arpeggio
+  playSynthTone([261.63, 329.63, 392.00, 523.25], 0.4, "sine", 0.1);
+};
+
+export const playCrystalSound = () => {
+  // High pitched pleasant ring
+  playSynthTone([987.77, 1318.51], 0.15, "sine", 0.07);
+};
+
+export const playBiomeChangeSound = () => {
+  // Futuristic rise and swell
+  playSynthTone([220, 440, 880], 0.5, "sine", 0.08, { endFreq: 1760, duration: 0.5 });
+};
+
+export const playClickSound = () => {
+  playSynthTone([600], 0.05, "sine", 0.05);
+};
+
+export const playPauseSound = () => {
+  playSynthTone([440, 330], 0.15, "sine", 0.06);
+};
+
+export const playUnpauseSound = () => {
+  playSynthTone([330, 440], 0.15, "sine", 0.06);
+};
+
+export const playGameOverSound = () => {
+  // Sad descending drone
+  playSynthTone([330, 220, 110], 0.8, "sawtooth", 0.1, { endFreq: 40, duration: 0.8 });
+};
+
+export const cleanupAudio = () => {
+  if (audioCtx) {
+    audioCtx.close().catch((err) => console.warn("Failed to close AudioContext:", err));
+    audioCtx = null;
+  }
+};
+
+
+====================================================================================================
+FILE: src/styles/index.css
+====================================================================================================
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+/* Custom Glassmorphic Utilities */
+.glass-panel {
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-panel-amber {
+  background: rgba(245, 158, 11, 0.05);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.glass-panel-cyan {
+  background: rgba(6, 182, 212, 0.05);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(6, 182, 212, 0.2);
+}
+
+.glass-panel-violet {
+  background: rgba(139, 92, 246, 0.05);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.text-glow-amber {
+  text-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+}
+
+.text-glow-cyan {
+  text-shadow: 0 0 10px rgba(6, 182, 212, 0.5);
+}
+
+.text-glow-violet {
+  text-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+}
+
+/* Custom Scanlines & Grid Effects */
+.scanlines {
+  position: relative;
+  overflow: hidden;
+}
+
+.scanlines::before {
+  content: " ";
+  display: block;
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+  z-index: 10;
+  background-size: 100% 4px, 6px 100%;
+  pointer-events: none;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.3);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+
+====================================================================================================
+FILE: README.md
+====================================================================================================
+# ORBI ENERGY SWARM (v0.1.0-prototype-recovery-baseline)
+
+A standalone hardened React, TypeScript, and HTML5 Canvas game. This release represents a frozen visual and technical baseline recovered from the ORBI Life game ecosystem.
+
+## Core Objective
+Pilot the **Orbi Foton** leader, synchronize with an autonomous tactical swarm of energy collectors, and harvest crystallized energy fragments while repelling hostile parasites and drones across six procedurally shifting cybernetic biomes.
+
+## Architecture
+- **Framework**: React 19 + TypeScript + Tailwind CSS (v4)
+- **Engine**: Single unified `requestAnimationFrame` game loop with `deltaTime` physics.
+- **Rendering**: HTML5 Canvas for high-frequency objects; React coordinates low-frequency HUD overlays and sidebar dashboards.
+- **Audio**: Custom synthesized procedural Web Audio API manager.
+- **State**: Safe local storage saving for high-scores, progression credits, active mementos, and audio settings.
+
+## Getting Started
+```bash
+# Install dependencies
+npm install
+
+# Run the dev server
+npm run dev
+
+# Run Typecheck and Linter checks
+npm run typecheck
+
+# Build for production
+npm run build
+```
+
+## Controls
+- **Movement**: Mouse, touch swipe, or keyboard `WASD` / `Arrow Keys`
+- **Formations**: Keys `1` to `6`
+- **Pause/Unpause**: Key `P` or `Escape`
+- **Mute/Unmute**: Key `M`
+- **Reboot Game**: Key `R` (on GameOver screen)
+- **Mobile controls**: Virtual D-Pad buttons located on the screen
+
+
+====================================================================================================
+FILE: docs/BASELINE_FEATURES.md
+====================================================================================================
+# Baseline Features
+
+This document details all functional systems fully integrated and running in **ORBI ENERGY SWARM v0.1.0-prototype-recovery-baseline**.
+
+## 1. High-Performance HTML5 Canvas Game Loop
+- Fully stabilized rendering system decoupled from React's state lifecycle.
+- Single master `requestAnimationFrame` driving uniform updates using `deltaTime` scaling (60 FPS objective speed baseline).
+- Automatic boundary clamping preventing entities from moving out of the logical 800x600 coordinate play zone.
+- Correctly mapped canvas interaction vectors regardless of client window size or aspect scaling.
+
+## 2. Autonomous Swarm Follower Formations
+- **Orbi Foton**: Amber leader displaying responsive glowing tech-orbits and directional eyeballs.
+- **Organic Follower Formations**: Keys `1` to `6` or panel buttons dynamically recalibrate swarm positions:
+  1. **Horizontal Sweep**: Wide flanking line behind Foton.
+  2. **Orbiting Vanguard**: Circular rotating shield grid.
+  3. **Delta Wedge**: Spearhead focus spear pointing forward.
+  4. **Guardian Halo**: Close high-defense orbital protection ring.
+  5. **Flanking Vees**: Standard V-wing dogfight vector.
+  6. **Swarm Chaos**: Scattered, organic sine-wave trailing.
+
+## 3. Weapon & Enemy AI Simulation
+- **Automated Target Seeking**: Follower units automatically seek the nearest enemy within range and fire laser blasts with unique shoot audio clicks.
+- **Enemy Classes**:
+  - **Crawler**: Slithers toward player in trailing segmented orbits.
+  - **Parasite**: Twitchy rapid leaps that latch and deal contact damage.
+  - **Drone**: Retains high-distance hover while firing periodic pink energy plasma bolts at the player.
+
+## 4. Harvestable Resources & Upgrades
+- **Nano Crystals (Amber)**: Standard NC credits used to trigger permanent shop upgrades.
+- **Energy Crystals (Cyan)**: Power core crystals that grant purified energy scores and drive procedural shifts.
+- **Wild Orbi (Pink Hexagon Stars)**: Rescuing these recruits a new active shooting unit to the player's swarm.
+
+## 5. Procedural Biome Environments
+- **Solar Plains**: Amber grids. Doubles Nano Credit crystal yields.
+- **Deep Water**: Cyan grids. Slows entities but doubles player shield regeneration.
+- **Cyber Void**: Violet grids. Increases swarm weapon cycle rates.
+- **Acid Swamp**: Emerald grids. Increases damage.
+- **Magma Chamber**: Red grids. Higher score multipliers but faster enemy spawns.
+- **Quantum Nexus**: Pink grids. High probability multipliers.
+
+## 6. Cybernetic Glassmorphic UI & Sidebar
+- **HUD Row**: Displays live Enigm-Core integrity, Active Sector, and Swarm Vector.
+- **Tab Panel**:
+  - **Swarm**: Active member roster and stats.
+  - **Civ**: Cumulative game progression stats.
+  - **Log**: Dialogues history and transmissions log.
+  - **Relics**: Shop where users buy permanent upgrades (Hydrogen Deflector, Quantum Core, Fusion Resonator, Nano Catalyst, Mitosis Relic).
+- **Mobile D-Pad**: Functional directional button array.
+- **Interactive Companion LUX-8**: Displays real-time context-aware tactical dialogues.
+
+
+====================================================================================================
+FILE: docs/FUTURE_SYSTEMS.md
+====================================================================================================
+# Future Systems
+
+The following systems are officially declared as reserved modules or deferred expansions. They are documented here to keep the prototype baseline stable, compiles-clean, and clear of dead states.
+
+## 1. Boss Encounters & Raid Targets
+- **Titan Core / Quantum Titan**: Heavy capital guardian ships featuring multi-segment weak spots.
+- **Worm Segments**: Boss-level serpentine enemies with independent segment physics and segment destruction rewards.
+
+## 2. Advanced Cosmic Events
+- **Whale Visual Event**: Passive space leviathans drifting across the background matrix.
+- **Eclipse Visual Event**: Random global darkness that dampens solar weapon recharge rates while increasing parasite speed.
+
+## 3. High-Fidelity Capture Tools
+- **Photo Mode & Color Filters**: Capability to freeze the game and apply cinematic retro shader layers.
+
+## 4. Advanced Swarm Synergies
+- **Affinities & Elemental Fusions**: Merging custom Orbis (e.g. 3 Pulses or 3 Auras) into advanced fusion drones.
+
+
+====================================================================================================
+FILE: docs/TECHNICAL_FIXES.md
+====================================================================================================
+# Technical Fixes & Hardening Report
+
+This document records the engineering fixes implemented to stabilize the ORBI ENERGY SWARM visual prototype into a fully performant, robust standalone application.
+
+## 1. Single-Loop Unified Engine (`requestAnimationFrame`)
+- **Issue**: The original baseline was prone to multiplying run loops upon React rendering triggers or state changes.
+- **Fix**: Designed a single stable `requestAnimationFrame` mounted within a unified React `useEffect` cycle. All positions, physics states, key states, and particle frames reside within persistent `useRef` buffers. React state modifications are throttled to 10-frame intervals and applied only for low-frequency HUD displays.
+
+## 2. Reusable Web Audio procedural Synthesizer
+- **Issue**: Standard audio implementations create new instances of `AudioContext` on every action, triggering browser overhead crashes.
+- **Fix**: Programmed a lazy-initialized singleton `AudioContext` that remains suspended until the user executes their first core connection trigger. The class is recycled, supports global mute-state checks, and disposes correctly upon component unmount.
+
+## 3. Double Collision Prevention & Damage Control
+- **Issue**: High-frequency collision bounds checking caused multiple projectile hits to apply to the same entity on consecutive frames, triggering duplicated scoring, immediate player deaths, or immortal entities.
+- **Fix**: 
+  - Enemies and player projectiles are marked with explicit flags (`isDead` or lifetime expire triggers) immediately upon detecting the initial contact. Dead entities are instantly ignored in subsequent collision sweeps.
+  - Added an invincibility frame cooldown (`playerRef.current.invincibilityTimer`) of 1000ms to the player, visually indicated by high-contrast flashing.
+
+## 4. Entity Cap Constraints
+- **Issue**: Continuous spawning of bullets, explosion sparks, or enemies threatened browser memory leaks.
+- **Fix**: Defined strict caps (`MAX_SWARM_MEMBERS`, `MAX_ENEMIES`, `MAX_PROJECTILES`, `MAX_PARTICLES`, `MAX_RESOURCES`). Spawning mechanisms reject new instances if boundaries are exceeded, keeping operations clean and smooth.
+
+## 5. Input Hardening
+- **Issue**: Arrow keys triggered browser page scrolls, and key stuck bugs occurred when tabs lost focus.
+- **Fix**:
+  - Implemented `e.preventDefault()` on gaming-specific keys (Arrows, Space).
+  - Attached listeners to `blur` and `visibilitychange` to automatically flush all active pressed key buffers.
+
+
+====================================================================================================
+FILE: docs/QA_CHECKLIST.md
+====================================================================================================
+# QA Verification Checklist
+
+Use these steps to verify the stability and baseline compliance of ORBI ENERGY SWARM.
+
+## 1. Compile & Type Checks
+- [ ] Run `npm run lint` or `tsc --noEmit`. No TypeScript compilation errors or unresolved imports.
+- [ ] Run `npm run build` to verify the production bundle outputs to the `/dist` folder.
+
+## 2. Gameplay & Single Loop Check
+- [ ] Launch the application and click "ACTIVAR SINCRONIZACIÓN".
+- [ ] Inspect memory usage. Ensure it remains steady and doesn't climb indefinitely (no leaks).
+- [ ] Verify Foton follows the cursor smoothly, and keyboard keys (WASD/Arrows) move Foton.
+
+## 3. Formations & Input Checks
+- [ ] Press Keys `1` to `6` sequentially. Swarm members must realign to respective layouts:
+  - `1`: Horizontal Line
+  - `2`: Orbiting Circle
+  - `3`: Delta Wedge
+  - `4`: Protective Ring
+  - `5`: Trailing Vees
+  - `6`: Loose Scattered Floating
+- [ ] Ensure HUD active pattern text updates to match the selection.
+- [ ] Verify arrow keys do not scroll the webpage when playing inside an iframe.
+
+## 4. Audio Systems
+- [ ] Verify audio clicks and chimes occur when shooting, gathering crystals, taking damage, or recruiting.
+- [ ] Click the Mute button. Sounds must instantly mute. Unmuting restores previous sound outputs.
+- [ ] Verify tab change (focus loss) silences active audio sweeps.
+
+## 5. Collision Checks
+- [ ] When a follower shoots an enemy, the projectile must disappear on the first contact frame.
+- [ ] Verify enemies die after taking sufficient damage.
+- [ ] Ensure player does not take contact damage continuously on consecutive frames (should flash red and gain 1 second invincibility).
+
+## 6. Pause & UI Checks
+- [ ] Press `P` or `Esc` or click the Pause button. Ensure all movement, projectiles, and enemy spawns freeze.
+- [ ] Tab across Swarm, Civ, Log, and Relics panels. Verify correct contents.
+- [ ] Gather Nano Credits, purchase a Relic under the Relic tab, and verify stats (e.g. Shield Regen or Pull Radius) adapt accordingly.
+
+

@@ -1,0 +1,6 @@
+{
+  "name": "Orbi Energy Swarm",
+  "description": "An energetic deep space swarm recruitment and bullet hell combat survival game with tactical formations, biome transformations, and a companion upgrades panel.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

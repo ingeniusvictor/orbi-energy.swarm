@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+.game-shell {
+  width: min(1800px, calc(100vw - 32px));
+  margin: 0 auto;
+}
+
+@media (min-width: 1024px) {
+  .game-workspace {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 330px;
+    gap: 16px;
+  }
+}

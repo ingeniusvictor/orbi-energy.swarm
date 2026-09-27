@@ -1,0 +1,4565 @@
+import React, { useEffect, useRef, useState, useCallback } from "react";
+
+import { 
+  BiomeType, OrbiType, EnemyType, FormationType, ParticleType, 
+  OrbiMember, Enemy, Projectile, Resource, Particle, GameStats, 
+  DialogueMessage, QualityPreset, WaveConfig
+} from "./types";
+
+import { 
+  CANVAS_WIDTH, CANVAS_HEIGHT, WORLD_WIDTH, WORLD_HEIGHT, MAX_ENEMIES, 
+  MAX_PROJECTILES, MAX_RESOURCES, PLAYER_BASE_SPEED, 
+  PLAYER_HIT_COOLDOWN, SHIELD_MAX, WORLD_BOUNDS, UPGRADE_REWARD_WAVES
+} from "./constants";
+
+import { 
+  loadGameStats, saveGameStats, resetGameStats, DEFAULT_STATS 
+} from "./storage";
+
+import { FORMATIONS, calculateSwarmOffset } from "./formations";
+import { getBiomeConfig, BIOME_ROTATION } from "./biomes";
+import { getQualityConfig } from "./quality";
+import { triggerExplosion, updateParticle, drawParticle } from "./particleSystem";
+import { backgroundRenderer } from "./backgroundRenderer";
+import { getWaveConfig, INTER_WAVE_DURATION, BOSS_WAVE_NUMBER, BLACKOUT_DEVOURER_CANON } from "./waveDirector";
+import { MID_RUN_UPGRADES, UpgradeDefinition, generateUpgradeChoices } from "./upgrades";
+
+import { 
+  playShootSound, playEnemyShootSound, playDamageSound, playEnemyExplodeSound, 
+  playRecruitSound, playCrystalSound, playBiomeChangeSound, playClickSound, 
+  playPauseSound, playUnpauseSound, playGameOverSound, playVictorySound, 
+  setMuteState, initAudio, startBgm, stopBgm,
+  playDroneChargeSound, playDisruptorChargeSound, playEliteChargeSound,
+  playDisruptorPulseSound, playHeavyImpactSound, playShieldDeflectSound,
+  playCriticalHitSound,
+  playBossArrivalSound, playBossPhaseTransitionSound, playBossChargeSound,
+  playBossShardsSound, playBossPulseSound
+} from "./audio";
+
+import { 
+  EnergySwarmCanvas, drawFoton, drawSwarmRoster, drawResources, 
+  drawEnemiesList, drawProjectilesList 
+} from "./EnergySwarmCanvas";
+
+import { StartScreen } from "../components/StartScreen";
+import { GameHud } from "../components/GameHud";
+import { PauseMenu } from "../components/PauseMenu";
+import { ResultScreen } from "../components/ResultScreen";
+import { CompanionPanel } from "../components/CompanionPanel";
+import { UpgradeSelector } from "../components/UpgradeSelector";
+
+export const EnergySwarmGame: React.FC = () => {
+  // --- REACT VIEWPORT GAME STATES (Low-frequency updates) ---
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const [isGameOver, setIsGameOver] = useState(false);
+  const [victory, setVictory] = useState(false);
+
+  const [score, setScore] = useState(0);
+  const [highScore, setHighScore] = useState(0);
+  const [shield, setShield] = useState(100);
+  const [nanoCredits, setNanoCredits] = useState(0);
+  const [swarmSize, setSwarmSize] = useState(1);
+  const [currentWave, setCurrentWave] = useState(1);
+  const [waveName, setWaveName] = useState("PREPARATION SIGNAL");
+  const [isWaveBreak, setIsWaveBreak] = useState(true);
+  const [waveBreakTimeLeft, setWaveBreakTimeLeft] = useState(8);
+  const [activeBiome, setActiveBiome] = useState<BiomeType>(BiomeType.SOLAR_PLAINS);
+  const [activeFormation, setActiveFormation] = useState<FormationType>(FormationType.LINE);
+  const [audioMuted, setAudioMuted] = useState(false);
+
+  // Stats persisting
+  const [stats, setStats] = useState<GameStats>({ ...DEFAULT_STATS });
+  const [upgradesLevel, setUpgradesLevel] = useState<Record<string, number>>({
+    hydrogen_deflector: 0,
+    quantum_core: 0,
+    fusion_resonator: 0,
+    nano_catalyst: 0,
+    mitosis_relic: 0
+  });
+
+  // LUX-8 Dialogue Feed
+  const [dialogueLog, setDialogueLog] = useState<DialogueMessage[]>([]);
+
+  // Laptop Cockpit & Threat Intel states
+  const [isLeftPanelCollapsed, setIsLeftPanelCollapsed] = useState(false);
+  const [isRightPanelCollapsed, setIsRightPanelCollapsed] = useState(false);
+  const [activeThreatIntel, setActiveThreatIntel] = useState<EnemyType | null>(null);
+
+  // Mid-run upgrades states
+  const [activeRunUpgrades, setActiveRunUpgrades] = useState<Record<string, number>>({});
+  const [isUpgradeSelectionOpen, setIsUpgradeSelectionOpen] = useState(false);
+  const [upgradeChoices, setUpgradeChoices] = useState<UpgradeDefinition[]>([]);
+  const [rerollsRemaining, setRerollsRemaining] = useState(1);
+  const [wasRerollUsed, setWasRerollUsed] = useState(false);
+  const [waveIntroConfig, setWaveIntroConfig] = useState<WaveConfig | null>(null);
+
+  // Boss HUD React states
+  const [bossHp, setBossHp] = useState(1500);
+  const [bossMaxHp, setBossMaxHp] = useState(1500);
+  const [bossPhase, setBossPhase] = useState(1);
+  const [bossAttackName, setBossAttackName] = useState<string | null>(null);
+  const [bossShieldNodes, setBossShieldNodes] = useState<number>(0);
+  const [isCoreExposed, setIsCoreExposed] = useState(false);
+  const [bossIntroTime, setBossIntroTime] = useState<number | null>(null);
+  const [bossTransitionName, setBossTransitionName] = useState<string | null>(null);
+
+
+  // --- HIGH-FREQUENCY GAME ENGINE REF BUFFERS (Avoid re-renders) ---
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const loopActiveRef = useRef(false);
+  const lastTimeRef = useRef(0);
+  const timeElapsedRef = useRef(0);
+
+  const playerPosRef = useRef({ x: WORLD_WIDTH / 2, y: WORLD_HEIGHT / 2 });
+  const pointerRef = useRef({ x: WORLD_WIDTH / 2, y: WORLD_HEIGHT / 2 });
+  const playerFlashRef = useRef(0);
+  const invincibilityTimerRef = useRef(0);
+  const shieldRef = useRef(100);
+  const scoreRef = useRef(0);
+  const nanoCreditsRef = useRef(0);
+  const fusionEnergyRef = useRef(0);
+
+  const keysPressedRef = useRef<Record<string, boolean>>({});
+
+  // Entity Lists
+  const swarmRef = useRef<OrbiMember[]>([]);
+  const enemiesRef = useRef<Enemy[]>([]);
+  const projectilesRef = useRef<Projectile[]>([]);
+  const resourcesRef = useRef<Resource[]>([]);
+  const particlesRef = useRef<Particle[]>([]);
+
+  // Wave Manager states inside refs
+  const currentWaveRef = useRef(1);
+  const waveActiveRef = useRef(false);
+  const waveBudgetSpawnedRef = useRef(0);
+  const waveTimeRemainingRef = useRef(0);
+  const spawnTimerRef = useRef(0);
+  const waveBreakTimerRef = useRef(0);
+
+  // Boss Refs
+  const bossActiveRef = useRef(false);
+  const bossRef = useRef<Enemy | null>(null);
+
+  // High-frequency boss states
+  const bossIntroTimeRef = useRef<number | null>(null); // introduction remaining time
+  const bossAttackTimerRef = useRef<number>(200); // initial delay before first attack
+  const bossCurrentAttackRef = useRef<string | null>(null); // active/charging attack ID
+  const bossAttackTelegraphRef = useRef<number>(0); // charging ticker
+  const bossAttackDurationRef = useRef<number>(0); // active action ticker
+  const bossAttackAngleRef = useRef<number>(0); // sweep/rotation angle
+  const bossAttackTargetPosRef = useRef<{ x: number, y: number }>({ x: 0, y: 0 }); // coordinates for wells/beams
+  const bossLastAttacksRef = useRef<string[]>([]); // prevent consecutive repeating of attacks
+  const shieldNodesRef = useRef<{ id: string; x: number; y: number; health: number; maxHealth: number; angle: number; flashTicks: number }[]>([]);
+  const coreExposedTimerRef = useRef<number>(0); // exposed window countdown
+  const phaseTransitionTimerRef = useRef<number>(0); // transition immunity freeze timer
+  const bossSummonTimersRef = useRef<Record<string, number>>({}); // cooldowns of summons
+  const gravityWellPulseTimerRef = useRef<number>(0); // timing for gravity well pull
+  const shownThreatIntelsRef = useRef<string[]>([]); // prevents repeating full screen threat intel popups for boss attacks
+
+  // Boss Defeat sequence
+  const bossDefeatedSequenceActiveRef = useRef(false);
+  const bossDefeatedSequenceTimerRef = useRef(0);
+
+  // Boss encounter telemetry additions
+  const bossDamageDealtRef = useRef<number>(0);
+  const bossShieldNodesDestroyedRef = useRef<number>(0);
+  const bossDamageTakenRef = useRef<number>(0);
+  const bossMaxPhaseReachedRef = useRef<number>(1);
+  const bossSessionStartTimeRef = useRef<number>(0);
+  const bossSessionEndTimeRef = useRef<number>(0);
+
+  // Track attacks hit by type
+  const bossAttacksHitByTypeRef = useRef<Record<string, number>>({
+    devourer_beam: 0,
+    gravity_well: 0,
+    orbital_shards: 0,
+    blackout_sweep: 0,
+    singularity_pulse: 0,
+    rotating_eclipse_lanes: 0,
+    devourer_charge: 0,
+    contact_damage: 0
+  });
+
+  const runStartTimeRef = useRef<number>(0);
+  const runEndTimeRef = useRef<number>(0);
+  const bossAttacksSeenThisRunRef = useRef<string[]>([]);
+
+
+  // Cosmetic / screen effects
+  const screenShakeRef = useRef(0);
+  const cameraOffsetRef = useRef({ x: 0, y: 0 });
+
+  // Expanded 1600x960 Battlefield Camera State
+  const cameraStateRef = useRef({
+    cameraX: WORLD_WIDTH / 2 - 400,
+    cameraY: WORLD_HEIGHT / 2 - 240,
+    targetX: WORLD_WIDTH / 2 - 400,
+    targetY: WORLD_HEIGHT / 2 - 240,
+    zoom: 1.0,
+    targetZoom: 1.0,
+    viewportWidth: 800,
+    viewportHeight: 480,
+    shakeX: 0,
+    shakeY: 0,
+    lookAheadX: 0,
+    lookAheadY: 0
+  });
+
+  // Stats Ref to access stats synchronously in high-frequency engine
+  const statsRef = useRef<GameStats | null>(null);
+
+  // Input Arbitration Refs
+  const isMouseDownRef = useRef(false);
+  const mouseDownPosRef = useRef({ x: 0, y: 0, time: 0 });
+  const lastInputTypeRef = useRef<"KEYBOARD" | "MOUSE_DRAG" | "CLICK_TO_MOVE" | "NONE">("NONE");
+  const clickToMoveTargetRef = useRef<{ x: number; y: number } | null>(null);
+
+  // Patch 0B.4 - Combat Readability Refs
+  const hitStopTimerRef = useRef(0);
+  const hitStopCooldownTimerRef = useRef(0);
+  const disruptTimerRef = useRef(0);
+  const disruptRecoveryRef = useRef(1.0);
+  const floatingTextsRef = useRef<Array<{ id: string; text: string; x: number; y: number; color: string; life: number; maxLife: number; vy: number }>>([]);
+
+  const addFloatingText = (text: string, x: number, y: number, color: string) => {
+    floatingTextsRef.current.push({
+      id: Math.random().toString(),
+      text,
+      x,
+      y,
+      color,
+      life: 800, // 800 ms of display
+      maxLife: 800,
+      vy: -0.65 // Float upwards slightly
+    });
+  };
+
+  // Throttling React updates to 10-frame intervals
+  const reactUpdateTimerRef = useRef(0);
+
+  // Mid-run upgrades refs
+  const activeRunUpgradesRef = useRef<Record<string, number>>({});
+  const isUpgradeSelectionOpenRef = useRef(false);
+  const formationUseCountsRef = useRef<Record<string, number>>({});
+  const hazardZonesRef = useRef<Array<{ x: number, y: number, r: number }>>([]);
+  const formationCooldownRef = useRef(0);
+
+  const setUpgradeSelectionOpen = (open: boolean) => {
+    setIsUpgradeSelectionOpen(open);
+    isUpgradeSelectionOpenRef.current = open;
+  };
+
+  const updateActiveRunUpgrades = (nextValue: Record<string, number>) => {
+    setActiveRunUpgrades(nextValue);
+    activeRunUpgradesRef.current = nextValue;
+  };
+
+  const selectUpgrade = (card: UpgradeDefinition) => {
+    const currentStacks = activeRunUpgradesRef.current[card.id] || 0;
+    if (currentStacks >= card.maxStacks) return;
+
+    const nextUpgrades = { ...activeRunUpgradesRef.current, [card.id]: currentStacks + 1 };
+    updateActiveRunUpgrades(nextUpgrades);
+
+    playClickSound();
+    playBiomeChangeSound();
+
+    triggerExplosion(
+      particlesRef.current,
+      getQualityConfig(stats.qualityPreset).maxParticles,
+      ParticleType.FORMATION_CHANGE,
+      playerPosRef.current.x,
+      playerPosRef.current.y,
+      "#fbbf24", // gold glow
+      35
+    );
+
+    addFloatingText(`ACQUIRED: ${card.name.toUpperCase()}`, playerPosRef.current.x, playerPosRef.current.y - 40, "#38bdf8");
+
+    if (card.id === "foton_integrity") {
+      const currentShieldMax = SHIELD_MAX + (upgradesLevel.hydrogen_deflector || 0) * 15 + (currentStacks + 1) * 30;
+      shieldRef.current = Math.min(currentShieldMax, shieldRef.current + 50);
+      setShield(shieldRef.current);
+    }
+
+    postDialogue("COMPANION", "La Red ha adoptado una nueva configuración.");
+    setUpgradeSelectionOpen(false);
+  };
+
+  const selectUpgradeByIndex = (index: number) => {
+    if (upgradeChoices[index]) {
+      selectUpgrade(upgradeChoices[index]);
+    }
+  };
+
+  const handleReroll = () => {
+    if (rerollsRemaining <= 0) return;
+    setRerollsRemaining((prev) => prev - 1);
+    setWasRerollUsed(true);
+    playClickSound();
+
+    let hasSolar = false;
+    let hasHydro = false;
+    let hasWind = false;
+    let hasThermal = false;
+
+    swarmRef.current.forEach((m) => {
+      if (m.affinity === "solar") hasSolar = true;
+      else if (m.affinity === "hydro") hasHydro = true;
+      else if (m.affinity === "wind") hasWind = true;
+      else if (m.affinity === "thermal") hasThermal = true;
+    });
+
+    const choices = generateUpgradeChoices(
+      activeRunUpgradesRef.current,
+      hasSolar,
+      hasHydro,
+      hasWind,
+      hasThermal
+    );
+    setUpgradeChoices(choices);
+  };
+
+  const triggerUpgradeSelection = () => {
+    let hasSolar = false;
+    let hasHydro = false;
+    let hasWind = false;
+    let hasThermal = false;
+
+    swarmRef.current.forEach((m) => {
+      if (m.affinity === "solar") hasSolar = true;
+      else if (m.affinity === "hydro") hasHydro = true;
+      else if (m.affinity === "wind") hasWind = true;
+      else if (m.affinity === "thermal") hasThermal = true;
+    });
+
+    const choices = generateUpgradeChoices(
+      activeRunUpgradesRef.current,
+      hasSolar,
+      hasHydro,
+      hasWind,
+      hasThermal
+    );
+
+    setUpgradeChoices(choices);
+    setUpgradeSelectionOpen(true);
+  };
+
+  const getStrongestAffinity = () => {
+    const counts: Record<string, number> = { solar: 0, hydro: 0, wind: 0, thermal: 0 };
+    swarmRef.current.forEach(m => {
+      if (m.affinity === "solar") counts.solar++;
+      else if (m.affinity === "hydro") counts.hydro++;
+      else if (m.affinity === "wind") counts.wind++;
+      else if (m.affinity === "thermal") counts.thermal++;
+    });
+
+    const upgrades = activeRunUpgradesRef.current;
+    if (upgrades.solar_overcharge) counts.solar += upgrades.solar_overcharge * 5;
+    if (upgrades.hydro_regenesis) counts.hydro += upgrades.hydro_regenesis * 5;
+    if (upgrades.wind_acceleration) counts.wind += upgrades.wind_acceleration * 5;
+    if (upgrades.thermal_expansion) counts.thermal += upgrades.thermal_expansion * 5;
+
+    let best = "none";
+    let max = 0;
+    for (const [aff, val] of Object.entries(counts)) {
+      if (val > max) {
+        max = val;
+        best = aff;
+      }
+    }
+    return best;
+  };
+
+  // --- COMPANION LUX-8 DIALOGUES WRITING ---
+  const postDialogue = useCallback((sender: "FOTON" | "COMPANION" | "SYSTEM", text: string) => {
+    const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const msg: DialogueMessage = {
+      id: Math.random().toString(),
+      sender,
+      text,
+      timestamp
+    };
+    setDialogueLog((prev) => {
+      const next = [...prev, msg];
+      if (next.length > 50) next.shift(); // Limit logs buffer size
+      return next;
+    });
+  }, []);
+
+  // --- BOOTING / STORAGE LIFE ACTIONS ---
+  useEffect(() => {
+    const loaded = loadGameStats();
+    setStats(loaded);
+    setHighScore(loaded.highScore);
+    setAudioMuted(loaded.audioMuted);
+    setMuteState(loaded.audioMuted);
+
+    // Load level states
+    const levels: Record<string, number> = {};
+    loaded.gameMemories.forEach((mem) => {
+      const spl = mem.split(":");
+      if (spl.length === 2) {
+        levels[spl[0]] = parseInt(spl[1], 10) || 0;
+      }
+    });
+    setUpgradesLevel({
+      hydrogen_deflector: levels.hydrogen_deflector || 0,
+      quantum_core: levels.quantum_core || 0,
+      fusion_resonator: levels.fusion_resonator || 0,
+      nano_catalyst: levels.nano_catalyst || 0,
+      mitosis_relic: levels.mitosis_relic || 0
+    });
+
+    // Companion greets player
+    postDialogue("COMPANION", "Estación LUX-8 sincronizada. Orbi Foton listo para cosechar.");
+  }, [postDialogue]);
+
+  // --- SYNC STATS STATE TO REF AND PERSISTENCE HELPER ---
+  useEffect(() => {
+    statsRef.current = stats;
+  }, [stats]);
+
+  const updateStatsAndSave = (nextStats: GameStats) => {
+    setStats(nextStats);
+    statsRef.current = nextStats;
+    saveGameStats(nextStats);
+  };
+
+  // --- SAVE CURRENT PROGRESSION HELPER ---
+  const commitStats = (isVictory: boolean, currentScore: number) => {
+    const fresh = loadGameStats();
+    const peakSwarm = Math.max(fresh.bestSwarmSize, swarmRef.current.length + 1);
+    const peakWave = Math.max(fresh.bestWave, currentWaveRef.current);
+    const topScore = Math.max(fresh.highScore, currentScore);
+
+    // Serialize upgrades back to memories list
+    const memories = Object.entries(upgradesLevel).map(([k, v]) => `${k}:${v}`);
+
+    const isBossFightAttempted = bossSessionStartTimeRef.current > 0;
+    const fightDuration = isVictory && isBossFightAttempted && bossSessionEndTimeRef.current > bossSessionStartTimeRef.current
+      ? bossSessionEndTimeRef.current - bossSessionStartTimeRef.current
+      : 0;
+
+    const playerMaxShield = SHIELD_MAX + (upgradesLevel.hydrogen_deflector || 0) * 15;
+    const currentIntegrityPercent = Math.round((shieldRef.current / playerMaxShield) * 100);
+
+    const currentSeenPhases = fresh.bossCodexSeenPhases || [];
+    const newSeenPhases = Array.from(new Set([
+      ...currentSeenPhases,
+      ...Array.from({ length: bossMaxPhaseReachedRef.current }, (_, i) => i + 1)
+    ]));
+
+    const currentSeenAttacks = fresh.bossCodexSeenAttacks || [];
+    const newSeenAttacks = Array.from(new Set([
+      ...currentSeenAttacks,
+      ...bossAttacksSeenThisRunRef.current
+    ]));
+
+    const updated: GameStats = {
+      ...fresh,
+      highScore: topScore,
+      bestWave: peakWave,
+      bestSwarmSize: peakSwarm,
+      totalRuns: fresh.totalRuns + 1,
+      totalVictories: isVictory ? fresh.totalVictories + 1 : fresh.totalVictories,
+      totalEnemiesDestroyed: fresh.totalEnemiesDestroyed + stats.totalEnemiesDestroyed, // accumulation during run
+      totalResourcesCollected: fresh.totalResourcesCollected + stats.totalResourcesCollected,
+      totalNanoCredits: nanoCreditsRef.current, // persistent balance
+      bossDefeated: isVictory || fresh.bossDefeated,
+      gameMemories: memories,
+
+      // Boss Specific Persistent Codex Telemetry
+      bossVictories: isVictory ? (fresh.bossVictories || 0) + 1 : (fresh.bossVictories || 0),
+      firstBossVictoryAt: (isVictory && !fresh.firstBossVictoryAt) ? new Date().toISOString() : fresh.firstBossVictoryAt,
+      fastestBossVictory: fightDuration > 0
+        ? Math.min(fresh.fastestBossVictory || 9999999, fightDuration)
+        : fresh.fastestBossVictory,
+      bestBossRemainingIntegrity: isVictory
+        ? Math.max(fresh.bestBossRemainingIntegrity || 0, currentIntegrityPercent)
+        : fresh.bestBossRemainingIntegrity,
+      preferredBossFormation: isBossFightAttempted ? getFormationMostUsed() : fresh.preferredBossFormation,
+      bossCodexSeenPhases: newSeenPhases,
+      bossCodexSeenAttacks: newSeenAttacks
+    };
+
+    saveGameStats(updated);
+    setStats(updated);
+    setHighScore(topScore);
+  };
+
+  // --- KEY LISTENER LISTENERS ---
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!isPlaying) {
+        if (e.key === "Enter") {
+          startGame();
+        }
+        return;
+      }
+
+      // Space to skip boss intro
+      if (e.key === " " && bossIntroTimeRef.current !== null) {
+        e.preventDefault();
+        skipBossIntro();
+        return;
+      }
+
+      // Prevent scroll on gaming keys
+      if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " ", "1", "2", "3", "4", "5", "6"].includes(e.key)) {
+        e.preventDefault();
+      }
+
+      const key = e.key.toUpperCase();
+
+      if (isUpgradeSelectionOpenRef.current) {
+        e.preventDefault();
+        if (key === "1") {
+          selectUpgradeByIndex(0);
+        } else if (key === "2") {
+          selectUpgradeByIndex(1);
+        } else if (key === "3") {
+          selectUpgradeByIndex(2);
+        } else if (key === "R") {
+          handleReroll();
+        }
+        return; // BLOCK ALL OTHER INPUTS
+      }
+
+      keysPressedRef.current[key] = true;
+
+      const movementKeys = ["W", "A", "S", "D", "ARROWUP", "ARROWDOWN", "ARROWLEFT", "ARROWRIGHT"];
+      if (movementKeys.includes(key)) {
+        lastInputTypeRef.current = "KEYBOARD";
+        clickToMoveTargetRef.current = null;
+      }
+
+      // Handle Hotkeys
+      if (key === "P" || e.key === "Escape") {
+        togglePause();
+      } else if (key === "M") {
+        toggleMute();
+      } else if (key === "R") {
+        rebootGame();
+      } else if (["1", "2", "3", "4", "5", "6"].includes(key)) {
+        const idx = parseInt(key, 10);
+        const forms = [
+          FormationType.LINE,
+          FormationType.CIRCLE,
+          FormationType.DELTA,
+          FormationType.SHIELD,
+          FormationType.V_SHAPE,
+          FormationType.SCATTERED
+        ];
+        const nextForm = forms[idx - 1];
+        if (nextForm) {
+          triggerFormationChange(nextForm);
+        }
+      }
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      const key = e.key.toUpperCase();
+      keysPressedRef.current[key] = false;
+    };
+
+    const handleBlur = () => {
+      // Clear key stucks on blur
+      keysPressedRef.current = {};
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+    window.addEventListener("blur", handleBlur);
+    document.addEventListener("visibilitychange", handleBlur);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+      window.removeEventListener("blur", handleBlur);
+      document.removeEventListener("visibilitychange", handleBlur);
+    };
+  }, [isPlaying, isPaused, upgradesLevel]);
+
+  const changeMinimapMode = (mode: "FULL" | "COMPACT" | "OFF") => {
+    const next = { ...stats, minimapMode: mode };
+    setStats(next);
+    saveGameStats(next);
+    playClickSound();
+  };
+
+  const changeQualityPreset = (preset: QualityPreset) => {
+    const next = { ...stats, qualityPreset: preset };
+    setStats(next);
+    saveGameStats(next);
+    playClickSound();
+  };
+
+  // --- TRIGGER FORMATION MODIFIER SCRIPT ---
+  const triggerFormationChange = (nextForm: FormationType) => {
+    if (formationCooldownRef.current > 0) {
+      addFloatingText("COOLDOWN ACTIVE", playerPosRef.current.x, playerPosRef.current.y - 25, "#f43f5e");
+      return;
+    }
+
+    setActiveFormation(nextForm);
+    playClickSound();
+    
+    const baseCooldown = 1500; // 1.5s
+    const syncStacks = activeRunUpgradesRef.current.formation_synchronizer || 0;
+    const finalCooldown = Math.max(500, baseCooldown * (1 - 0.40 * syncStacks));
+    formationCooldownRef.current = finalCooldown;
+
+    // Spawn gorgeous visual rings
+    const cfg = FORMATIONS[nextForm];
+    triggerExplosion(
+      particlesRef.current,
+      getQualityConfig(stats.qualityPreset).maxParticles,
+      ParticleType.FORMATION_CHANGE,
+      playerPosRef.current.x,
+      playerPosRef.current.y,
+      "#06b6d4",
+      15
+    );
+
+    // Floating text feedback (Section 5)
+    addFloatingText(`FORMATION: ${cfg.name.toUpperCase()}`, playerPosRef.current.x, playerPosRef.current.y - 25, "#c084fc");
+
+    postDialogue("SYSTEM", `Vectores alienados: ${cfg.name}`);
+  };
+
+  // --- GAME START TRIGGER ---
+  const startGame = () => {
+    initAudio();
+    setIsPlaying(true);
+    setIsPaused(false);
+    setIsGameOver(false);
+    setVictory(false);
+
+    // Initial run start and telemetry setups
+    runStartTimeRef.current = Date.now();
+    runEndTimeRef.current = 0;
+    bossDamageDealtRef.current = 0;
+    bossShieldNodesDestroyedRef.current = 0;
+    bossDamageTakenRef.current = 0;
+    bossMaxPhaseReachedRef.current = 1;
+    bossSessionStartTimeRef.current = 0;
+    bossSessionEndTimeRef.current = 0;
+    bossDefeatedSequenceActiveRef.current = false;
+    bossDefeatedSequenceTimerRef.current = 0;
+    bossAttacksSeenThisRunRef.current = [];
+    bossAttacksHitByTypeRef.current = {
+      devourer_beam: 0,
+      gravity_well: 0,
+      orbital_shards: 0,
+      blackout_sweep: 0,
+      singularity_pulse: 0,
+      rotating_eclipse_lanes: 0,
+      devourer_charge: 0,
+      contact_damage: 0
+    };
+
+    // Initial cleanups
+    playerPosRef.current = { x: WORLD_WIDTH / 2, y: WORLD_HEIGHT / 2 };
+    pointerRef.current = { x: WORLD_WIDTH / 2, y: WORLD_HEIGHT / 2 };
+    shieldRef.current = SHIELD_MAX + (upgradesLevel.hydrogen_deflector || 0) * 15;
+    scoreRef.current = 0;
+    fusionEnergyRef.current = 0;
+    playerFlashRef.current = 0;
+    invincibilityTimerRef.current = 0;
+
+    swarmRef.current = [];
+    enemiesRef.current = [];
+    projectilesRef.current = [];
+    resourcesRef.current = [];
+    particlesRef.current = [];
+
+    currentWaveRef.current = 1;
+    waveActiveRef.current = false;
+    waveBreakTimerRef.current = 2500; // 2.5 seconds visual preparation break
+
+    // Reset mid-run upgrades
+    updateActiveRunUpgrades({});
+    setUpgradeSelectionOpen(false);
+    setRerollsRemaining(1);
+    setWasRerollUsed(false);
+    setWaveIntroConfig(null);
+    formationUseCountsRef.current = {};
+    hazardZonesRef.current = [];
+    formationCooldownRef.current = 0;
+    bossActiveRef.current = false;
+    bossRef.current = null;
+
+    // Reset boss states and refs
+    setBossHp(BLACKOUT_DEVOURER_CANON.maxHealth);
+    setBossMaxHp(BLACKOUT_DEVOURER_CANON.maxHealth);
+    setBossPhase(1);
+    setBossAttackName(null);
+    setBossShieldNodes(0);
+    setIsCoreExposed(false);
+    setBossIntroTime(null);
+    setBossTransitionName(null);
+
+    bossIntroTimeRef.current = null;
+    bossAttackTimerRef.current = 200;
+    bossCurrentAttackRef.current = null;
+    bossAttackTelegraphRef.current = 0;
+    bossAttackDurationRef.current = 0;
+    bossAttackAngleRef.current = 0;
+    bossAttackTargetPosRef.current = { x: 0, y: 0 };
+    bossLastAttacksRef.current = [];
+    shieldNodesRef.current = [];
+    coreExposedTimerRef.current = 0;
+    phaseTransitionTimerRef.current = 0;
+    bossSummonTimersRef.current = {};
+    gravityWellPulseTimerRef.current = 0;
+    shownThreatIntelsRef.current = [];
+
+    // Load persistent Nano credit balance
+    const freshStats = loadGameStats();
+    setNanoCredits(freshStats.totalNanoCredits);
+    nanoCreditsRef.current = freshStats.totalNanoCredits;
+
+    // Recruits initial Orbi member
+    addSwarmMember();
+
+    // Reset statistics trackers for this run
+    stats.totalEnemiesDestroyed = 0;
+    stats.totalResourcesCollected = 0;
+
+    setIsWaveBreak(true);
+    setWaveBreakTimeLeft(Math.ceil(2500 / 1000));
+    setWaveName("PREPARATION PROTOCOL");
+
+    setActiveBiome(BiomeType.SOLAR_PLAINS);
+    setActiveFormation(FormationType.LINE);
+
+    postDialogue("COMPANION", "Sincronización activada. Núcleo Foton operando a resonancia base.");
+
+    startBgm("EXPLORATION");
+
+    loopActiveRef.current = true;
+    lastTimeRef.current = performance.now();
+    requestAnimationFrame(gameLoop);
+  };
+
+  // --- REBOOT GAME ON LOSS ---
+  const rebootGame = () => {
+    playClickSound();
+    startGame();
+  };
+
+  // --- TOGGLE PAUSE ---
+  const togglePause = () => {
+    if (!isPlaying || isGameOver) return;
+    
+    if (isPaused) {
+      playUnpauseSound();
+      setIsPaused(false);
+      lastTimeRef.current = performance.now();
+      // Resume background music based on current combat tension
+      if (bossActiveRef.current) {
+        startBgm("BOSS");
+      } else if (currentWaveRef.current >= 5) {
+        startBgm("HIGH_INTENSITY");
+      } else {
+        startBgm("EXPLORATION");
+      }
+    } else {
+      playPauseSound();
+      setIsPaused(true);
+      stopBgm();
+    }
+  };
+
+  // --- TOGGLE MUTE ---
+  const toggleMute = () => {
+    const next = !audioMuted;
+    setAudioMuted(next);
+    setMuteState(next);
+    playClickSound();
+  };
+
+  // --- SHUFFLE BAG FOR BALANCED ELEMENTAL RECRUITMENT ---
+  const recruitBagRef = useRef<Array<"solar" | "hydro" | "wind" | "thermal" | "nuclear" | "quantum">>([]);
+  const combatRoles: Array<"beam" | "rapid" | "pulse" | "arc" | "shield" | "support"> = [
+    "beam", "rapid", "pulse", "arc", "shield", "support"
+  ];
+  const personalities = ["Curious", "Bold", "Cynical", "Joyful", "Silent", "Anxious", "Enthusiastic", "Calm", "Fiery", "Stoic"];
+
+  const getNextAffinityFromBag = (): "solar" | "hydro" | "wind" | "thermal" | "nuclear" | "quantum" => {
+    if (recruitBagRef.current.length === 0) {
+      // Base suggested distribution percentages: solar: 17%, hydro: 17%, wind: 17%, thermal: 17%, nuclear: 16%, quantum: 16%
+      const temp: Array<"solar" | "hydro" | "wind" | "thermal" | "nuclear" | "quantum"> = [];
+      for (let i = 0; i < 17; i++) temp.push("solar");
+      for (let i = 0; i < 17; i++) temp.push("hydro");
+      for (let i = 0; i < 17; i++) temp.push("wind");
+      for (let i = 0; i < 17; i++) temp.push("thermal");
+      for (let i = 0; i < 16; i++) temp.push("nuclear");
+      for (let i = 0; i < 16; i++) temp.push("quantum");
+
+      // Fisher-Yates shuffle
+      for (let i = temp.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const hold = temp[i];
+        temp[i] = temp[j];
+        temp[j] = hold;
+      }
+      recruitBagRef.current = temp;
+    }
+    return recruitBagRef.current.pop()!;
+  };
+
+  // --- ADD ORBI FOLLOWER TO ACTIVE SWARM ---
+  const addSwarmMember = (
+    predefinedAffinity?: "solar" | "hydro" | "wind" | "thermal" | "nuclear" | "quantum",
+    predefinedCombatRole?: "beam" | "rapid" | "pulse" | "arc" | "shield" | "support"
+  ) => {
+    const affinity = predefinedAffinity || getNextAffinityFromBag();
+    const combatRole = predefinedCombatRole || combatRoles[Math.floor(Math.random() * combatRoles.length)];
+
+    const coreLevel = upgradesLevel.quantum_core || 0;
+    const capacityLimit = coreLevel >= 3 ? 60 : (coreLevel === 2 ? 48 : (coreLevel === 1 ? 36 : 24));
+
+    // Check capacity limit: evolve/consolidate an existing Orbi of the same affinity if full! (Section 1)
+    if (swarmRef.current.length >= capacityLimit) {
+      // Find candidates with same affinity
+      let candidates = swarmRef.current.filter((m) => m.affinity === affinity);
+      
+      // If we have candidates of same affinity, prioritize those with same combat role
+      if (candidates.length > 0) {
+        const roleMatches = candidates.filter((m) => m.combatRole === combatRole);
+        if (roleMatches.length > 0) {
+          candidates = roleMatches;
+        }
+      } else {
+        // Fallback if no member has this affinity at all
+        candidates = swarmRef.current;
+      }
+      
+      // From these candidates, find the lowest level and XP
+      let minLevel = Infinity;
+      let minXp = Infinity;
+      candidates.forEach((m) => {
+        const lvl = m.level || 1;
+        const xp = m.xp || 0;
+        if (lvl < minLevel) {
+          minLevel = lvl;
+          minXp = xp;
+        } else if (lvl === minLevel) {
+          if (xp < minXp) {
+            minXp = xp;
+          }
+        }
+      });
+
+      // Filter candidates that match this minimum level & XP
+      const bestCandidates = candidates.filter((m) => {
+        const lvl = m.level || 1;
+        const xp = m.xp || 0;
+        return lvl === minLevel && xp === minXp;
+      });
+
+      // Pick a random candidate from bestCandidates (no siempre el primero!)
+      const targetOrbi = bestCandidates[Math.floor(Math.random() * bestCandidates.length)];
+
+      if (targetOrbi) {
+        const oldXp = targetOrbi.xp || 0;
+        const oldStage = targetOrbi.evolutionStage || 1;
+        const oldLevel = targetOrbi.level || 1;
+
+        // Deliver XP
+        const xpGain = 8;
+        const newXp = oldXp + xpGain;
+        targetOrbi.xp = newXp;
+
+        // Determine new evolution stage based on cumulative XP
+        // Thresholds: SPARK -> FOTON: 8 XP, FOTON -> GUARDIAN: 24 XP, GUARDIAN -> PRIME: 60 XP
+        let newStage = 1;
+        if (newXp >= 60) newStage = 4; // PRIME
+        else if (newXp >= 24) newStage = 3; // GUARDIAN
+        else if (newXp >= 8) newStage = 2; // FOTON
+        targetOrbi.evolutionStage = newStage;
+
+        // Level up calculation: every 4 XP gives a level
+        const newLevel = Math.floor(newXp / 4) + 1;
+        targetOrbi.level = newLevel;
+
+        // Scale statistics per level & stage
+        targetOrbi.size = 5 + (newStage - 1) * 1.5 + (newLevel - 1) * 0.15;
+        targetOrbi.shootCooldown = Math.max(20, 80 - (newStage - 1) * 12 - (newLevel - 1) * 1.5);
+
+        // Show clear feedback as required
+        addFloatingText("CORE CONSOLIDATED", playerPosRef.current.x, playerPosRef.current.y - 12, targetOrbi.color);
+        addFloatingText(`${targetOrbi.name} +${xpGain} XP`, playerPosRef.current.x, playerPosRef.current.y - 25, targetOrbi.color);
+
+        if (newLevel > oldLevel) {
+          if (newStage > oldStage) {
+            const stageName = newStage === 4 ? "PRIME" : (newStage === 3 ? "GUARDIAN" : "FOTON");
+            addFloatingText(`${targetOrbi.name} EVOLVED: ${stageName}!`, playerPosRef.current.x, playerPosRef.current.y - 38, targetOrbi.color);
+            postDialogue("SYSTEM", `EVOLUTION DETECTED: ${targetOrbi.name} reaches Stage ${newStage} (${stageName})!`);
+          } else {
+            addFloatingText(`${targetOrbi.name} LEVEL UP! (L${newLevel})`, playerPosRef.current.x, playerPosRef.current.y - 38, targetOrbi.color);
+            postDialogue("SYSTEM", `LEVEL UP: ${targetOrbi.name} reaches Level ${newLevel}`);
+          }
+        }
+
+        playRecruitSound();
+        screenShakeRef.current = 15;
+
+        // Massive flash explosion sparkles of matching color
+        triggerExplosion(
+          particlesRef.current,
+          getQualityConfig(stats.qualityPreset).maxParticles,
+          ParticleType.FUSION,
+          targetOrbi.x,
+          targetOrbi.y,
+          targetOrbi.color,
+          18
+        );
+      }
+      return;
+    }
+
+    const names = ["Alpha", "Beta", "Gamma", "Delta", "Epsilon", "Zeta", "Eta", "Theta", "Iota", "Kappa"];
+    const baseName = names[Math.floor(Math.random() * names.length)] + "-" + (swarmRef.current.length + 1);
+
+    // Identity and Color based on affinity (Section 7)
+    let color = "#f59e0b";
+    if (affinity === "hydro") color = "#0ea5e9";
+    else if (affinity === "wind") color = "#10b981";
+    else if (affinity === "thermal") color = "#ef4444";
+    else if (affinity === "nuclear") color = "#8b5cf6";
+    else if (affinity === "quantum") color = "#ec4899";
+
+    const personality = personalities[Math.floor(Math.random() * personalities.length)];
+
+    const member: OrbiMember = {
+      id: Math.random().toString(),
+      type: OrbiType.BEAM, // preserved as fallback
+      name: baseName,
+      x: playerPosRef.current.x + (Math.random() * 40 - 20),
+      y: playerPosRef.current.y + (Math.random() * 40 - 20),
+      targetX: playerPosRef.current.x,
+      targetY: playerPosRef.current.y,
+      color,
+      size: 5 + Math.random() * 2,
+      shootCooldown: 60 + Math.random() * 40,
+      affinity,
+      combatRole,
+      personality,
+      evolutionStage: 1,
+      level: 1,
+      xp: 0
+    };
+
+    swarmRef.current.push(member);
+    playRecruitSound();
+
+    // Floating notification for recruitment
+    addFloatingText(`RECRUITED: ${member.name} (${affinity.toUpperCase()})`, playerPosRef.current.x, playerPosRef.current.y - 25, member.color);
+
+    // Heavy screen shake and massive physical feedback
+    screenShakeRef.current = 15;
+
+    // Sparkles of the exact affinity color
+    triggerExplosion(
+      particlesRef.current,
+      getQualityConfig(stats.qualityPreset).maxParticles,
+      ParticleType.SWARM_RECRUIT,
+      playerPosRef.current.x,
+      playerPosRef.current.y,
+      color,
+      25,
+      3.5
+    );
+
+    const displayAffinity = affinity.toUpperCase();
+    const displayRole = combatRole.toUpperCase();
+    postDialogue("SYSTEM", `+1 ${displayAffinity} ORBI RECRUITED: ${baseName} [${displayRole}]`);
+  };
+
+  // --- SYSTEM SHOP UPGRADES ---
+  const handleBuyUpgrade = (upgradeId: string) => {
+    const costTable: Record<string, number> = {
+      hydrogen_deflector: 15,
+      quantum_core: 25,
+      fusion_resonator: 40,
+      nano_catalyst: 20,
+      mitosis_relic: 60
+    };
+
+    const currentLevel = upgradesLevel[upgradeId] || 0;
+    const baseCost = costTable[upgradeId] || 15;
+    const actualCost = Math.round(baseCost * (1 + currentLevel * 0.5));
+
+    if (nanoCreditsRef.current >= actualCost) {
+      nanoCreditsRef.current -= actualCost;
+      setNanoCredits(nanoCreditsRef.current);
+
+      const nextLevels = {
+        ...upgradesLevel,
+        [upgradeId]: currentLevel + 1
+      };
+      setUpgradesLevel(nextLevels);
+
+      // Save to disk
+      const fresh = loadGameStats();
+      const memories = Object.entries(nextLevels).map(([k, v]) => `${k}:${v}`);
+      const updated: GameStats = {
+        ...fresh,
+        totalNanoCredits: nanoCreditsRef.current,
+        gameMemories: memories
+      };
+      saveGameStats(updated);
+      setStats(updated);
+
+      // Apply immediate buffs
+      if (upgradeId === "hydrogen_deflector") {
+        shieldRef.current = Math.min(
+          SHIELD_MAX + nextLevels.hydrogen_deflector * 15,
+          shieldRef.current + 15
+        );
+      }
+
+      triggerExplosion(
+        particlesRef.current,
+        getQualityConfig(stats.qualityPreset).maxParticles,
+        ParticleType.FORMATION_CHANGE,
+        playerPosRef.current.x,
+        playerPosRef.current.y,
+        "#fbbf24",
+        15
+      );
+
+      postDialogue("COMPANION", `Tecnología instalada con éxito: ${upgradeId.replace("_", " ")}.`);
+    }
+  };
+
+  // --- CORE GAME OVER TRIGGER ---
+  const triggerGameOver = (won: boolean) => {
+    loopActiveRef.current = false;
+    setIsGameOver(true);
+    setVictory(won);
+    stopBgm();
+
+    runEndTimeRef.current = Date.now();
+    if (bossActiveRef.current && bossSessionEndTimeRef.current === 0) {
+      bossSessionEndTimeRef.current = Date.now();
+    }
+
+    if (won) {
+      playVictorySound();
+      postDialogue("COMPANION", "¡RESONANCIA PURIFICADA! El Devorador de la red ha sido desmantelado.");
+    } else {
+      playGameOverSound();
+      postDialogue("SYSTEM", "ENIGM-CORE CRASHED. Sincronización del enjambre perdida.");
+    }
+
+    // Persist scores
+    commitStats(won, scoreRef.current);
+  };
+
+  // --- PROCEDURAL REWARDS & ENEMY SPAWN MULTIPLIERS ---
+  const spawnResource = (x: number, y: number, forceType?: "NANO" | "ENERGY" | "ORBI") => {
+    if (resourcesRef.current.length >= MAX_RESOURCES) return;
+
+    const roll = Math.random();
+    let type: "NANO" | "ENERGY" | "ORBI" = "NANO";
+    let color = "#fbbf24"; // Amber nano
+    let size = 6;
+    let amount = 1;
+
+    if (forceType) {
+      type = forceType;
+    } else {
+      if (roll < 0.12) {
+        type = "ORBI"; // Recruits new member
+        color = "#ec4899"; // pink fallback
+        size = 8;
+      } else if (roll < 0.35) {
+        type = "ENERGY"; // Cyan purifier crystal
+        color = "#06b6d4";
+        size = 7;
+      }
+    }
+
+    let orbiAffinity: "solar" | "hydro" | "wind" | "thermal" | "nuclear" | "quantum" | undefined = undefined;
+    let orbiCombatRole: "beam" | "rapid" | "pulse" | "arc" | "shield" | "support" | undefined = undefined;
+
+    if (type === "ENERGY") {
+      color = "#06b6d4";
+      size = 7;
+    } else if (type === "ORBI") {
+      orbiAffinity = getNextAffinityFromBag();
+      orbiCombatRole = combatRoles[Math.floor(Math.random() * combatRoles.length)];
+      size = 9; // slightly larger for Wild Orbi
+
+      // Section 7 primary colors
+      if (orbiAffinity === "solar") color = "#f59e0b";
+      else if (orbiAffinity === "hydro") color = "#0ea5e9";
+      else if (orbiAffinity === "wind") color = "#10b981";
+      else if (orbiAffinity === "thermal") color = "#ef4444";
+      else if (orbiAffinity === "nuclear") color = "#8b5cf6";
+      else if (orbiAffinity === "quantum") color = "#ec4899";
+
+      // Enhanced feedback for rare drops
+      playCrystalSound();
+      triggerExplosion(
+        particlesRef.current,
+        getQualityConfig(stats.qualityPreset).maxParticles,
+        ParticleType.SWARM_RECRUIT,
+        x,
+        y,
+        color,
+        25,
+        3.5
+      );
+      postDialogue("COMPANION", `¡Núcleo silvestre liberado! Señal elemental: ${orbiAffinity.toUpperCase()} [${orbiCombatRole.toUpperCase()}].`);
+    }
+
+    resourcesRef.current.push({
+      id: Math.random().toString(),
+      type,
+      x,
+      y,
+      size,
+      color,
+      amount,
+      orbiAffinity,
+      orbiCombatRole,
+      consumed: false,
+      spawnTime: Date.now()
+    });
+  };
+
+  // --- TRIGGER FUSION SUMMONS ---
+  const triggerFusion = (fusionType: "SOLAR" | "HYDRO") => {
+    // Requires exact energy consumption
+    fusionEnergyRef.current = 0;
+
+    triggerExplosion(
+      particlesRef.current,
+      getQualityConfig(stats.qualityPreset).maxParticles,
+      ParticleType.FUSION,
+      playerPosRef.current.x,
+      playerPosRef.current.y,
+      fusionType === "SOLAR" ? "#fbbf24" : "#06b6d4",
+      35,
+      4.0
+    );
+
+    if (fusionType === "SOLAR") {
+      // Create Solar Guardian Prime
+      const g: OrbiMember = {
+        id: "solar_guardian_prime_" + Math.random().toString(),
+        type: OrbiType.SOLAR_GUARDIAN,
+        name: "SOLAR GUARDIAN",
+        x: playerPosRef.current.x,
+        y: playerPosRef.current.y,
+        targetX: playerPosRef.current.x,
+        targetY: playerPosRef.current.y,
+        color: "#fbbf24",
+        size: 7,
+        shootCooldown: 25, // Insanely rapid fire!
+        affinity: "solar",
+        combatRole: "beam",
+        personality: "PRIMAL",
+        evolutionStage: 3,
+        level: 5,
+        xp: 0
+      };
+      swarmRef.current.push(g);
+      postDialogue("COMPANION", "¡FUSIÓN SOLAR DETECTADA! Guardián Solar Prime convocado.");
+    } else {
+      // Create Hydro Leviathan
+      const l: OrbiMember = {
+        id: "hydro_leviathan_" + Math.random().toString(),
+        type: OrbiType.HYDRO_LEVIATHAN,
+        name: "HYDRO LEVIATHAN",
+        x: playerPosRef.current.x,
+        y: playerPosRef.current.y,
+        targetX: playerPosRef.current.x,
+        targetY: playerPosRef.current.y,
+        color: "#22d3ee",
+        size: 16,
+        shootCooldown: 30,
+        affinity: "hydro",
+        combatRole: "pulse",
+        personality: "MAJESTIC",
+        evolutionStage: 3,
+        level: 5,
+        xp: 0
+      };
+      swarmRef.current.push(l);
+      postDialogue("COMPANION", "¡FUSIÓN HÍDRICA DETECTADA! Hidro-Leviatán estabilizado en órbita.");
+    }
+  };
+
+  // --- WAVE TRANSITIONS DIRECTOR ---
+  const handleWaveTransitions = (delta: number) => {
+    if (bossActiveRef.current) return;
+
+    if (waveActiveRef.current) {
+      // Count down wave duration
+      waveTimeRemainingRef.current -= delta;
+      if (waveTimeRemainingRef.current <= 0) {
+        // Wave complete! Transition into intermission
+        waveActiveRef.current = false;
+        waveBreakTimerRef.current = INTER_WAVE_DURATION;
+        setIsWaveBreak(true);
+        setWaveBreakTimeLeft(Math.ceil(INTER_WAVE_DURATION / 1000));
+        
+        // Recover some shield as a reward
+        const regenBonus = 20 + (upgradesLevel.hydrogen_deflector || 0) * 5;
+        const currentShieldMax = SHIELD_MAX + (upgradesLevel.hydrogen_deflector || 0) * 15 + (activeRunUpgradesRef.current.foton_integrity || 0) * 30;
+        shieldRef.current = Math.min(
+          currentShieldMax,
+          shieldRef.current + regenBonus
+        );
+
+        // Clear active hazards
+        hazardZonesRef.current = [];
+
+        const completedWave = currentWaveRef.current;
+        // Advance wave tier
+        currentWaveRef.current += 1;
+        setCurrentWave(currentWaveRef.current);
+
+        // Open mid-run upgrades selector on intermission for specific reward waves!
+        if (UPGRADE_REWARD_WAVES.includes(completedWave)) {
+          triggerUpgradeSelection();
+        }
+
+        if (currentWaveRef.current === BOSS_WAVE_NUMBER) {
+          // Warning before boss entry!
+          setWaveName("BOSS WARNING: DEVOURER APPROACHING");
+          postDialogue("COMPANION", "¡ALERTA MÁXIMA! Firma del Blackout Devourer detectada en el sector.");
+          startBgm("BOSS");
+        } else {
+          setWaveName("PREPARATION BREAK");
+          postDialogue("COMPANION", `Oleada completada. Prepárate para el Sector ${currentWaveRef.current}.`);
+          
+          // Rotate Biome procedurally on new wave
+          const bIdx = (currentWaveRef.current - 1) % BIOME_ROTATION.length;
+          const nextBiome = BIOME_ROTATION[bIdx];
+          setActiveBiome(nextBiome);
+          playBiomeChangeSound();
+
+          triggerExplosion(
+            particlesRef.current,
+            getQualityConfig(stats.qualityPreset).maxParticles,
+            ParticleType.BIOME_PORTAL,
+            playerPosRef.current.x,
+            playerPosRef.current.y,
+            "#a78bfa",
+            20
+          );
+        }
+      }
+    } else {
+      // In intermission break
+      waveBreakTimerRef.current -= delta;
+      setWaveBreakTimeLeft(Math.ceil(waveBreakTimerRef.current / 1000));
+
+      if (waveBreakTimerRef.current <= 0) {
+        // Start the wave!
+        waveActiveRef.current = true;
+        const cfg = getWaveConfig(currentWaveRef.current);
+        waveTimeRemainingRef.current = cfg.duration;
+        waveBudgetSpawnedRef.current = 0;
+        setIsWaveBreak(false);
+        setWaveName(cfg.name);
+
+        postDialogue("SYSTEM", `OLEADA ${currentWaveRef.current} ACTIVA: ${cfg.name}`);
+
+        // Set up hazards if applicable
+        if (cfg.environmentalModifier === "BLACKOUT_HAZARD_ZONES") {
+          hazardZonesRef.current = [
+            { x: WORLD_WIDTH * 0.25 + Math.random() * 100, y: WORLD_HEIGHT * 0.25 + Math.random() * 100, r: 80 },
+            { x: WORLD_WIDTH * 0.75 + Math.random() * 100, y: WORLD_HEIGHT * 0.25 + Math.random() * 100, r: 80 },
+            { x: WORLD_WIDTH * 0.25 + Math.random() * 100, y: WORLD_HEIGHT * 0.75 + Math.random() * 100, r: 80 },
+            { x: WORLD_WIDTH * 0.75 + Math.random() * 100, y: WORLD_HEIGHT * 0.75 + Math.random() * 100, r: 80 },
+          ];
+        } else {
+          hazardZonesRef.current = [];
+        }
+
+        // Trigger visual cinematic Wave Intro overlay
+        setWaveIntroConfig(cfg);
+        setTimeout(() => {
+          setWaveIntroConfig(null);
+        }, 2500);
+
+        if (currentWaveRef.current === BOSS_WAVE_NUMBER) {
+          spawnBoss();
+        } else {
+          // Increase background tracks
+          if (currentWaveRef.current >= 5) {
+            startBgm("HIGH_INTENSITY");
+          } else {
+            startBgm("EXPLORATION");
+          }
+        }
+      }
+    }
+  };
+
+  // --- SPAWN REGULAR ENEMY ---
+  const spawnEnemy = (forcedType?: EnemyType) => {
+    const cfg = getWaveConfig(currentWaveRef.current);
+    if (enemiesRef.current.length >= Math.min(MAX_ENEMIES, cfg.maxConcurrentEnemies)) return;
+
+    const biomeCfg = getBiomeConfig(activeBiome);
+
+    // Pick a random enemy type or use the forced type
+    const comp = cfg.enemyComposition;
+    const type = forcedType || (comp[Math.floor(Math.random() * comp.length)] || EnemyType.CRAWLER);
+
+    // Pick spawn boundaries (coherently outside the camera viewport but within 1600x960 world)
+    const cam = cameraStateRef.current;
+    const margin = 100; // spawn 100px outside the camera viewport
+
+    let ex = 0;
+    let ey = 0;
+    
+    // Pick one of four sides of the viewport
+    const side = Math.floor(Math.random() * 4);
+    if (side === 0) { // TOP
+      ex = cam.cameraX + Math.random() * (cam.viewportWidth / cam.zoom);
+      ey = cam.cameraY - margin;
+    } else if (side === 1) { // RIGHT
+      ex = cam.cameraX + (cam.viewportWidth / cam.zoom) + margin;
+      ey = cam.cameraY + Math.random() * (cam.viewportHeight / cam.zoom);
+    } else if (side === 2) { // BOTTOM
+      ex = cam.cameraX + Math.random() * (cam.viewportWidth / cam.zoom);
+      ey = cam.cameraY + (cam.viewportHeight / cam.zoom) + margin;
+    } else { // LEFT
+      ex = cam.cameraX - margin;
+      ey = cam.cameraY + Math.random() * (cam.viewportHeight / cam.zoom);
+    }
+
+    // Clamp coordinates to stay within the 1600x960 world bounds
+    ex = Math.max(16, Math.min(WORLD_WIDTH - 16, ex));
+    ey = Math.max(16, Math.min(WORLD_HEIGHT - 16, ey));
+
+    // Ensure we are not spawning right on top of the player!
+    const distToPlayer = Math.sqrt((ex - playerPosRef.current.x) ** 2 + (ey - playerPosRef.current.y) ** 2);
+    if (distToPlayer < 150) {
+      const angle = Math.random() * Math.PI * 2;
+      ex = Math.max(16, Math.min(WORLD_WIDTH - 16, playerPosRef.current.x + Math.cos(angle) * 300));
+      ey = Math.max(16, Math.min(WORLD_HEIGHT - 16, playerPosRef.current.y + Math.sin(angle) * 300));
+    }
+
+    // Class Attributes
+    let health = 15 * cfg.difficultyMultiplier;
+    let speed = (0.8 + Math.random() * 0.6) * biomeCfg.enemySpeedMultiplier;
+    let size = 10;
+    let color = "#ef4444"; // standard Red crawler
+
+    if (type === EnemyType.PARASITE) {
+      health = 8 * cfg.difficultyMultiplier;
+      let baseSpeed = 1.8 * biomeCfg.enemySpeedMultiplier;
+      if (cfg.environmentalModifier === "PARASITE_SPEED_SURGE") {
+        baseSpeed *= 1.4;
+      }
+      speed = baseSpeed;
+      size = 8;
+      color = "#f43f5e"; // rose pink parasite
+    } else if (type === EnemyType.DRONE) {
+      health = 20 * cfg.difficultyMultiplier;
+      speed = 0.7 * biomeCfg.enemySpeedMultiplier;
+      size = 11;
+      color = "#a855f7"; // purple drone
+    } else if (type === EnemyType.SPLITTER) {
+      health = 18 * cfg.difficultyMultiplier;
+      speed = 0.9 * biomeCfg.enemySpeedMultiplier;
+      size = 12;
+      color = "#22c55e"; // Green splitter
+    } else if (type === EnemyType.DISRUPTOR) {
+      health = 25 * cfg.difficultyMultiplier;
+      speed = 0.9 * biomeCfg.enemySpeedMultiplier;
+      size = 11;
+      color = "#eab308"; // Amber disruptor
+    } else if (type === EnemyType.BLACKOUT_ELITE) {
+      health = 45 * cfg.difficultyMultiplier;
+      speed = 0.5 * biomeCfg.enemySpeedMultiplier;
+      size = 15;
+      color = "#3b82f6"; // Blue elite armored
+    }
+
+    // Elite size scaling roll
+    const isElite = Math.random() < cfg.eliteChance;
+    if (isElite) {
+      health *= 1.8;
+      size *= 1.4;
+      color = "#f43f5e";
+    }
+
+    if (type === EnemyType.BLACKOUT_ELITE && cfg.environmentalModifier === "ELITE_SUPPORT") {
+      setTimeout(() => {
+        spawnEnemy(EnemyType.DRONE);
+      }, 150);
+    }
+
+    enemiesRef.current.push({
+      id: Math.random().toString(),
+      type,
+      x: ex,
+      y: ey,
+      vx: 0,
+      vy: 0,
+      health,
+      maxHealth: health,
+      speed,
+      size,
+      color,
+      shootCooldown: (type === EnemyType.DRONE && cfg.environmentalModifier === "DRONE_TARGETING_DENSITY") 
+        ? (80 + Math.random() * 80) * 0.6 
+        : 80 + Math.random() * 80,
+      pulseCooldown: 120,
+      contactDamageCooldown: 0,
+      isDead: false,
+      isBoss: false,
+      flashTicks: 0
+    });
+
+    waveBudgetSpawnedRef.current += 1;
+
+    // Check for Threat Intel Popup triggering on spawn
+    const knownThreats = statsRef.current?.discoveredThreats || stats.discoveredThreats || [];
+    const targetThreats = [EnemyType.DRONE, EnemyType.DISRUPTOR, EnemyType.BLACKOUT_ELITE, EnemyType.BOSS_DEVOURER];
+    if (targetThreats.includes(type) && !knownThreats.includes(type)) {
+      setIsPaused(true);
+      setActiveThreatIntel(type);
+      
+      const nextThreats = [...knownThreats, type];
+      const nextStats = {
+        ...(statsRef.current || stats),
+        discoveredThreats: nextThreats
+      };
+      updateStatsAndSave(nextStats);
+    }
+  };
+
+  // --- SPAWN GIANT DEVOURER BOSS ---
+  const spawnBoss = () => {
+    // 1. Clear residual standard enemies
+    enemiesRef.current = [];
+    hazardZonesRef.current = [];
+
+    bossActiveRef.current = true;
+    bossSessionStartTimeRef.current = Date.now();
+
+    // Increment boss attempts persistently
+    const currentStats = statsRef.current || stats;
+    const nextStats = {
+      ...currentStats,
+      bossAttempts: (currentStats.bossAttempts || 0) + 1
+    };
+    updateStatsAndSave(nextStats);
+
+    const health = BLACKOUT_DEVOURER_CANON.maxHealth;
+
+    const boss: Enemy = {
+      id: "blackout_devourer_boss",
+      type: EnemyType.BOSS_DEVOURER,
+      x: WORLD_WIDTH / 2,
+      y: -80, // Enters from top center
+      vx: 0,
+      vy: 0,
+      health,
+      maxHealth: health,
+      speed: 0,
+      size: 45,
+      color: "#ec4899", // Magenta/violet cyber boss
+      shootCooldown: 100,
+      pulseCooldown: 180,
+      contactDamageCooldown: 0,
+      isDead: false,
+      isBoss: true,
+      bossPhase: 1,
+      flashTicks: 0
+    };
+
+    enemiesRef.current.push(boss);
+    bossRef.current = boss;
+
+    // Reset high frequency states
+    bossIntroTimeRef.current = BLACKOUT_DEVOURER_CANON.introDuration;
+    setBossIntroTime(BLACKOUT_DEVOURER_CANON.introDuration);
+    setBossHp(health);
+    setBossMaxHp(health);
+    setBossPhase(1);
+    setBossAttackName(null);
+    setBossShieldNodes(0);
+    setIsCoreExposed(false);
+    setBossTransitionName(null);
+
+    bossAttackTimerRef.current = 1000; // wait 1s after intro finishes
+    bossCurrentAttackRef.current = null;
+    bossAttackTelegraphRef.current = 0;
+    bossAttackDurationRef.current = 0;
+    bossAttackAngleRef.current = 0;
+    bossAttackTargetPosRef.current = { x: WORLD_WIDTH / 2, y: WORLD_HEIGHT / 2 };
+    shieldNodesRef.current = [];
+    coreExposedTimerRef.current = 0;
+    phaseTransitionTimerRef.current = 0;
+    bossSummonTimersRef.current = {};
+    gravityWellPulseTimerRef.current = 0;
+    shownThreatIntelsRef.current = [];
+
+    // Trigger grid distorting entry particles
+    triggerExplosion(
+      particlesRef.current,
+      getQualityConfig(stats.qualityPreset).maxParticles,
+      ParticleType.BOSS_ENTRY,
+      WORLD_WIDTH / 2,
+      WORLD_HEIGHT / 2,
+      "#ec4899",
+      40
+    );
+
+    startBgm("HIGH_INTENSITY");
+    playBossArrivalSound();
+    postDialogue("COMPANION", "¡ALERTA! Concentración de energía Blackout masiva en el sector central. ¡El Devorador está entrando!");
+  };
+
+  const skipBossIntro = () => {
+    if (bossIntroTimeRef.current === null) return;
+    bossIntroTimeRef.current = null;
+    setBossIntroTime(null);
+    if (bossRef.current) {
+      bossRef.current.y = 150; // Place it in combat position
+    }
+    playHeavyImpactSound();
+    postDialogue("COMPANION", "¡ANOMALÍA ESTABILIZADA! Entrando en fase de combate activo contra el Devorador.");
+  };
+
+  const spawnBossShieldNodes = (boss: Enemy) => {
+    shieldNodesRef.current = [];
+    for (let i = 0; i < 3; i++) {
+      const angle = (i * Math.PI * 2) / 3;
+      shieldNodesRef.current.push({
+        id: Math.random().toString(),
+        x: boss.x + Math.cos(angle) * 110,
+        y: boss.y + Math.sin(angle) * 110,
+        health: 120, // Robust shield nodes
+        maxHealth: 120,
+        angle,
+        flashTicks: 0
+      });
+    }
+    setBossShieldNodes(3);
+    playEliteChargeSound();
+    postDialogue("COMPANION", "¡EL DEVORADOR HA ACTIVADO ESCUDOS SEGMENTADOS! Destruye los tres nodos satélite.");
+  };
+
+  const spawnBossMinion = (type: EnemyType, x: number, y: number) => {
+    if (enemiesRef.current.length >= MAX_ENEMIES) return;
+    
+    let hp = 15;
+    let speed = 1.0;
+    let size = 10;
+    let color = "#ef4444";
+
+    if (type === EnemyType.CRAWLER) { hp = 15; speed = 1.1; size = 10; color = "#ef4444"; }
+    else if (type === EnemyType.DRONE) { hp = 25; speed = 0.8; size = 12; color = "#f97316"; }
+    else if (type === EnemyType.PARASITE) { hp = 10; speed = 1.5; size = 8; color = "#fb7185"; }
+    else if (type === EnemyType.DISRUPTOR) { hp = 40; speed = 0.7; size = 14; color = "#06b6d4"; }
+
+    enemiesRef.current.push({
+      id: Math.random().toString(),
+      type,
+      x,
+      y,
+      vx: (Math.random() - 0.5) * 0.5,
+      vy: (Math.random() - 0.5) * 0.5,
+      health: hp,
+      maxHealth: hp,
+      speed,
+      size,
+      color,
+      shootCooldown: 80 + Math.random() * 80,
+      pulseCooldown: 120,
+      contactDamageCooldown: 0,
+      isDead: false,
+      isBoss: false,
+      isMinion: true,
+      flashTicks: 0
+    });
+  };
+
+  const updateBossAI = (boss: Enemy, delta: number) => {
+    // 1. INTRO CINEMATIC TICK
+    if (bossIntroTimeRef.current !== null) {
+      bossIntroTimeRef.current -= delta;
+      setBossIntroTime(Math.max(0, bossIntroTimeRef.current));
+
+      // Slow vertical hover entry
+      boss.y = -80 + (1 - Math.max(0, bossIntroTimeRef.current) / BLACKOUT_DEVOURER_CANON.introDuration) * 230;
+      boss.x = WORLD_WIDTH / 2;
+
+      // Center camera gradually between Foton and Boss
+      const cam = cameraStateRef.current;
+      const targetMidX = (playerPosRef.current.x + boss.x) / 2 - cam.viewportWidth / 2;
+      const targetMidY = (playerPosRef.current.y + boss.y) / 2 - cam.viewportHeight / 2;
+      cam.cameraX += (targetMidX - cam.cameraX) * 0.05 * (delta / 16.6);
+      cam.cameraY += (targetMidY - cam.cameraY) * 0.05 * (delta / 16.6);
+
+      if (bossIntroTimeRef.current <= 0) {
+        bossIntroTimeRef.current = null;
+        setBossIntroTime(null);
+        playHeavyImpactSound();
+        postDialogue("COMPANION", "¡ANOMALÍA ESTABILIZADA! Firma del Blackout Devourer confirmada.");
+      }
+      return;
+    }
+
+    // 2. PHASE TRANSITION TICK
+    if (phaseTransitionTimerRef.current > 0) {
+      phaseTransitionTimerRef.current -= delta;
+      
+      // Center camera on boss during transitions
+      const cam = cameraStateRef.current;
+      const targetX = boss.x - cam.viewportWidth / 2;
+      const targetY = boss.y - cam.viewportHeight / 2;
+      cam.cameraX += (targetX - cam.cameraX) * 0.05 * (delta / 16.6);
+      cam.cameraY += (targetY - cam.cameraY) * 0.05 * (delta / 16.6);
+
+      if (Math.random() < 0.15) {
+        triggerExplosion(
+          particlesRef.current,
+          getQualityConfig(stats.qualityPreset).maxParticles,
+          ParticleType.BIOME_PORTAL,
+          boss.x,
+          boss.y,
+          boss.bossPhase === 2 ? "#a855f7" : "#ec4899",
+          4
+        );
+      }
+
+      if (phaseTransitionTimerRef.current <= 0) {
+        setBossTransitionName(null);
+        bossAttackTimerRef.current = 1000;
+      }
+      return;
+    }
+
+    // 3. VULNERABILITY WINDOW TICK
+    if (coreExposedTimerRef.current > 0) {
+      coreExposedTimerRef.current -= delta;
+      setIsCoreExposed(true);
+      if (coreExposedTimerRef.current <= 0) {
+        setIsCoreExposed(false);
+        if ((boss.bossPhase || 1) === 2) {
+          spawnBossShieldNodes(boss);
+        }
+      }
+    }
+
+    // 4. SHIELD NODES POSITION ORBIT UPDATES
+    if (shieldNodesRef.current.length > 0) {
+      shieldNodesRef.current.forEach((node) => {
+        node.angle += 0.015 * (delta / 16.6);
+        node.x = boss.x + Math.cos(node.angle) * 110;
+        node.y = boss.y + Math.sin(node.angle) * 110;
+        
+        if (node.flashTicks > 0) node.flashTicks--;
+
+        if (Math.random() < 0.1) {
+          const px = node.x + (Math.random() - 0.5) * 8;
+          const py = node.y + (Math.random() - 0.5) * 8;
+          particlesRef.current.push({
+            id: Math.random().toString(),
+            type: ParticleType.FUSION,
+            x: px,
+            y: py,
+            vx: (boss.x - px) * 0.08,
+            vy: (boss.y - py) * 0.08,
+            color: "#3b82f6",
+            size: 1.5,
+            alpha: 1.0,
+            life: 15,
+            maxLife: 15
+          });
+        }
+      });
+    }
+
+    // Check Phase Transitions
+    const hpPercentage = boss.health / boss.maxHealth;
+    if ((boss.bossPhase || 1) === 1 && hpPercentage <= 0.70) {
+      boss.bossPhase = 2;
+      setBossPhase(2);
+      bossMaxPhaseReachedRef.current = Math.max(bossMaxPhaseReachedRef.current, 2);
+      playBossPhaseTransitionSound();
+      phaseTransitionTimerRef.current = 2000;
+      setBossTransitionName("PHASE 2: COLLAPSE ENGINE");
+      hazardZonesRef.current = [];
+      bossCurrentAttackRef.current = null;
+      setBossAttackName(null);
+      spawnBossShieldNodes(boss);
+      return;
+    }
+    if ((boss.bossPhase || 1) === 2 && hpPercentage <= 0.35) {
+      boss.bossPhase = 3;
+      setBossPhase(3);
+      bossMaxPhaseReachedRef.current = Math.max(bossMaxPhaseReachedRef.current, 3);
+      playBossPhaseTransitionSound();
+      phaseTransitionTimerRef.current = 2000;
+      setBossTransitionName("PHASE 3: SINGULARITY CROWN");
+      hazardZonesRef.current = [];
+      bossCurrentAttackRef.current = null;
+      setBossAttackName(null);
+      shieldNodesRef.current = [];
+      setBossShieldNodes(0);
+      setIsCoreExposed(false);
+      coreExposedTimerRef.current = 0;
+      return;
+    }
+
+    // 5. BOSS MOVEMENT AI
+    if (bossCurrentAttackRef.current === "devourer_charge" && bossAttackTelegraphRef.current <= 0 && bossAttackDurationRef.current > 0) {
+      boss.x += boss.vx * (delta / 16.6);
+      boss.y += boss.vy * (delta / 16.6);
+
+      let hitWall = false;
+      if (boss.x < WORLD_BOUNDS.minX + 40) { boss.x = WORLD_BOUNDS.minX + 40; boss.vx *= -0.5; hitWall = true; }
+      if (boss.x > WORLD_BOUNDS.maxX - 40) { boss.x = WORLD_BOUNDS.maxX - 40; boss.vx *= -0.5; hitWall = true; }
+      if (boss.y < WORLD_BOUNDS.minY + 40) { boss.y = WORLD_BOUNDS.minY + 40; boss.vy *= -0.5; hitWall = true; }
+      if (boss.y > WORLD_BOUNDS.maxY - 40) { boss.y = WORLD_BOUNDS.maxY - 40; boss.vy *= -0.5; hitWall = true; }
+
+      if (hitWall) {
+        screenShakeRef.current = 15;
+        playHeavyImpactSound();
+        triggerExplosion(
+          particlesRef.current,
+          getQualityConfig(stats.qualityPreset).maxParticles,
+          ParticleType.ENEMY_DESTROYED,
+          boss.x,
+          boss.y,
+          "#e11d48",
+          12,
+          1.8
+        );
+      }
+    } else {
+      if ((boss.bossPhase || 1) === 1) {
+        const centerX = WORLD_WIDTH / 2;
+        const centerY = 160;
+        const targetX = centerX + Math.cos(timeElapsedRef.current * 0.001) * 120;
+        const targetY = centerY + Math.sin(timeElapsedRef.current * 0.0015) * 40;
+        boss.x += (targetX - boss.x) * 0.02 * (delta / 16.6);
+        boss.y += (targetY - boss.y) * 0.02 * (delta / 16.6);
+      } else if ((boss.bossPhase || 1) === 2) {
+        const centerX = WORLD_WIDTH / 2;
+        const centerY = 150;
+        const targetX = centerX + Math.sin(timeElapsedRef.current * 0.0015) * 240;
+        const targetY = centerY + Math.cos(timeElapsedRef.current * 0.001) * 35;
+        boss.x += (targetX - boss.x) * 0.04 * (delta / 16.6);
+        boss.y += (targetY - boss.y) * 0.04 * (delta / 16.6);
+      } else {
+        const tx = playerPosRef.current.x;
+        const ty = playerPosRef.current.y - 140;
+        const dx = tx - boss.x;
+        const dy = ty - boss.y;
+        const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+        if (dist > 20) {
+          boss.x += (dx / dist) * 1.5 * (delta / 16.6);
+          boss.y += (dy / dist) * 1.5 * (delta / 16.6);
+        }
+      }
+    }
+
+    // 6. SUMMON ADDS
+    BLACKOUT_DEVOURER_CANON.summonRules.forEach((rule) => {
+      if ((boss.bossPhase || 1) >= rule.phase) {
+        const timerKey = rule.enemyType;
+        if (bossSummonTimersRef.current[timerKey] === undefined) {
+          bossSummonTimersRef.current[timerKey] = rule.cooldown;
+        } else {
+          bossSummonTimersRef.current[timerKey] -= delta;
+          if (bossSummonTimersRef.current[timerKey] <= 0) {
+            bossSummonTimersRef.current[timerKey] = rule.cooldown + Math.random() * 3000;
+
+            const currentCount = enemiesRef.current.filter((e) => e.type === rule.enemyType && e.isMinion).length;
+            if (currentCount < rule.maxCount) {
+              const spawnCount = Math.min(2, rule.maxCount - currentCount);
+              for (let i = 0; i < spawnCount; i++) {
+                const sx = boss.x + (i === 0 ? -60 : 60) + (Math.random() - 0.5) * 20;
+                const sy = boss.y + 40 + Math.random() * 20;
+                spawnBossMinion(rule.enemyType, sx, sy);
+              }
+            }
+          }
+        }
+      }
+    });
+
+    // 7. ACTIVE ATTACK COOLDOWNS / SELECTION
+    if (bossCurrentAttackRef.current === null) {
+      bossAttackTimerRef.current -= delta;
+      if (bossAttackTimerRef.current <= 0) {
+        const possibleAttacks = BLACKOUT_DEVOURER_CANON.attacks.filter(
+          (a) => a.minimumPhase <= (boss.bossPhase || 1) && !bossLastAttacksRef.current.includes(a.id)
+        );
+        if (possibleAttacks.length > 0) {
+          const totalWeight = possibleAttacks.reduce((sum, a) => sum + a.weight, 0);
+          let roll = Math.random() * totalWeight;
+          let chosen = possibleAttacks[0];
+          for (let i = 0; i < possibleAttacks.length; i++) {
+            roll -= possibleAttacks[i].weight;
+            if (roll <= 0) {
+              chosen = possibleAttacks[i];
+              break;
+            }
+          }
+
+          bossCurrentAttackRef.current = chosen.id;
+          setBossAttackName(chosen.displayName);
+          bossAttackTelegraphRef.current = chosen.telegraphDuration;
+          bossAttackDurationRef.current = chosen.id === "blackout_sweep" ? 5000 : (chosen.id === "rotating_eclipse_lanes" ? 6000 : 3000);
+          bossAttackAngleRef.current = Math.atan2(playerPosRef.current.y - boss.y, playerPosRef.current.x - boss.x);
+          bossAttackTargetPosRef.current = { x: playerPosRef.current.x, y: playerPosRef.current.y };
+
+          if (!bossAttacksSeenThisRunRef.current.includes(chosen.id)) {
+            bossAttacksSeenThisRunRef.current.push(chosen.id);
+          }
+
+          if (chosen.id === "devourer_beam") playBossChargeSound();
+          else if (chosen.id === "gravity_well") playDisruptorChargeSound();
+          else if (chosen.id === "orbital_shards") playBossShardsSound();
+          else if (chosen.id === "blackout_sweep") playDisruptorPulseSound();
+          else if (chosen.id === "singularity_pulse") playBossPulseSound();
+          else if (chosen.id === "rotating_eclipse_lanes") playDisruptorPulseSound();
+          else if (chosen.id === "devourer_charge") playBossChargeSound();
+
+          if (!shownThreatIntelsRef.current.includes(chosen.id)) {
+            shownThreatIntelsRef.current.push(chosen.id);
+            postDialogue("COMPANION", `¡CUIDADO! Devorador iniciando ${chosen.displayName.toUpperCase()}. ${chosen.description} Moverse de inmediato.`);
+            addFloatingText(`WARNING: ${chosen.displayName.toUpperCase()}`, boss.x, boss.y - 45, chosen.warningColor || "#f43f5e");
+          } else {
+            addFloatingText(`PREPARING ${chosen.displayName.toUpperCase()}`, boss.x, boss.y - 45, chosen.warningColor || "#f43f5e");
+          }
+        }
+      }
+    } else {
+      // 8. TELEGRAPH OR COMBAT ACTION PHASE TICK
+      if (bossAttackTelegraphRef.current > 0) {
+        bossAttackTelegraphRef.current -= delta;
+        
+        if (bossAttackTelegraphRef.current > 300) {
+          if (bossCurrentAttackRef.current === "devourer_beam" || bossCurrentAttackRef.current === "devourer_charge") {
+            bossAttackAngleRef.current = Math.atan2(playerPosRef.current.y - boss.y, playerPosRef.current.x - boss.x);
+            bossAttackTargetPosRef.current = { x: playerPosRef.current.x, y: playerPosRef.current.y };
+          }
+        }
+
+        if (bossAttackTelegraphRef.current <= 0) {
+          if (bossCurrentAttackRef.current === "devourer_charge") {
+            const angle = bossAttackAngleRef.current;
+            boss.vx = Math.cos(angle) * 11.0;
+            boss.vy = Math.sin(angle) * 11.0;
+          }
+        }
+      } else if (bossAttackDurationRef.current > 0) {
+        bossAttackDurationRef.current -= delta;
+
+        executeBossAttackTicks(boss, delta);
+
+        if (bossAttackDurationRef.current <= 0) {
+          const finishedId = bossCurrentAttackRef.current;
+          bossCurrentAttackRef.current = null;
+          setBossAttackName(null);
+          
+          bossLastAttacksRef.current.push(finishedId);
+          if (bossLastAttacksRef.current.length > 2) bossLastAttacksRef.current.shift();
+
+          bossAttackTimerRef.current = 2200 + Math.random() * 1800;
+        }
+      }
+    }
+  };
+
+  const executeBossAttackTicks = (boss: Enemy, delta: number) => {
+    const attackId = bossCurrentAttackRef.current;
+    if (!attackId) return;
+
+    switch (attackId) {
+      case "devourer_beam": {
+        bossAttackAngleRef.current += 0.006 * (delta / 16.6);
+
+        const beamLength = 1200;
+        const px = playerPosRef.current.x;
+        const py = playerPosRef.current.y;
+        
+        const bx = boss.x;
+        const by = boss.y;
+        const angle = bossAttackAngleRef.current;
+        const dx = Math.cos(angle);
+        const dy = Math.sin(angle);
+
+        const t = Math.max(0, Math.min(beamLength, (px - bx) * dx + (py - by) * dy));
+        const projX = bx + t * dx;
+        const projY = by + t * dy;
+
+        const distToBeam = Math.sqrt((px - projX) * (px - projX) + (py - projY) * (py - projY));
+        if (distToBeam < 25) {
+          damagePlayerFromBoss(1.6 * (delta / 16.6), "devourer_beam");
+        }
+        
+        if (Math.random() < 0.4) {
+          const randDist = Math.random() * beamLength;
+          particlesRef.current.push({
+            id: Math.random().toString(),
+            type: ParticleType.FUSION,
+            x: bx + randDist * dx + (Math.random() - 0.5) * 15,
+            y: by + randDist * dy + (Math.random() - 0.5) * 15,
+            vx: (Math.random() - 0.5) * 1.5,
+            vy: (Math.random() - 0.5) * 1.5,
+            color: "#f43f5e",
+            size: 2.0,
+            alpha: 1.0,
+            life: 25,
+            maxLife: 25
+          });
+        }
+        break;
+      }
+
+      case "gravity_well": {
+        const gx = bossAttackTargetPosRef.current.x;
+        const gy = bossAttackTargetPosRef.current.y;
+        const pullRadius = 240;
+
+        const fdx = gx - playerPosRef.current.x;
+        const fdy = gy - playerPosRef.current.y;
+        const fdist = Math.sqrt(fdx * fdx + fdy * fdy) || 1;
+        if (fdist < pullRadius) {
+          const pullForce = (1 - fdist / pullRadius) * 2.8;
+          playerPosRef.current.x += (fdx / fdist) * pullForce * (delta / 16.6);
+          playerPosRef.current.y += (fdy / fdist) * pullForce * (delta / 16.6);
+          
+          if (fdist < 30) {
+            damagePlayerFromBoss(0.8 * (delta / 16.6), "gravity_well");
+          }
+        }
+
+        swarmRef.current.forEach((m) => {
+          const mdx = gx - m.x;
+          const mdy = gy - m.y;
+          const mdist = Math.sqrt(mdx * mdx + mdy * mdy) || 1;
+          if (mdist < pullRadius) {
+            const pullForce = (1 - mdist / pullRadius) * 3.5;
+            m.x += (mdx / mdist) * pullForce * (delta / 16.6);
+            m.y += (mdy / mdist) * pullForce * (delta / 16.6);
+          }
+        });
+
+        if (Math.random() < 0.3) {
+          const pAngle = Math.random() * Math.PI * 2;
+          const pDist = 30 + Math.random() * (pullRadius - 30);
+          particlesRef.current.push({
+            id: Math.random().toString(),
+            type: ParticleType.FUSION,
+            x: gx + Math.cos(pAngle) * pDist,
+            y: gy + Math.sin(pAngle) * pDist,
+            vx: -Math.cos(pAngle) * 3.0,
+            vy: -Math.sin(pAngle) * 3.0,
+            color: "#a855f7",
+            size: 1.5,
+            alpha: 1.0,
+            life: 30,
+            maxLife: 30
+          });
+        }
+        break;
+      }
+
+      case "orbital_shards": {
+        bossAttackAngleRef.current += delta;
+        if (bossAttackAngleRef.current >= 350) {
+          bossAttackAngleRef.current = 0;
+          playEnemyShootSound();
+
+          const startAngle = Math.atan2(playerPosRef.current.y - boss.y, playerPosRef.current.x - boss.x);
+          const spreads = [-0.25, 0, 0.25];
+          spreads.forEach((spread) => {
+            const finalAngle = startAngle + spread;
+            projectilesRef.current.push({
+              id: Math.random().toString(),
+              fromPlayer: false,
+              x: boss.x + Math.cos(finalAngle) * 45,
+              y: boss.y + Math.sin(finalAngle) * 45,
+              vx: Math.cos(finalAngle) * 4.8,
+              vy: Math.sin(finalAngle) * 4.8,
+              damage: 12,
+              size: 4,
+              color: "#3b82f6",
+              life: 220,
+              maxLife: 220,
+              affinity: "solar"
+            });
+          });
+        }
+        break;
+      }
+
+      case "blackout_sweep": {
+        bossAttackAngleRef.current += 0.004 * (delta / 16.6);
+
+        const bx = boss.x;
+        const by = boss.y;
+        const px = playerPosRef.current.x;
+        const py = playerPosRef.current.y;
+        
+        const angleToPlayer = Math.atan2(py - by, px - bx);
+        
+        let diff = Math.abs(angleToPlayer - bossAttackAngleRef.current);
+        if (diff > Math.PI) diff = Math.PI * 2 - diff;
+
+        if (diff > 0.35) {
+          damagePlayerFromBoss(1.0 * (delta / 16.6), "blackout_sweep");
+        }
+
+        if (Math.random() < 0.4) {
+          const pAngle = bossAttackAngleRef.current + 0.5 + Math.random() * (Math.PI * 2 - 1.0);
+          const pDist = 50 + Math.random() * 300;
+          particlesRef.current.push({
+            id: Math.random().toString(),
+            type: ParticleType.FUSION,
+            x: bx + Math.cos(pAngle) * pDist,
+            y: by + Math.sin(pAngle) * pDist,
+            vx: (Math.random() - 0.5) * 0.8,
+            vy: (Math.random() - 0.5) * 0.8,
+            color: "#fb923c",
+            size: 2.2,
+            alpha: 1.0,
+            life: 20,
+            maxLife: 20
+          });
+        }
+        break;
+      }
+
+      case "singularity_pulse": {
+        bossAttackAngleRef.current += 4.5 * (delta / 16.6);
+        const pulseRadius = bossAttackAngleRef.current;
+
+        const bx = boss.x;
+        const by = boss.y;
+        const px = playerPosRef.current.x;
+        const py = playerPosRef.current.y;
+        const dist = Math.sqrt((px - bx) * (px - bx) + (py - by) * (py - by));
+
+        if (Math.abs(dist - pulseRadius) < 18) {
+          const pAngle = Math.atan2(py - by, px - bx);
+          playerPosRef.current.x += Math.cos(pAngle) * 20;
+          playerPosRef.current.y += Math.sin(pAngle) * 20;
+          damagePlayerFromBoss(15, "singularity_pulse");
+          playHeavyImpactSound();
+        }
+
+        swarmRef.current.forEach((m) => {
+          const mdist = Math.sqrt((m.x - bx) * (m.x - bx) + (m.y - by) * (m.y - by));
+          if (Math.abs(mdist - pulseRadius) < 18) {
+            const mAngle = Math.atan2(m.y - by, m.x - bx);
+            m.x += Math.cos(mAngle) * 25;
+            m.y += Math.sin(mAngle) * 25;
+          }
+        });
+        break;
+      }
+
+      case "rotating_eclipse_lanes": {
+        bossAttackAngleRef.current += 0.012 * (delta / 16.6);
+
+        const bx = boss.x;
+        const by = boss.y;
+        const px = playerPosRef.current.x;
+        const py = playerPosRef.current.y;
+        const dist = Math.sqrt((px - bx) * (px - bx) + (py - by) * (py - by));
+
+        const angleToPlayer = Math.atan2(py - by, px - bx);
+
+        let hitLane = false;
+        for (let i = 0; i < 3; i++) {
+          const laneAngle = bossAttackAngleRef.current + (i * Math.PI * 2) / 3;
+          let diff = Math.abs(angleToPlayer - laneAngle);
+          while (diff > Math.PI) diff = Math.PI * 2 - diff;
+          if (diff < 0.12 && dist < 500) {
+            hitLane = true;
+          }
+        }
+
+        if (hitLane) {
+          damagePlayerFromBoss(1.2 * (delta / 16.6), "rotating_eclipse_lanes");
+        }
+        break;
+      }
+
+      case "devourer_charge": {
+        if (Math.random() < 0.4) {
+          particlesRef.current.push({
+            id: Math.random().toString(),
+            type: ParticleType.FUSION,
+            x: boss.x + (Math.random() - 0.5) * 30,
+            y: boss.y + (Math.random() - 0.5) * 30,
+            vx: -boss.vx * 0.2,
+            vy: -boss.vy * 0.2,
+            color: "#e11d48",
+            size: 2.0,
+            alpha: 1.0,
+            life: 15,
+            maxLife: 15
+          });
+        }
+        break;
+      }
+    }
+  };
+
+  // --- PRIMARY ENGINE GAME LOOP LOGIC ---
+  const gameLoop = (timestamp: number) => {
+    if (!loopActiveRef.current) return;
+
+    if (isPaused || isUpgradeSelectionOpenRef.current) {
+      lastTimeRef.current = timestamp;
+      requestAnimationFrame(gameLoop);
+      return;
+    }
+
+    let delta = timestamp - lastTimeRef.current;
+    lastTimeRef.current = timestamp;
+
+    // Clamp huge deltas when switching tabs to avoid teleportation crashes
+    if (delta > 100) delta = 16.6;
+
+    // Decay and apply Hit-Stop physical freezing
+    if (hitStopTimerRef.current > 0) {
+      hitStopTimerRef.current -= delta;
+      renderCanvasScene(); // Keep rendering for visual feedback, skip physics updates
+      requestAnimationFrame(gameLoop);
+      return;
+    }
+
+    timeElapsedRef.current += delta;
+
+    // Decay disruption timer & hitstop cooldown
+    if (disruptTimerRef.current > 0) {
+      disruptTimerRef.current -= delta;
+      disruptRecoveryRef.current = 0.35; // Lock recovery back to 0.35 during active disruption
+    } else if (disruptRecoveryRef.current < 1.0) {
+      // Smoothly recover from sluggish state back to 1.0 over 1 second (1000ms)
+      disruptRecoveryRef.current = Math.min(1.0, disruptRecoveryRef.current + delta / 1000);
+    }
+
+    if (hitStopCooldownTimerRef.current > 0) {
+      hitStopCooldownTimerRef.current -= delta;
+    }
+
+    // Update floating texts
+    floatingTextsRef.current.forEach((t) => {
+      t.y += t.vy * (delta / 16.6);
+      t.life -= delta;
+    });
+    floatingTextsRef.current = floatingTextsRef.current.filter((t) => t.life > 0);
+
+    updateEnginePhysics(delta);
+    renderCanvasScene();
+
+    // Throttled React HUD state sync (Once every 10 frames)
+    reactUpdateTimerRef.current += 1;
+    if (reactUpdateTimerRef.current >= 10) {
+      reactUpdateTimerRef.current = 0;
+      setScore(scoreRef.current);
+      setShield(shieldRef.current);
+      setSwarmSize(swarmRef.current.length + 1);
+    }
+
+    requestAnimationFrame(gameLoop);
+  };
+
+  // --- BOSS DEFEAT CINEMATIC SEQUENCE ENGINE (PART 2/2) ---
+  const updateBossDefeatSequence = (delta: number) => {
+    if (!bossDefeatedSequenceActiveRef.current) return;
+
+    bossDefeatedSequenceTimerRef.current -= delta;
+
+    // Clear active projectiles, hazard zones, and standard enemies
+    projectilesRef.current = [];
+    hazardZonesRef.current = [];
+    enemiesRef.current = enemiesRef.current.filter(e => e.isBoss);
+
+    const boss = bossRef.current;
+    if (boss) {
+      boss.vx = 0;
+      boss.vy = 0;
+
+      // Slowly collapse size and fade color to dark violet
+      boss.size = Math.max(5, boss.size - 0.1 * (delta / 16.6));
+      boss.color = `rgba(147, 51, 234, ${Math.max(0.1, bossDefeatedSequenceTimerRef.current / 5000)})`;
+
+      // 1. Staged Explosions: Generate spectacular random particle bursts
+      if (Math.random() < 0.25) {
+        const angle = Math.random() * Math.PI * 2;
+        const radius = Math.random() * boss.size;
+        const ex = boss.x + Math.cos(angle) * radius;
+        const ey = boss.y + Math.sin(angle) * radius;
+
+        // Play random explosions
+        playEnemyExplodeSound(true);
+        triggerExplosion(
+          particlesRef.current,
+          getQualityConfig(stats.qualityPreset).maxParticles,
+          ParticleType.ENEMY_DESTROYED,
+          ex,
+          ey,
+          Math.random() < 0.5 ? "#ec4899" : "#3b82f6",
+          25,
+          2.5
+        );
+      }
+
+      // 2. HEROIC MOMENT FEEDBACK: Make Orbi Foton leader extremely bright & ring active
+      if (Math.random() < 0.20) {
+        playCriticalHitSound();
+        const startX = playerPosRef.current.x;
+        const startY = playerPosRef.current.y;
+        
+        // Spawn purifiers pointing towards the collapsing boss
+        particlesRef.current.push({
+          id: Math.random().toString(),
+          type: ParticleType.FUSION,
+          x: startX,
+          y: startY,
+          vx: (boss.x - startX) * 0.05,
+          vy: (boss.y - startY) * 0.05,
+          color: "#fbbf24",
+          size: 3.5,
+          alpha: 1.0,
+          life: 30,
+          maxLife: 30
+        });
+
+        // Add a giant screen-shake
+        screenShakeRef.current = Math.max(screenShakeRef.current, 15);
+      }
+    }
+
+    // After 5 seconds, finalize the victory
+    if (bossDefeatedSequenceTimerRef.current <= 0) {
+      bossDefeatedSequenceActiveRef.current = false;
+      triggerGameOver(true);
+    }
+  };
+
+  // --- ENGINE UPDATES (Movement, projectile, spawn, single-impact collision sweeps) ---
+  const updateEnginePhysics = (delta: number) => {
+    // 0. BOSS DEFEAT CINEMATIC SEQUENCE HANDLING
+    if (bossDefeatedSequenceActiveRef.current) {
+      updateBossDefeatSequence(delta);
+
+      // We still update screen shake and camera zoom for dramatic effect!
+      if (screenShakeRef.current > 0) {
+        screenShakeRef.current -= delta / 16.6;
+      }
+      
+      // Update particles
+      particlesRef.current.forEach((p) => {
+        updateParticle(p, delta);
+      });
+      particlesRef.current = particlesRef.current.filter((p) => p.life > 0);
+
+      // Also update player leader flash ticks
+      if (playerFlashRef.current > 0) playerFlashRef.current--;
+      
+      // Return early to freeze rest of physical ticks!
+      return;
+    }
+
+    // 1. Invincibility timer ticks
+    if (invincibilityTimerRef.current > 0) {
+      invincibilityTimerRef.current -= delta;
+      playerFlashRef.current = Math.max(0, playerFlashRef.current - 1);
+    }
+
+    // 2. CAMERA AND SCREEN SHAKE UPDATES
+    const cam = cameraStateRef.current;
+    
+    // Viewport dimensions are strictly defined by the logical backing store (800x480)
+    cam.viewportWidth = CANVAS_WIDTH;
+    cam.viewportHeight = CANVAS_HEIGHT;
+
+    // Dynamic Zoom Interpolation
+    const swarmCount = swarmRef.current.length + 1; // Foton + followers
+    let targetZoom = 1.0;
+    if (swarmCount <= 12) {
+      targetZoom = 1.08 - ((swarmCount - 1) / 11) * 0.08;
+    } else if (swarmCount <= 24) {
+      targetZoom = 1.00 - ((swarmCount - 12) / 12) * 0.08;
+    } else if (swarmCount <= 36) {
+      targetZoom = 0.92 - ((swarmCount - 24) / 12) * 0.08;
+    } else if (swarmCount <= 48) {
+      targetZoom = 0.84 - ((swarmCount - 36) / 12) * 0.08;
+    } else {
+      targetZoom = 0.78 - ((swarmCount - 48) / 12) * 0.08;
+    }
+
+    const MIN_CAMERA_ZOOM = 0.70;
+    const MAX_CAMERA_ZOOM = 1.08;
+    cam.targetZoom = Math.max(MIN_CAMERA_ZOOM, Math.min(MAX_CAMERA_ZOOM, targetZoom));
+    cam.zoom += (cam.targetZoom - cam.zoom) * 0.02 * (delta / 16.6);
+
+    // Calculate Foton center position in screen coordinates relative to camera
+    const screenPx = (playerPosRef.current.x - cam.cameraX) * cam.zoom;
+    const screenPy = (playerPosRef.current.y - cam.cameraY) * cam.zoom;
+
+    const dxScreen = screenPx - cam.viewportWidth / 2;
+    const dyScreen = screenPy - cam.viewportHeight / 2;
+
+    // Dead zone: 15% of screen size
+    const deadZoneW = cam.viewportWidth * 0.15;
+    const deadZoneH = cam.viewportHeight * 0.15;
+
+    let targetCamX = cam.cameraX;
+    let targetCamY = cam.cameraY;
+
+    if (Math.abs(dxScreen) > deadZoneW) {
+      const excess = dxScreen > 0 ? dxScreen - deadZoneW : dxScreen + deadZoneW;
+      targetCamX += excess / cam.zoom;
+    }
+    if (Math.abs(dyScreen) > deadZoneH) {
+      const excess = dyScreen > 0 ? dyScreen - deadZoneH : dyScreen + deadZoneH;
+      targetCamY += excess / cam.zoom;
+    }
+
+    // Camera Look Ahead: advance camera in moving direction (12% max offset)
+    let dirX = 0;
+    let dirY = 0;
+    if (keysPressedRef.current["W"] || keysPressedRef.current["ARROWUP"]) dirY -= 1;
+    if (keysPressedRef.current["S"] || keysPressedRef.current["ARROWDOWN"]) dirY += 1;
+    if (keysPressedRef.current["A"] || keysPressedRef.current["ARROWLEFT"]) dirX -= 1;
+    if (keysPressedRef.current["D"] || keysPressedRef.current["ARROWRIGHT"]) dirX += 1;
+
+    // fallback to pointer direction if dragging or moving
+    if (dirX === 0 && dirY === 0 && isMouseDownRef.current) {
+      const dx = pointerRef.current.x - playerPosRef.current.x;
+      const dy = pointerRef.current.y - playerPosRef.current.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist > 15) {
+        dirX = dx / dist;
+        dirY = dy / dist;
+      }
+    }
+
+    const lookAheadMaxX = (cam.viewportWidth * 0.12) / cam.zoom;
+    const lookAheadMaxY = (cam.viewportHeight * 0.12) / cam.zoom;
+    const targetLookX = dirX * lookAheadMaxX;
+    const targetLookY = dirY * lookAheadMaxY;
+
+    cam.lookAheadX += (targetLookX - cam.lookAheadX) * 0.05 * (delta / 16.6);
+    cam.lookAheadY += (targetLookY - cam.lookAheadY) * 0.05 * (delta / 16.6);
+
+    // Apply lookAhead shift
+    targetCamX += cam.lookAheadX;
+    targetCamY += cam.lookAheadY;
+
+    // Bounds checking: clamp camera to stay strictly within [0, WORLD_WIDTH] x [0, WORLD_HEIGHT]
+    const maxCamX = Math.max(0, WORLD_WIDTH - cam.viewportWidth / cam.zoom);
+    const maxCamY = Math.max(0, WORLD_HEIGHT - cam.viewportHeight / cam.zoom);
+
+    targetCamX = Math.max(0, Math.min(maxCamX, targetCamX));
+    targetCamY = Math.max(0, Math.min(maxCamY, targetCamY));
+
+    // LERP Damping (smooth follow)
+    cam.cameraX += (targetCamX - cam.cameraX) * 0.08 * (delta / 16.6);
+    cam.cameraY += (targetCamY - cam.cameraY) * 0.08 * (delta / 16.6);
+
+    cam.cameraX = Math.max(0, Math.min(maxCamX, cam.cameraX));
+    cam.cameraY = Math.max(0, Math.min(maxCamY, cam.cameraY));
+
+    // Apply Screen Shake context parameters
+    if (screenShakeRef.current > 0) {
+      screenShakeRef.current *= 0.9;
+      if (screenShakeRef.current < 0.1) screenShakeRef.current = 0;
+      
+      const shakeMode = statsRef.current?.screenShakeMode || stats.screenShakeMode || "FULL";
+      const shakeMod = shakeMode === "FULL" ? 1.0 : (shakeMode === "REDUCED" ? 0.35 : 0);
+      const shakeVal = screenShakeRef.current * shakeMod;
+
+      cam.shakeX = (Math.random() - 0.5) * shakeVal;
+      cam.shakeY = (Math.random() - 0.5) * shakeVal;
+    } else {
+      cam.shakeX = 0;
+      cam.shakeY = 0;
+    }
+
+    // Keep cameraOffsetRef updated for backwards-compatible drawings
+    cameraOffsetRef.current = { x: cam.shakeX, y: cam.shakeY };
+
+    // 3. Foton movement physics (interpolated towards keys or pointer)
+    let moveX = 0;
+    let moveY = 0;
+
+    if (keysPressedRef.current["W"] || keysPressedRef.current["ARROWUP"]) moveY -= 1;
+    if (keysPressedRef.current["S"] || keysPressedRef.current["ARROWDOWN"]) moveY += 1;
+    if (keysPressedRef.current["A"] || keysPressedRef.current["ARROWLEFT"]) moveX -= 1;
+    if (keysPressedRef.current["D"] || keysPressedRef.current["ARROWRIGHT"]) moveX += 1;
+
+    const pSpeedBase = PLAYER_BASE_SPEED * FORMATIONS[activeFormation].speedMod * (1.0 + (upgradesLevel.quantum_core || 0) * 0.1);
+    const speedUpgradeMultiplier = 1.0 + (activeRunUpgradesRef.current.quantum_stabilization || 0) * 0.15;
+    const pSpeed = pSpeedBase * speedUpgradeMultiplier * disruptRecoveryRef.current;
+    
+    // Check key motion override
+    if (moveX !== 0 || moveY !== 0) {
+      lastInputTypeRef.current = "KEYBOARD";
+      clickToMoveTargetRef.current = null;
+    }
+
+    if (lastInputTypeRef.current === "KEYBOARD") {
+      if (moveX !== 0 || moveY !== 0) {
+        // Normalize diagonals
+        const len = Math.sqrt(moveX * moveX + moveY * moveY);
+        playerPosRef.current.x += (moveX / len) * pSpeed * (delta / 16.6);
+        playerPosRef.current.y += (moveY / len) * pSpeed * (delta / 16.6);
+      } else {
+        // No keys pressed: Foton stands still!
+        lastInputTypeRef.current = "NONE";
+      }
+    } else if (lastInputTypeRef.current === "MOUSE_DRAG") {
+      const dx = pointerRef.current.x - playerPosRef.current.x;
+      const dy = pointerRef.current.y - playerPosRef.current.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist > 2) {
+        const easeSpeed = pSpeed * 0.85;
+        playerPosRef.current.x += (dx / dist) * Math.min(dist, easeSpeed) * (delta / 16.6);
+        playerPosRef.current.y += (dy / dist) * Math.min(dist, easeSpeed) * (delta / 16.6);
+      }
+    } else if (lastInputTypeRef.current === "CLICK_TO_MOVE") {
+      if (clickToMoveTargetRef.current !== null) {
+        const dx = clickToMoveTargetRef.current.x - playerPosRef.current.x;
+        const dy = clickToMoveTargetRef.current.y - playerPosRef.current.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist > 4) {
+          const easeSpeed = pSpeed;
+          playerPosRef.current.x += (dx / dist) * Math.min(dist, easeSpeed) * (delta / 16.6);
+          playerPosRef.current.y += (dy / dist) * Math.min(dist, easeSpeed) * (delta / 16.6);
+        } else {
+          // Arrived!
+          clickToMoveTargetRef.current = null;
+          lastInputTypeRef.current = "NONE";
+        }
+      }
+    } else {
+      // InputType is "NONE": stop immediately! Foton stands perfectly still.
+    }
+
+    // Clamp inside world boundaries (1600x960 expanded battlefield)
+    playerPosRef.current.x = Math.max(16, Math.min(WORLD_WIDTH - 16, playerPosRef.current.x));
+    playerPosRef.current.y = Math.max(16, Math.min(WORLD_HEIGHT - 16, playerPosRef.current.y));
+
+    // 4. Align and smooth swarm followers following Foton leader
+    const mouseAngle = Math.atan2(
+      pointerRef.current.y - playerPosRef.current.y,
+      pointerRef.current.x - playerPosRef.current.x
+    );
+
+    swarmRef.current.forEach((member, idx) => {
+      // Decelerate shooting recoil and flash ticks
+      if (member.recoilX && Math.abs(member.recoilX) > 0.05) member.recoilX *= 0.82;
+      else member.recoilX = 0;
+      if (member.recoilY && Math.abs(member.recoilY) > 0.05) member.recoilY *= 0.82;
+      else member.recoilY = 0;
+      if (member.flashTicks && member.flashTicks > 0) member.flashTicks--;
+
+      const offsets = calculateSwarmOffset(
+        activeFormation,
+        idx,
+        swarmRef.current.length,
+        timeElapsedRef.current,
+        mouseAngle
+      );
+
+      // Apply disruption scatter/cohesion-loss (Section 3.2 - reduce brevemente la cohesion)
+      let ox = offsets.x;
+      let oy = offsets.y;
+      if (disruptTimerRef.current > 0) {
+        const scatterAmt = (disruptTimerRef.current / 2000) * 85; // Decaying noise amplitude
+        ox += Math.sin(timeElapsedRef.current * 0.035 + idx * 1.5) * scatterAmt;
+        oy += Math.cos(timeElapsedRef.current * 0.035 + idx * 1.5) * scatterAmt;
+      }
+
+      // --- FORMACIÓN CERCA DE BORDES (Squish offsets near world edges smoothly) ---
+      const edgeDistX = Math.min(playerPosRef.current.x, WORLD_WIDTH - playerPosRef.current.x);
+      const edgeDistY = Math.min(playerPosRef.current.y, WORLD_HEIGHT - playerPosRef.current.y);
+      let edgeScaleX = 1.0;
+      let edgeScaleY = 1.0;
+      if (edgeDistX < 120) {
+        edgeScaleX = 0.35 + 0.65 * (edgeDistX / 120);
+      }
+      if (edgeDistY < 120) {
+        edgeScaleY = 0.35 + 0.65 * (edgeDistY / 120);
+      }
+      ox *= edgeScaleX;
+      oy *= edgeScaleY;
+
+      // --- SWARM LEASH / RECOVERY SYSTEM (Calculate distance to leader Foton) ---
+      const dxToLeader = playerPosRef.current.x - member.x;
+      const dyToLeader = playerPosRef.current.y - member.y;
+      const distToLeader = Math.sqrt(dxToLeader * dxToLeader + dyToLeader * dyToLeader);
+      member.distToLeader = distToLeader;
+
+      const LEASH_DISTANCE_SOFT = 160;
+      const LEASH_DISTANCE_HARD = 280;
+
+      let followRate = (0.12 + (upgradesLevel.quantum_core || 0) * 0.02) * disruptRecoveryRef.current;
+
+      // Swarm Overscale temporary upgrade: +25% cohesion and follow recovery speed per stack
+      const overscaleStacks = activeRunUpgradesRef.current.swarm_overscale || 0;
+      if (overscaleStacks > 0) {
+        followRate *= (1.0 + overscaleStacks * 0.25);
+      }
+
+      if (distToLeader > LEASH_DISTANCE_HARD) {
+        // Hard leash recovery: rapid steering pull towards leader, minimize visual drift
+        followRate *= 3.8;
+        member.targetX = playerPosRef.current.x + ox * 0.15;
+        member.targetY = playerPosRef.current.y + oy * 0.15;
+      } else if (distToLeader > LEASH_DISTANCE_SOFT) {
+        // Soft leash recovery: medium speed boost, reduced offsets to aid cohesion
+        followRate *= 1.8;
+        member.targetX = playerPosRef.current.x + ox * 0.55;
+        member.targetY = playerPosRef.current.y + oy * 0.55;
+      } else {
+        member.targetX = playerPosRef.current.x + ox;
+        member.targetY = playerPosRef.current.y + oy;
+      }
+
+      // Elastic interpolation
+      const dx = member.targetX - member.x;
+      const dy = member.targetY - member.y;
+
+      member.x += dx * followRate * (delta / 16.6);
+      member.y += dy * followRate * (delta / 16.6);
+
+      // Clamping strictly inside unified WORLD bounds
+      member.x = Math.max(WORLD_BOUNDS.minX, Math.min(WORLD_BOUNDS.maxX, member.x));
+      member.y = Math.max(WORLD_BOUNDS.minY, Math.min(WORLD_BOUNDS.maxY, member.y));
+
+      // Shooting logic
+      member.shootCooldown -= delta / 16.6;
+      if (member.shootCooldown <= 0) {
+        member.shootCooldown = 65 - (activeFormation === FormationType.CIRCLE ? 15 : 0); // speed mod
+        shootFromSwarm(member);
+      }
+    });
+
+    // 4.1. Spatial Grid Separation Pass to avoid complete overlaps and jitter (O(N) Complexity)
+    const separationCellSize = 16; // separation cell radius
+    const grid: Record<string, OrbiMember[]> = {};
+    swarmRef.current.forEach((m) => {
+      const gx = Math.floor(m.x / separationCellSize);
+      const gy = Math.floor(m.y / separationCellSize);
+      const key = `${gx},${gy}`;
+      if (!grid[key]) grid[key] = [];
+      grid[key].push(m);
+    });
+
+    swarmRef.current.forEach((member) => {
+      const gx = Math.floor(member.x / separationCellSize);
+      const gy = Math.floor(member.y / separationCellSize);
+      
+      let pushX = 0;
+      let pushY = 0;
+      let count = 0;
+
+      // Check 3x3 surrounding cells
+      for (let dx = -1; dx <= 1; dx++) {
+        for (let dy = -1; dy <= 1; dy++) {
+          const key = `${gx + dx},${gy + dy}`;
+          const neighbors = grid[key];
+          if (neighbors) {
+            neighbors.forEach((other) => {
+              if (other.id !== member.id) {
+                const diffX = member.x - other.x;
+                const diffY = member.y - other.y;
+                const distSq = diffX * diffX + diffY * diffY;
+                const minDist = (member.size + other.size) * 0.95; // Allow minor overlap but separate
+                const minDistSq = minDist * minDist;
+
+                if (distSq < minDistSq && distSq > 0.01) {
+                  const dist = Math.sqrt(distSq);
+                  const overlap = minDist - dist;
+                  // Reduce separation forces for leashed followers to prioritize cohesion
+                  let pushFactor = 0.25;
+                  const maxLeashDist = Math.max(member.distToLeader || 0, other.distToLeader || 0);
+                  if (maxLeashDist > 280) { // Hard leash limit
+                    pushFactor = 0.0;
+                  } else if (maxLeashDist > 160) { // Soft leash limit
+                    pushFactor = 0.05;
+                  }
+                  pushX += (diffX / dist) * overlap * pushFactor;
+                  pushY += (diffY / dist) * overlap * pushFactor;
+                  count++;
+                }
+              }
+            });
+          }
+        }
+      }
+
+      if (count > 0) {
+        // Limit acceleration push to prevent jitter
+        const maxPush = 1.8;
+        const pushDistSq = pushX * pushX + pushY * pushY;
+        if (pushDistSq > maxPush * maxPush) {
+          const pushDist = Math.sqrt(pushDistSq);
+          pushX = (pushX / pushDist) * maxPush;
+          pushY = (pushY / pushDist) * maxPush;
+        }
+        member.x += pushX * (delta / 16.6);
+        member.y += pushY * (delta / 16.6);
+
+        // Clamping inside arena
+        member.x = Math.max(WORLD_BOUNDS.minX, Math.min(WORLD_BOUNDS.maxX, member.x));
+        member.y = Math.max(WORLD_BOUNDS.minY, Math.min(WORLD_BOUNDS.maxY, member.y));
+      }
+    });
+
+    // 5. Spawning script & wave transition timers
+    handleWaveTransitions(delta);
+
+    const cfg = getWaveConfig(currentWaveRef.current);
+    if (waveActiveRef.current && !bossActiveRef.current) {
+      if (currentWaveRef.current === 1) {
+        const waveElapsed = cfg.duration - waveTimeRemainingRef.current;
+
+        // Custom start pacing sequence for Wave 1:
+        // - Game start (0.0s) -> visual intermission of 2.5s
+        // - 2.5s–4.0s (waveElapsed 0ms to 1500ms): Spawns 1st Scout (Crawler) at 500ms
+        if (waveElapsed >= 500 && waveBudgetSpawnedRef.current === 0) {
+          spawnEnemy(EnemyType.CRAWLER);
+        }
+        // - 4.0s–8.0s (waveElapsed 1500ms to 5500ms): Spawns 3 additional enemies staggered
+        else if (waveElapsed >= 2000 && waveBudgetSpawnedRef.current === 1) {
+          spawnEnemy(EnemyType.CRAWLER);
+        }
+        else if (waveElapsed >= 3500 && waveBudgetSpawnedRef.current === 2) {
+          spawnEnemy(EnemyType.CRAWLER);
+        }
+        else if (waveElapsed >= 5000 && waveBudgetSpawnedRef.current === 3) {
+          spawnEnemy(EnemyType.CRAWLER);
+        }
+        // - 8.0s+ (waveElapsed >= 5500ms): Standard interval-based spawning rhythm
+        else if (waveElapsed >= 5500) {
+          spawnTimerRef.current += delta / 16.6;
+          if (spawnTimerRef.current >= cfg.spawnInterval) {
+            spawnTimerRef.current = 0;
+            if (waveBudgetSpawnedRef.current < cfg.enemyBudget) {
+              spawnEnemy();
+            }
+          }
+        }
+      } else {
+        // Subsequent waves: use standard interval-based spawning rhythm immediately
+        spawnTimerRef.current += delta / 16.6;
+        if (spawnTimerRef.current >= cfg.spawnInterval) {
+          spawnTimerRef.current = 0;
+          if (waveBudgetSpawnedRef.current < cfg.enemyBudget) {
+            spawnEnemy();
+          }
+        }
+      }
+    }
+
+    // 6. Enemies logic & Shoot mechanics
+    enemiesRef.current.forEach((enemy) => {
+      if (enemy.isDead) return;
+
+      // Handle white hit flash ticks decay
+      if (enemy.flashTicks > 0) enemy.flashTicks--;
+
+      // Decelerate slowTimer if active (Hydro element effect)
+      if (enemy.slowTimer !== undefined && enemy.slowTimer > 0) {
+        enemy.slowTimer -= delta;
+      }
+
+      const originalSpeed = enemy.speed;
+      const isSlowed = enemy.slowTimer !== undefined && enemy.slowTimer > 0;
+      if (isSlowed) {
+        enemy.speed = originalSpeed * 0.45; // Reduce movement speed to 45%
+      }
+
+      // Direct tracking movement vectors
+      let tx = playerPosRef.current.x;
+      let ty = playerPosRef.current.y;
+
+      if (enemy.type === EnemyType.BOSS_DEVOURER) {
+        updateBossAI(enemy, delta);
+        enemy.speed = originalSpeed;
+        return;
+      } else if (enemy.type === EnemyType.BLACKOUT_ELITE) {
+        // Handle Elite charge sequence (Section 3.3)
+        if (enemy.chargeTimer !== undefined && enemy.chargeTimer > 0) {
+          enemy.chargeTimer -= delta / 16.6;
+          if (enemy.chargeTimer > 24) {
+            // Wind-up pause phase (speed is 0)
+            enemy.speed = 0;
+          } else {
+            // Active rapid dash displacement
+            enemy.x += enemy.vx * (delta / 16.6);
+            enemy.y += enemy.vy * (delta / 16.6);
+            enemy.speed = 0; // bypass standard chase
+          }
+        } else {
+          // Normal Elite chase movement (very slow)
+          const dx = playerPosRef.current.x - enemy.x;
+          const dy = playerPosRef.current.y - enemy.y;
+          const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+          if (dist > 5) {
+            enemy.x += (dx / dist) * enemy.speed * (delta / 16.6);
+            enemy.y += (dy / dist) * enemy.speed * (delta / 16.6);
+          }
+
+          // Tick down charge cooldown
+          if (enemy.pulseCooldown !== undefined) {
+            enemy.pulseCooldown -= delta / 16.6;
+            if (enemy.pulseCooldown <= 0) {
+              // Initiate Elite charge cycle (1.0s: 36 frames telegraph + 24 frames dash)
+              enemy.chargeTimer = 60;
+              enemy.pulseCooldown = 220 + Math.random() * 150; // charge every 4-6s
+
+              // Direct charge vector towards Foton leader
+              const tAngle = Math.atan2(playerPosRef.current.y - enemy.y, playerPosRef.current.x - enemy.x);
+              enemy.vx = Math.cos(tAngle) * 7.5;
+              enemy.vy = Math.sin(tAngle) * 7.5;
+
+              playEliteChargeSound();
+            }
+          }
+        }
+      } else {
+        // Normal enemy following vectors
+        const dx = tx - enemy.x;
+        const dy = ty - enemy.y;
+        const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+
+        if (enemy.type === EnemyType.DRONE) {
+          // Maintain high distance, strafing left and right
+          if (dist > 180) {
+            enemy.x += (dx / dist) * enemy.speed * (delta / 16.6);
+            enemy.y += (dy / dist) * enemy.speed * (delta / 16.6);
+          } else if (dist < 120) {
+            // Repel
+            enemy.x -= (dx / dist) * enemy.speed * (delta / 16.6);
+            enemy.y -= (dy / dist) * enemy.speed * (delta / 16.6);
+          }
+          // Lateral drift
+          enemy.x += Math.cos(timeElapsedRef.current * 0.003) * 0.8;
+
+          // Drone shot charge sound (play once when charge begins)
+          if (enemy.shootCooldown !== undefined && enemy.shootCooldown <= 35 && enemy.shootCooldown > 33.2) {
+            playDroneChargeSound();
+          }
+        } else if (enemy.type === EnemyType.DISRUPTOR) {
+          // Slide towards Player Foton
+          enemy.x += (dx / dist) * enemy.speed * (delta / 16.6);
+          enemy.y += (dy / dist) * enemy.speed * (delta / 16.6);
+
+          // Disruptor pulse charge sound (play once when charge begins)
+          if (enemy.shootCooldown !== undefined && enemy.shootCooldown <= 60 && enemy.shootCooldown > 58.2) {
+            playDisruptorChargeSound();
+          }
+        } else if (enemy.type === EnemyType.PARASITE) {
+          // Twitchy lunging behavior
+          const lunge = Math.sin(timeElapsedRef.current * 0.015 + enemy.x) * 1.5;
+          enemy.x += ((dx / dist) * enemy.speed + lunge) * (delta / 16.6);
+          enemy.y += (dy / dist) * enemy.speed * (delta / 16.6);
+        } else {
+          // Direct slither for Crawler, Splitter, and minion parts
+          enemy.x += (dx / dist) * enemy.speed * (delta / 16.6);
+          enemy.y += (dy / dist) * enemy.speed * (delta / 16.6);
+        }
+      }
+
+      // Restore original speed
+      enemy.speed = originalSpeed;
+
+      // Shoot & pulse attack timers
+      enemy.shootCooldown -= delta / 16.6;
+      if (enemy.shootCooldown <= 0) {
+        if (enemy.type === EnemyType.DRONE) {
+          enemy.shootCooldown = 110 + Math.random() * 80;
+          shootFromEnemy(enemy);
+        } else if (enemy.type === EnemyType.DISRUPTOR) {
+          enemy.shootCooldown = 220 + Math.random() * 120; // reset pulse timer (3.5-5.5s)
+          
+          // Trigger Disruptor electromagnetic pulse (Section 3.2)
+          playDisruptorPulseSound();
+          disruptTimerRef.current = 2000; // 2.0s disruption window
+
+          // Glowing cyan ring expansion particle effect
+          triggerExplosion(
+            particlesRef.current,
+            getQualityConfig(stats.qualityPreset).maxParticles,
+            ParticleType.BIOME_PORTAL,
+            enemy.x,
+            enemy.y,
+            "#06b6d4",
+            12
+          );
+          screenShakeRef.current = Math.max(screenShakeRef.current, 6.5);
+          addFloatingText("DISRUPTION DETECTED", playerPosRef.current.x, playerPosRef.current.y - 20, "#22d3ee");
+        } else {
+          // Crawler, Splitter, and minion parts don't fire projectiles
+          enemy.shootCooldown = 999999;
+        }
+      }
+    });
+
+    // Filter out off-screen or dead enemies
+    enemiesRef.current = enemiesRef.current.filter((e) => {
+      if (e.isDead) return false;
+      // If regular enemy wanders ridiculously far (offscreen bug), recycle
+      if (!e.isBoss && (e.x < -200 || e.x > WORLD_WIDTH + 200 || e.y < -200 || e.y > WORLD_HEIGHT + 200)) {
+        return false;
+      }
+      return true;
+    });
+
+    // 7. Projectiles coordinates
+    projectilesRef.current.forEach((proj) => {
+      proj.x += proj.vx * (delta / 16.6);
+      proj.y += proj.vy * (delta / 16.6);
+      proj.life -= delta;
+    });
+
+    // Filter dead or expired projectiles
+    projectilesRef.current = projectilesRef.current.filter(
+      (p) => p.life > 0 && p.x >= -50 && p.x <= WORLD_WIDTH + 50 && p.y >= -50 && p.y <= WORLD_HEIGHT + 50
+    );
+
+    // 8. Particles updates
+    particlesRef.current.forEach((p) => {
+      updateParticle(p, delta);
+    });
+    particlesRef.current = particlesRef.current.filter((p) => p.life > 0);
+
+    // 9. Resources Magnet and Collection checks
+    resourcesRef.current.forEach((res) => {
+      if (res.consumed || res.size <= 0) return;
+
+      const dx = playerPosRef.current.x - res.x;
+      const dy = playerPosRef.current.y - res.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      // Apply pull magnet threshold based on Nano Catalyst levels
+      const pullRadius = 45 + (upgradesLevel.nano_catalyst || 0) * 18;
+
+      if (dist < pullRadius) {
+        // pull towards player
+        res.x += (dx / dist) * 2.8 * (delta / 16.6);
+        res.y += (dy / dist) * 2.8 * (delta / 16.6);
+      }
+
+      // Collision pickup trigger
+      if (dist < 15) {
+        triggerResourceCollect(res);
+      }
+    });
+
+    resourcesRef.current = resourcesRef.current.filter((r) => !r.consumed && r.size > 0); // size <= 0 or consumed represents collected
+
+    // 10. SINGLE-IMPACT COLLISION SWEEPS
+    detectAndResolveCollisions();
+  };
+
+  // --- COLLECT RESOURCES SCRIPT ---
+  const triggerResourceCollect = (res: Resource) => {
+    if (res.consumed || res.size <= 0) return;
+    res.consumed = true;
+    res.size = 0; // Mark collected
+
+    stats.totalResourcesCollected += 1;
+    playCrystalSound(res.type === "ENERGY");
+
+    // Spawn tiny sparkles
+    triggerExplosion(
+      particlesRef.current,
+      getQualityConfig(stats.qualityPreset).maxParticles,
+      ParticleType.RESOURCE_PICKUP,
+      res.x,
+      res.y,
+      res.color,
+      8
+    );
+
+    if (res.type === "NANO") {
+      // Harvest permanent Nano credits multiplier by sector config
+      const val = Math.round(res.amount * getBiomeConfig(activeBiome).crystalValueMultiplier);
+      nanoCreditsRef.current += val;
+      setNanoCredits(nanoCreditsRef.current);
+      scoreRef.current += 10;
+    } else if (res.type === "ENERGY") {
+      // Purify and boost fusion meter
+      const boost = 10 * (1 + (upgradesLevel.fusion_resonator || 0) * 0.4);
+      fusionEnergyRef.current = Math.min(100, fusionEnergyRef.current + boost);
+      scoreRef.current += 25;
+
+      // Check Fusion triggers
+      if (fusionEnergyRef.current >= 100) {
+        const solarCount = swarmRef.current.filter((m) => m.color === "#f59e0b" || m.affinity === "solar").length;
+        const hydroCount = swarmRef.current.filter((m) => m.color === "#0ea5e9" || m.affinity === "hydro").length;
+
+        if (solarCount >= 10) {
+          triggerFusion("SOLAR");
+        } else if (hydroCount >= 12) {
+          triggerFusion("HYDRO");
+        } else {
+          // default backup fusion burst
+          triggerFusion("SOLAR");
+        }
+      }
+    } else if (res.type === "ORBI") {
+      // Recruit Supplementary swarm shooter!
+      addSwarmMember(res.orbiAffinity, res.orbiCombatRole);
+      scoreRef.current += 50;
+    }
+  };
+
+  // --- SHOOT TRIGGER FROM SWARM FOLLOWER ---
+  const shootFromSwarm = (member: OrbiMember) => {
+    if (projectilesRef.current.length >= MAX_PROJECTILES) return;
+
+    // Find nearest living enemy target
+    let nearest: Enemy | null = null;
+    let minDist = 999999;
+
+    enemiesRef.current.forEach((enemy) => {
+      if (enemy.isDead) return;
+      const dx = enemy.x - member.x;
+      const dy = enemy.y - member.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < minDist) {
+        minDist = dist;
+        nearest = enemy;
+      }
+    });
+
+    // Check weapon range matching
+    const maxRange = 300 + (activeFormation === FormationType.SHIELD ? 100 : 0);
+
+    if (nearest && minDist < maxRange) {
+      const target: Enemy = nearest;
+      const dx = target.x - member.x;
+      const dy = target.y - member.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      // Weapon vectors and elemental modifications (Section 14)
+      let speedFactor = 1.0;
+      let damageFactor = 1.0;
+      let size = 2.0;
+      let color = member.color;
+
+      const aff = member.affinity || "solar";
+      if (aff === "solar") {
+        speedFactor = 1.25; // Straight golden fast
+        size = 2.2;
+        color = "#f59e0b";
+      } else if (aff === "hydro") {
+        speedFactor = 0.85; // Slower blue pulse
+        size = 3.5;
+        color = "#0ea5e9";
+      } else if (aff === "wind") {
+        speedFactor = 1.6; // Very fast rapid green
+        size = 1.8;
+        color = "#10b981";
+      } else if (aff === "thermal") {
+        speedFactor = 1.0;
+        size = 3.0; // Red splash bullet
+        color = "#ef4444";
+      } else if (aff === "nuclear") {
+        speedFactor = 0.65; // Slow strong violet orb
+        damageFactor = 2.2; // High damage!
+        size = 4.0;
+        color = "#8b5cf6";
+      } else if (aff === "quantum") {
+        speedFactor = 1.1; // Magenta crit shot
+        size = 2.2;
+        color = "#ec4899";
+        // 22% chance of critical strike! (Section 14)
+        if (Math.random() < 0.22) {
+          damageFactor = 2.5;
+          size = 3.2; // Visual size bump for critical shot
+        }
+      }
+
+      const baseSpeed = 4.5 * (1 + FORMATIONS[activeFormation].projSpeedMod) * speedFactor;
+      const vx = (dx / dist) * baseSpeed;
+      const vy = (dy / dist) * baseSpeed;
+
+      // Damage values based on relic levels
+      const baseDamage = 4 + (activeFormation === FormationType.CIRCLE ? 1.5 : 0); // arrow v damage boost
+      const damage = baseDamage * damageFactor;
+
+      projectilesRef.current.push({
+        id: Math.random().toString(),
+        x: member.x,
+        y: member.y,
+        vx,
+        vy,
+        damage,
+        color,
+        size,
+        fromPlayer: true,
+        life: 1500,
+        maxLife: 1500,
+        affinity: aff
+      });
+
+      playShootSound();
+
+      // Apply physical recoil and flash to the firing Orbi member (Section 4.1)
+      const recoilForce = 1.35 * speedFactor;
+      member.recoilX = -(dx / dist) * recoilForce;
+      member.recoilY = -(dy / dist) * recoilForce;
+      member.flashTicks = 3;
+
+      // Mitigation relic 10% double shoot trigger chance per level (Section 15)
+      // + mitotic_mitosis 25% chance per stack to duplicate projectile attacks (no capacity violation)
+      const mitosisChance = 0.1 * (upgradesLevel.mitosis_relic || 0) + 0.25 * (activeRunUpgradesRef.current.mitotic_mitosis || 0);
+      if (mitosisChance > 0 && Math.random() < mitosisChance) {
+        projectilesRef.current.push({
+          id: Math.random().toString(),
+          x: member.x + 4,
+          y: member.y + 4,
+          vx: vx * 0.95,
+          vy: vy * 0.95,
+          damage,
+          color,
+          size,
+          fromPlayer: true,
+          life: 1500,
+          maxLife: 1500,
+          affinity: aff
+        });
+      }
+    }
+  };
+
+  // --- SHOOT AI TRIGGER FROM ENEMY DRONE ---
+  const shootFromEnemy = (enemy: Enemy) => {
+    if (projectilesRef.current.length >= MAX_PROJECTILES) return;
+
+    if (enemy.type === EnemyType.DRONE || enemy.type === EnemyType.BOSS_DEVOURER) {
+      const dx = playerPosRef.current.x - enemy.x;
+      const dy = playerPosRef.current.y - enemy.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      if (dist < 320) {
+        const vx = (dx / dist) * 2.2;
+        const vy = (dy / dist) * 2.2;
+
+        projectilesRef.current.push({
+          id: Math.random().toString(),
+          x: enemy.x,
+          y: enemy.y,
+          vx,
+          vy,
+          damage: 12,
+          color: "#f43f5e", // Bright rose plasma orb
+          size: enemy.isBoss ? 5 : 3.5,
+          fromPlayer: false,
+          life: 2500,
+          maxLife: 2500
+        });
+
+        playEnemyShootSound();
+      }
+    }
+  };
+
+  // --- DETECT SINGLE-IMPACT COLLISION SWEEPS ---
+  const detectAndResolveCollisions = () => {
+    const quality = getQualityConfig(stats.qualityPreset);
+
+    // 1. PROJECTILES vs ENEMIES / PLAYER
+    projectilesRef.current.forEach((proj) => {
+      if (proj.life <= 0) return;
+
+      if (proj.fromPlayer) {
+        // First check if hitting any Boss Shield Nodes
+        let hitShieldNode = false;
+        for (let s = 0; s < shieldNodesRef.current.length; s++) {
+          const node = shieldNodesRef.current[s];
+          const ndx = proj.x - node.x;
+          const ndy = proj.y - node.y;
+          const ndist = Math.sqrt(ndx * ndx + ndy * ndy);
+          if (ndist < 14 + proj.size) {
+            proj.life = 0;
+            hitShieldNode = true;
+            node.health -= proj.damage;
+            node.flashTicks = 10;
+            playClickSound();
+            
+            addFloatingText(`${Math.round(proj.damage)}`, node.x, node.y - 12, "#3b82f6");
+
+            if (node.health <= 0) {
+              triggerExplosion(
+                particlesRef.current,
+                quality.maxParticles,
+                ParticleType.ENEMY_DESTROYED,
+                node.x,
+                node.y,
+                "#3b82f6",
+                15,
+                1.5
+              );
+              playHeavyImpactSound();
+              shieldNodesRef.current.splice(s, 1);
+              bossShieldNodesDestroyedRef.current += 1;
+              setBossShieldNodes(shieldNodesRef.current.length);
+              postDialogue("COMPANION", "¡Nodo de escudo destruido! El núcleo del Devorador está más expuesto.");
+              
+              // If all nodes are destroyed, trigger core exposed vulnerability window!
+              if (shieldNodesRef.current.length === 0) {
+                coreExposedTimerRef.current = 4000; // 4.0s vulnerability window
+                setIsCoreExposed(true);
+                playEliteChargeSound();
+                postDialogue("COMPANION", "¡TODOS LOS NODOS CAÍDOS! ¡EL NÚCLEO ESTÁ EXPUESTO! ¡FUEGO TOTAL!");
+              }
+            }
+            break;
+          }
+        }
+        if (hitShieldNode) return;
+
+        // Player projectils vs enemies
+        for (let i = 0; i < enemiesRef.current.length; i++) {
+          const enemy = enemiesRef.current[i];
+          if (enemy.isDead) continue;
+
+          const dx = proj.x - enemy.x;
+          const dy = proj.y - enemy.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist < enemy.size + proj.size + 2) {
+            // SINGLE IMPACT DETECTED! Kill projectile instantly
+            proj.life = 0;
+
+            // Compute damage modifiers and status flags
+            let damageToApply = proj.damage;
+            let isCrit = false;
+            let isShieldBlock = false;
+
+            if (enemy.type === EnemyType.BOSS_DEVOURER) {
+              if (shieldNodesRef.current.length > 0) {
+                isShieldBlock = true;
+                damageToApply *= 0.25; // 75% reduction
+              } else if (coreExposedTimerRef.current > 0) {
+                isCrit = true;
+                damageToApply *= 2.0; // 2x vulnerability damage!
+              }
+            } else if (enemy.type === EnemyType.BLACKOUT_ELITE) {
+              const faceX = enemy.vx || (playerPosRef.current.x - enemy.x);
+              const faceY = enemy.vy || (playerPosRef.current.y - enemy.y);
+              const faceAngle = Math.atan2(faceY, faceX);
+              const hitAngle = Math.atan2(proj.y - enemy.y, proj.x - enemy.x);
+              let angleDiff = Math.abs(hitAngle - faceAngle);
+              if (angleDiff > Math.PI) angleDiff = Math.PI * 2 - angleDiff;
+
+              if (angleDiff < Math.PI / 4) {
+                // Front shield block: 85% reduction! (Section 2.6 - resistencia frontal elevada)
+                isShieldBlock = true;
+                damageToApply *= 0.15;
+              } else {
+                // Flank/Back hit: 1.4x extra critical damage! (vulnerabilidad trasera)
+                isCrit = true;
+                damageToApply *= 1.4;
+              }
+            }
+
+            // Normal chance of critical visual overlay
+            if (proj.affinity === "quantum" && !isShieldBlock) {
+              // Quantum base projectiles have 22% crit, already factored in shootFromSwarm.
+              // We'll mark as critical for feedback if damageFactor is higher.
+              if (proj.damage > 5.0) isCrit = true;
+            }
+
+            // Apply direct damage
+            enemy.health -= damageToApply;
+            enemy.flashTicks = 4; // Trigger flash
+
+            if (enemy.type === EnemyType.BOSS_DEVOURER) {
+              setBossHp(Math.max(0, enemy.health));
+              bossDamageDealtRef.current += damageToApply;
+            }
+
+            // Hit-Stop time-lag freezing (Section 6)
+            const isHeavyAffinity = proj.affinity === "nuclear" || proj.affinity === "thermal";
+            if ((isHeavyAffinity || isCrit) && hitStopCooldownTimerRef.current <= 0) {
+              const isBoss = enemy.isBoss;
+              hitStopTimerRef.current = isBoss ? 60 : 40; // 60ms for boss, 40ms for standard
+              hitStopCooldownTimerRef.current = 150; // 150ms cooldown
+              playHeavyImpactSound();
+              screenShakeRef.current = Math.max(screenShakeRef.current, isBoss ? 15 : 7.5);
+            }
+
+            // Trigger visual and auditory combat feedback (Section 4)
+            if (isShieldBlock) {
+              playShieldDeflectSound();
+              addFloatingText("BLOCK", enemy.x, enemy.y - 12, "#a7f3d0");
+              triggerExplosion(
+                particlesRef.current,
+                quality.maxParticles,
+                ParticleType.ENEMY_HIT,
+                proj.x,
+                proj.y,
+                "#a7f3d0",
+                4
+              );
+            } else if (isCrit) {
+              playCriticalHitSound();
+              addFloatingText("CRITICAL", enemy.x, enemy.y - 12, "#f43f5e");
+              triggerExplosion(
+                particlesRef.current,
+                quality.maxParticles,
+                ParticleType.ENEMY_HIT,
+                proj.x,
+                proj.y,
+                "#ef4444",
+                9
+              );
+            } else {
+              playClickSound(); // short hit tick
+              triggerExplosion(
+                particlesRef.current,
+                quality.maxParticles,
+                ParticleType.ENEMY_HIT,
+                proj.x,
+                proj.y,
+                proj.color,
+                3
+              );
+            }
+
+            // Apply physical pushback/displacement (Section 4.1 - pequeño desplazamiento)
+            const projAngle = Math.atan2(proj.vy, proj.vx);
+            const pushFactor = enemy.type === EnemyType.CRAWLER ? 5.5 : (isCrit ? 4.0 : 1.8);
+            enemy.x += Math.cos(projAngle) * pushFactor;
+            enemy.y += Math.sin(projAngle) * pushFactor;
+
+            // 1. Hydro Slow status effect application (Section 14)
+            if (proj.affinity === "hydro") {
+              enemy.slowTimer = 2500; // Slow speed for 2.5 seconds
+            }
+
+            // 2. Thermal Splash Area Damage application (Section 14)
+            if (proj.affinity === "thermal") {
+              const splashRadius = 55;
+              const splashDamage = damageToApply * 0.45; // 45% of primary bullet damage
+              
+              enemiesRef.current.forEach((otherEnemy) => {
+                if (otherEnemy === enemy || otherEnemy.isDead) return;
+                const sdx = proj.x - otherEnemy.x;
+                const sdy = proj.y - otherEnemy.y;
+                const sdist = Math.sqrt(sdx * sdx + sdy * sdy);
+
+                if (sdist < splashRadius + otherEnemy.size) {
+                  otherEnemy.health -= splashDamage;
+                  otherEnemy.flashTicks = 4;
+
+                  if (otherEnemy.type === EnemyType.BOSS_DEVOURER) {
+                    setBossHp(Math.max(0, otherEnemy.health));
+                    bossDamageDealtRef.current += splashDamage;
+                  }
+
+                  // Small visual thermal splash explosion
+                  triggerExplosion(
+                    particlesRef.current,
+                    quality.maxParticles,
+                    ParticleType.ENEMY_HIT,
+                    otherEnemy.x,
+                    otherEnemy.y,
+                    "#ef4444",
+                    3
+                  );
+
+                  // Cascading destruction check for splash-damaged targets
+                  if (otherEnemy.health <= 0) {
+                    otherEnemy.isDead = true;
+                    stats.totalEnemiesDestroyed += 1;
+                    
+                    const scoreReward = otherEnemy.isBoss ? 1500 : (otherEnemy.type === EnemyType.BLACKOUT_ELITE ? 250 : (otherEnemy.isMinion ? 15 : 80));
+                    scoreRef.current += scoreReward;
+                    
+                    playEnemyExplodeSound(otherEnemy.isBoss || otherEnemy.size > 14);
+
+                    triggerExplosion(
+                      particlesRef.current,
+                      quality.maxParticles,
+                      ParticleType.ENEMY_DESTROYED,
+                      otherEnemy.x,
+                      otherEnemy.y,
+                      otherEnemy.color,
+                      otherEnemy.isBoss ? 45 : 14,
+                      otherEnemy.isBoss ? 3.5 : 2.0
+                    );
+
+                    if (otherEnemy.isBoss) {
+                      bossSessionEndTimeRef.current = Date.now();
+                      bossDefeatedSequenceActiveRef.current = true;
+                      bossDefeatedSequenceTimerRef.current = 5000;
+                      postDialogue("COMPANION", "¡SISTEMAS DEL DEVORADOR CRÍTICAS! Reacción en cadena termodinámica detectada. ¡Sincronizando pulso de purga final!");
+                    } else {
+                      // Only spawn drops & splits if not a minion (Section 2.4 - sin recompensa duplicada)
+                      if (!otherEnemy.isMinion) {
+                        spawnResource(otherEnemy.x, otherEnemy.y);
+                        const currentWaveCfg = getWaveConfig(currentWaveRef.current);
+                        if (currentWaveCfg.environmentalModifier === "CORE_DROP_BOOST") {
+                          spawnResource(otherEnemy.x + Math.random() * 16 - 8, otherEnemy.y + Math.random() * 16 - 8);
+                        }
+                        if (otherEnemy.type === EnemyType.SPLITTER) {
+                          spawnMinionSplit(otherEnemy.x - 10, otherEnemy.y, otherEnemy.size * 0.7);
+                          spawnMinionSplit(otherEnemy.x + 10, otherEnemy.y, otherEnemy.size * 0.7);
+                        }
+                      }
+                    }
+                  }
+                }
+              });
+            }
+
+            // Check destruction of the directly-hit enemy
+            if (enemy.health <= 0) {
+              enemy.isDead = true;
+              stats.totalEnemiesDestroyed += 1;
+              
+              const scoreReward = enemy.isBoss ? 1500 : (enemy.type === EnemyType.BLACKOUT_ELITE ? 250 : (enemy.isMinion ? 15 : 80));
+              scoreRef.current += scoreReward;
+
+              playEnemyExplodeSound(enemy.isBoss || enemy.size > 14);
+
+              triggerExplosion(
+                particlesRef.current,
+                quality.maxParticles,
+                ParticleType.ENEMY_DESTROYED,
+                enemy.x,
+                enemy.y,
+                enemy.color,
+                enemy.isBoss ? 45 : 14,
+                enemy.isBoss ? 3.5 : 2.0
+              );
+
+              // Spawn drops
+              if (enemy.isBoss) {
+                // Start cinematic boss defeat sequence
+                bossSessionEndTimeRef.current = Date.now();
+                bossDefeatedSequenceActiveRef.current = true;
+                bossDefeatedSequenceTimerRef.current = 5000;
+                postDialogue("COMPANION", "¡SISTEMAS DEL DEVORADOR CRÍTICAS! Reacción en cadena termodinámica detectada. ¡Sincronizando pulso de purga final!");
+              } else {
+                // Only spawn resource or splits if NOT a minion (Section 2.4)
+                if (!enemy.isMinion) {
+                  spawnResource(enemy.x, enemy.y);
+                  const currentWaveCfg = getWaveConfig(currentWaveRef.current);
+                  if (currentWaveCfg.environmentalModifier === "CORE_DROP_BOOST") {
+                    spawnResource(enemy.x + Math.random() * 16 - 8, enemy.y + Math.random() * 16 - 8);
+                  }
+                  // Splitter logic
+                  if (enemy.type === EnemyType.SPLITTER) {
+                    spawnMinionSplit(enemy.x - 10, enemy.y, enemy.size * 0.7);
+                    spawnMinionSplit(enemy.x + 10, enemy.y, enemy.size * 0.7);
+                  }
+                }
+              }
+            }
+            break; // Projectile destroyed, skip checking other enemies for this projectile
+          }
+        }
+      } else {
+        // Enemy projectiles vs Player core
+        const dx = proj.x - playerPosRef.current.x;
+        const dy = proj.y - playerPosRef.current.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist < 16 + proj.size) {
+          proj.life = 0; // Destroy projectile
+          if (proj.color === "#3b82f6") {
+            damagePlayerFromBoss(proj.damage, "orbital_shards");
+          } else {
+            damagePlayer(proj.damage);
+          }
+        }
+      }
+    });
+
+    // 2. ENEMIES CONTACT DAMAGE vs PLAYER CORE
+    enemiesRef.current.forEach((enemy) => {
+      if (enemy.isDead) return;
+
+      const dx = playerPosRef.current.x - enemy.x;
+      const dy = playerPosRef.current.y - enemy.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      if (dist < 16 + enemy.size) {
+        // Trigger contact damage
+        const baseDamage = enemy.type === EnemyType.BOSS_DEVOURER ? 25 : 15;
+        if (enemy.type === EnemyType.BOSS_DEVOURER) {
+          const attackType = bossCurrentAttackRef.current === "devourer_charge" ? "devourer_charge" : "contact_damage";
+          damagePlayerFromBoss(baseDamage, attackType);
+        } else {
+          damagePlayer(baseDamage);
+        }
+      }
+    });
+  };
+
+  // --- SPAWN SPLITTED ENEMY PARTS ---
+  const spawnMinionSplit = (x: number, y: number, size: number) => {
+    if (enemiesRef.current.length >= MAX_ENEMIES) return;
+    enemiesRef.current.push({
+      id: Math.random().toString(),
+      type: EnemyType.CRAWLER,
+      x,
+      y,
+      vx: 0,
+      vy: 0,
+      health: 12,
+      maxHealth: 12,
+      speed: 1.1,
+      size,
+      color: "#22c55e",
+      shootCooldown: 120,
+      pulseCooldown: 0,
+      contactDamageCooldown: 0,
+      isDead: false,
+      isBoss: false,
+      flashTicks: 0
+    });
+  };
+
+  // --- DAMAGE PLAYER FROM BOSS SPECIFIC TELEMETRY ---
+  const damagePlayerFromBoss = (dmg: number, attackType: string) => {
+    if (invincibilityTimerRef.current > 0) return;
+
+    if (bossAttacksHitByTypeRef.current && bossAttacksHitByTypeRef.current[attackType] !== undefined) {
+      bossAttacksHitByTypeRef.current[attackType]++;
+    }
+
+    damagePlayer(dmg);
+  };
+
+  // --- DAMAGE PLAYER CORE ENGINE ---
+  const damagePlayer = (dmg: number) => {
+    if (invincibilityTimerRef.current > 0) return;
+
+    // Apply shield reduction adjusted for active formation defense multipliers
+    const defenseMod = FORMATIONS[activeFormation].shieldMod; // e.g. +0.25 (which means -25% damage taken)
+    const multiplier = Math.max(0.4, 1.0 - defenseMod);
+    const finalDamage = dmg * multiplier;
+
+    shieldRef.current = Math.max(0, shieldRef.current - finalDamage);
+    setShield(shieldRef.current);
+
+    if (bossActiveRef.current) {
+      bossDamageTakenRef.current += finalDamage;
+    }
+
+    // Apply Screen shake
+    screenShakeRef.current = 12;
+
+    playDamageSound();
+
+    // Spawn warning rings
+    triggerExplosion(
+      particlesRef.current,
+      getQualityConfig(stats.qualityPreset).maxParticles,
+      ParticleType.PLAYER_DAMAGE,
+      playerPosRef.current.x,
+      playerPosRef.current.y,
+      "#ef4444",
+      15
+    );
+
+    // Trigger invincibility cooldown frames
+    invincibilityTimerRef.current = PLAYER_HIT_COOLDOWN;
+    playerFlashRef.current = 60; // flash frames
+
+    postDialogue("COMPANION", "¡CUIDADO! Impacto directo en el núcleo Foton. Integridad crítica.");
+
+    // Check Core Collapse GameOver
+    if (shieldRef.current <= 0) {
+      triggerGameOver(false);
+    }
+  };
+
+  // --- RENDER TACTICAL RADAR MINIMAP OVERLAY ---
+  const drawTacticalMinimap = (ctx: CanvasRenderingContext2D, mode: "FULL" | "COMPACT" | "OFF") => {
+    const cam = cameraStateRef.current;
+    
+    // Position minimap in the top right corner of the actual viewport
+    const pad = 12;
+    const size = mode === "FULL" ? 130 : 90;
+    const rx = cam.viewportWidth - size - pad;
+    const ry = pad;
+
+    ctx.save();
+    
+    // Draw high-tech outer frame & backplate
+    ctx.fillStyle = "rgba(10, 15, 30, 0.75)";
+    ctx.strokeStyle = "rgba(6, 182, 212, 0.4)";
+    ctx.lineWidth = 1.5;
+    
+    if (mode === "COMPACT") {
+      // circular radar styling
+      ctx.beginPath();
+      ctx.arc(rx + size / 2, ry + size / 2, size / 2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      // Draw grid circular rings
+      ctx.strokeStyle = "rgba(6, 182, 212, 0.15)";
+      ctx.lineWidth = 0.5;
+      ctx.beginPath();
+      ctx.arc(rx + size / 2, ry + size / 2, size / 3, 0, Math.PI * 2);
+      ctx.arc(rx + size / 2, ry + size / 2, size / 6, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Analog sweep line animation effect
+      const sweepAngle = (timeElapsedRef.current * 0.002) % (Math.PI * 2);
+      ctx.strokeStyle = "rgba(6, 182, 212, 0.25)";
+      ctx.beginPath();
+      ctx.moveTo(rx + size / 2, ry + size / 2);
+      ctx.lineTo(
+        rx + size / 2 + Math.cos(sweepAngle) * (size / 2),
+        ry + size / 2 + Math.sin(sweepAngle) * (size / 2)
+      );
+      ctx.stroke();
+
+      // Compact radar: local coordinates centered on the player (Foton)
+      // Radius representing 320 world units
+      const radiusWorld = 320;
+      const scale = (size / 2) / radiusWorld;
+      const px = playerPosRef.current.x;
+      const py = playerPosRef.current.y;
+      const cx = rx + size / 2;
+      const cy = ry + size / 2;
+
+      // Draw player center
+      ctx.fillStyle = "#22d3ee"; // cian
+      ctx.beginPath();
+      ctx.arc(cx, cy, 3, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Draw allies Orbi followers
+      ctx.fillStyle = "#10b981"; // green
+      swarmRef.current.forEach((m) => {
+        const dx = m.x - px;
+        const dy = m.y - py;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < radiusWorld) {
+          ctx.beginPath();
+          ctx.arc(cx + dx * scale, cy + dy * scale, 1.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      });
+
+      // Draw enemies with distinctive types
+      enemiesRef.current.forEach((e) => {
+        const dx = e.x - px;
+        const dy = e.y - py;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < radiusWorld) {
+          ctx.beginPath();
+          if (e.isBoss) {
+            // Big pulsating boss icon
+            const pulse = 3.5 + Math.sin(timeElapsedRef.current * 0.08) * 1.5;
+            ctx.fillStyle = "#ec4899"; // pink/magenta boss
+            ctx.arc(cx + dx * scale, cy + dy * scale, pulse, 0, Math.PI * 2);
+          } else if (e.type === EnemyType.DISRUPTOR) {
+            ctx.fillStyle = "#06b6d4"; // cyan disruptor
+            ctx.arc(cx + dx * scale, cy + dy * scale, 3, 0, Math.PI * 2);
+          } else if (e.type === EnemyType.BLACKOUT_ELITE) {
+            ctx.fillStyle = "#f43f5e"; // rose elite
+            ctx.arc(cx + dx * scale, cy + dy * scale, 2.5, 0, Math.PI * 2);
+          } else {
+            ctx.fillStyle = "#ef4444"; // red default
+            ctx.arc(cx + dx * scale, cy + dy * scale, 1.8, 0, Math.PI * 2);
+          }
+          ctx.fill();
+        }
+      });
+
+      // Draw cores / pickups
+      resourcesRef.current.forEach((res) => {
+        if (res.consumed || res.size <= 0) return;
+        const dx = res.x - px;
+        const dy = res.y - py;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < radiusWorld) {
+          ctx.beginPath();
+          let color = "#eab308"; // yellow quantum
+          if (res.orbiAffinity === "solar") color = "#f97316"; // orange solar
+          else if (res.orbiAffinity === "hydro") color = "#3b82f6"; // blue hydro
+          ctx.fillStyle = color;
+          ctx.arc(cx + dx * scale, cy + dy * scale, 1.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      });
+    } else {
+      // FULL mode: square frame representing the complete 1600x960 battlefield
+      ctx.beginPath();
+      ctx.roundRect(rx, ry, size, size, 6);
+      ctx.fill();
+      ctx.stroke();
+
+      // Scale factors for full map
+      const scaleX = size / WORLD_WIDTH;
+      const scaleY = size / WORLD_HEIGHT;
+
+      // Draw faint boundary lines
+      ctx.strokeStyle = "rgba(6, 182, 212, 0.08)";
+      ctx.lineWidth = 0.5;
+      ctx.beginPath();
+      ctx.moveTo(rx + size / 2, ry);
+      ctx.lineTo(rx + size / 2, ry + size);
+      ctx.moveTo(rx, ry + size / 2);
+      ctx.lineTo(rx + size, ry + size / 2);
+      ctx.stroke();
+
+      // Draw planets
+      ctx.fillStyle = "rgba(100, 116, 139, 0.4)";
+      const bgPlanets = (backgroundRenderer as any).planets || [];
+      bgPlanets.forEach((p: any) => {
+        ctx.beginPath();
+        ctx.arc(rx + p.x * scaleX, ry + p.y * scaleY, p.size * 0.12, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // Draw allies Orbi followers
+      ctx.fillStyle = "#10b981"; // green
+      swarmRef.current.forEach((m) => {
+        ctx.beginPath();
+        ctx.arc(rx + m.x * scaleX, ry + m.y * scaleY, 1.2, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // Draw enemies
+      enemiesRef.current.forEach((e) => {
+        ctx.beginPath();
+        if (e.isBoss) {
+          const pulse = 4 + Math.sin(timeElapsedRef.current * 0.08) * 2;
+          ctx.fillStyle = "#ec4899";
+          ctx.arc(rx + e.x * scaleX, ry + e.y * scaleY, pulse, 0, Math.PI * 2);
+        } else if (e.type === EnemyType.DISRUPTOR) {
+          ctx.fillStyle = "#06b6d4";
+          ctx.arc(rx + e.x * scaleX, ry + e.y * scaleY, 3, 0, Math.PI * 2);
+        } else if (e.type === EnemyType.BLACKOUT_ELITE) {
+          ctx.fillStyle = "#f43f5e";
+          ctx.arc(rx + e.x * scaleX, ry + e.y * scaleY, 2.5, 0, Math.PI * 2);
+        } else {
+          ctx.fillStyle = "#ef4444";
+          ctx.arc(rx + e.x * scaleX, ry + e.y * scaleY, 1.8, 0, Math.PI * 2);
+        }
+        ctx.fill();
+      });
+
+      // Draw cores / pickups
+      resourcesRef.current.forEach((res) => {
+        if (res.consumed || res.size <= 0) return;
+        ctx.beginPath();
+        let color = "#eab308";
+        if (res.orbiAffinity === "solar") color = "#f97316";
+        else if (res.orbiAffinity === "hydro") color = "#3b82f6";
+        ctx.fillStyle = color;
+        ctx.arc(rx + res.x * scaleX, ry + res.y * scaleY, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // Draw camera viewport boundaries
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.25)";
+      ctx.lineWidth = 0.8;
+      ctx.strokeRect(
+        rx + cam.cameraX * scaleX,
+        ry + cam.cameraY * scaleY,
+        (cam.viewportWidth / cam.zoom) * scaleX,
+        (cam.viewportHeight / cam.zoom) * scaleY
+      );
+
+      // Draw player (Foton)
+      ctx.fillStyle = "#22d3ee"; // cian
+      ctx.beginPath();
+      ctx.arc(rx + playerPosRef.current.x * scaleX, ry + playerPosRef.current.y * scaleY, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Add high-tech text indicator
+    ctx.fillStyle = "rgba(6, 182, 212, 0.65)";
+    ctx.font = "bold 7px monospace";
+    ctx.textAlign = "left";
+    ctx.fillText(`RADAR:${mode}`, rx + 5, ry + size - 5);
+
+    ctx.restore();
+  };
+
+  // --- RENDER CURRENT GAME SCENE DIRECTLY INTO CANVAS ---
+  const renderCanvasScene = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    // 1. Draw Space Background and layered grids
+    const quality = getQualityConfig(stats.qualityPreset);
+    backgroundRenderer.render(
+      ctx,
+      timeElapsedRef.current,
+      activeBiome,
+      cameraStateRef.current.cameraX,
+      cameraStateRef.current.cameraY,
+      cameraStateRef.current.zoom,
+      quality.drawNebula,
+      quality.drawPlanets,
+      bossActiveRef.current,
+      cameraStateRef.current.viewportWidth,
+      cameraStateRef.current.viewportHeight
+    );
+
+    // Apply camera transformation context and screen shake translation
+    ctx.save();
+    
+    // 1. Apply Screen Shake first
+    ctx.translate(cameraOffsetRef.current.x, cameraOffsetRef.current.y);
+
+    // 2. Scale and pan according to camera zoom and coordinates
+    ctx.scale(cameraStateRef.current.zoom, cameraStateRef.current.zoom);
+    ctx.translate(-cameraStateRef.current.cameraX, -cameraStateRef.current.cameraY);
+
+    // 2. Draw resources
+    drawResources(ctx, resourcesRef.current, timeElapsedRef.current, playerPosRef.current, stats.coreLabelsMode);
+
+    // 3. Draw active shooter projectiles
+    drawProjectilesList(ctx, projectilesRef.current);
+
+    // 4. Draw enemies
+    drawEnemiesList(ctx, enemiesRef.current, timeElapsedRef.current, playerPosRef.current);
+
+    // 5. Draw active Particles
+    particlesRef.current.forEach((p) => {
+      drawParticle(ctx, p);
+    });
+
+    // 6. Draw swarm shooters
+    drawSwarmRoster(ctx, swarmRef.current, timeElapsedRef.current);
+
+    // 7. Draw Orbi Foton leader eyeball
+    drawFoton(ctx, playerPosRef.current, playerFlashRef.current, timeElapsedRef.current, pointerRef.current, (stats.bossVictories || 0) > 0);
+
+    // 8. Draw active floating text feedback (such as CRITICAL or BLOCK)
+    ctx.save();
+    floatingTextsRef.current.forEach((t) => {
+      const alpha = Math.max(0, Math.min(1, t.life / t.maxLife));
+      ctx.fillStyle = t.color;
+      ctx.globalAlpha = alpha;
+      ctx.font = "bold 9px monospace";
+      ctx.shadowBlur = 4;
+      ctx.shadowColor = t.color;
+      ctx.textAlign = "center";
+      ctx.fillText(t.text, t.x, t.y);
+    });
+    ctx.restore();
+
+    ctx.restore(); // Restore camera transformation matrix context
+
+    // 9. Draw a tactical minimap (radar overlay) in the top-right corner if mode is not OFF
+    const minimapMode = statsRef.current?.minimapMode || stats.minimapMode || "COMPACT";
+    if (minimapMode !== "OFF") {
+      drawTacticalMinimap(ctx, minimapMode);
+    }
+  };
+
+  // --- TOUCH AND COORDINATE POINTER MAPS ---
+  const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (isPaused || !isPlaying) return;
+    initAudio();
+    
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const cam = cameraStateRef.current;
+    
+    // Convert screen event coordinates to logical canvas pixels
+    const clickX = e.clientX - rect.left;
+    const clickY = e.clientY - rect.top;
+    
+    // Scale from actual browser CSS pixels to logical canvas pixels
+    const canvasScaleX = cam.viewportWidth / rect.width;
+    const canvasScaleY = cam.viewportHeight / rect.height;
+    
+    const logicalX = clickX * canvasScaleX;
+    const logicalY = clickY * canvasScaleY;
+
+    // Convert from logical canvas pixels to real world coordinate pixels using camera transformation
+    const worldX = cam.cameraX + logicalX / cam.zoom;
+    const worldY = cam.cameraY + logicalY / cam.zoom;
+
+    isMouseDownRef.current = true;
+    mouseDownPosRef.current = { x: e.clientX, y: e.clientY, time: Date.now() };
+
+    // Initially target this point
+    pointerRef.current = { x: worldX, y: worldY };
+  };
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas || isPaused || !isPlaying) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const cam = cameraStateRef.current;
+
+    const scaleX = cam.viewportWidth / rect.width;
+    const scaleY = cam.viewportHeight / rect.height;
+
+    const logicalX = (e.clientX - rect.left) * scaleX;
+    const logicalY = (e.clientY - rect.top) * scaleY;
+
+    const worldX = cam.cameraX + logicalX / cam.zoom;
+    const worldY = cam.cameraY + logicalY / cam.zoom;
+
+    pointerRef.current = { x: worldX, y: worldY };
+
+    if (isMouseDownRef.current) {
+      const dx = e.clientX - mouseDownPosRef.current.x;
+      const dy = e.clientY - mouseDownPosRef.current.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      
+      // If dragged more than 8 pixels, or mouse held down, trigger drag
+      if (dist > 8 || (Date.now() - mouseDownPosRef.current.time > 150)) {
+        lastInputTypeRef.current = "MOUSE_DRAG";
+        clickToMoveTargetRef.current = null;
+      }
+    }
+  };
+
+  const handlePointerUp = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (!isPlaying || isPaused) return;
+    isMouseDownRef.current = false;
+    
+    const duration = Date.now() - mouseDownPosRef.current.time;
+    const dx = e.clientX - mouseDownPosRef.current.x;
+    const dy = e.clientY - mouseDownPosRef.current.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+
+    if (duration < 200 && dist < 10) {
+      // It's a click-to-move tap!
+      lastInputTypeRef.current = "CLICK_TO_MOVE";
+      
+      // Calculate destination coordinates
+      const canvas = canvasRef.current;
+      if (canvas) {
+        const rect = canvas.getBoundingClientRect();
+        const cam = cameraStateRef.current;
+        const scaleX = cam.viewportWidth / rect.width;
+        const scaleY = cam.viewportHeight / rect.height;
+        const logicalX = (e.clientX - rect.left) * scaleX;
+        const logicalY = (e.clientY - rect.top) * scaleY;
+        const worldX = cam.cameraX + logicalX / cam.zoom;
+        const worldY = cam.cameraY + logicalY / cam.zoom;
+
+        clickToMoveTargetRef.current = { x: worldX, y: worldY };
+        pointerRef.current = { x: worldX, y: worldY };
+      }
+    } else {
+      // Released a drag: stop immediately!
+      if (lastInputTypeRef.current === "MOUSE_DRAG") {
+        lastInputTypeRef.current = "NONE";
+        pointerRef.current = { x: playerPosRef.current.x, y: playerPosRef.current.y };
+      }
+    }
+  };
+
+  // --- MOBILE VIRTUAL BUTTON MOVEMENT ASSIST ---
+  const moveMobileDPad = (dir: "UP" | "DOWN" | "LEFT" | "RIGHT") => {
+    initAudio();
+    const pSpeed = PLAYER_BASE_SPEED * 8;
+    if (dir === "UP") playerPosRef.current.y -= pSpeed;
+    if (dir === "DOWN") playerPosRef.current.y += pSpeed;
+    if (dir === "LEFT") playerPosRef.current.x -= pSpeed;
+    if (dir === "RIGHT") playerPosRef.current.x += pSpeed;
+  };
+
+  const getFormationMostUsed = () => {
+    let best = "none";
+    let max = 0;
+    for (const [f, count] of Object.entries(formationUseCountsRef.current)) {
+      if (count > max) {
+        max = count;
+        best = f;
+      }
+    }
+    return best;
+  };
+
+  const getBestOrbiType = () => {
+    let bestStage = 1;
+    swarmRef.current.forEach(m => {
+      if (m.evolutionStage && m.evolutionStage > bestStage) {
+        bestStage = m.evolutionStage;
+      }
+    });
+    return `STAGE ${bestStage}`;
+  };
+
+  const getBossResult = () => {
+    if (victory) return "DEFEATED";
+    if (currentWave === 10) return "SURVIVED PHASE 1";
+    return "NOT ENCOUNTERED";
+  };
+
+  return (
+    <div className="w-full min-h-screen bg-slate-950 flex flex-col items-center justify-center p-2 md:p-4 overflow-x-hidden relative select-none">
+      
+      {/* INITIAL START SCREEN MENUS */}
+      {!isPlaying && (
+        <StartScreen
+          stats={stats}
+          onStartGame={startGame}
+          onResetStats={() => {
+            const defaults = resetGameStats();
+            setStats(defaults);
+            setHighScore(0);
+            setUpgradesLevel({
+              hydrogen_deflector: 0,
+              quantum_core: 0,
+              fusion_resonator: 0,
+              nano_catalyst: 0,
+              mitosis_relic: 0
+            });
+            postDialogue("SYSTEM", "Archivos permanentes purgados y reiniciados.");
+          }}
+          onChangePreset={(preset) => {
+            const next = { ...stats, qualityPreset: preset };
+            saveGameStats(next);
+            setStats(next);
+          }}
+          onToggleMute={toggleMute}
+          onToggleBossLabelsMode={(mode) => {
+            const next = { ...stats, bossLabelsMode: mode };
+            saveGameStats(next);
+            setStats(next);
+          }}
+        />
+      )}
+
+      {/* PAUSE MENU DRAWERS */}
+      {isPlaying && isPaused && (
+        <PauseMenu
+          onResume={togglePause}
+          onRestart={startGame}
+          onExitToMenu={() => {
+            stopBgm();
+            setIsPlaying(false);
+            setIsPaused(false);
+          }}
+          audioMuted={audioMuted}
+          onToggleMute={toggleMute}
+          screenShakeMode={stats.screenShakeMode || "FULL"}
+          onSetScreenShakeMode={(mode) => {
+            const next = { ...stats, screenShakeMode: mode };
+            setStats(next);
+            saveGameStats(next);
+          }}
+          flashIntensity={stats.flashIntensity || "FULL"}
+          onSetFlashIntensity={(intensity) => {
+            const next = { ...stats, flashIntensity: intensity };
+            setStats(next);
+            saveGameStats(next);
+          }}
+          coreLabelsMode={stats.coreLabelsMode || "PROXIMITY"}
+          onSetCoreLabelsMode={(mode) => {
+            const next = { ...stats, coreLabelsMode: mode };
+            setStats(next);
+            saveGameStats(next);
+          }}
+        />
+      )}
+
+      {/* GAMEOVER / VICTORY SUMMARY BOARDS */}
+      {isGameOver && (
+        <ResultScreen
+          victory={victory}
+          score={score}
+          highScore={highScore}
+          waveReached={currentWave}
+          maxSwarmSize={swarmSize}
+          enemiesDestroyed={stats.totalEnemiesDestroyed}
+          nanoCreditsGained={score * 2} // match progression ratios
+          onRestart={startGame}
+          onExitToMenu={() => {
+            setIsPlaying(false);
+            setIsGameOver(false);
+          }}
+          activeRunUpgrades={activeRunUpgrades}
+          strongestAffinity={getStrongestAffinity()}
+          formationMostUsed={getFormationMostUsed()}
+          bestOrbiType={getBestOrbiType()}
+          bossResult={getBossResult()}
+          wasRerollUsed={wasRerollUsed}
+          runDuration={runEndTimeRef.current > 0 ? runEndTimeRef.current - runStartTimeRef.current : Date.now() - runStartTimeRef.current}
+          followersRemaining={swarmRef.current.length}
+          bossDamageDealt={bossDamageDealtRef.current}
+          shieldNodesDestroyed={bossShieldNodesDestroyedRef.current}
+          damageTaken={bossDamageTakenRef.current}
+          phaseReached={bossMaxPhaseReachedRef.current}
+          firstVictoryUnlocked={victory && !(stats.bossVictories && stats.bossVictories > 0)}
+        />
+      )}
+
+      {/* MID-RUN UPGRADE CARD SELECTION SELECTOR POPUP OVERLAY */}
+      {isUpgradeSelectionOpen && (
+        <UpgradeSelector
+          choices={upgradeChoices}
+          onSelect={selectUpgrade}
+          onReroll={handleReroll}
+          rerollsRemaining={rerollsRemaining}
+          activeRunUpgrades={activeRunUpgrades}
+        />
+      )}
+
+      {/* CINEMATIC WAVE INTRODUCTION BANNER OVERLAY */}
+      {waveIntroConfig && (
+        <div className="fixed inset-0 flex items-center justify-center z-40 pointer-events-none select-none">
+          <div className="bg-slate-950/85 border border-slate-900 rounded-xl p-6 shadow-[0_0_50px_rgba(0,0,0,0.85)] max-w-lg w-full text-center space-y-4 animate-scaleUp backdrop-blur-md">
+            <span 
+              className="text-[10px] font-black tracking-[0.25em] block font-mono uppercase"
+              style={{ color: waveIntroConfig.introColor }}
+            >
+              --- SECTOR {currentWave.toString().padStart(2, '0')} INCOMING ---
+            </span>
+            <div className="space-y-1">
+              <h2 className="text-2xl md:text-3xl font-black tracking-tight text-white uppercase font-sans">
+                {waveIntroConfig.displayName}
+              </h2>
+              <p className="text-xs text-slate-400 italic">
+                "{waveIntroConfig.subtitle}"
+              </p>
+            </div>
+            
+            <div className="flex items-center justify-center gap-4 py-1">
+              <div className="flex flex-col items-center">
+                <span className="text-[8px] text-slate-500 font-bold uppercase tracking-wider font-mono">THREAT LEVEL</span>
+                <span 
+                  className="text-[10px] font-bold px-2 py-0.5 rounded uppercase font-mono mt-0.5"
+                  style={{ 
+                    color: waveIntroConfig.introColor, 
+                    backgroundColor: `${waveIntroConfig.introColor}15`,
+                    border: `1px solid ${waveIntroConfig.introColor}30`
+                  }}
+                >
+                  {waveIntroConfig.warningLevel}
+                </span>
+              </div>
+
+              {waveIntroConfig.environmentalModifier && (
+                <div className="w-[1px] h-6 bg-slate-900" />
+              )}
+
+              {waveIntroConfig.environmentalModifier && (
+                <div className="flex flex-col items-center">
+                  <span className="text-[8px] text-rose-500 font-bold uppercase tracking-wider font-mono">⚠️ ACTIVE MODIFIER</span>
+                  <span className="text-[10px] text-rose-300 font-bold uppercase font-mono mt-0.5">
+                    {waveIntroConfig.environmentalModifier.replace(/_/g, " ")}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <div className="bg-slate-900/50 border border-slate-850 p-3 rounded-lg text-left space-y-1 font-mono text-[10px]">
+              <span className="text-amber-400 font-black tracking-wider uppercase block">💡 TACTICAL RECOMMENDATION</span>
+              <p className="text-slate-300 leading-relaxed">
+                {waveIntroConfig.tacticalAdvice}
+              </p>
+              <div className="flex items-center gap-1.5 pt-1 text-slate-500 text-[9px]">
+                <span>RECOMMENDED FORMATION:</span>
+                <span className="text-amber-500 font-bold uppercase">{waveIntroConfig.recommendedFormation}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CORE ACTIVE HUD IN-GAME BAR */}
+      {isPlaying && (
+        <div className="w-full max-w-[1800px] mx-auto space-y-2.5 animate-fadeIn flex flex-col flex-1 justify-center px-1 md:px-2 game-shell">
+          
+          {/* MAIN GAME WORKSPACE GRID (Section 3: layout-workspace) */}
+          <div className="w-full grid grid-cols-1 lg:grid-cols-[auto_1fr_auto] gap-3 items-start game-workspace">
+            
+            {/* COLUMN 1: TACTICAL RAIL (Left Column) */}
+            <div className={`flex flex-col gap-3 transition-all duration-300 ${
+              isLeftPanelCollapsed ? "w-11 overflow-hidden" : "w-full lg:w-[260px]"
+            } shrink-0 bg-slate-950/70 border border-slate-900 rounded-xl p-3 shadow-xl backdrop-blur-md text-white`}>
+              
+              <div className="flex justify-between items-center border-b border-slate-900 pb-2">
+                {!isLeftPanelCollapsed ? (
+                  <span className="text-xs font-bold font-mono tracking-wider text-cyan-400">⚡ TACTICAL RAIL</span>
+                ) : (
+                  <span className="text-[10px] font-bold font-mono text-cyan-500">TAC</span>
+                )}
+                <button
+                  onClick={() => { setIsLeftPanelCollapsed(!isLeftPanelCollapsed); playClickSound(); }}
+                  className="p-1 hover:bg-slate-900 rounded text-slate-400 hover:text-white transition font-mono"
+                  title={isLeftPanelCollapsed ? "Expand tactical rail" : "Collapse tactical rail"}
+                >
+                  {isLeftPanelCollapsed ? "»" : "«"}
+                </button>
+              </div>
+
+              {!isLeftPanelCollapsed && (
+                <div className="space-y-4 animate-fadeIn">
+                  <div className="space-y-1.5">
+                    <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block">AUDIO SYSTEM</span>
+                    <button
+                      onClick={toggleMute}
+                      className={`w-full flex items-center justify-between p-2 rounded border text-xs font-mono font-bold transition ${
+                        audioMuted 
+                          ? "bg-rose-950/20 border-rose-500/20 text-rose-400 hover:bg-rose-950/30" 
+                          : "bg-cyan-950/15 border-cyan-500/10 text-cyan-400 hover:bg-cyan-950/25"
+                      }`}
+                    >
+                      <span>VOLUME STATE:</span>
+                      <span className="uppercase">{audioMuted ? "MUTED" : "UNMUTED"}</span>
+                    </button>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block">TACTICAL RADAR</span>
+                    <div className="grid grid-cols-3 gap-1 bg-slate-900/60 p-1 rounded-lg border border-slate-850 text-[10px] font-mono">
+                      {(["FULL", "COMPACT", "OFF"] as const).map((m) => {
+                        const isSel = stats.minimapMode === m;
+                        return (
+                          <button
+                            key={m}
+                            onClick={() => changeMinimapMode(m)}
+                            className={`py-1 rounded text-center transition ${
+                              isSel 
+                                ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 font-bold" 
+                                : "text-slate-400 hover:text-white"
+                            }`}
+                          >
+                            {m}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block">VISUAL ENGINE</span>
+                    <div className="grid grid-cols-2 gap-1 bg-slate-900/60 p-1 rounded-lg border border-slate-850 text-[10px] font-mono">
+                      {([QualityPreset.LOW, QualityPreset.MEDIUM, QualityPreset.HIGH, QualityPreset.ULTRA]).map((q) => {
+                        const isSel = stats.qualityPreset === q;
+                        return (
+                          <button
+                            key={q}
+                            onClick={() => changeQualityPreset(q)}
+                            className={`py-1 rounded text-center transition ${
+                              isSel 
+                                ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 font-bold" 
+                                : "text-slate-400 hover:text-white"
+                            }`}
+                          >
+                            {q}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block">SWARM FORMATIONS</span>
+                    <div className="flex flex-col gap-1.5">
+                      {[
+                        { type: FormationType.LINE, label: "Línea de Asalto" },
+                        { type: FormationType.CIRCLE, label: "Círculo Colector" },
+                        { type: FormationType.DELTA, label: "Delta Convergente" },
+                        { type: FormationType.SHIELD, label: "Escudo Protector" },
+                        { type: FormationType.V_SHAPE, label: "Vanguardia V" },
+                        { type: FormationType.SCATTERED, label: "Dispersión Libre" }
+                      ].map((f) => {
+                        const isSel = activeFormation === f.type;
+                        return (
+                          <button
+                            key={f.type}
+                            onClick={() => triggerFormationChange(f.type)}
+                            className={`w-full flex items-center justify-between p-2 rounded border text-[11px] font-mono transition text-left ${
+                              isSel
+                                ? "bg-amber-500/20 border-amber-500/40 text-amber-400 font-bold"
+                                : "bg-slate-900/40 border-slate-850/60 text-slate-400 hover:text-white hover:bg-slate-900/60"
+                            }`}
+                          >
+                            <span>{f.label}</span>
+                            <span className="text-[8.5px] uppercase tracking-wider text-slate-500 shrink-0">{f.type}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* LIVE RUN BUILD STATUS LIST */}
+                  <div className="space-y-1.5 border-t border-slate-900 pt-3">
+                    <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block">ACTIVE RUN BUILD</span>
+                    {Object.keys(activeRunUpgrades).length === 0 ? (
+                      <span className="text-[9px] text-slate-600 block italic">No mid-run upgrades active yet.</span>
+                    ) : (
+                      <div className="grid grid-cols-2 gap-1 font-mono text-[9px]">
+                        {Object.entries(activeRunUpgrades).map(([id, stacks]) => {
+                          const upg = MID_RUN_UPGRADES.find(u => u.id === id);
+                          if (!upg) return null;
+                          return (
+                            <div key={id} className="bg-slate-900/60 border border-slate-850/50 p-1 rounded flex justify-between items-center">
+                              <span className="text-slate-300 truncate max-w-[80px]" title={upg.name}>{upg.name}</span>
+                              <span className="text-amber-400 font-bold bg-amber-500/10 px-1 rounded">x{stacks}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* LIVE WAVE INTEL PANEL */}
+                  <div className="space-y-1.5 border-t border-slate-900 pt-3">
+                    <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block">THREAT INTEL (WAVE {currentWave})</span>
+                    <div className="bg-slate-900/40 border border-slate-850/60 p-2 rounded-lg space-y-1.5 text-[10px] font-mono">
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-300 font-bold uppercase truncate max-w-[120px]" title={getWaveConfig(currentWave).displayName}>{getWaveConfig(currentWave).displayName}</span>
+                        <span 
+                          className="text-[8px] font-bold px-1.5 py-0.1 rounded uppercase shrink-0"
+                          style={{ 
+                            color: getWaveConfig(currentWave).introColor, 
+                            backgroundColor: `${getWaveConfig(currentWave).introColor}15`,
+                            border: `1px solid ${getWaveConfig(currentWave).introColor}30`
+                          }}
+                        >
+                          {getWaveConfig(currentWave).warningLevel}
+                        </span>
+                      </div>
+                      <p className="text-[9px] text-slate-500 leading-relaxed italic">"{getWaveConfig(currentWave).subtitle}"</p>
+                      
+                      {getWaveConfig(currentWave).environmentalModifier && (
+                        <div className="flex flex-col gap-0.5 border-t border-slate-900 pt-1.5">
+                          <span className="text-[8px] text-rose-400 font-black tracking-widest uppercase flex items-center gap-1">⚠️ WAVE MODIFIER:</span>
+                          <span className="text-[9.5px] text-rose-300 font-bold uppercase">{getWaveConfig(currentWave).environmentalModifier?.replace(/_/g, " ")}</span>
+                        </div>
+                      )}
+
+                      <div className="flex flex-col gap-0.5 border-t border-slate-900 pt-1.5">
+                        <span className="text-[8px] text-amber-400 font-black tracking-widest uppercase block">💡 RECOMMENDATION:</span>
+                        <p className="text-[9px] text-slate-400 leading-relaxed">{getWaveConfig(currentWave).tacticalAdvice}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* COLUMN 2: BATTLEFIELD CORE (Center Column) */}
+            <div className="flex-1 flex flex-col gap-2">
+              <GameHud
+                score={score}
+                shield={shield}
+                shieldMax={SHIELD_MAX + (upgradesLevel.hydrogen_deflector || 0) * 15 + (activeRunUpgrades.foton_integrity || 0) * 30}
+                swarmSize={swarmSize}
+                currentWave={currentWave}
+                waveName={waveName}
+                isWaveBreak={isWaveBreak}
+                waveBreakTimeLeft={waveBreakTimeLeft}
+                audioMuted={audioMuted}
+                isPaused={isPaused}
+                nanoCredits={nanoCredits}
+                onTogglePause={togglePause}
+                onToggleMute={toggleMute}
+              />
+
+              {/* CANVAS INTERACTIVE PORT */}
+              <div className="w-full flex flex-col items-center justify-center relative bg-slate-950 border border-slate-900 rounded-lg overflow-hidden p-1">
+                <EnergySwarmCanvas
+                  canvasRef={canvasRef}
+                  isPaused={isPaused}
+                  activeBiome={activeBiome}
+                  activeFormation={activeFormation}
+                  playerPos={playerPosRef.current}
+                  playerFlash={playerFlashRef.current}
+                  cameraOffset={cameraOffsetRef.current}
+                  drawNebula={getQualityConfig(stats.qualityPreset).drawNebula}
+                  drawPlanets={getQualityConfig(stats.qualityPreset).drawPlanets}
+                  screenShake={screenShakeRef.current}
+                  swarm={swarmRef.current}
+                  enemies={enemiesRef.current}
+                  projectiles={projectilesRef.current}
+                  resources={resourcesRef.current}
+                  particles={particlesRef.current}
+                  bossActive={bossActiveRef.current}
+                  onPointerMove={handlePointerMove}
+                  onPointerDown={handlePointerDown}
+                  onPointerUp={handlePointerUp}
+                  time={timeElapsedRef.current}
+                />
+
+                {/* IMMERSIVE BOSS HUD OVERLAY */}
+                {bossActiveRef.current && bossRef.current && !bossRef.current.isDead && (
+                  <div className="absolute top-4 left-4 right-4 z-20 pointer-events-none flex flex-col items-center gap-1.5 max-w-md mx-auto">
+                    {/* Boss Name & Subtitle */}
+                    <div className="flex flex-col items-center text-center">
+                      <span className="text-xs font-bold tracking-widest text-pink-500 font-sans uppercase animate-pulse">
+                        ⚠️ MAJOR COLLAPSE DETECTED ⚠️
+                      </span>
+                      <h2 className="text-lg font-extrabold tracking-tight text-white font-sans uppercase flex items-center gap-2">
+                        {BLACKOUT_DEVOURER_CANON.displayName}
+                        <span className="text-[10px] font-mono bg-pink-500/15 border border-pink-500/30 text-pink-400 px-1.5 py-0.5 rounded-sm">
+                          PHASE {bossPhase}
+                        </span>
+                      </h2>
+                      <p className="text-[9px] font-mono tracking-widest text-slate-400 uppercase">
+                        {BLACKOUT_DEVOURER_CANON.subtitle}
+                      </p>
+                    </div>
+
+                    {/* SEGMENTED 3-PHASE HP BAR */}
+                    <div className="w-full h-3.5 bg-slate-950/80 border border-slate-800/80 rounded-sm p-[2px] flex gap-[2px] relative overflow-hidden backdrop-blur-md">
+                      {/* Segment 1: Phase 1 (100% to 70%) */}
+                      <div className="flex-1 h-full bg-slate-900 rounded-2xs overflow-hidden relative">
+                        <div 
+                          className="h-full bg-gradient-to-r from-pink-700 to-pink-500 transition-all duration-300"
+                          style={{
+                            width: `${Math.max(0, Math.min(100, ((bossHp / bossMaxHp) - 0.70) / 0.30 * 100))}%`
+                          }}
+                        />
+                      </div>
+                      {/* Divider */}
+                      <div className="w-[1px] h-full bg-slate-800" />
+                      {/* Segment 2: Phase 2 (70% to 35%) */}
+                      <div className="flex-1 h-full bg-slate-900 rounded-2xs overflow-hidden relative">
+                        <div 
+                          className="h-full bg-gradient-to-r from-purple-700 to-purple-500 transition-all duration-300"
+                          style={{
+                            width: `${Math.max(0, Math.min(100, ((bossHp / bossMaxHp) - 0.35) / 0.35 * 100))}%`
+                          }}
+                        />
+                      </div>
+                      {/* Divider */}
+                      <div className="w-[1px] h-full bg-slate-800" />
+                      {/* Segment 3: Phase 3 (35% to 0%) */}
+                      <div className="flex-1 h-full bg-slate-900 rounded-2xs overflow-hidden relative">
+                        <div 
+                          className="h-full bg-gradient-to-r from-red-700 to-red-500 transition-all duration-300"
+                          style={{
+                            width: `${Math.max(0, Math.min(100, (bossHp / bossMaxHp) / 0.35 * 100))}%`
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Numeric status & Active info */}
+                    <div className="w-full flex justify-between items-center text-[10px] font-mono text-slate-300 px-1">
+                      <span>INTEGRITY: {Math.ceil(bossHp)} / {bossMaxHp}</span>
+                      <span className="text-pink-400 font-bold">{Math.round((bossHp / bossMaxHp) * 100)}%</span>
+                    </div>
+
+                    {/* ACTIVE STATE OVERLAYS */}
+                    {bossIntroTime !== null && (
+                      <div className="w-full bg-black/75 border border-pink-500/40 p-2 rounded flex flex-col items-center pointer-events-auto mt-2 backdrop-blur-sm animate-fade-in">
+                        <span className="text-[10px] font-bold text-pink-400 uppercase tracking-wider mb-1">
+                          Aproximación de Amenaza
+                        </span>
+                        <button
+                          onClick={skipBossIntro}
+                          className="px-3 py-1 bg-pink-500 hover:bg-pink-600 text-white font-sans text-xs font-bold tracking-wider rounded-sm shadow-lg pointer-events-auto cursor-pointer flex items-center gap-1.5 transition-all duration-150 active:scale-95"
+                        >
+                          <span>[SPACE] SKIP INTRO</span>
+                        </button>
+                      </div>
+                    )}
+
+                    {bossTransitionName !== null && (
+                      <div className="w-full bg-purple-950/90 border border-purple-500/50 p-2 rounded flex flex-col items-center mt-2 backdrop-blur-sm text-center animate-pulse">
+                        <span className="text-[10px] font-bold text-purple-400 tracking-wider">
+                          MUTACIÓN EN CURSO
+                        </span>
+                        <span className="text-xs font-extrabold text-white uppercase font-sans">
+                          {bossTransitionName}
+                        </span>
+                      </div>
+                    )}
+
+                    {(() => {
+                      if (!bossAttackName) return null;
+                      const mode = stats.bossLabelsMode || "FULL";
+                      if (mode === "OFF") return null;
+                      if (mode === "IMPORTANT") {
+                        // Only show critical/heavy warning labels
+                        const isHeavy = ["devourer_charge", "singularity_pulse", "rotating_eclipse_lanes"].some(
+                          id => bossAttackName.toLowerCase().includes(id.replace("_", " ")) || 
+                                bossAttackName.toLowerCase().includes("carga") || 
+                                bossAttackName.toLowerCase().includes("eclipse") || 
+                                bossAttackName.toLowerCase().includes("pulso") || 
+                                bossAttackName.toLowerCase().includes("singularidad") || 
+                                bossAttackName.toLowerCase().includes("charge") || 
+                                bossAttackName.toLowerCase().includes("pulse") || 
+                                bossAttackName.toLowerCase().includes("lane")
+                        );
+                        if (!isHeavy) return null;
+                      }
+                      return (
+                        <div className="flex items-center gap-1.5 bg-black/55 border border-pink-500/20 px-2.5 py-0.5 rounded-full mt-0.5 backdrop-blur-md animate-fadeIn">
+                          <span className="w-1.5 h-1.5 rounded-full bg-pink-500 animate-ping" />
+                          <span className="text-[9px] font-mono tracking-wider text-pink-400 uppercase">
+                            ATTACK: {bossAttackName}
+                          </span>
+                        </div>
+                      );
+                    })()}
+
+                    {bossShieldNodes > 0 && (
+                      <div className="flex items-center gap-1.5 bg-blue-950/70 border border-blue-500/30 px-3 py-1 rounded-sm mt-0.5 backdrop-blur-md text-blue-300 font-mono text-[9px] uppercase tracking-wider">
+                        <span>🛡️ Segmented Shield Nodes: <strong className="text-blue-400">{bossShieldNodes}</strong></span>
+                      </div>
+                    )}
+
+                    {isCoreExposed && (
+                      <div className="flex items-center gap-1.5 bg-yellow-950/80 border border-yellow-500/50 px-3 py-1 rounded-sm mt-1 backdrop-blur-md text-yellow-300 font-mono text-[9px] uppercase tracking-widest animate-bounce">
+                        <span>⚠️ CORE EXPOSED — DOUBLE DAMAGE ACTIVE ⚠️</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* MOBILE NAVIGATION BUTTONPAD ASSIST */}
+                <div className="flex sm:hidden justify-center items-center gap-1.5 mt-2">
+                  <button onClick={() => moveMobileDPad("LEFT")} className="p-2.5 bg-slate-900 border border-slate-800 rounded text-xs font-mono font-bold active:scale-[0.95]">&larr;</button>
+                  <div className="flex flex-col gap-1.5">
+                    <button onClick={() => moveMobileDPad("UP")} className="p-2.5 bg-slate-900 border border-slate-800 rounded text-xs font-mono font-bold active:scale-[0.95]">&uarr;</button>
+                    <button onClick={() => moveMobileDPad("DOWN")} className="p-2.5 bg-slate-900 border border-slate-800 rounded text-xs font-mono font-bold active:scale-[0.95]">&darr;</button>
+                  </div>
+                  <button onClick={() => moveMobileDPad("RIGHT")} className="p-2.5 bg-slate-900 border border-slate-800 rounded text-xs font-mono font-bold active:scale-[0.95]">&rarr;</button>
+                </div>
+              </div>
+            </div>
+
+            {/* COLUMN 3: LOGISTICS DECK (Right Column) */}
+            <div className={`flex flex-col gap-2 transition-all duration-300 ${
+              isRightPanelCollapsed ? "w-11 overflow-hidden" : "w-full lg:w-[330px]"
+            } shrink-0`}>
+              
+              <div className="flex justify-between items-center bg-slate-950/70 border border-slate-900 rounded-lg p-2 text-white">
+                {!isRightPanelCollapsed ? (
+                  <span className="text-xs font-bold font-mono tracking-wider text-cyan-400">📦 LOGISTICS DECK</span>
+                ) : (
+                  <span className="text-[10px] font-bold font-mono text-cyan-500">LOG</span>
+                )}
+                <button
+                  onClick={() => { setIsRightPanelCollapsed(!isRightPanelCollapsed); playClickSound(); }}
+                  className="p-1 hover:bg-slate-900 rounded text-slate-400 hover:text-white transition font-mono"
+                  title={isRightPanelCollapsed ? "Expand logistics deck" : "Collapse logistics deck"}
+                >
+                  {isRightPanelCollapsed ? "«" : "»"}
+                </button>
+              </div>
+
+              {!isRightPanelCollapsed && (
+                <div className="animate-fadeIn">
+                  <CompanionPanel
+                    stats={stats}
+                    swarm={swarmRef.current}
+                    dialogueLog={dialogueLog}
+                    upgradesLevel={upgradesLevel}
+                    nanoCredits={nanoCredits}
+                    onBuyUpgrade={handleBuyUpgrade}
+                  />
+                </div>
+              )}
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* THREAT INTEL SYSTEM DIAGNOSTIC OVERLAY */}
+      {activeThreatIntel && (
+        <div className="fixed inset-0 bg-slate-950/90 flex items-center justify-center p-4 z-50 animate-fadeIn backdrop-blur-sm">
+          <div className="bg-slate-900 border border-cyan-500/40 rounded-xl p-5 max-w-md w-full shadow-2xl relative space-y-4 font-mono text-white text-xs">
+            <div className="flex items-center gap-2 border-b border-cyan-950/60 pb-3">
+              <span className="w-3 h-3 bg-cyan-500 rounded-full animate-ping" />
+              <div className="flex-1">
+                <span className="text-[10px] text-cyan-400 font-bold uppercase tracking-wider">THREAT DETECTED</span>
+                <h3 className="text-base font-extrabold tracking-tight text-white uppercase mt-0.5">
+                  {activeThreatIntel === EnemyType.DRONE ? "Drone de Asalto (V-Wing)" :
+                   activeThreatIntel === EnemyType.DISRUPTOR ? "Emisor Disruptor EMP" :
+                   activeThreatIntel === EnemyType.BLACKOUT_ELITE ? "Acorazado Blackout Elite" :
+                   "Boss Devorador Coloidal"}
+                </h3>
+              </div>
+            </div>
+
+            <div className="space-y-3.5 leading-relaxed text-[11px]">
+              <div className="bg-slate-950/50 p-2.5 rounded border border-slate-800">
+                <span className="text-slate-500 text-[10px] uppercase font-bold">DESCRIPCIÓN OPERATIVA</span>
+                <p className="text-slate-300 mt-1">
+                  {activeThreatIntel === EnemyType.DRONE ? "Enemigo ágil que dispara ráfagas de proyectiles de plasma dirigidas." :
+                   activeThreatIntel === EnemyType.DISRUPTOR ? "Emisor de gran tamaño que emite pulsos radiales EMP anulando seguidos." :
+                   activeThreatIntel === EnemyType.BLACKOUT_ELITE ? "Unidad pesada que realiza embestidas frontales de velocidad extrema." :
+                   "La entidad suprema corrupta. Posee torbellinos de plasma y capacidad de devorar fotones."}
+                </p>
+              </div>
+
+              <div className="bg-slate-950/50 p-2.5 rounded border border-rose-950/30">
+                <span className="text-rose-400 text-[10px] uppercase font-bold">TELEGRIFO DE ATAQUE (TELEGRAPH)</span>
+                <p className="text-rose-300 mt-1">
+                  {activeThreatIntel === EnemyType.DRONE ? "Una línea de mira intermitente violeta que apunta hacia Foton antes de disparar." :
+                   activeThreatIntel === EnemyType.DISRUPTOR ? "Un anillo cian concéntrico que se expande antes de la detonación EMP." :
+                   activeThreatIntel === EnemyType.BLACKOUT_ELITE ? "Línea roja intensa y cono de viento antes de ejecutar la embestida." :
+                   "Segmentos de alas oscilantes expandiéndose con destellos rosas intermitentes."}
+                </p>
+              </div>
+
+              <div className="bg-slate-950/50 p-2.5 rounded border border-cyan-950/30">
+                <span className="text-cyan-400 text-[10px] uppercase font-bold">RECOMENDACIÓN TÁCTICA</span>
+                <p className="text-cyan-300 mt-1 font-semibold">
+                  {activeThreatIntel === EnemyType.DRONE ? "Ataca rápido usando formación Delta o Círculo para sobrepasarlos." :
+                   activeThreatIntel === EnemyType.DISRUPTOR ? "Mantén distancia y ataca desde lejos en formación de Línea." :
+                   activeThreatIntel === EnemyType.BLACKOUT_ELITE ? "Esquiva en círculos. Ataca su motor trasero expuesto (punto ciego)." :
+                   "Utiliza formación Shield para absorber impactos de plasma y golpear su ocular central."}
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => {
+                setActiveThreatIntel(null);
+                setIsPaused(false);
+                playClickSound();
+              }}
+              className="w-full bg-cyan-500 hover:bg-cyan-400 text-black py-2.5 rounded font-bold transition duration-200 active:scale-[0.98] shadow-lg shadow-cyan-500/20 text-center text-xs tracking-wider uppercase border border-cyan-300/30 cursor-pointer"
+            >
+              ENTENDIDO - REANUDAR CONEXIÓN
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* BRANDING LABEL WATERMARK FOOTER */}
+      <div className="mt-3 lg:mt-1.5 text-[9px] md:text-[10px] font-mono text-slate-600 text-center flex flex-col gap-0.5">
+        <div>ORBI ENERGY SWARM &bull; v0.2.6b-bilingual-localization</div>
+        <div>Created by Víctor Marcel León Pacheco &bull; &copy; 2026 ORBI Ecosystem SpA</div>
+      </div>
+
+    </div>
+  );
+};
+export default EnergySwarmGame;
