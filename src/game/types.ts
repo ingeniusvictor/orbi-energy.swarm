@@ -252,6 +252,10 @@ export interface GameStats {
   bossLabelsMode?: "FULL" | "IMPORTANT" | "OFF";
   bossCodexSeenAttacks?: string[];
   bossCodexSeenPhases?: number[];
+  bestInfiniteSector: number;
+  bestInfiniteWave: number;
+  infiniteMinibossesDefeated: number;
+  infiniteBossRematchesDefeated: number;
 }
 
 export interface DialogueMessage {
