@@ -506,6 +506,28 @@ body {
 }
 
 
+/* ES-03D — Runtime viewport profile semantic hooks.
+   Media queries remain authoritative fallbacks when JavaScript is unavailable. */
+.orbi-game-root[data-touch-controls="recommended"] .orbi-touch-overlay {
+  display: block;
+}
+
+.orbi-game-root[data-touch-controls="recommended"] .orbi-touch-formation-carousel {
+  display: grid;
+}
+
+.orbi-game-root[data-shell-density="COMPACT"] .orbi-game-shell {
+  --orbi-runtime-density: compact;
+}
+
+.orbi-game-root[data-shell-density="BALANCED"] .orbi-game-shell {
+  --orbi-runtime-density: balanced;
+}
+
+.orbi-game-root[data-shell-density="EXPANDED"] .orbi-game-shell {
+  --orbi-runtime-density: expanded;
+}
+
 /* ES-04A — Coarse-pointer touch overlay */
 .orbi-touch-overlay {
   display: none;
