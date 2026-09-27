@@ -30,8 +30,8 @@ const section = (
   return source.slice(start, end);
 };
 
-test("live runtime imports the milestone projection and deterministic miniboss gate", () => {
-  assert.match(game, /projectInfiniteMilestoneEncounter/);
+test("live runtime consumes cached milestone projection and deterministic miniboss gate", () => {
+  assert.match(game, /getCachedRuntimeProjectionBundle/);
   assert.match(game, /createRuntimeMinibossGateState/);
   assert.match(game, /syncRuntimeMinibossGate/);
   assert.match(game, /stepRuntimeMinibossGate/);
@@ -65,7 +65,7 @@ test("only MINIBOSS milestone profiles reserve the final effective budget slot",
   );
   assert.match(
     spawn,
-    /const effectiveEnemyBudget =[\s\S]*getRuntimeMutatedEnemyBudget\(descriptor\)/,
+    /const effectiveEnemyBudget =[\s\S]*runtimeProjection\.enemyBudget/,
   );
   assert.match(
     spawn,
@@ -261,7 +261,7 @@ test("miniboss gate synchronizes and advances from the active runtime descriptor
 
   assert.match(
     physics,
-    /projectInfiniteMilestoneEncounter\([\s\S]*simulationDescriptor/,
+    /simulationRuntimeProjection\.milestoneEncounter/,
   );
   assert.match(
     physics,
