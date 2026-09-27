@@ -21,9 +21,9 @@ const section = (
   return game.slice(start, end);
 };
 
-test("live runtime imports the certified combat-pressure projection", () => {
-  assert.match(game, /projectRuntimeCombatPressure/);
-  assert.match(game, /runtimeCombatPressure/);
+test("live runtime consumes the certified combat-pressure projection through the runtime bundle", () => {
+  assert.match(game, /getCachedRuntimeProjectionBundle/);
+  assert.match(game, /runtimeProjectionBundleCache/);
   assert.match(game, /getCurrentCombatPressure/);
 });
 
@@ -35,7 +35,7 @@ test("regular enemy spawn adopts projected health and movement without direct pr
 
   assert.match(
     spawn,
-    /projectRuntimeCombatPressure\(descriptor\)/,
+    /runtimeProjection\.combatPressure/,
   );
   assert.match(
     spawn,
