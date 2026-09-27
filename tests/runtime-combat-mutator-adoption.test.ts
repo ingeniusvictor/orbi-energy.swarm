@@ -21,10 +21,10 @@ const section = (
   return game.slice(start, end);
 };
 
-test("EnergySwarmGame imports certified mutator projection and effective budget", () => {
-  assert.match(game, /projectRuntimeMutatorEffects/);
-  assert.match(game, /getRuntimeMutatedEnemyBudget/);
-  assert.match(game, /runtimeMutatorEffects/);
+test("EnergySwarmGame consumes certified mutator projection and effective budget through the runtime bundle", () => {
+  assert.match(game, /getCachedRuntimeProjectionBundle/);
+  assert.match(game, /runtimeProjectionBundleCache/);
+  assert.match(game, /getCurrentMutatorEffects/);
 });
 
 test("DOUBLE_THREAT completion and spawning share one effective enemy budget", () => {
@@ -35,7 +35,7 @@ test("DOUBLE_THREAT completion and spawning share one effective enemy budget", (
 
   assert.match(
     transitions,
-    /const effectiveEnemyBudget =\s*getRuntimeMutatedEnemyBudget\(descriptor\)/,
+    /const effectiveEnemyBudget =[\s\S]*runtimeProjection\.enemyBudget/,
   );
   assert.match(
     transitions,
@@ -53,7 +53,7 @@ test("DOUBLE_THREAT completion and spawning share one effective enemy budget", (
 
   assert.match(
     physics,
-    /const simulationEnemyBudget =\s*getRuntimeMutatedEnemyBudget\([\s\S]*simulationDescriptor/,
+    /const simulationEnemyBudget =[\s\S]*simulationRuntimeProjection\.enemyBudget/,
   );
 
   const spawnChecks =
