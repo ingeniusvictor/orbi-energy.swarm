@@ -7,6 +7,10 @@ import PremiumBackdrop from "./presentation/PremiumBackdrop";
 import CampaignArc from "./CampaignArc";
 import RecentRunArchivePanel from "./RecentRunArchivePanel";
 
+const LazyFoton3DHero = React.lazy(
+  () => import("./presentation/Foton3DHero"),
+);
+
 interface StartScreenProps {
   stats: GameStats;
   onStartGame: () => void;
@@ -229,9 +233,12 @@ export const StartScreen: React.FC<StartScreenProps> = ({
 
             {/* CENTER — HERO / WORLD PITCH */}
             <section className="orbi-start-hero order-3 xl:order-2 overflow-hidden rounded-2xl border border-indigo-500/20 bg-[radial-gradient(circle_at_50%_35%,rgba(34,211,238,0.09),transparent_34%),radial-gradient(circle_at_50%_70%,rgba(139,92,246,0.08),transparent_36%),rgba(2,6,23,0.55)] p-4 md:p-5">
-              <div className="orbi-start-hero-stage relative min-h-[320px] overflow-hidden rounded-xl border border-cyan-500/10 bg-slate-950/55">
+              <div className="orbi-start-hero-stage relative min-h-[360px] md:min-h-[420px] overflow-hidden rounded-xl border border-cyan-500/10 bg-slate-950/55">
                 <div className="absolute inset-0 opacity-60 [background-image:linear-gradient(rgba(34,211,238,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(34,211,238,0.04)_1px,transparent_1px)] [background-size:32px_32px]" />
-                <div className="absolute inset-0 flex items-center justify-center">
+                <div
+                  className="absolute inset-0 flex items-center justify-center"
+                  data-foton-css-fallback="true"
+                >
                   <div className="orbi-start-core relative h-56 w-56 md:h-64 md:w-64">
                     <div className="absolute inset-0 rounded-full border border-cyan-400/20 shadow-[0_0_80px_rgba(34,211,238,0.12)]" />
                     <div className="absolute inset-5 rounded-full border border-indigo-400/20 [transform:rotateX(68deg)]" />
@@ -241,10 +248,23 @@ export const StartScreen: React.FC<StartScreenProps> = ({
                   </div>
                 </div>
 
-                <div className="absolute left-4 top-4 rounded-full border border-cyan-500/20 bg-slate-950/75 px-3 py-1 text-[9px] font-mono uppercase tracking-[0.16em] text-cyan-300">
+                {stats.qualityPreset !== QualityPreset.LOW && (
+                  <React.Suspense fallback={null}>
+                    <LazyFoton3DHero
+                      qualityPreset={stats.qualityPreset}
+                    />
+                  </React.Suspense>
+                )}
+
+                <div className="absolute left-4 top-4 z-20 rounded-full border border-cyan-500/20 bg-slate-950/75 px-3 py-1 text-[9px] font-mono uppercase tracking-[0.16em] text-cyan-300">
                   FOTON // COMMAND CORE
                 </div>
-                <div className="absolute bottom-4 left-4 right-4 rounded-xl border border-slate-800/70 bg-slate-950/80 p-3 backdrop-blur-md">
+                <div className="absolute right-4 top-4 z-20 rounded-full border border-indigo-500/20 bg-slate-950/75 px-3 py-1 text-[8px] font-mono uppercase tracking-[0.14em] text-indigo-300">
+                  {stats.qualityPreset === QualityPreset.LOW
+                    ? "CSS CORE // LOW"
+                    : `3D CORE // ${stats.qualityPreset}`}
+                </div>
+                <div className="absolute bottom-4 left-4 right-4 z-20 rounded-xl border border-slate-800/70 bg-slate-950/80 p-3 backdrop-blur-md">
                   <div className="text-[9px] font-mono uppercase tracking-[0.16em] text-amber-300">
                     {language === "es" ? "SISTEMA TÁCTICO AUTÓNOMO" : "AUTONOMOUS TACTICAL SYSTEM"}
                   </div>
