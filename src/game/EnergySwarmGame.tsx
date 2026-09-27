@@ -358,6 +358,16 @@ export const EnergySwarmGame: React.FC = () => {
       hasThermal
     );
 
+    if (choices.length === 0) {
+      postDialogue(
+        "SYSTEM",
+        "No quedan mejoras de intermisión disponibles para esta partida."
+      );
+      setUpgradeChoices([]);
+      setUpgradeSelectionOpen(false);
+      return;
+    }
+
     setUpgradeChoices(choices);
     setUpgradeSelectionOpen(true);
   };

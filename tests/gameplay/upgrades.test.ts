@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import {
@@ -47,3 +48,66 @@ test("upgrade display transitions expose before/after values", () => {
   assert.equal(transition.before, "+15% Speed");
   assert.equal(transition.after, "+30% Speed");
 });
+
+
+test("depleted pool returns only the remaining eligible upgrades", () => {
+  const activeUpgrades = Object.fromEntries(
+    MID_RUN_UPGRADES.map((upgrade) => [upgrade.id, upgrade.maxStacks]),
+  );
+
+  activeUpgrades.command_velocity = 2;
+  activeUpgrades.swarm_cohesion = 1;
+
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    const choices = generateUpgradeChoices(
+      activeUpgrades,
+      true,
+      true,
+      true,
+      true,
+    );
+
+    assert.equal(choices.length, 2);
+    assert.deepEqual(
+      new Set(choices.map((choice) => choice.id)),
+      new Set(["command_velocity", "swarm_cohesion"]),
+    );
+
+    for (const choice of choices) {
+      assert.ok(
+        (activeUpgrades[choice.id] ?? 0) < choice.maxStacks,
+        `${choice.id} must remain below max stacks`,
+      );
+    }
+  }
+});
+
+test("fully exhausted upgrade pool returns no invalid fallback choices", () => {
+  const activeUpgrades = Object.fromEntries(
+    MID_RUN_UPGRADES.map((upgrade) => [upgrade.id, upgrade.maxStacks]),
+  );
+
+  const choices = generateUpgradeChoices(
+    activeUpgrades,
+    true,
+    true,
+    true,
+    true,
+  );
+
+  assert.deepEqual(choices, []);
+});
+
+test("game skips the intermission selector when no upgrade choices remain", () => {
+  const game = readGameSource();
+  assert.match(game, /if \(choices\.length === 0\)/);
+  assert.match(game, /setUpgradeChoices\(\[\]\)/);
+  assert.match(game, /setUpgradeSelectionOpen\(false\)/);
+});
+
+function readGameSource() {
+  return readFileSync(
+    new URL("../../src/game/EnergySwarmGame.tsx", import.meta.url),
+    "utf8",
+  );
+}
