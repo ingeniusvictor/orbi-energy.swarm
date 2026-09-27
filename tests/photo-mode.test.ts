@@ -78,11 +78,11 @@ test("clean Photo Mode hides DOM chrome but not the battlefield canvas", () => {
     ".orbi-boss-hud",
     ".orbi-brand-footer",
   ]) {
-    assert.match(
-      css,
-      new RegExp(
-        `data-photo-mode="true"\\] \\${selector.replace(".", "\\.")}`,
+    assert.ok(
+      css.includes(
+        '.orbi-game-root[data-photo-mode="true"] ' + selector,
       ),
+      'Photo Mode must hide ' + selector,
     );
   }
 
