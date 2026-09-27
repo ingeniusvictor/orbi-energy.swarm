@@ -22,7 +22,10 @@ import { getQualityConfig } from "./quality";
 import {
   ENEMY_SPATIAL_CELL_SIZE,
   buildSpatialIndex,
+  findFirstCollidingSpatialItem,
   findNearestSpatialItem,
+  insertSpatialIndexEntry,
+  relocateSpatialIndexEntry,
   type SpatialIndex,
 } from "./spatialIndex";
 import {
@@ -302,6 +305,8 @@ export const EnergySwarmGame: React.FC = () => {
   const runCommitLedgerRef = useRef<RunCommitLedger>(createRunCommitLedger());
   const frameHealthRef = useRef<FrameHealthState>(createFrameHealthState());
   const frameHealthRecommendationShownRef = useRef<QualityPreset | null>(null);
+  const collisionEnemyIndexRef =
+    useRef<SpatialIndex<Enemy> | null>(null);
   const bossAttacksSeenThisRunRef = useRef<string[]>([]);
 
   const updateRunMaxSwarmSize = () => {
@@ -4418,6 +4423,18 @@ export const EnergySwarmGame: React.FC = () => {
     const quality = getQualityConfig(stats.qualityPreset);
     const combatPressure = getCurrentCombatPressure();
     const mutatorEffects = getCurrentMutatorEffects();
+    const enemyCollisionIndex = buildSpatialIndex(
+      enemiesRef.current,
+      {
+        cellSize: ENEMY_SPATIAL_CELL_SIZE,
+        getX: (enemy) => enemy.x,
+        getY: (enemy) => enemy.y,
+        getRadius: (enemy) => enemy.size,
+        include: (enemy) => !enemy.isDead,
+      },
+    );
+    collisionEnemyIndexRef.current =
+      enemyCollisionIndex;
 
     // 1. PROJECTILES vs ENEMIES / PLAYER
     projectilesRef.current.forEach((proj) => {
@@ -4470,16 +4487,18 @@ export const EnergySwarmGame: React.FC = () => {
         }
         if (hitShieldNode) return;
 
-        // Player projectils vs enemies
-        for (let i = 0; i < enemiesRef.current.length; i++) {
-          const enemy = enemiesRef.current[i];
-          if (enemy.isDead) continue;
+        // Player projectiles vs enemies — spatial first-hit lookup.
+        const collision = findFirstCollidingSpatialItem(
+          enemyCollisionIndex,
+          proj.x,
+          proj.y,
+          proj.size + 2,
+          (enemy) => !enemy.isDead,
+        );
+        const enemy = collision.item;
 
-          const dx = proj.x - enemy.x;
-          const dy = proj.y - enemy.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-
-          if (dist < enemy.size + proj.size + 2) {
+        if (enemy && collision.entry) {
+          const collisionOrder = collision.entry.order;
             // SINGLE IMPACT DETECTED! Kill projectile instantly
             proj.life = 0;
 
@@ -4599,6 +4618,13 @@ export const EnergySwarmGame: React.FC = () => {
               signatureBehavior.projectilePushbackMultiplier;
             enemy.x += Math.cos(projAngle) * pushFactor;
             enemy.y += Math.sin(projAngle) * pushFactor;
+            relocateSpatialIndexEntry(
+              enemyCollisionIndex,
+              collisionOrder,
+              enemy.x,
+              enemy.y,
+              enemy.size,
+            );
 
             // 1. Hydro Slow status effect application (Section 14)
             if (proj.affinity === "hydro") {
@@ -4761,8 +4787,6 @@ export const EnergySwarmGame: React.FC = () => {
                 }
               }
             }
-            break; // Projectile destroyed, skip checking other enemies for this projectile
-          }
         }
       } else {
         // Enemy projectiles vs Player core
@@ -4815,6 +4839,8 @@ export const EnergySwarmGame: React.FC = () => {
         }
       }
     });
+
+    collisionEnemyIndexRef.current = null;
   };
 
   // --- SPAWN SPLITTED ENEMY PARTS ---
@@ -4831,7 +4857,7 @@ export const EnergySwarmGame: React.FC = () => {
         ? combatPressure.enemyMovementSpeedMultiplier *
           mutatorEffects.enemySpeedMultiplier
         : 1;
-    enemiesRef.current.push({
+    const minion: Enemy = {
       id: Math.random().toString(),
       type: EnemyType.CRAWLER,
       x,
@@ -4849,7 +4875,19 @@ export const EnergySwarmGame: React.FC = () => {
       isDead: false,
       isBoss: false,
       flashTicks: 0
-    });
+    };
+    enemiesRef.current.push(minion);
+
+    if (collisionEnemyIndexRef.current) {
+      insertSpatialIndexEntry(
+        collisionEnemyIndexRef.current,
+        minion,
+        enemiesRef.current.length - 1,
+        minion.x,
+        minion.y,
+        minion.size,
+      );
+    }
   };
 
   const spawnSplitterMinions = (enemy: Enemy) => {
