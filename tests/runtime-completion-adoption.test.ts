@@ -72,11 +72,12 @@ test("WaveConfig presentation lookup is guarded to campaign mode", () => {
   );
 });
 
-test("Devourer victory still ends the run in completion-adoption phase", () => {
+test("Devourer victory now hands off after the existing cinematic", () => {
   const block = section(
     "const updateBossDefeatSequence",
     "// --- ENGINE UPDATES",
   );
 
-  assert.match(block, /triggerGameOver\(true\)/);
+  assert.match(block, /enterInfiniteAfterCampaignVictory\(\)/);
+  assert.doesNotMatch(block, /triggerGameOver\(true\)/);
 });
