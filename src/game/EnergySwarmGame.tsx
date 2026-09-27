@@ -2631,11 +2631,11 @@ export const EnergySwarmGame: React.FC = () => {
           }
 
           if (chosen.id === "devourer_beam") playBossChargeSound();
-          else if (chosen.id === "gravity_well") playDisruptorChargeSound();
+          else if (chosen.id === "gravity_well") playDisruptorChargeSound(true);
           else if (chosen.id === "orbital_shards") playBossShardsSound();
-          else if (chosen.id === "blackout_sweep") playDisruptorPulseSound();
+          else if (chosen.id === "blackout_sweep") playDisruptorPulseSound(true);
           else if (chosen.id === "singularity_pulse") playBossPulseSound();
-          else if (chosen.id === "rotating_eclipse_lanes") playDisruptorPulseSound();
+          else if (chosen.id === "rotating_eclipse_lanes") playDisruptorPulseSound(true);
           else if (chosen.id === "devourer_charge") playBossChargeSound();
 
           if (!shownThreatIntelsRef.current.includes(chosen.id)) {
