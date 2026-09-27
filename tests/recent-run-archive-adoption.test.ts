@@ -111,13 +111,13 @@ test("normal simulation accumulates actual dwell time for the active formation",
   const formationUsage = physics.indexOf(
     "formationUseCountsRef.current[activeFormation]",
   );
-  const descriptor = physics.indexOf(
-    "const frameDescriptor =",
+  const runtimeProjection = physics.indexOf(
+    "const frameRuntimeProjection =",
   );
 
   assert.ok(cinematicReturn >= 0);
   assert.ok(formationUsage > cinematicReturn);
-  assert.ok(descriptor > formationUsage);
+  assert.ok(runtimeProjection > formationUsage);
   assert.match(
     physics,
     /formationUseCountsRef\.current\[activeFormation\] =[\s\S]*formationUseCountsRef\.current\[activeFormation\] \?\? 0\)[\s\S]*\+\s*delta/,
