@@ -127,7 +127,12 @@ test("live monitor never changes or persists the user's quality preset", () => {
 
   assert.doesNotMatch(
     loop,
-    /changeQualityPreset|setStats\(|saveGameStats\(|qualityPreset\s*:/,
+    /changeQualityPreset|setStats\(|saveGameStats\(|qualityPreset\s*=/,
+  );
+  assert.match(
+    loop,
+    /qualityPreset:[\s\S]*statsRef\.current\?\.qualityPreset/,
+    "reading the authoritative quality preset for diagnostics is allowed",
   );
 });
 
