@@ -77,7 +77,7 @@ test("moderate sustained slow frames classify as pressured", () => {
   );
   const window = classifyFrameHealthWindow(samples);
 
-  assert.equal(window.status, "CRITICAL");
+  assert.equal(window.status, "PRESSURED");
   assert.ok(window.slowFrameRatio >= 0.15);
 });
 
@@ -128,7 +128,7 @@ test("two consecutive degraded windows recommend exactly one lower tier", () => 
   }
 
   assert.ok(window);
-  assert.equal(window.status, "PRESSURED");
+  assert.equal(window.status, "CRITICAL");
   assert.equal(
     window.consecutivePressuredWindows,
     FRAME_HEALTH_REQUIRED_PRESSURE_WINDOWS,
