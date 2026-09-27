@@ -127,8 +127,10 @@ const pickUnique = <T>(
 export const getInfiniteProgressionTier = (
   sector: number,
 ): InfiniteProgressionTier => {
-  if (sector < 11) {
-    throw new RangeError("Infinite progression starts at Sector 11.");
+  if (!Number.isInteger(sector) || sector < 11) {
+    throw new RangeError(
+      "Infinite progression requires an integer sector at or above 11.",
+    );
   }
   if (sector <= 25) return "MASTERY";
   if (sector <= 50) return "ADVANCED_COMBINATION";
@@ -320,5 +322,104 @@ export const generateInfiniteSectorRecipe = (
       spawnSafetyRadius: 120,
       projectileBudget,
     },
+  };
+};
+
+
+export interface InfiniteRecipeValidation {
+  valid: boolean;
+  errors: string[];
+}
+
+export const validateInfiniteSectorRecipe = (
+  recipe: InfiniteSectorRecipe,
+): InfiniteRecipeValidation => {
+  const errors: string[] = [];
+
+  if (!Number.isInteger(recipe.sector) || recipe.sector < 11) {
+    errors.push("sector");
+  }
+  if (recipe.enemyBudget < 28 || recipe.enemyBudget > 180) {
+    errors.push("enemyBudget");
+  }
+  if (
+    recipe.maxConcurrentEnemies < 14 ||
+    recipe.maxConcurrentEnemies > 36
+  ) {
+    errors.push("maxConcurrentEnemies");
+  }
+  if (
+    recipe.spawnIntervalFrames < 42 ||
+    recipe.spawnIntervalFrames > 105
+  ) {
+    errors.push("spawnIntervalFrames");
+  }
+  if (recipe.waveCount < 3 || recipe.waveCount > 7) {
+    errors.push("waveCount");
+  }
+  if (
+    recipe.enemyComposition.length < 2 ||
+    recipe.enemyComposition.length > 6 ||
+    new Set(recipe.enemyComposition).size !== recipe.enemyComposition.length ||
+    recipe.enemyComposition.includes(EnemyType.BOSS_DEVOURER)
+  ) {
+    errors.push("enemyComposition");
+  }
+  if (recipe.eliteChance < 0.08 || recipe.eliteChance > 0.55) {
+    errors.push("eliteChance");
+  }
+  if (
+    recipe.mutators.length < 1 ||
+    recipe.mutators.length > 4 ||
+    new Set(recipe.mutators).size !== recipe.mutators.length
+  ) {
+    errors.push("mutators");
+  }
+  if (
+    recipe.aggressionMultiplier < 1 ||
+    recipe.aggressionMultiplier > 2
+  ) {
+    errors.push("aggressionMultiplier");
+  }
+  if (
+    recipe.projectileDensityMultiplier < 1 ||
+    recipe.projectileDensityMultiplier > 2.2
+  ) {
+    errors.push("projectileDensityMultiplier");
+  }
+  if (recipe.hazardIntensity < 0.1 || recipe.hazardIntensity > 1) {
+    errors.push("hazardIntensity");
+  }
+  if (recipe.statMultiplier < 1 || recipe.statMultiplier > 2.5) {
+    errors.push("statMultiplier");
+  }
+  if (
+    recipe.resourceMultiplier < 1.2 ||
+    recipe.resourceMultiplier > 3
+  ) {
+    errors.push("resourceMultiplier");
+  }
+  if (recipe.rewardTier < 1 || recipe.rewardTier > 5) {
+    errors.push("rewardTier");
+  }
+  if (recipe.fairness.minTelegraphMs < 900) {
+    errors.push("minTelegraphMs");
+  }
+  if (recipe.fairness.maxSimultaneousHardControlSources > 2) {
+    errors.push("maxSimultaneousHardControlSources");
+  }
+  if (recipe.fairness.spawnSafetyRadius < 120) {
+    errors.push("spawnSafetyRadius");
+  }
+  if (
+    recipe.fairness.projectileBudget < 80 ||
+    recipe.fairness.projectileBudget > 240
+  ) {
+    errors.push("projectileBudget");
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors,
   };
 };
