@@ -116,9 +116,13 @@ export const EnergySwarmGame: React.FC = () => {
   const lastTimeRef = useRef(0);
   const timeElapsedRef = useRef(0);
   const isPausedRef = useRef(false);
+  const touchDirectionsRef = useRef(createTouchDirectionState());
 
   const setPausedState = useCallback((nextPaused: boolean) => {
     isPausedRef.current = nextPaused;
+    if (nextPaused) {
+      touchDirectionsRef.current = createTouchDirectionState();
+    }
     setIsPaused(nextPaused);
   }, []);
 
@@ -132,7 +136,6 @@ export const EnergySwarmGame: React.FC = () => {
   const fusionEnergyRef = useRef(0);
 
   const keysPressedRef = useRef<Record<string, boolean>>({});
-  const touchDirectionsRef = useRef(createTouchDirectionState());
 
   // Entity Lists
   const swarmRef = useRef<OrbiMember[]>([]);
