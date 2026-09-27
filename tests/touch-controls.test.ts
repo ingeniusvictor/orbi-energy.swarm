@@ -56,6 +56,7 @@ test("touch overlay uses pointer capture and explicit press/release signals", ()
   assert.match(overlay, /onDirectionChange\(direction, false\)/);
   assert.match(overlay, /onPointerUp/);
   assert.match(overlay, /onPointerCancel/);
+  assert.match(overlay, /onLostPointerCapture/);
   assert.match(overlay, /onKeyUp/);
 });
 
@@ -73,5 +74,6 @@ test("lifecycle cleanup releases all held touch directions", () => {
   const game = read("src/game/EnergySwarmGame.tsx");
 
   assert.match(game, /touchDirectionsRef\.current = createTouchDirectionState\(\)/);
+  assert.match(game, /if \(nextPaused\) \{\s*touchDirectionsRef\.current = createTouchDirectionState\(\)/);
   assert.match(game, /onDirectionChange=\{setMobileTouchDirection\}/);
 });
