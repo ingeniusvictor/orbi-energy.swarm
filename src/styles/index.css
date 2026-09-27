@@ -1774,3 +1774,122 @@ body {
     animation: none !important;
   }
 }
+
+
+/* ES-12D1 — Foton 3D Command Hero.
+   The CSS command core remains the always-available fallback; WebGL layers on
+   top only for MEDIUM/HIGH/ULTRA and is never part of gameplay rendering. */
+.orbi-foton-3d {
+  z-index: 10;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: auto;
+  mask-image: radial-gradient(
+    ellipse 72% 78% at 50% 48%,
+    #000 52%,
+    rgba(0, 0, 0, 0.82) 68%,
+    transparent 94%
+  );
+}
+
+.orbi-foton-3d::before,
+.orbi-foton-3d::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  border-radius: 999px;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}
+
+.orbi-foton-3d::before {
+  width: min(72%, 31rem);
+  aspect-ratio: 1;
+  border: 1px solid rgba(103, 232, 249, 0.11);
+  box-shadow:
+    0 0 34px rgba(34, 211, 238, 0.08),
+    inset 0 0 38px rgba(139, 92, 246, 0.05);
+}
+
+.orbi-foton-3d::after {
+  width: min(54%, 23rem);
+  aspect-ratio: 1;
+  background:
+    radial-gradient(
+      circle,
+      rgba(34, 211, 238, 0.12),
+      rgba(99, 102, 241, 0.045) 42%,
+      transparent 70%
+    );
+  filter: blur(12px);
+}
+
+.orbi-foton-3d-canvas {
+  position: relative;
+  z-index: 2;
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  filter:
+    drop-shadow(0 20px 28px rgba(0, 0, 0, 0.38))
+    drop-shadow(0 0 24px rgba(34, 211, 238, 0.12));
+}
+
+.orbi-foton-3d-status {
+  position: absolute;
+  z-index: 12;
+  left: 50%;
+  bottom: 5.6rem;
+  transform: translateX(-50%);
+  max-width: calc(100% - 2rem);
+  border: 1px solid rgba(34, 211, 238, 0.16);
+  border-radius: 999px;
+  padding: 0.28rem 0.55rem;
+  background: rgba(2, 6, 23, 0.72);
+  color: rgba(165, 243, 252, 0.72);
+  font: 700 0.46rem/1.2 "JetBrains Mono", ui-monospace, monospace;
+  letter-spacing: 0.13em;
+  text-align: center;
+  white-space: nowrap;
+  backdrop-filter: blur(8px);
+  pointer-events: none;
+}
+
+.orbi-foton-3d-status--warning {
+  border-color: rgba(251, 191, 36, 0.18);
+  color: rgba(253, 230, 138, 0.8);
+}
+
+.orbi-start-hero-stage
+  [data-foton-css-fallback="true"] {
+  opacity: 1;
+  transform: scale(1);
+  transition:
+    opacity 420ms ease,
+    transform 520ms ease,
+    filter 420ms ease;
+}
+
+.orbi-start-hero-stage:has(
+    .orbi-foton-3d[data-foton-3d-status="READY"]
+  )
+  [data-foton-css-fallback="true"] {
+  opacity: 0.2;
+  transform: scale(0.9);
+  filter: blur(0.8px);
+}
+
+@media (max-width: 719px) {
+  .orbi-foton-3d-status {
+    bottom: 6.25rem;
+    font-size: 0.42rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .orbi-start-hero-stage
+    [data-foton-css-fallback="true"] {
+    transition: none !important;
+  }
+}
