@@ -438,6 +438,11 @@ export const EnergySwarmGame: React.FC = () => {
   }, [stats]);
 
   useEffect(() => {
+    const quality = getQualityConfig(stats.qualityPreset);
+    backgroundRenderer.resizeStars(quality.maxStars);
+  }, [stats.qualityPreset]);
+
+  useEffect(() => {
     isPausedRef.current = isPaused;
   }, [isPaused]);
 
@@ -4408,6 +4413,7 @@ export const EnergySwarmGame: React.FC = () => {
                   cameraOffset={cameraOffsetRef.current}
                   drawNebula={getQualityConfig(stats.qualityPreset).drawNebula}
                   drawPlanets={getQualityConfig(stats.qualityPreset).drawPlanets}
+                  maxDpr={getQualityConfig(stats.qualityPreset).maxDPR}
                   screenShake={screenShakeRef.current}
                   swarm={swarmRef.current}
                   enemies={enemiesRef.current}
