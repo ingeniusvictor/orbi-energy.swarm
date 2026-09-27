@@ -54,6 +54,7 @@ export const MobileTouchOverlay: React.FC<MobileTouchOverlayProps> = ({
       onPointerDown={(event) => beginPointerDirection(event, direction)}
       onPointerUp={(event) => endPointerDirection(event, direction)}
       onPointerCancel={(event) => endPointerDirection(event, direction)}
+      onLostPointerCapture={(event) => endPointerDirection(event, direction)}
       onKeyDown={(event) => handleKeyboardDirection(event, direction, true)}
       onKeyUp={(event) => handleKeyboardDirection(event, direction, false)}
       onContextMenu={(event) => event.preventDefault()}
