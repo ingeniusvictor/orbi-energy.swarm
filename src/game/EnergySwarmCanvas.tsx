@@ -659,6 +659,35 @@ export function drawEnemiesList(
     ctx.save();
     ctx.translate(enemy.x, enemy.y);
 
+    if (enemy.milestoneKind === "MINIBOSS") {
+      const milestonePulse =
+        2 + Math.sin(time * 0.008) * 2;
+      ctx.save();
+      ctx.strokeStyle = "#fbbf24";
+      ctx.lineWidth = 2;
+      ctx.shadowColor = "#fbbf24";
+      ctx.shadowBlur = 14;
+      ctx.beginPath();
+      ctx.arc(
+        0,
+        0,
+        enemy.size * 1.7 + milestonePulse,
+        0,
+        Math.PI * 2,
+      );
+      ctx.stroke();
+
+      ctx.fillStyle = "#fde68a";
+      ctx.font = "bold 7px monospace";
+      ctx.textAlign = "center";
+      ctx.fillText(
+        "BLACKOUT WARDEN",
+        0,
+        -enemy.size * 1.75,
+      );
+      ctx.restore();
+    }
+
     // Apply white hit flashing (for high intensity impact frames)
     if (enemy.flashTicks > 0) {
       ctx.shadowBlur = enemy.size * 2.5;
