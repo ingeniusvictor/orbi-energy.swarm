@@ -202,6 +202,14 @@ export const StartScreen: React.FC<StartScreenProps> = ({
                       <div className="text-[8px] text-slate-500 font-mono uppercase">{language === "es" ? "OLEADA" : "WAVE"}</div>
                       <div className="text-base font-black font-mono text-indigo-300">{stats.bestInfiniteWave}</div>
                     </div>
+                    <div className="rounded-lg bg-slate-950/55 p-2">
+                      <div className="text-[8px] text-slate-500 font-mono uppercase">WARDENS</div>
+                      <div className="text-base font-black font-mono text-amber-300">{stats.infiniteMinibossesDefeated}</div>
+                    </div>
+                    <div className="rounded-lg bg-slate-950/55 p-2">
+                      <div className="text-[8px] text-slate-500 font-mono uppercase">REMATCHES</div>
+                      <div className="text-base font-black font-mono text-pink-300">{stats.infiniteBossRematchesDefeated}</div>
+                    </div>
                   </div>
                 ) : (
                   <p className="text-[9px] font-mono text-slate-500 leading-relaxed">
@@ -214,7 +222,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({
 
               <RecentRunArchivePanel
                 entries={stats.recentRunArchive}
-                limit={1}
+                limit={3}
                 compact
               />
             </section>
