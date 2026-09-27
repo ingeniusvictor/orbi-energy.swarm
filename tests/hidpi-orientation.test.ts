@@ -8,7 +8,7 @@ import {
   normalizeCanvasDpr,
 } from "../src/game/canvasResolution.ts";
 
-const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
+const read = (path: string) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 
 test("canvas DPR normalization preserves quality without unbounded pixel cost", () => {
   assert.equal(MAX_CANVAS_DPR, 2);
