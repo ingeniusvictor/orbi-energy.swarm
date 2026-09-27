@@ -5,10 +5,13 @@ import {
   PERFORMANCE_DIAGNOSTICS_WINDOW_MS,
   createPerformanceDiagnosticsState,
   stepPerformanceDiagnostics,
+  type PerformanceDiagnosticsSample,
 } from "../src/game/performanceDiagnostics.ts";
 import { QualityPreset } from "../src/game/types.ts";
 
-const sample = (overrides = {}) => ({
+const sample = (
+  overrides: Partial<PerformanceDiagnosticsSample> = {},
+): PerformanceDiagnosticsSample => ({
   frameMs: 16.6,
   loopCpuMs: 10,
   physicsMs: 6,
