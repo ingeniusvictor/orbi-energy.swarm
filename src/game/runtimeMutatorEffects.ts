@@ -217,3 +217,30 @@ export const projectRuntimeMutatorEffects = (
 
   return profile;
 };
+
+
+export const getRuntimeMutatedEnemyBudget = (
+  descriptor: RuntimeWaveDescriptor,
+) => {
+  const baseBudget = Math.max(
+    0,
+    Math.floor(descriptor.spawn.enemyBudget),
+  );
+
+  if (descriptor.sourceMode !== "INFINITE") {
+    return baseBudget;
+  }
+
+  const effects =
+    projectRuntimeMutatorEffects(descriptor);
+
+  return Math.min(
+    240,
+    Math.max(
+      baseBudget,
+      Math.ceil(
+        baseBudget * effects.enemyBudgetMultiplier,
+      ),
+    ),
+  );
+};
