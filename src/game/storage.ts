@@ -31,8 +31,17 @@ export const DEFAULT_STATS: GameStats = {
   preferredBossFormation: "",
   bossLabelsMode: "IMPORTANT",
   bossCodexSeenAttacks: [],
-  bossCodexSeenPhases: [1]
+  bossCodexSeenPhases: [1],
+  bestInfiniteSector: 0,
+  bestInfiniteWave: 0,
+  infiniteMinibossesDefeated: 0,
+  infiniteBossRematchesDefeated: 0
 };
+
+const safeRecordInteger = (value: unknown) =>
+  typeof value === "number" && Number.isFinite(value)
+    ? Math.max(0, Math.floor(value))
+    : 0;
 
 export function loadGameStats(): GameStats {
   try {
@@ -46,7 +55,11 @@ export function loadGameStats(): GameStats {
       gameMemories: Array.isArray(parsed.gameMemories) ? parsed.gameMemories : [],
       discoveredThreats: Array.isArray(parsed.discoveredThreats) ? parsed.discoveredThreats : [],
       bossCodexSeenAttacks: Array.isArray(parsed.bossCodexSeenAttacks) ? parsed.bossCodexSeenAttacks : [],
-      bossCodexSeenPhases: Array.isArray(parsed.bossCodexSeenPhases) ? parsed.bossCodexSeenPhases : [1]
+      bossCodexSeenPhases: Array.isArray(parsed.bossCodexSeenPhases) ? parsed.bossCodexSeenPhases : [1],
+      bestInfiniteSector: safeRecordInteger(parsed.bestInfiniteSector),
+      bestInfiniteWave: safeRecordInteger(parsed.bestInfiniteWave),
+      infiniteMinibossesDefeated: safeRecordInteger(parsed.infiniteMinibossesDefeated),
+      infiniteBossRematchesDefeated: safeRecordInteger(parsed.infiniteBossRematchesDefeated)
     };
   } catch (err) {
     console.error("Failed to load ORBI ENERGY SWARM stats, resetting to defaults", err);

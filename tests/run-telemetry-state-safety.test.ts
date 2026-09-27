@@ -35,11 +35,11 @@ test("persistent totals accumulate from run-local counters exactly once", () => 
   );
   assert.match(
     runPersistence,
-    /fresh\.totalEnemiesDestroyed \+[\s\S]*integerNonNegative\(input\.enemiesDestroyed\)/,
+    /infiniteProgressStats\.totalEnemiesDestroyed \+[\s\S]*integerNonNegative\(input\.enemiesDestroyed\)/,
   );
   assert.match(
     runPersistence,
-    /fresh\.totalResourcesCollected \+[\s\S]*integerNonNegative\(input\.resourcesCollected\)/,
+    /infiniteProgressStats\.totalResourcesCollected \+[\s\S]*integerNonNegative\(input\.resourcesCollected\)/,
   );
   assert.match(
     runPersistence,
