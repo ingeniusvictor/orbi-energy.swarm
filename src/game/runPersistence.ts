@@ -1,9 +1,17 @@
-import type { GameStats } from "./types";
+import {
+  MAX_RECENT_RUN_ARCHIVE,
+  sanitizeRecentRunArchive,
+} from "./storage";
+import type {
+  GameStats,
+  RunArchiveEntry,
+} from "./types";
 
 export interface RunCommitLedger {
   runCountCommitted: boolean;
   campaignVictoryCommitted: boolean;
   telemetryCommitted: boolean;
+  runArchiveCommitted: boolean;
   committedInfiniteMilestoneEvents: string[];
 }
 
@@ -31,6 +39,7 @@ export interface FinalRunCommitInput {
   resourcesCollected: number;
   infiniteSectorReached?: number;
   infiniteWaveReached?: number;
+  runArchiveEntry?: RunArchiveEntry;
 }
 
 export interface InfiniteProgressRecordInput {
@@ -52,6 +61,7 @@ export const createRunCommitLedger = (): RunCommitLedger => ({
   runCountCommitted: false,
   campaignVictoryCommitted: false,
   telemetryCommitted: false,
+  runArchiveCommitted: false,
   committedInfiniteMilestoneEvents: [],
 });
 
@@ -68,6 +78,7 @@ const copyLedger = (ledger: RunCommitLedger): RunCommitLedger => ({
   runCountCommitted: ledger.runCountCommitted,
   campaignVictoryCommitted: ledger.campaignVictoryCommitted,
   telemetryCommitted: ledger.telemetryCommitted,
+  runArchiveCommitted: ledger.runArchiveCommitted ?? false,
   committedInfiniteMilestoneEvents: [
     ...(ledger.committedInfiniteMilestoneEvents ?? []),
   ],
@@ -263,6 +274,35 @@ export const applyFinalRunCommit = (
         })
       : fresh;
 
+  const existingArchive = sanitizeRecentRunArchive(
+    infiniteProgressStats.recentRunArchive,
+  );
+  let recentRunArchive = existingArchive;
+
+  if (
+    !nextLedger.runArchiveCommitted &&
+    input.runArchiveEntry
+  ) {
+    const [candidate] = sanitizeRecentRunArchive([
+      input.runArchiveEntry,
+    ]);
+
+    if (candidate) {
+      nextLedger.runArchiveCommitted = true;
+
+      if (
+        !existingArchive.some(
+          (entry) => entry.runId === candidate.runId,
+        )
+      ) {
+        recentRunArchive = [
+          candidate,
+          ...existingArchive,
+        ].slice(0, MAX_RECENT_RUN_ARCHIVE);
+      }
+    }
+  }
+
   const stats: GameStats = {
     ...infiniteProgressStats,
     highScore: Math.max(
@@ -295,6 +335,7 @@ export const applyFinalRunCommit = (
       fresh.totalNanoCredits,
     ),
     gameMemories: [...input.gameMemories],
+    recentRunArchive,
   };
 
   nextLedger.runCountCommitted = true;

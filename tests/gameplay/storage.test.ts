@@ -56,6 +56,7 @@ test("empty storage loads the canonical defaults", () => {
   assert.equal(stats.bestWave, 1);
   assert.equal(stats.qualityPreset, QualityPreset.MEDIUM);
   assert.deepEqual(stats.bossCodexSeenPhases, [1]);
+  assert.deepEqual(stats.recentRunArchive, []);
 });
 
 test("legacy/corrupt array shapes are repaired while scalar progress survives", () => {
@@ -67,6 +68,7 @@ test("legacy/corrupt array shapes are repaired while scalar progress survives", 
     discoveredThreats: "bad-shape",
     bossCodexSeenAttacks: "bad-shape",
     bossCodexSeenPhases: "bad-shape",
+    recentRunArchive: "bad-shape",
   }));
 
   const stats = loadGameStats();
@@ -76,6 +78,54 @@ test("legacy/corrupt array shapes are repaired while scalar progress survives", 
   assert.deepEqual(stats.discoveredThreats, []);
   assert.deepEqual(stats.bossCodexSeenAttacks, []);
   assert.deepEqual(stats.bossCodexSeenPhases, [1]);
+  assert.deepEqual(stats.recentRunArchive, []);
+});
+
+test("recent run archive migration keeps only sanitized bounded entries", () => {
+  const storage = installStorage();
+  storage.setItem(STORAGE_KEY, JSON.stringify({
+    recentRunArchive: [
+      {
+        runId: "run-newest",
+        completedAt: "2026-09-27T15:20:00.000Z",
+        outcome: "DEFEAT",
+        score: 42.9,
+        campaignWaveReached: 9,
+        durationMs: 90000,
+        enemiesDestroyed: 75,
+        maxSwarmSize: 14,
+        strongestAffinity: "solar",
+        mostUsedFormation: "DELTA",
+        temporaryBuild: {
+          solar_overcharge: 2,
+          invalid_stack: -4,
+        },
+      },
+      {
+        runId: "run-newest",
+        completedAt: "2026-09-27T15:21:00.000Z",
+        outcome: "DEFEAT",
+        score: 999,
+      },
+      {
+        runId: "",
+        completedAt: "not-a-date",
+        outcome: "BROKEN",
+      },
+    ],
+  }));
+
+  const stats = loadGameStats();
+  assert.equal(stats.recentRunArchive.length, 1);
+  assert.equal(
+    stats.recentRunArchive[0].runId,
+    "run-newest",
+  );
+  assert.equal(stats.recentRunArchive[0].score, 42);
+  assert.deepEqual(
+    stats.recentRunArchive[0].temporaryBuild,
+    { solar_overcharge: 2 },
+  );
 });
 
 test("save and reset round-trip through the canonical storage key", () => {
