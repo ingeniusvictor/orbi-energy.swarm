@@ -5484,6 +5484,7 @@ export const EnergySwarmGame: React.FC = () => {
           bestInfiniteWave={stats.bestInfiniteWave}
           infiniteMinibossesDefeated={stats.infiniteMinibossesDefeated}
           infiniteBossRematchesDefeated={stats.infiniteBossRematchesDefeated}
+          recentRunArchive={stats.recentRunArchive}
           onRestart={startGame}
           onExitToMenu={() => {
             setIsPlaying(false);

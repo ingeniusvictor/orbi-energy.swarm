@@ -1,7 +1,9 @@
 import React from "react";
 import { RotateCcw, Home, Award, Users, Crosshair, Coins, Flame } from "lucide-react";
 import { playClickSound } from "../game/audio";
+import type { RunArchiveEntry } from "../game/types";
 import { useGameTranslation, formatNumber } from "../i18n";
+import RecentRunArchivePanel from "./RecentRunArchivePanel";
 
 interface ResultScreenProps {
   victory: boolean;
@@ -15,6 +17,7 @@ interface ResultScreenProps {
   bestInfiniteWave?: number;
   infiniteMinibossesDefeated?: number;
   infiniteBossRematchesDefeated?: number;
+  recentRunArchive?: RunArchiveEntry[];
   onRestart: () => void;
   onExitToMenu: () => void;
 
@@ -48,6 +51,7 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
   bestInfiniteWave = 0,
   infiniteMinibossesDefeated = 0,
   infiniteBossRematchesDefeated = 0,
+  recentRunArchive = [],
   onRestart,
   onExitToMenu,
   activeRunUpgrades,
@@ -240,6 +244,12 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
             </div>
           </div>
         )}
+
+        <RecentRunArchivePanel
+          entries={recentRunArchive}
+          limit={3}
+          compact
+        />
 
         {/* BOSS SPECIFIC ENGAGEMENT STATS */}
         <div className="bg-slate-950/60 rounded-xl p-3 border border-slate-800/60 text-left font-mono text-[10px] space-y-1.5">

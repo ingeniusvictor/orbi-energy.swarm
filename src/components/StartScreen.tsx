@@ -5,6 +5,7 @@ import { playClickSound } from "../game/audio";
 import { useGameTranslation, formatNumber } from "../i18n";
 import PremiumBackdrop from "./presentation/PremiumBackdrop";
 import CampaignArc from "./CampaignArc";
+import RecentRunArchivePanel from "./RecentRunArchivePanel";
 
 interface StartScreenProps {
   stats: GameStats;
@@ -200,6 +201,11 @@ export const StartScreen: React.FC<StartScreenProps> = ({
                 </p>
               )}
             </div>
+
+            <RecentRunArchivePanel
+              entries={stats.recentRunArchive}
+              limit={3}
+            />
 
             {/* PREPARATION MEMENTO */}
             <div className="bg-slate-950/30 p-3 rounded border border-slate-800/40 text-center text-xs text-slate-400 leading-relaxed">
