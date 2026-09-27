@@ -77,6 +77,12 @@ import {
   syncRuntimeBossRematchGate,
 } from "./runtimeBossRematchGate";
 import {
+  createFrameHealthState,
+  resetFrameHealthState,
+  stepFrameHealthMonitor,
+  type FrameHealthState,
+} from "./frameHealthMonitor";
+import {
   applyCampaignVictoryCheckpoint,
   applyFinalRunCommit,
   applyInfiniteMilestoneRecord,
@@ -286,6 +292,8 @@ export const EnergySwarmGame: React.FC = () => {
   const runNanoCreditsEarnedRef = useRef<number>(0);
   const runMaxSwarmSizeRef = useRef<number>(1);
   const runCommitLedgerRef = useRef<RunCommitLedger>(createRunCommitLedger());
+  const frameHealthRef = useRef<FrameHealthState>(createFrameHealthState());
+  const frameHealthRecommendationShownRef = useRef<QualityPreset | null>(null);
   const bossAttacksSeenThisRunRef = useRef<string[]>([]);
 
   const updateRunMaxSwarmSize = () => {
@@ -882,6 +890,9 @@ export const EnergySwarmGame: React.FC = () => {
 
       if (shouldResetFrameClock(signal)) {
         lastTimeRef.current = performance.now();
+        frameHealthRef.current = resetFrameHealthState(
+          frameHealthRef.current,
+        );
       }
 
       const shouldPause = shouldPauseForLifecycle(
@@ -984,6 +995,8 @@ export const EnergySwarmGame: React.FC = () => {
     runStartTimeRef.current = Date.now();
     runEndTimeRef.current = 0;
     runCommitLedgerRef.current = createRunCommitLedger();
+    frameHealthRef.current = createFrameHealthState();
+    frameHealthRecommendationShownRef.current = null;
     runMaxSwarmSizeRef.current = 1;
     reactUpdateAccumulatorMsRef.current = 0;
     bossDamageDealtRef.current = 0;
@@ -2972,6 +2985,9 @@ export const EnergySwarmGame: React.FC = () => {
 
     if (isPausedRef.current || isUpgradeSelectionOpenRef.current) {
       lastTimeRef.current = timestamp;
+      frameHealthRef.current = resetFrameHealthState(
+        frameHealthRef.current,
+      );
       requestAnimationFrame(gameLoop);
       return;
     }
@@ -2981,6 +2997,26 @@ export const EnergySwarmGame: React.FC = () => {
 
     // Clamp huge deltas when switching tabs to avoid teleportation crashes
     if (delta > 100) delta = 16.6;
+
+    const frameHealth = stepFrameHealthMonitor(
+      frameHealthRef.current,
+      delta,
+      statsRef.current?.qualityPreset ?? stats.qualityPreset,
+    );
+    frameHealthRef.current = frameHealth.state;
+
+    if (
+      frameHealth.completedWindow?.recommendedPreset &&
+      frameHealthRecommendationShownRef.current !==
+        frameHealth.completedWindow.recommendedPreset
+    ) {
+      frameHealthRecommendationShownRef.current =
+        frameHealth.completedWindow.recommendedPreset;
+      postDialogue(
+        "SYSTEM",
+        `PERFORMANCE PRESSURE: prueba el preset ${frameHealth.completedWindow.recommendedPreset} para una sesión más estable.`,
+      );
+    }
 
     // Decay and apply Hit-Stop physical freezing
     if (hitStopTimerRef.current > 0) {
