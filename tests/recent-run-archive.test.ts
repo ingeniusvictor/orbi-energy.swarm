@@ -14,10 +14,11 @@ import {
 } from "../src/game/runPersistence.ts";
 import {
   FormationType,
+  type GameStats,
   type RunArchiveEntry,
 } from "../src/game/types.ts";
 
-const freshStats = () => ({
+const freshStats = (): GameStats => ({
   ...DEFAULT_STATS,
   gameMemories: [...DEFAULT_STATS.gameMemories],
   discoveredThreats: [
