@@ -53,7 +53,11 @@ import {
 } from "./runtimeCompletionPolicy";
 import { projectRuntimeCombatPressure } from "./runtimeCombatPressure";
 import { resolveEvolvedEnemySpawn } from "./runtimeEnemyEvolution";
-import { projectEvolvedSignatureBehavior } from "./runtimeEnemySignatureBehavior";
+import {
+  createEnemySignatureBehaviorCache,
+  getCachedEvolvedSignatureBehavior,
+  type EnemySignatureBehaviorCache,
+} from "./enemySignatureBehaviorCache";
 import {
   getRuntimeMutatedEnemyBudget,
   projectRuntimeMutatorEffects,
@@ -307,6 +311,10 @@ export const EnergySwarmGame: React.FC = () => {
   const runCommitLedgerRef = useRef<RunCommitLedger>(createRunCommitLedger());
   const frameHealthRef = useRef<FrameHealthState>(createFrameHealthState());
   const frameHealthRecommendationShownRef = useRef<QualityPreset | null>(null);
+  const enemySignatureBehaviorCacheRef =
+    useRef<EnemySignatureBehaviorCache>(
+      createEnemySignatureBehaviorCache(),
+    );
   const collisionEnemyIndexRef =
     useRef<SpatialIndex<Enemy> | null>(null);
   const bossAttacksSeenThisRunRef = useRef<string[]>([]);
@@ -1028,6 +1036,8 @@ export const EnergySwarmGame: React.FC = () => {
     runCommitLedgerRef.current = createRunCommitLedger();
     frameHealthRef.current = createFrameHealthState();
     frameHealthRecommendationShownRef.current = null;
+    enemySignatureBehaviorCacheRef.current =
+      createEnemySignatureBehaviorCache();
     runMaxSwarmSizeRef.current = 1;
     reactUpdateAccumulatorMsRef.current = 0;
     bossDamageDealtRef.current = 0;
@@ -3869,9 +3879,9 @@ export const EnergySwarmGame: React.FC = () => {
       if (enemy.isDead) return;
 
       const signatureBehavior =
-        projectEvolvedSignatureBehavior(
-          enemy.evolvedSignature,
-          enemy.evolvedSpecialIntensity,
+        getCachedEvolvedSignatureBehavior(
+          enemySignatureBehaviorCacheRef.current,
+          enemy,
         );
 
       if (
@@ -4344,9 +4354,9 @@ export const EnergySwarmGame: React.FC = () => {
   ) => {
     const combatPressure = getCurrentCombatPressure();
     const signatureBehavior =
-      projectEvolvedSignatureBehavior(
-        enemy.evolvedSignature,
-        enemy.evolvedSpecialIntensity,
+      getCachedEvolvedSignatureBehavior(
+        enemySignatureBehaviorCacheRef.current,
+        enemy,
       );
     const hostileProjectileCount =
       hostileBudgetState.count;
@@ -4628,9 +4638,9 @@ export const EnergySwarmGame: React.FC = () => {
                   ? 4.0
                   : 1.8;
             const signatureBehavior =
-              projectEvolvedSignatureBehavior(
-                enemy.evolvedSignature,
-                enemy.evolvedSpecialIntensity,
+              getCachedEvolvedSignatureBehavior(
+                enemySignatureBehaviorCacheRef.current,
+                enemy,
               );
             const pushFactor =
               basePushFactor *
@@ -4961,9 +4971,9 @@ export const EnergySwarmGame: React.FC = () => {
     );
 
     const signatureBehavior =
-      projectEvolvedSignatureBehavior(
-        enemy.evolvedSignature,
-        enemy.evolvedSpecialIntensity,
+      getCachedEvolvedSignatureBehavior(
+        enemySignatureBehaviorCacheRef.current,
+        enemy,
       );
     if (signatureBehavior.splitterExtraMinions < 1) {
       return;
