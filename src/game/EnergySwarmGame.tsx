@@ -5888,13 +5888,19 @@ export const EnergySwarmGame: React.FC = () => {
 
       {/* THREAT INTEL SYSTEM DIAGNOSTIC OVERLAY */}
       {activeThreatIntel && (
-        <div className="fixed inset-0 bg-slate-950/90 flex items-center justify-center p-4 z-50 animate-fadeIn backdrop-blur-sm">
+        <div
+          className="fixed inset-0 bg-slate-950/90 flex items-center justify-center p-4 z-50 animate-fadeIn backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="threat-intel-title"
+          aria-describedby="threat-intel-description"
+        >
           <div className="bg-slate-900 border border-cyan-500/40 rounded-xl p-5 max-w-md w-full shadow-2xl relative space-y-4 font-mono text-white text-xs">
             <div className="flex items-center gap-2 border-b border-cyan-950/60 pb-3">
               <span className="w-3 h-3 bg-cyan-500 rounded-full animate-ping" />
               <div className="flex-1">
                 <span className="text-[10px] text-cyan-400 font-bold uppercase tracking-wider">THREAT DETECTED</span>
-                <h3 className="text-base font-extrabold tracking-tight text-white uppercase mt-0.5">
+                <h3 id="threat-intel-title" className="text-base font-extrabold tracking-tight text-white uppercase mt-0.5">
                   {activeThreatIntel === EnemyType.DRONE ? "Drone de Asalto (V-Wing)" :
                    activeThreatIntel === EnemyType.DISRUPTOR ? "Emisor Disruptor EMP" :
                    activeThreatIntel === EnemyType.BLACKOUT_ELITE ? "Acorazado Blackout Elite" :
@@ -5906,7 +5912,7 @@ export const EnergySwarmGame: React.FC = () => {
             <div className="space-y-3.5 leading-relaxed text-[11px]">
               <div className="bg-slate-950/50 p-2.5 rounded border border-slate-800">
                 <span className="text-slate-500 text-[10px] uppercase font-bold">DESCRIPCIÓN OPERATIVA</span>
-                <p className="text-slate-300 mt-1">
+                <p id="threat-intel-description" className="text-slate-300 mt-1">
                   {activeThreatIntel === EnemyType.DRONE ? "Enemigo ágil que dispara ráfagas de proyectiles de plasma dirigidas." :
                    activeThreatIntel === EnemyType.DISRUPTOR ? "Emisor de gran tamaño que emite pulsos radiales EMP anulando seguidos." :
                    activeThreatIntel === EnemyType.BLACKOUT_ELITE ? "Unidad pesada que realiza embestidas frontales de velocidad extrema." :
@@ -5936,6 +5942,7 @@ export const EnergySwarmGame: React.FC = () => {
             </div>
 
             <button
+              autoFocus
               onClick={() => {
                 setActiveThreatIntel(null);
                 setPausedState(false);
