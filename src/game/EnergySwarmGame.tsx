@@ -48,6 +48,7 @@ import { ResultScreen } from "../components/ResultScreen";
 import { CompanionPanel } from "../components/CompanionPanel";
 import { UpgradeSelector } from "../components/UpgradeSelector";
 import { MobileTouchOverlay } from "../components/MobileTouchOverlay";
+import { OrientationHint } from "../components/OrientationHint";
 import { BossHudOverlay } from "../components/BossHudOverlay";
 
 export const EnergySwarmGame: React.FC = () => {
@@ -3716,6 +3717,12 @@ export const EnergySwarmGame: React.FC = () => {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    // Keep the simulation/render API in logical 800×480 coordinates while
+    // allowing the DOM canvas backing store to scale for HiDPI displays.
+    const backingScaleX = canvas.width / CANVAS_WIDTH;
+    const backingScaleY = canvas.height / CANVAS_HEIGHT;
+    ctx.setTransform(backingScaleX, 0, 0, backingScaleY, 0, 0);
+
     // 1. Draw Space Background and layered grids
     const quality = getQualityConfig(stats.qualityPreset);
     backgroundRenderer.render(
@@ -4330,6 +4337,7 @@ export const EnergySwarmGame: React.FC = () => {
 
                 {/* MOBILE / ANDROID THUMB-ZONE MOVEMENT OVERLAY */}
                 <MobileTouchOverlay onMove={moveMobileDPad} />
+                <OrientationHint />
               </div>
             </div>
 
