@@ -1,0 +1,43 @@
+{
+  "product": "ORBI Energy Swarm",
+  "packageName": "orbi-energy-swarm",
+  "version": "0.2.0-beta.1",
+  "channel": "beta",
+  "releaseCandidateEligible": false,
+  "targetSurfaces": [
+    "web",
+    "android"
+  ],
+  "automatedCertification": {
+    "repositoryCI": true,
+    "responsiveContracts": true,
+    "infiniteLargeRange": true,
+    "accessibilityContracts": true,
+    "androidPerformanceSoftwareMatrix": true
+  },
+  "manualBlockers": [
+    {
+      "id": "issue-4-visual-certification",
+      "issue": 4,
+      "category": "visual-responsive",
+      "requirement": "Human visual certification across supported viewport classes."
+    },
+    {
+      "id": "issue-5-infinite-playfeel",
+      "issue": 5,
+      "category": "gameplay-balance",
+      "requirement": "Manual Infinite Swarm difficulty and play-feel validation."
+    },
+    {
+      "id": "es-11-real-device",
+      "category": "android-hardware",
+      "requirement": "Real-device thermal, sustained battery, browser chrome, ergonomics and OEM GPU/driver validation."
+    }
+  ],
+  "pendingReleaseEngineering": [
+    "web-deployment-target",
+    "pwa-or-native-wrapper-decision",
+    "android-packaging-pipeline",
+    "release-candidate-certification"
+  ]
+}
