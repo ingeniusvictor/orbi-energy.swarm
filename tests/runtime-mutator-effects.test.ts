@@ -6,7 +6,10 @@ import {
   createInfiniteSession,
 } from "../src/game/infiniteSession.ts";
 import type { InfiniteMutator } from "../src/game/infiniteSectorDirector.ts";
-import { projectRuntimeMutatorEffects } from "../src/game/runtimeMutatorEffects.ts";
+import {
+  getRuntimeMutatedEnemyBudget,
+  projectRuntimeMutatorEffects,
+} from "../src/game/runtimeMutatorEffects.ts";
 import {
   createCampaignRuntimeWaveDescriptor,
   createInfiniteRuntimeWaveDescriptor,
@@ -210,4 +213,66 @@ test("generated Infinite Swarm profiles remain bounded through Sector 1000", () 
 
     session = advanceInfiniteSession(session);
   }
+});
+
+
+test("mutator-adjusted enemy budget preserves campaign and scales DOUBLE_THREAT consistently", () => {
+  const campaign =
+    createCampaignRuntimeWaveDescriptor(5);
+  assert.equal(
+    getRuntimeMutatedEnemyBudget(campaign),
+    campaign.spawn.enemyBudget,
+  );
+
+  const baseInfinite =
+    createInfiniteRuntimeWaveDescriptor(
+      createInfiniteSession("double-threat-budget"),
+    );
+
+  const neutral = {
+    ...baseInfinite,
+    modifiers: baseInfinite.modifiers.filter(
+      (modifier) => modifier !== "DOUBLE_THREAT",
+    ),
+    spawn: {
+      ...baseInfinite.spawn,
+      enemyBudget: 100,
+    },
+  };
+
+  assert.equal(
+    getRuntimeMutatedEnemyBudget(neutral),
+    100,
+  );
+
+  const doubleThreat = {
+    ...neutral,
+    modifiers: ["DOUBLE_THREAT"],
+  };
+
+  assert.equal(
+    getRuntimeMutatedEnemyBudget(doubleThreat),
+    135,
+  );
+});
+
+test("DOUBLE_THREAT effective enemy budget is hard-capped for runtime safety", () => {
+  const descriptor =
+    createInfiniteRuntimeWaveDescriptor(
+      createInfiniteSession("double-threat-cap"),
+    );
+
+  const capped = {
+    ...descriptor,
+    modifiers: ["DOUBLE_THREAT"],
+    spawn: {
+      ...descriptor.spawn,
+      enemyBudget: 180,
+    },
+  };
+
+  assert.equal(
+    getRuntimeMutatedEnemyBudget(capped),
+    240,
+  );
 });
