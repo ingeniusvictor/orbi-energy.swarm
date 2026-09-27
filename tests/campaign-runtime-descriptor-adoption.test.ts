@@ -18,10 +18,10 @@ const section = (
   return game.slice(start, end);
 };
 
-test("campaign runtime imports the unified certified descriptor router", () => {
+test("campaign runtime reaches the unified certified descriptor router through the projection cache", () => {
   assert.match(
     game,
-    /resolveRuntimeWaveDescriptor[\s\S]*runtimeProgressionRouter/,
+    /getCachedRuntimeProjectionBundle[\s\S]*runtimeProjectionBundleCache/,
   );
   assert.match(game, /createCampaignRuntimeState/);
   assert.doesNotMatch(game, /createCampaignRuntimeWaveDescriptor/);
@@ -44,7 +44,7 @@ test("regular enemy spawning no longer reads WaveConfig directly", () => {
   );
   assert.match(
     spawnEnemy,
-    /projectRuntimeCombatPressure\(descriptor\)/,
+    /runtimeProjection\.combatPressure/,
   );
   assert.match(
     spawnEnemy,
@@ -69,7 +69,7 @@ test("wave spawn cadence and budget are descriptor-backed", () => {
   );
   assert.match(
     physics,
-    /getRuntimeMutatedEnemyBudget\([\s\S]*simulationDescriptor/,
+    /simulationRuntimeProjection\.enemyBudget/,
   );
   assert.match(
     physics,
@@ -89,7 +89,7 @@ test("campaign wave activation uses descriptor metadata and boss policy", () => 
 
   assert.match(
     transitions,
-    /getCurrentRuntimeDescriptor\(\)/,
+    /getCurrentRuntimeProjection\(\)/,
   );
   assert.match(
     transitions,
