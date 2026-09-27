@@ -17,7 +17,9 @@ import {
 } from "./runtimeWaveDescriptor";
 import {
   NEUTRAL_INFINITE_RUN_CONTEXT,
-  type InfiniteRunContext,
+} from "./infinitePlanBuilder";
+import type {
+  InfiniteRunContext,
 } from "./infiniteContextDirector";
 
 export interface CampaignInfiniteHandoff {
