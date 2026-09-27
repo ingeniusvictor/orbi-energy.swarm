@@ -52,7 +52,7 @@ test("runtime completion snapshot excludes dead enemies and the campaign boss", 
 
   assert.match(
     transitions,
-    /!enemy\.isDead && !enemy\.isBoss/,
+    /countLivingStandardEnemies\([\s\S]*enemiesRef\.current/,
   );
   assert.match(
     transitions,

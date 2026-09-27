@@ -240,7 +240,7 @@ test("BROOD_RELEASE extra minion is gated by descriptor and global enemy concurr
   );
   assert.match(
     split,
-    /const livingEnemyCount =[\s\S]*!candidate\.isDead/,
+    /const livingEnemyCount =[\s\S]*countLivingEnemies\([\s\S]*enemiesRef\.current/,
   );
   assert.match(
     split,

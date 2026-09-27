@@ -21,6 +21,12 @@ import { getBiomeConfig, BIOME_ROTATION } from "./biomes";
 import { getQualityConfig } from "./quality";
 import { compactArrayInPlace } from "./arrayCompaction";
 import {
+  countActiveEvolvedEnemies,
+  countLivingEnemies,
+  countLivingStandardEnemies,
+  countMinionsOfType,
+} from "./enemyCounts";
+import {
   ENEMY_SPATIAL_CELL_SIZE,
   buildSpatialIndex,
   findAllCollidingSpatialItems,
@@ -1779,9 +1785,10 @@ export const EnergySwarmGame: React.FC = () => {
         waveTimeRemainingRef.current -= delta;
       }
 
-      const livingEnemyCount = enemiesRef.current.filter(
-        (enemy) => !enemy.isDead && !enemy.isBoss,
-      ).length;
+      const livingEnemyCount =
+        countLivingStandardEnemies(
+          enemiesRef.current,
+        );
 
       const milestoneEncounter =
         runtimeProjection.milestoneEncounter;
@@ -2112,12 +2119,9 @@ export const EnergySwarmGame: React.FC = () => {
           (comp[Math.floor(Math.random() * comp.length)] ||
             EnemyType.CRAWLER);
     const activeEvolvedEnemies =
-      enemiesRef.current.filter(
-        (enemy) =>
-          !enemy.isDead &&
-          !enemy.isBoss &&
-          Boolean(enemy.evolvedVariantId),
-      ).length;
+      countActiveEvolvedEnemies(
+        enemiesRef.current,
+      );
     const evolvedProfile =
       spawningMiniboss
         ? null
@@ -2749,7 +2753,10 @@ export const EnergySwarmGame: React.FC = () => {
           if (bossSummonTimersRef.current[timerKey] <= 0) {
             bossSummonTimersRef.current[timerKey] = rule.cooldown + Math.random() * 3000;
 
-            const currentCount = enemiesRef.current.filter((e) => e.type === rule.enemyType && e.isMinion).length;
+            const currentCount = countMinionsOfType(
+              enemiesRef.current,
+              rule.enemyType,
+            );
             if (currentCount < rule.maxCount) {
               const spawnCount = Math.min(2, rule.maxCount - currentCount);
               for (let i = 0; i < spawnCount; i++) {
@@ -5112,9 +5119,9 @@ export const EnergySwarmGame: React.FC = () => {
 
     const descriptor = getCurrentRuntimeDescriptor();
     const livingEnemyCount =
-      enemiesRef.current.filter(
-        (candidate) => !candidate.isDead,
-      ).length;
+      countLivingEnemies(
+        enemiesRef.current,
+      );
     const effectiveEnemyCap = Math.min(
       MAX_ENEMIES,
       descriptor.spawn.maxConcurrentEnemies,
