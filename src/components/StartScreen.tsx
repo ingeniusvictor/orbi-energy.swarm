@@ -41,7 +41,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({
     <div className="orbi-premium-entry absolute inset-0 z-50 flex flex-col items-center justify-start xl:justify-center p-4 md:p-6 text-white select-none overflow-y-auto">
       <PremiumBackdrop />
       {/* GLOWING HEADER */}
-      <div className="relative z-10 text-center mb-5">
+      <div className="orbi-start-header relative z-10 text-center mb-5">
         <div className="flex justify-center items-center gap-2 mb-1">
           <span className="orbi-premium-eyebrow px-2.5 py-1 text-[10px] md:text-xs font-mono rounded-full bg-cyan-400/8 text-cyan-200 border border-cyan-300/20 tracking-[0.12em]">
             PUBLIC BETA v0.2.0-beta.1
@@ -57,7 +57,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({
       </div>
 
       {/* QUICK FLOATING LANGUAGE CHANGER */}
-      <div className="relative z-10 flex items-center gap-2 mb-4 bg-slate-950/55 px-3 py-1.5 rounded-full border border-cyan-200/10 backdrop-blur-xl shadow-[0_10px_36px_rgba(0,0,0,0.28)]">
+      <div className="orbi-start-language relative z-10 flex items-center gap-2 mb-4 bg-slate-950/55 px-3 py-1.5 rounded-full border border-cyan-200/10 backdrop-blur-xl shadow-[0_10px_36px_rgba(0,0,0,0.28)]">
         <Globe size={11} className="text-amber-400" />
         <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">{t("general.language")}:</span>
         <button
@@ -84,7 +84,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({
       </div>
 
       {/* CORE GLASS CARD PANEL */}
-      <div className="orbi-premium-panel orbi-start-deck relative z-10 w-full max-w-[1500px] max-h-[74vh] overflow-y-auto rounded-2xl p-4 md:p-5 xl:p-6 backdrop-blur-2xl">
+      <div className="orbi-premium-panel orbi-start-deck relative z-10 w-full max-w-[1500px] overflow-y-auto rounded-2xl p-4 md:p-5 xl:p-6 backdrop-blur-2xl">
         {/* NAV BAR */}
         <div className="orbi-start-tabs sticky top-0 z-30 -mx-1 mb-4 flex flex-wrap gap-1.5 md:gap-2 border-b border-slate-800/80 bg-slate-950/90 px-1 pb-3 pt-1 justify-center backdrop-blur-xl">
           <button
@@ -276,7 +276,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({
                 </div>
               </div>
 
-              <div className="mt-4">
+              <div className="orbi-start-campaign mt-4">
                 <CampaignArc language={language} />
               </div>
             </section>
