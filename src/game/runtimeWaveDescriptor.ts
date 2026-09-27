@@ -290,3 +290,60 @@ export const campaignDescriptorMatchesWaveConfig = (
     descriptor.source.campaignWaveId === cfg.id
   );
 };
+
+
+export const infiniteDescriptorMatchesSession = (
+  descriptor: RuntimeWaveDescriptor,
+  session: InfiniteSessionState,
+) => {
+  const execution = getCurrentInfiniteExecutionPlan(session);
+  const milestone = execution.milestone;
+
+  return (
+    descriptor.sourceMode === "INFINITE" &&
+    descriptor.sector === execution.sector &&
+    descriptor.waveNumber === execution.waveIndex &&
+    descriptor.waveCount === execution.waveCount &&
+    descriptor.completionPolicy.type === "BUDGET_AND_CLEAR" &&
+    descriptor.biomeIntent === execution.biome &&
+    descriptor.spawn.enemyBudget === execution.spawn.enemyBudget &&
+    descriptor.spawn.maxConcurrentEnemies ===
+      execution.spawn.maxConcurrentEnemies &&
+    descriptor.spawn.spawnIntervalFrames ===
+      execution.spawn.spawnIntervalFrames &&
+    descriptor.spawn.eliteChance === execution.spawn.eliteChance &&
+    descriptor.spawn.enemyComposition.length ===
+      execution.spawn.enemyComposition.length &&
+    descriptor.spawn.enemyComposition.every(
+      (enemy, index) =>
+        enemy === execution.spawn.enemyComposition[index],
+    ) &&
+    descriptor.modifiers.length === execution.mutators.length &&
+    descriptor.modifiers.every(
+      (modifier, index) => modifier === execution.mutators[index],
+    ) &&
+    descriptor.pressure.legacyDifficultyMultiplier === null &&
+    descriptor.pressure.aggressionMultiplier ===
+      execution.pressure.aggressionMultiplier &&
+    descriptor.pressure.projectileDensityMultiplier ===
+      execution.pressure.projectileDensityMultiplier &&
+    descriptor.pressure.hazardIntensity ===
+      execution.pressure.hazardIntensity &&
+    descriptor.pressure.statMultiplier ===
+      execution.pressure.statMultiplier &&
+    descriptor.rewards.resourceMultiplier ===
+      execution.rewards.resourceMultiplier &&
+    descriptor.rewards.rewardTier === execution.rewards.rewardTier &&
+    JSON.stringify(descriptor.milestone) ===
+      JSON.stringify(
+        milestone
+          ? { kind: milestone.kind, id: milestone.id }
+          : null,
+      ) &&
+    JSON.stringify(descriptor.fairness) ===
+      JSON.stringify(execution.fairness) &&
+    descriptor.source.recipeId === execution.sourceRecipeId &&
+    descriptor.source.waveId === execution.sourceWaveId &&
+    descriptor.source.seed === execution.seed
+  );
+};
