@@ -49,6 +49,14 @@ import {
   getElectricalStormConfig,
   stepElectricalStormRuntime,
 } from "./runtimeElectricalStorm";
+import { projectInfiniteMilestoneEncounter } from "./runtimeMilestoneEncounter";
+import {
+  createRuntimeMinibossGateState,
+  markRuntimeMinibossSpawned,
+  requestRuntimeMinibossSpawn,
+  stepRuntimeMinibossGate,
+  syncRuntimeMinibossGate,
+} from "./runtimeMinibossGate";
 import {
   applyCampaignVictoryCheckpoint,
   applyFinalRunCommit,
@@ -304,6 +312,9 @@ export const EnergySwarmGame: React.FC = () => {
   const formationCooldownRef = useRef(0);
   const electricalStormStateRef = useRef(
     createElectricalStormRuntimeState(),
+  );
+  const minibossGateRef = useRef(
+    createRuntimeMinibossGateState(),
   );
 
   const getCurrentRuntimeDescriptor = () =>
@@ -865,6 +876,8 @@ export const EnergySwarmGame: React.FC = () => {
     formationCooldownRef.current = 0;
     electricalStormStateRef.current =
       createElectricalStormRuntimeState();
+    minibossGateRef.current =
+      createRuntimeMinibossGateState();
     bossActiveRef.current = false;
     bossRef.current = null;
 
@@ -1662,10 +1675,69 @@ export const EnergySwarmGame: React.FC = () => {
       projectRuntimeCombatPressure(descriptor);
     const mutatorEffects =
       projectRuntimeMutatorEffects(descriptor);
+    const milestoneEncounter =
+      projectInfiniteMilestoneEncounter(descriptor);
+    const minibossProfile =
+      milestoneEncounter?.kind === "MINIBOSS"
+        ? milestoneEncounter
+        : null;
+    const effectiveEnemyBudget =
+      getRuntimeMutatedEnemyBudget(descriptor);
 
-    // Pick a random enemy type or use the forced type
+    minibossGateRef.current =
+      syncRuntimeMinibossGate(
+        minibossGateRef.current,
+        descriptor.descriptorId,
+        milestoneEncounter,
+      );
+
+    const finalBudgetSlot =
+      Boolean(minibossProfile) &&
+      waveBudgetSpawnedRef.current ===
+        effectiveEnemyBudget - 1;
+    let spawningMiniboss = false;
+
+    if (finalBudgetSlot && minibossProfile) {
+      const request = requestRuntimeMinibossSpawn(
+        minibossGateRef.current,
+        minibossProfile,
+      );
+      minibossGateRef.current = request.state;
+
+      if (request.telegraphStarted) {
+        playEliteChargeSound();
+        setWaveName(
+          "MINIBOSS INBOUND // BLACKOUT WARDEN",
+        );
+        postDialogue(
+          "SYSTEM",
+          `MILESTONE THREAT LOCKED: ${minibossProfile.milestoneId}. Blackout Warden inbound.`,
+        );
+        addFloatingText(
+          "⚠ BLACKOUT WARDEN INBOUND",
+          playerPosRef.current.x,
+          playerPosRef.current.y - 55,
+          "#fbbf24",
+        );
+        return;
+      }
+
+      if (!request.readyToSpawn) {
+        return;
+      }
+
+      spawningMiniboss = true;
+    }
+
+    // Pick a random enemy type or use the forced type.
+    // The milestone champion owns the final budget slot.
     const comp = descriptor.spawn.enemyComposition;
-    const type = forcedType || (comp[Math.floor(Math.random() * comp.length)] || EnemyType.CRAWLER);
+    const type =
+      spawningMiniboss && minibossProfile
+        ? minibossProfile.enemyType
+        : forcedType ||
+          (comp[Math.floor(Math.random() * comp.length)] ||
+            EnemyType.CRAWLER);
     const healthMultiplier =
       combatPressure.enemyHealthMultiplier;
     const movementSpeedMultiplier =
@@ -1752,13 +1824,23 @@ export const EnergySwarmGame: React.FC = () => {
       color = "#3b82f6"; // Blue elite armored
     }
 
-    // Elite size scaling roll
+    if (spawningMiniboss && minibossProfile) {
+      health *= minibossProfile.healthMultiplier;
+      speed *=
+        minibossProfile.movementSpeedMultiplier;
+      size *= minibossProfile.sizeMultiplier;
+      color = "#fbbf24";
+    }
+
+    // Elite size scaling roll. Milestone champions never stack a second
+    // random elite multiplier on top of their certified encounter profile.
     const effectiveEliteChance = Math.min(
       0.75,
       descriptor.spawn.eliteChance +
         mutatorEffects.eliteChanceBonus,
     );
     const isElite =
+      !spawningMiniboss &&
       Math.random() < effectiveEliteChance;
     if (isElite) {
       health *= 1.8;
@@ -1766,7 +1848,11 @@ export const EnergySwarmGame: React.FC = () => {
       color = "#f43f5e";
     }
 
-    if (type === EnemyType.BLACKOUT_ELITE && descriptor.modifiers.includes("ELITE_SUPPORT")) {
+    if (
+      !spawningMiniboss &&
+      type === EnemyType.BLACKOUT_ELITE &&
+      descriptor.modifiers.includes("ELITE_SUPPORT")
+    ) {
       setTimeout(() => {
         spawnEnemy(EnemyType.DRONE);
       }, 150);
@@ -1791,8 +1877,45 @@ export const EnergySwarmGame: React.FC = () => {
       contactDamageCooldown: 0,
       isDead: false,
       isBoss: false,
-      flashTicks: 0
+      flashTicks: 0,
+      milestoneKind:
+        spawningMiniboss ? "MINIBOSS" : undefined,
+      milestoneId:
+        spawningMiniboss && minibossProfile
+          ? minibossProfile.milestoneId
+          : undefined,
+      milestoneContactDamageMultiplier:
+        spawningMiniboss && minibossProfile
+          ? minibossProfile.contactDamageMultiplier
+          : undefined,
+      milestoneRewardMultiplier:
+        spawningMiniboss && minibossProfile
+          ? minibossProfile.rewardMultiplier
+          : undefined,
     });
+
+    if (spawningMiniboss) {
+      minibossGateRef.current =
+        markRuntimeMinibossSpawned(
+          minibossGateRef.current,
+        );
+      playHeavyImpactSound();
+      triggerExplosion(
+        particlesRef.current,
+        getQualityConfig(stats.qualityPreset)
+          .maxParticles,
+        ParticleType.BOSS_ENTRY,
+        ex,
+        ey,
+        "#fbbf24",
+        30,
+        2.2,
+      );
+      postDialogue(
+        "COMPANION",
+        "¡BLACKOUT WARDEN EN CAMPO! Rompe su carga frontal y castiga los flancos.",
+      );
+    }
 
     waveBudgetSpawnedRef.current += 1;
 
@@ -3043,6 +3166,19 @@ export const EnergySwarmGame: React.FC = () => {
       getRuntimeMutatedEnemyBudget(
         simulationDescriptor,
       );
+    const simulationMilestoneEncounter =
+      projectInfiniteMilestoneEncounter(
+        simulationDescriptor,
+      );
+    minibossGateRef.current =
+      stepRuntimeMinibossGate(
+        syncRuntimeMinibossGate(
+          minibossGateRef.current,
+          simulationDescriptor.descriptorId,
+          simulationMilestoneEncounter,
+        ),
+        delta,
+      );
 
     const electricalStormConfig =
       waveActiveRef.current &&
@@ -3661,6 +3797,21 @@ export const EnergySwarmGame: React.FC = () => {
     }
   };
 
+  const getEnemyScoreReward = (enemy: Enemy) => {
+    const baseReward = enemy.isBoss
+      ? 1500
+      : enemy.type === EnemyType.BLACKOUT_ELITE
+        ? 250
+        : enemy.isMinion
+          ? 15
+          : 80;
+
+    return Math.round(
+      baseReward *
+        (enemy.milestoneRewardMultiplier ?? 1),
+    );
+  };
+
   // --- DETECT SINGLE-IMPACT COLLISION SWEEPS ---
   const detectAndResolveCollisions = () => {
     const quality = getQualityConfig(stats.qualityPreset);
@@ -3874,7 +4025,8 @@ export const EnergySwarmGame: React.FC = () => {
                     otherEnemy.isDead = true;
                     runEnemiesDestroyedRef.current += 1;
                     
-                    const scoreReward = otherEnemy.isBoss ? 1500 : (otherEnemy.type === EnemyType.BLACKOUT_ELITE ? 250 : (otherEnemy.isMinion ? 15 : 80));
+                    const scoreReward =
+                      getEnemyScoreReward(otherEnemy);
                     scoreRef.current += scoreReward;
                     
                     playEnemyExplodeSound(otherEnemy.isBoss || otherEnemy.size > 14);
@@ -3920,7 +4072,8 @@ export const EnergySwarmGame: React.FC = () => {
               enemy.isDead = true;
               runEnemiesDestroyedRef.current += 1;
               
-              const scoreReward = enemy.isBoss ? 1500 : (enemy.type === EnemyType.BLACKOUT_ELITE ? 250 : (enemy.isMinion ? 15 : 80));
+              const scoreReward =
+                getEnemyScoreReward(enemy);
               scoreRef.current += scoreReward;
 
               playEnemyExplodeSound(enemy.isBoss || enemy.size > 14);
@@ -4005,7 +4158,9 @@ export const EnergySwarmGame: React.FC = () => {
           damagePlayer(
             baseDamage *
               combatPressure.contactDamageMultiplier *
-              mutatorEffects.incomingDamageMultiplier,
+              mutatorEffects.incomingDamageMultiplier *
+              (enemy.milestoneContactDamageMultiplier ??
+                1),
           );
         }
       }
@@ -4526,7 +4681,39 @@ export const EnergySwarmGame: React.FC = () => {
       }
     }
 
-    // 11. Draw a tactical minimap (radar overlay) in the top-right corner if mode is not OFF
+    // 11. Milestone miniboss telegraph stays visible above environmental fog.
+    if (
+      minibossGateRef.current.phase ===
+      "TELEGRAPH"
+    ) {
+      const pulse =
+        0.7 +
+        Math.sin(timeElapsedRef.current * 0.012) *
+          0.3;
+      ctx.save();
+      ctx.textAlign = "center";
+      ctx.font = "bold 11px monospace";
+      ctx.fillStyle =
+        `rgba(251, 191, 36, ${pulse})`;
+      ctx.shadowColor = "#fbbf24";
+      ctx.shadowBlur = 12;
+      ctx.fillText(
+        "⚠ BLACKOUT WARDEN INBOUND",
+        cameraStateRef.current.viewportWidth / 2,
+        54,
+      );
+      ctx.font = "bold 8px monospace";
+      ctx.fillStyle =
+        "rgba(253, 230, 138, 0.9)";
+      ctx.fillText(
+        "MILESTONE THREAT // PREPARE FLANK ATTACK",
+        cameraStateRef.current.viewportWidth / 2,
+        69,
+      );
+      ctx.restore();
+    }
+
+    // 12. Draw a tactical minimap (radar overlay) in the top-right corner if mode is not OFF
     const minimapMode = statsRef.current?.minimapMode || stats.minimapMode || "COMPACT";
     if (minimapMode !== "OFF") {
       drawTacticalMinimap(ctx, minimapMode);
