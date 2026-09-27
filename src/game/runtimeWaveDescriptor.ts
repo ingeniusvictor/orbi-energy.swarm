@@ -283,10 +283,24 @@ export const campaignDescriptorMatchesWaveConfig = (
     descriptor.spawn.enemyComposition.every(
       (enemy, index) => enemy === cfg.enemyComposition[index],
     ) &&
+    descriptor.modifiers.length ===
+      (cfg.environmentalModifier ? 1 : 0) &&
+    (
+      !cfg.environmentalModifier ||
+      descriptor.modifiers[0] === cfg.environmentalModifier
+    ) &&
     descriptor.rewards.resourceMultiplier ===
       cfg.resourceMultiplier &&
     descriptor.pressure.legacyDifficultyMultiplier ===
       cfg.difficultyMultiplier &&
+    (
+      bossWave
+        ? (
+            descriptor.milestone?.kind === "CAMPAIGN_BOSS" &&
+            descriptor.milestone.id === BLACKOUT_DEVOURER_CANON.id
+          )
+        : descriptor.milestone === null
+    ) &&
     descriptor.source.campaignWaveId === cfg.id
   );
 };
