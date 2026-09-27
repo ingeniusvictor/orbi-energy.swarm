@@ -5245,6 +5245,10 @@ export const EnergySwarmGame: React.FC = () => {
           maxSwarmSize={swarmSize}
           enemiesDestroyed={runEnemiesDestroyedRef.current}
           nanoCreditsGained={runNanoCreditsEarnedRef.current}
+          bestInfiniteSector={stats.bestInfiniteSector}
+          bestInfiniteWave={stats.bestInfiniteWave}
+          infiniteMinibossesDefeated={stats.infiniteMinibossesDefeated}
+          infiniteBossRematchesDefeated={stats.infiniteBossRematchesDefeated}
           onRestart={startGame}
           onExitToMenu={() => {
             setIsPlaying(false);
