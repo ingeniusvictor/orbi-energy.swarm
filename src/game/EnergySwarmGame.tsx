@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState, useCallback } from "react";
 import { 
   BiomeType, OrbiType, EnemyType, FormationType, ParticleType, 
   OrbiMember, Enemy, Projectile, Resource, Particle, GameStats, 
-  DialogueMessage, QualityPreset, WaveConfig
+  DialogueMessage, QualityPreset, WaveConfig, type RunArchiveEntry
 } from "./types";
 
 import { 
@@ -272,8 +272,16 @@ export const EnergySwarmGame: React.FC = () => {
   const runEnemiesDestroyedRef = useRef<number>(0);
   const runResourcesCollectedRef = useRef<number>(0);
   const runNanoCreditsEarnedRef = useRef<number>(0);
+  const runMaxSwarmSizeRef = useRef<number>(1);
   const runCommitLedgerRef = useRef<RunCommitLedger>(createRunCommitLedger());
   const bossAttacksSeenThisRunRef = useRef<string[]>([]);
+
+  const updateRunMaxSwarmSize = () => {
+    runMaxSwarmSizeRef.current = Math.max(
+      runMaxSwarmSizeRef.current,
+      swarmRef.current.length + 1,
+    );
+  };
 
 
   // Cosmetic / screen effects
@@ -471,27 +479,43 @@ export const EnergySwarmGame: React.FC = () => {
     setUpgradeSelectionOpen(true);
   };
 
-  const getStrongestAffinity = () => {
-    const counts: Record<string, number> = { solar: 0, hydro: 0, wind: 0, thermal: 0 };
-    swarmRef.current.forEach(m => {
-      if (m.affinity === "solar") counts.solar++;
-      else if (m.affinity === "hydro") counts.hydro++;
-      else if (m.affinity === "wind") counts.wind++;
-      else if (m.affinity === "thermal") counts.thermal++;
+  const getStrongestAffinity = (): RunArchiveEntry["strongestAffinity"] => {
+    const counts: Record<
+      Exclude<RunArchiveEntry["strongestAffinity"], "none">,
+      number
+    > = {
+      solar: 0,
+      hydro: 0,
+      wind: 0,
+      thermal: 0,
+      nuclear: 0,
+      quantum: 0,
+    };
+
+    swarmRef.current.forEach((member) => {
+      counts[member.affinity] += 1;
     });
 
     const upgrades = activeRunUpgradesRef.current;
-    if (upgrades.solar_overcharge) counts.solar += upgrades.solar_overcharge * 5;
-    if (upgrades.hydro_regenesis) counts.hydro += upgrades.hydro_regenesis * 5;
-    if (upgrades.wind_acceleration) counts.wind += upgrades.wind_acceleration * 5;
-    if (upgrades.thermal_expansion) counts.thermal += upgrades.thermal_expansion * 5;
-
-    let best = "none";
+    if (upgrades.solar_overcharge) {
+      counts.solar += upgrades.solar_overcharge * 5;
+    }
+    if (upgrades.hydro_regenesis) {
+      counts.hydro += upgrades.hydro_regenesis * 5;
+    }
+    if (upgrades.wind_acceleration) {
+      counts.wind += upgrades.wind_acceleration * 5;
+    }
+    if (upgrades.thermal_expansion) {
+      counts.thermal += upgrades.thermal_expansion * 5;
+    }
+    let best: RunArchiveEntry["strongestAffinity"] = "none";
     let max = 0;
-    for (const [aff, val] of Object.entries(counts)) {
-      if (val > max) {
-        max = val;
-        best = aff;
+    for (const [affinity, value] of Object.entries(counts)) {
+      if (value > max) {
+        max = value;
+        best =
+          affinity as RunArchiveEntry["strongestAffinity"];
       }
     }
     return best;
@@ -601,7 +625,8 @@ export const EnergySwarmGame: React.FC = () => {
   const getCampaignVictoryCheckpointInput = (
     currentScore: number,
   ): CampaignVictoryCheckpointInput => {
-    const bestSwarmSize = swarmRef.current.length + 1;
+    updateRunMaxSwarmSize();
+    const bestSwarmSize = runMaxSwarmSizeRef.current;
     const bestWaveReached = currentWaveRef.current;
     const memories = Object.entries(upgradesLevel).map(
       ([k, v]) => `${k}:${v}`,
@@ -645,7 +670,8 @@ export const EnergySwarmGame: React.FC = () => {
     currentScore: number,
   ) => {
     const fresh = loadGameStats();
-    const bestSwarmSize = swarmRef.current.length + 1;
+    updateRunMaxSwarmSize();
+    const bestSwarmSize = runMaxSwarmSizeRef.current;
     const bestWaveReached = currentWaveRef.current;
     const memories = Object.entries(upgradesLevel).map(
       ([k, v]) => `${k}:${v}`,
@@ -665,6 +691,49 @@ export const EnergySwarmGame: React.FC = () => {
       workingLedger = checkpoint.ledger;
     }
 
+    const infiniteSectorReached =
+      runtimeProgressionRef.current.mode === "INFINITE"
+        ? getRuntimeSector(runtimeProgressionRef.current)
+        : undefined;
+    const infiniteWaveReached =
+      runtimeProgressionRef.current.mode === "INFINITE"
+        ? getRuntimeWaveNumber(runtimeProgressionRef.current)
+        : undefined;
+    const completedAtMs =
+      runEndTimeRef.current > 0
+        ? runEndTimeRef.current
+        : Date.now();
+    const runArchiveEntry: RunArchiveEntry = {
+      runId: `orbi-run-${runStartTimeRef.current}`,
+      completedAt: new Date(completedAtMs).toISOString(),
+      outcome: workingLedger.campaignVictoryCommitted
+        ? "CAMPAIGN_CLEARED"
+        : "DEFEAT",
+      score: currentScore,
+      campaignWaveReached: Math.min(
+        bestWaveReached,
+        BOSS_WAVE_NUMBER,
+      ),
+      durationMs: Math.max(
+        0,
+        completedAtMs - runStartTimeRef.current,
+      ),
+      enemiesDestroyed: runEnemiesDestroyedRef.current,
+      maxSwarmSize: bestSwarmSize,
+      strongestAffinity: getStrongestAffinity(),
+      mostUsedFormation: getFormationMostUsed(),
+      temporaryBuild: {
+        ...activeRunUpgradesRef.current,
+      },
+      ...(infiniteSectorReached !== undefined &&
+      infiniteWaveReached !== undefined
+        ? {
+            infiniteSectorReached,
+            infiniteWaveReached,
+          }
+        : {}),
+    };
+
     const finalCommit = applyFinalRunCommit(
       workingStats,
       {
@@ -675,18 +744,9 @@ export const EnergySwarmGame: React.FC = () => {
         gameMemories: memories,
         enemiesDestroyed: runEnemiesDestroyedRef.current,
         resourcesCollected: runResourcesCollectedRef.current,
-        infiniteSectorReached:
-          runtimeProgressionRef.current.mode === "INFINITE"
-            ? getRuntimeSector(
-                runtimeProgressionRef.current,
-              )
-            : undefined,
-        infiniteWaveReached:
-          runtimeProgressionRef.current.mode === "INFINITE"
-            ? getRuntimeWaveNumber(
-                runtimeProgressionRef.current,
-              )
-            : undefined,
+        infiniteSectorReached,
+        infiniteWaveReached,
+        runArchiveEntry,
       },
       workingLedger,
     );
@@ -902,6 +962,7 @@ export const EnergySwarmGame: React.FC = () => {
     runStartTimeRef.current = Date.now();
     runEndTimeRef.current = 0;
     runCommitLedgerRef.current = createRunCommitLedger();
+    runMaxSwarmSizeRef.current = 1;
     bossDamageDealtRef.current = 0;
     bossShieldNodesDestroyedRef.current = 0;
     bossDamageTakenRef.current = 0;
@@ -1226,6 +1287,7 @@ export const EnergySwarmGame: React.FC = () => {
     };
 
     swarmRef.current.push(member);
+    updateRunMaxSwarmSize();
     playRecruitSound();
 
     // Floating notification for recruitment
@@ -1516,6 +1578,7 @@ export const EnergySwarmGame: React.FC = () => {
         xp: 0
       };
       swarmRef.current.push(g);
+      updateRunMaxSwarmSize();
       postDialogue("COMPANION", "¡FUSIÓN SOLAR DETECTADA! Guardián Solar Prime convocado.");
     } else {
       // Create Hydro Leviathan
@@ -1538,6 +1601,7 @@ export const EnergySwarmGame: React.FC = () => {
         xp: 0
       };
       swarmRef.current.push(l);
+      updateRunMaxSwarmSize();
       postDialogue("COMPANION", "¡FUSIÓN HÍDRICA DETECTADA! Hidro-Leviatán estabilizado en órbita.");
     }
   };
@@ -3048,6 +3112,11 @@ export const EnergySwarmGame: React.FC = () => {
       // Return early to freeze rest of physical ticks!
       return;
     }
+
+    formationUseCountsRef.current[activeFormation] =
+      (formationUseCountsRef.current[activeFormation] ?? 0) +
+      delta;
+    updateRunMaxSwarmSize();
 
     const frameDescriptor =
       getCurrentRuntimeDescriptor();
@@ -5281,13 +5350,13 @@ export const EnergySwarmGame: React.FC = () => {
     }
   };
 
-  const getFormationMostUsed = () => {
-    let best = "none";
+  const getFormationMostUsed = (): RunArchiveEntry["mostUsedFormation"] => {
+    let best: RunArchiveEntry["mostUsedFormation"] = "none";
     let max = 0;
     for (const [f, count] of Object.entries(formationUseCountsRef.current)) {
       if (count > max) {
         max = count;
-        best = f;
+        best = f as RunArchiveEntry["mostUsedFormation"];
       }
     }
     return best;
@@ -5408,7 +5477,7 @@ export const EnergySwarmGame: React.FC = () => {
           score={score}
           highScore={highScore}
           waveReached={currentWave}
-          maxSwarmSize={swarmSize}
+          maxSwarmSize={runMaxSwarmSizeRef.current}
           enemiesDestroyed={runEnemiesDestroyedRef.current}
           nanoCreditsGained={runNanoCreditsEarnedRef.current}
           bestInfiniteSector={stats.bestInfiniteSector}
