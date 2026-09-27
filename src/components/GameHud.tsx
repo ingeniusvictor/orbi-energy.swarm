@@ -1,6 +1,7 @@
 import React from "react";
 import { Shield, Award, Users, Volume2, VolumeX, Pause, Play } from "lucide-react";
 import { useGameTranslation, formatNumber } from "../i18n";
+import { getCampaignObjective } from "../game/campaignGuide";
 
 interface GameHudProps {
   score: number;
@@ -34,6 +35,7 @@ export const GameHud: React.FC<GameHudProps> = ({
   onToggleMute
 }) => {
   const { language, t } = useGameTranslation();
+  const campaignObjective = getCampaignObjective(currentWave, language);
 
   // Shield Color Selector
   const shieldPercent = (shield / shieldMax) * 100;
@@ -96,6 +98,17 @@ export const GameHud: React.FC<GameHudProps> = ({
           </span>
         )}
       </div>
+
+      {campaignObjective && (
+        <div className="orbi-hud-objective flex items-center gap-2 min-w-0">
+          <span className="text-[8px] uppercase tracking-[0.15em] text-cyan-400/80 font-bold shrink-0">
+            {language === "es" ? "OBJETIVO" : "OBJECTIVE"}
+          </span>
+          <span className="text-[9px] text-slate-400 truncate">
+            {campaignObjective}
+          </span>
+        </div>
+      )}
 
       {/* 3. SWARM POPULATION */}
       <div className="orbi-hud-swarm flex items-center gap-2">
