@@ -92,7 +92,15 @@ test("hostile projectile creation obeys the projected fairness budget", () => {
   );
   assert.match(
     shoot,
-    /hostileProjectileCount >= hostileProjectileBudget/,
+    /MAX_PROJECTILES - projectilesRef\.current\.length/,
+  );
+  assert.match(
+    shoot,
+    /hostileProjectileBudget - hostileProjectileCount/,
+  );
+  assert.match(
+    shoot,
+    /if \(availableProjectileSlots <= 0\) return/,
   );
 });
 
