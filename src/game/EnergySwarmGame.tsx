@@ -3816,6 +3816,7 @@ export const EnergySwarmGame: React.FC = () => {
 
     // 1. Draw Space Background and layered grids
     const quality = getQualityConfig(stats.qualityPreset);
+    backgroundRenderer.resizeStars(quality.maxStars);
     backgroundRenderer.render(
       ctx,
       timeElapsedRef.current,
@@ -4419,6 +4420,7 @@ export const EnergySwarmGame: React.FC = () => {
                   onPointerDown={handlePointerDown}
                   onPointerUp={handlePointerUp}
                   time={timeElapsedRef.current}
+                  maxDpr={getQualityConfig(stats.qualityPreset).maxDPR}
                 />
 
                 {/* IMMERSIVE BOSS HUD OVERLAY */}
