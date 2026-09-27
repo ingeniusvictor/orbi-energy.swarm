@@ -4,6 +4,7 @@ export interface RunCommitLedger {
   runCountCommitted: boolean;
   campaignVictoryCommitted: boolean;
   telemetryCommitted: boolean;
+  committedInfiniteMilestoneEvents: string[];
 }
 
 export interface CampaignVictoryCheckpointInput {
@@ -28,6 +29,18 @@ export interface FinalRunCommitInput {
   gameMemories: string[];
   enemiesDestroyed: number;
   resourcesCollected: number;
+  infiniteSectorReached?: number;
+  infiniteWaveReached?: number;
+}
+
+export interface InfiniteProgressRecordInput {
+  sector: number;
+  waveNumber: number;
+}
+
+export interface InfiniteMilestoneRecordInput {
+  eventId: string;
+  kind: "MINIBOSS" | "BOSS_REMATCH";
 }
 
 export interface RunCommitTransition {
@@ -39,6 +52,7 @@ export const createRunCommitLedger = (): RunCommitLedger => ({
   runCountCommitted: false,
   campaignVictoryCommitted: false,
   telemetryCommitted: false,
+  committedInfiniteMilestoneEvents: [],
 });
 
 const finiteNonNegative = (value: number, fallback = 0) =>
@@ -54,7 +68,100 @@ const copyLedger = (ledger: RunCommitLedger): RunCommitLedger => ({
   runCountCommitted: ledger.runCountCommitted,
   campaignVictoryCommitted: ledger.campaignVictoryCommitted,
   telemetryCommitted: ledger.telemetryCommitted,
+  committedInfiniteMilestoneEvents: [
+    ...(ledger.committedInfiniteMilestoneEvents ?? []),
+  ],
 });
+
+export const applyInfiniteProgressRecord = (
+  fresh: GameStats,
+  input: InfiniteProgressRecordInput,
+): GameStats => {
+  const sector = integerNonNegative(input.sector);
+  const waveNumber = integerNonNegative(input.waveNumber);
+
+  if (sector < 11 || waveNumber < 1) {
+    return { ...fresh };
+  }
+
+  const currentBestSector = integerNonNegative(
+    fresh.bestInfiniteSector,
+  );
+  const currentBestWave = integerNonNegative(
+    fresh.bestInfiniteWave,
+  );
+
+  if (sector > currentBestSector) {
+    return {
+      ...fresh,
+      bestInfiniteSector: sector,
+      bestInfiniteWave: waveNumber,
+    };
+  }
+
+  if (sector === currentBestSector) {
+    return {
+      ...fresh,
+      bestInfiniteSector: currentBestSector,
+      bestInfiniteWave: Math.max(
+        currentBestWave,
+        waveNumber,
+      ),
+    };
+  }
+
+  return { ...fresh };
+};
+
+export const applyInfiniteMilestoneRecord = (
+  fresh: GameStats,
+  input: InfiniteMilestoneRecordInput,
+  ledger: RunCommitLedger,
+): RunCommitTransition => {
+  const nextLedger = copyLedger(ledger);
+  const eventId = input.eventId.trim();
+
+  if (
+    !eventId ||
+    nextLedger.committedInfiniteMilestoneEvents.includes(
+      eventId,
+    )
+  ) {
+    return {
+      stats: { ...fresh },
+      ledger: nextLedger,
+    };
+  }
+
+  const stats: GameStats = {
+    ...fresh,
+    infiniteMinibossesDefeated:
+      input.kind === "MINIBOSS"
+        ? integerNonNegative(
+            fresh.infiniteMinibossesDefeated,
+          ) + 1
+        : integerNonNegative(
+            fresh.infiniteMinibossesDefeated,
+          ),
+    infiniteBossRematchesDefeated:
+      input.kind === "BOSS_REMATCH"
+        ? integerNonNegative(
+            fresh.infiniteBossRematchesDefeated,
+          ) + 1
+        : integerNonNegative(
+            fresh.infiniteBossRematchesDefeated,
+          ),
+  };
+
+  nextLedger.committedInfiniteMilestoneEvents.push(
+    eventId,
+  );
+
+  return {
+    stats,
+    ledger: nextLedger,
+  };
+};
 
 export const applyCampaignVictoryCheckpoint = (
   fresh: GameStats,
@@ -86,21 +193,30 @@ export const applyCampaignVictoryCheckpoint = (
     ...input.bossCodexSeenAttacks,
   ]);
 
+  const infiniteProgressStats =
+    input.infiniteSectorReached !== undefined &&
+    input.infiniteWaveReached !== undefined
+      ? applyInfiniteProgressRecord(fresh, {
+          sector: input.infiniteSectorReached,
+          waveNumber: input.infiniteWaveReached,
+        })
+      : fresh;
+
   const stats: GameStats = {
-    ...fresh,
+    ...infiniteProgressStats,
     highScore: Math.max(
-      fresh.highScore,
+      infiniteProgressStats.highScore,
       integerNonNegative(input.currentScore),
     ),
     bestWave: Math.max(
-      fresh.bestWave,
+      infiniteProgressStats.bestWave,
       integerNonNegative(input.bestWaveReached),
     ),
     bestSwarmSize: Math.max(
-      fresh.bestSwarmSize,
+      infiniteProgressStats.bestSwarmSize,
       integerNonNegative(input.bestSwarmSize),
     ),
-    totalRuns: fresh.totalRuns + (countRun ? 1 : 0),
+    totalRuns: infiniteProgressStats.totalRuns + (countRun ? 1 : 0),
     totalVictories:
       fresh.totalVictories + (countVictory ? 1 : 0),
     // Run telemetry intentionally stays untouched at the campaign checkpoint.
@@ -151,27 +267,27 @@ export const applyFinalRunCommit = (
   const stats: GameStats = {
     ...fresh,
     highScore: Math.max(
-      fresh.highScore,
+      infiniteProgressStats.highScore,
       integerNonNegative(input.currentScore),
     ),
     bestWave: Math.max(
-      fresh.bestWave,
+      infiniteProgressStats.bestWave,
       integerNonNegative(input.bestWaveReached),
     ),
     bestSwarmSize: Math.max(
-      fresh.bestSwarmSize,
+      infiniteProgressStats.bestSwarmSize,
       integerNonNegative(input.bestSwarmSize),
     ),
-    totalRuns: fresh.totalRuns + (countRun ? 1 : 0),
+    totalRuns: infiniteProgressStats.totalRuns + (countRun ? 1 : 0),
     // Campaign victory counters are checkpoint-only and never increment here.
-    totalVictories: fresh.totalVictories,
+    totalVictories: infiniteProgressStats.totalVictories,
     totalEnemiesDestroyed:
-      fresh.totalEnemiesDestroyed +
+      infiniteProgressStats.totalEnemiesDestroyed +
       (commitTelemetry
         ? integerNonNegative(input.enemiesDestroyed)
         : 0),
     totalResourcesCollected:
-      fresh.totalResourcesCollected +
+      infiniteProgressStats.totalResourcesCollected +
       (commitTelemetry
         ? integerNonNegative(input.resourcesCollected)
         : 0),
