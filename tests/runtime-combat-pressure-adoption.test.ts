@@ -184,6 +184,10 @@ test("boss runtime is excluded from the new pressure-scaling paths", () => {
   );
   assert.match(
     spawnBoss,
-    /const health = BLACKOUT_DEVOURER_CANON\.maxHealth/,
+    /BLACKOUT_DEVOURER_CANON\.maxHealth \*[\s\S]*\(rematchProfile\?\.healthMultiplier \?\? 1\)/,
+  );
+  assert.doesNotMatch(
+    spawnBoss,
+    /projectRuntimeCombatPressure/,
   );
 });
