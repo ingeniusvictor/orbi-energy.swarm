@@ -17,6 +17,7 @@ interface EnergySwarmCanvasProps {
   cameraOffset: { x: number; y: number };
   drawNebula: boolean;
   drawPlanets: boolean;
+  maxDpr: number;
   screenShake: number;
   swarm: OrbiMember[];
   enemies: Enemy[];
@@ -34,6 +35,7 @@ export const EnergySwarmCanvas: React.FC<EnergySwarmCanvasProps> = ({
   canvasRef,
   isPaused,
   playerFlash,
+  maxDpr,
   onPointerMove,
   onPointerDown,
   onPointerUp
@@ -47,6 +49,7 @@ export const EnergySwarmCanvas: React.FC<EnergySwarmCanvasProps> = ({
         CANVAS_WIDTH,
         CANVAS_HEIGHT,
         window.devicePixelRatio,
+        maxDpr,
       );
 
       if (canvas.width !== width) canvas.width = width;
@@ -64,7 +67,7 @@ export const EnergySwarmCanvas: React.FC<EnergySwarmCanvasProps> = ({
       window.removeEventListener("resize", syncBackingStore);
       window.visualViewport?.removeEventListener("resize", syncBackingStore);
     };
-  }, [canvasRef]);
+  }, [canvasRef, maxDpr]);
 
   // We perform drawing logic directly using requestAnimationFrame inside parent,
   // but let's provide a robust, responsive Canvas frame wrapper with CSS constraints.
