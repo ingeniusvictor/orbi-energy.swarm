@@ -346,6 +346,32 @@ body {
 }
 
 
+/* ES-10B — Keyboard focus visibility.
+   This generic shell rule intentionally appears before touch/orientation
+   component rules so their more-specific focus treatments remain authoritative. */
+.orbi-premium-entry
+  :is(button, a[href], [role="button"], input, select, textarea):focus-visible,
+.orbi-game-root
+  :is(button, a[href], [role="button"], input, select, textarea):focus-visible {
+  outline: 2px solid rgba(103, 232, 249, 0.96);
+  outline-offset: 3px;
+  box-shadow:
+    0 0 0 2px rgba(2, 6, 23, 0.96),
+    0 0 0 5px rgba(103, 232, 249, 0.2);
+}
+
+@media (prefers-contrast: more) {
+  .orbi-premium-entry
+    :is(button, a[href], [role="button"], input, select, textarea):focus-visible,
+  .orbi-game-root
+    :is(button, a[href], [role="button"], input, select, textarea):focus-visible {
+    outline-width: 3px;
+    outline-color: #a5f3fc;
+    box-shadow: 0 0 0 3px #020617;
+  }
+}
+
+
 /* ES-03B — Responsive gameplay workspace */
 .orbi-game-root {
   min-height: 100dvh;
