@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { createInfiniteSession } from "../src/game/infiniteSession.ts";
+import {
+  advanceInfiniteSession,
+  createInfiniteSession,
+} from "../src/game/infiniteSession.ts";
 import { projectRuntimeCombatPressure } from "../src/game/runtimeCombatPressure.ts";
 import {
   createCampaignRuntimeWaveDescriptor,
@@ -117,8 +120,6 @@ test("infinite pressure projection remains finite and bounded through Sector 100
     const waveCount =
       session.currentPlan.executionPlans.length;
     for (let index = 0; index < waveCount; index += 1) {
-      const { advanceInfiniteSession } =
-        await import("../src/game/infiniteSession.ts");
       session = advanceInfiniteSession(session);
     }
 
