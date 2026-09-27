@@ -22,6 +22,7 @@ import { getQualityConfig } from "./quality";
 import {
   ENEMY_SPATIAL_CELL_SIZE,
   buildSpatialIndex,
+  findAllCollidingSpatialItems,
   findFirstCollidingSpatialItem,
   findNearestSpatialItem,
   insertSpatialIndexEntry,
@@ -4862,31 +4863,14 @@ export const EnergySwarmGame: React.FC = () => {
     // 2. ENEMIES CONTACT DAMAGE vs PLAYER CORE
     // Reuse the live collision index instead of scanning every enemy.
     // Sorting by original array order preserves simultaneous-contact semantics.
-    const playerContactCandidates = querySpatialIndex(
-      enemyCollisionIndex,
-      playerPosRef.current.x,
-      playerPosRef.current.y,
-      16 + enemyCollisionIndex.maxRadius,
-    ).entries
-      .filter((entry) => {
-        const enemy = entry.item;
-        if (enemy.isDead) return false;
-
-        const dx =
-          playerPosRef.current.x - entry.x;
-        const dy =
-          playerPosRef.current.y - entry.y;
-        const collisionRadius = 16 + entry.radius;
-
-        return (
-          dx * dx + dy * dy <
-          collisionRadius * collisionRadius
-        );
-      })
-      .sort(
-        (left, right) =>
-          left.order - right.order,
-      );
+    const playerContactCandidates =
+      findAllCollidingSpatialItems(
+        enemyCollisionIndex,
+        playerPosRef.current.x,
+        playerPosRef.current.y,
+        16,
+        (enemy) => !enemy.isDead,
+      ).entries;
 
     playerContactCandidates.forEach(({ item: enemy }) => {
       // Trigger contact damage
