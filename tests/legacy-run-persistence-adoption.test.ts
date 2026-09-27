@@ -41,23 +41,36 @@ test("legacy commitStats no longer directly increments persistent counters", () 
   );
 });
 
-test("campaign victory preserves current end-state parity", () => {
+test("campaign checkpoint and final run commit remain separate transitions", () => {
+  assert.match(game, /beginInfiniteAfterCampaignVictory/);
+  assert.match(game, /runCommitLedgerRef\.current = handoff\.checkpoint\.ledger/);
+  assert.match(game, /updateStatsAndSave\(handoff\.checkpoint\.stats\)/);
+
   const start = game.indexOf("const commitStats");
   const end = game.indexOf("// --- KEY LISTENER LISTENERS ---", start);
   const commitBlock = game.slice(start, end);
 
-  assert.match(commitBlock, /if \(isVictory\)/);
-  assert.match(commitBlock, /applyCampaignVictoryCheckpoint/);
   assert.match(commitBlock, /applyFinalRunCommit/);
   assert.match(commitBlock, /updateStatsAndSave\(finalCommit\.stats\)/);
 });
 
-test("triggerGameOver still ends both victory and defeat through commitStats", () => {
+test("final run termination still commits telemetry exactly once", () => {
   const start = game.indexOf("const triggerGameOver");
-  const end = game.indexOf("// --- PROCEDURAL REWARDS", start);
+  const end = game.indexOf("const enterInfiniteAfterCampaignVictory", start);
   assert.ok(start >= 0 && end > start);
 
   const triggerBlock = game.slice(start, end);
   assert.match(triggerBlock, /setIsGameOver\(true\)/);
   assert.match(triggerBlock, /commitStats\(won, scoreRef\.current\)/);
+});
+
+test("campaign victory handoff does not execute the final run commit", () => {
+  const start = game.indexOf("const enterInfiniteAfterCampaignVictory");
+  const end = game.indexOf("// --- PROCEDURAL REWARDS", start);
+  assert.ok(start >= 0 && end > start);
+
+  const handoffBlock = game.slice(start, end);
+  assert.match(handoffBlock, /beginInfiniteAfterCampaignVictory/);
+  assert.doesNotMatch(handoffBlock, /applyFinalRunCommit/);
+  assert.doesNotMatch(handoffBlock, /triggerGameOver/);
 });
