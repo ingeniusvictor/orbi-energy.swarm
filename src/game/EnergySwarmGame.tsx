@@ -19,6 +19,7 @@ import {
 import { FORMATIONS, calculateSwarmOffset } from "./formations";
 import { getBiomeConfig, BIOME_ROTATION } from "./biomes";
 import { getQualityConfig } from "./quality";
+import { compactArrayInPlace } from "./arrayCompaction";
 import {
   ENEMY_SPATIAL_CELL_SIZE,
   buildSpatialIndex,
@@ -3116,7 +3117,10 @@ export const EnergySwarmGame: React.FC = () => {
       t.y += t.vy * (delta / 16.6);
       t.life -= delta;
     });
-    floatingTextsRef.current = floatingTextsRef.current.filter((t) => t.life > 0);
+    compactArrayInPlace(
+      floatingTextsRef.current,
+      (t) => t.life > 0,
+    );
 
     updateEnginePhysics(delta);
     renderCanvasScene();
@@ -3146,7 +3150,10 @@ export const EnergySwarmGame: React.FC = () => {
     // Clear active projectiles, hazard zones, and standard enemies
     projectilesRef.current = [];
     hazardZonesRef.current = [];
-    enemiesRef.current = enemiesRef.current.filter(e => e.isBoss);
+    compactArrayInPlace(
+      enemiesRef.current,
+      (enemy) => enemy.isBoss,
+    );
 
     const boss = bossRef.current;
     if (boss) {
@@ -3264,7 +3271,10 @@ export const EnergySwarmGame: React.FC = () => {
       particlesRef.current.forEach((p) => {
         updateParticle(p, delta);
       });
-      particlesRef.current = particlesRef.current.filter((p) => p.life > 0);
+      compactArrayInPlace(
+        particlesRef.current,
+        (particle) => particle.life > 0,
+      );
 
       // Also update player leader flash ticks using refresh-rate-neutral cadence.
       playerFlashRef.current = decayFrameTicks(
@@ -4061,14 +4071,25 @@ export const EnergySwarmGame: React.FC = () => {
     });
 
     // Filter out off-screen or dead enemies
-    enemiesRef.current = enemiesRef.current.filter((e) => {
-      if (e.isDead) return false;
-      // If regular enemy wanders ridiculously far (offscreen bug), recycle
-      if (!e.isBoss && (e.x < -200 || e.x > WORLD_WIDTH + 200 || e.y < -200 || e.y > WORLD_HEIGHT + 200)) {
-        return false;
-      }
-      return true;
-    });
+    compactArrayInPlace(
+      enemiesRef.current,
+      (enemy) => {
+        if (enemy.isDead) return false;
+        // If regular enemy wanders ridiculously far (offscreen bug), recycle
+        if (
+          !enemy.isBoss &&
+          (
+            enemy.x < -200 ||
+            enemy.x > WORLD_WIDTH + 200 ||
+            enemy.y < -200 ||
+            enemy.y > WORLD_HEIGHT + 200
+          )
+        ) {
+          return false;
+        }
+        return true;
+      },
+    );
 
     // 7. Projectiles coordinates
     projectilesRef.current.forEach((proj) => {
@@ -4078,15 +4099,24 @@ export const EnergySwarmGame: React.FC = () => {
     });
 
     // Filter dead or expired projectiles
-    projectilesRef.current = projectilesRef.current.filter(
-      (p) => p.life > 0 && p.x >= -50 && p.x <= WORLD_WIDTH + 50 && p.y >= -50 && p.y <= WORLD_HEIGHT + 50
+    compactArrayInPlace(
+      projectilesRef.current,
+      (projectile) =>
+        projectile.life > 0 &&
+        projectile.x >= -50 &&
+        projectile.x <= WORLD_WIDTH + 50 &&
+        projectile.y >= -50 &&
+        projectile.y <= WORLD_HEIGHT + 50,
     );
 
     // 8. Particles updates
     particlesRef.current.forEach((p) => {
       updateParticle(p, delta);
     });
-    particlesRef.current = particlesRef.current.filter((p) => p.life > 0);
+    compactArrayInPlace(
+      particlesRef.current,
+      (particle) => particle.life > 0,
+    );
 
     // 9. Resources Magnet and Collection checks
     resourcesRef.current.forEach((res) => {
