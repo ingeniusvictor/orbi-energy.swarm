@@ -52,7 +52,10 @@ test("portrait guidance is advisory, dismissible and coarse-pointer scoped", () 
   const component = read("src/components/OrientationHint.tsx");
   const css = read("src/styles/index.css");
 
-  assert.match(game, /<OrientationHint \/>/);
+  assert.match(
+    game,
+    /<OrientationHint[\s\S]*enabled=\{[\s\S]*viewportProfile\.landscapeAdvisoryRecommended/,
+  );
   assert.match(component, /setDismissed\(true\)/);
   assert.match(component, /Best in landscape/);
   assert.match(component, /Mejor en horizontal/);
