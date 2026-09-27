@@ -1,6 +1,12 @@
 # ORBI Energy Swarm — Development Roadmap
 
-The goal is to finish and polish the existing playable demo without destroying the gameplay qualities already present in the prototype.
+The goal is to finish and elevate the existing playable demo without destroying the gameplay qualities already present in the prototype.
+
+The governing documents are:
+
+- `docs/PRODUCT_VISION.md`
+- `docs/PREMIUM_WEB_ANDROID_SPEC.md`
+- `docs/INFINITE_PROGRESSION_SPEC.md`
 
 ## ES-00 — Original Demo Preservation — COMPLETE
 
@@ -8,55 +14,90 @@ The goal is to finish and polish the existing playable demo without destroying t
 - Secret scan.
 - Immutable baseline tag.
 
-## ES-01 — Repository Certification
+## ES-01 — Repository & Build Certification
 
 - Make dependency install deterministic.
 - Typecheck and production build GREEN in CI.
 - Resolve package metadata/script inconsistencies.
 - Establish first smoke tests.
+- Confirm preserved baseline can be reconstructed.
 
-## ES-02 — Runtime & Architecture Audit
+## ES-02 — Gameplay Behavior Certification
 
 - Map the master game loop, state ownership and render boundaries.
+- Freeze/document player-visible behavior of the current demo.
+- Add regression coverage around storage, formations, waves, upgrades and boss completion.
 - Identify safe extraction seams from `EnergySwarmGame.tsx`.
-- Add regression tests around storage, formations, wave definitions and upgrades.
 
-## ES-03 — Playable Demo Regression Pass
+## ES-03 — Premium Presentation Foundation
 
-- Verify desktop controls.
-- Verify touch/mobile controls.
-- Verify pause/resume/restart.
-- Verify recruitment, formations, combat, resources and persistence.
-- Verify ten-sector progression and boss completion.
+- Establish product shell architecture distinct from world/HUD.
+- Introduce premium start/menu/loading/transition language.
+- Define visual tokens, typography hierarchy and motion rules.
+- Preserve combat clarity over decorative effects.
 
-## ES-04 — Gameplay Feel & Onboarding
+## ES-04 — Responsive Game View Architecture
 
-- First-run tutorial.
-- Difficulty ramp review.
-- Clearer goals, feedback and damage readability.
-- Preserve original responsiveness and swarm fantasy.
+- Introduce stable logical viewport and CSS/internal canvas separation.
+- Safe-area-aware layout system.
+- Breakpoint/aspect-ratio-specific HUD composition.
+- Certify desktop 16:9, laptop 16:10, ultrawide, tablet and phone classes.
 
-## ES-05 — Progression & Replayability
+## ES-05 — Android Interaction & Touch UX
 
-- Consolidate permanent progression.
-- Balance relic economy and mid-run upgrade choices.
-- Review run duration, boss pacing and replay incentives.
+- Touch-first controls and comfortable hit targets.
+- Landscape-first premium gameplay unless testing proves otherwise.
+- Android gesture/navigation safe areas.
+- App focus/pause/resume/orientation handling.
+- Performance tiers for mobile hardware.
 
-## ES-06 — Visual / Audio Polish
+## ES-06 — Campaign 1–10 Stabilization
+
+- Preserve ten-sector learning/progression arc.
+- Improve onboarding, telegraphs and objective clarity.
+- Validate Blackout Devourer as the campaign climax/mastery check.
+- Balance without erasing original gameplay feel.
+
+## ES-07 — Infinite Progression Engine
+
+- Sector 11 -> unbounded progression.
+- Seedable sector recipe generation.
+- Procedural difficulty director.
+- Multi-dimensional difficulty instead of pure HP scaling.
+- Automated large-range recipe validation.
+
+## ES-08 — Enemy, Mutator & Boss Evolution
+
+- Evolved enemy variants.
+- Meaningful mutator pool.
+- Milestone encounters and boss rematches/variants.
+- Fairness and performance constraints.
+
+## ES-09 — Long-Term Progression & Replayability
+
+- Highest sector / score / run record tracking.
+- Build and formation run history where valuable.
+- Refined permanent progression and relic economy.
+- Achievements/challenges/codex as appropriate.
+
+## ES-10 — Visual & Audio Polish
 
 - Performance-safe VFX pass.
-- UI hierarchy and accessibility pass.
-- Mobile readability.
+- Premium HUD polish.
 - Audio mix and boss telegraph clarity.
+- Accessibility and readability pass.
 
-## ES-07 — Content Completion
+## ES-11 — Android Performance Certification
 
-- Decide which documented deferred systems belong in v1.0.
-- Add content only after core loop regression gates are stable.
+- Low/mid/high mobile quality tiers.
+- 60/90/120 Hz behavior review.
+- Thermal and sustained-session testing.
+- Device/orientation regression matrix.
 
-## ES-08 — Release Engineering
+## ES-12 — Release Engineering
 
 - Versioning and changelog.
 - Web deployment target.
-- PWA/installability evaluation.
+- PWA/installability or native-wrapper decision.
+- Android packaging/release pipeline.
 - Release candidate certification.
