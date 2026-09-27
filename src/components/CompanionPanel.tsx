@@ -305,6 +305,10 @@ export const CompanionPanel: React.FC<CompanionPanelProps> = ({
             <div
               ref={logContainerRef}
               className="flex-1 bg-slate-950/60 rounded p-2 border border-slate-900 overflow-y-auto space-y-2.5 max-h-[280px] lg:max-h-[350px] text-[11px]"
+              role="log"
+              aria-live="polite"
+              aria-relevant="additions text"
+              aria-label={language === "es" ? "Registro de comunicaciones LUX-8" : "LUX-8 communications log"}
             >
               {dialogueLog.map((log) => {
                 let senderClass = "text-amber-400 font-bold";
