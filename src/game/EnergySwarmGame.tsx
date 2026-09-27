@@ -25,6 +25,7 @@ import {
   findFirstCollidingSpatialItem,
   findNearestSpatialItem,
   insertSpatialIndexEntry,
+  querySpatialIndex,
   relocateSpatialIndexEntry,
   type SpatialIndex,
 } from "./spatialIndex";
@@ -3854,6 +3855,15 @@ export const EnergySwarmGame: React.FC = () => {
     }
 
     // 6. Enemies logic & Shoot mechanics
+    const hostileProjectileBudgetState = {
+      count: 0,
+    };
+    for (const projectile of projectilesRef.current) {
+      if (!projectile.fromPlayer) {
+        hostileProjectileBudgetState.count += 1;
+      }
+    }
+
     enemiesRef.current.forEach((enemy) => {
       if (enemy.isDead) return;
 
@@ -4017,7 +4027,10 @@ export const EnergySwarmGame: React.FC = () => {
       if (enemy.shootCooldown <= 0) {
         if (enemy.type === EnemyType.DRONE) {
           enemy.shootCooldown = 110 + Math.random() * 80;
-          shootFromEnemy(enemy);
+          shootFromEnemy(
+            enemy,
+            hostileProjectileBudgetState,
+          );
         } else if (enemy.type === EnemyType.DISRUPTOR) {
           enemy.shootCooldown = 220 + Math.random() * 120; // reset pulse timer (3.5-5.5s)
           
@@ -4324,7 +4337,10 @@ export const EnergySwarmGame: React.FC = () => {
   };
 
   // --- SHOOT AI TRIGGER FROM ENEMY DRONE ---
-  const shootFromEnemy = (enemy: Enemy) => {
+  const shootFromEnemy = (
+    enemy: Enemy,
+    hostileBudgetState: { count: number },
+  ) => {
     const combatPressure = getCurrentCombatPressure();
     const signatureBehavior =
       projectEvolvedSignatureBehavior(
@@ -4332,9 +4348,7 @@ export const EnergySwarmGame: React.FC = () => {
         enemy.evolvedSpecialIntensity,
       );
     const hostileProjectileCount =
-      projectilesRef.current.filter(
-        (projectile) => !projectile.fromPlayer,
-      ).length;
+      hostileBudgetState.count;
     const hostileProjectileBudget =
       combatPressure.projectileBudget ?? MAX_PROJECTILES;
     const availableProjectileSlots = Math.max(
@@ -4397,6 +4411,7 @@ export const EnergySwarmGame: React.FC = () => {
           });
         }
 
+        hostileBudgetState.count += projectileCount;
         playEnemyShootSound();
       }
     }
@@ -4636,13 +4651,38 @@ export const EnergySwarmGame: React.FC = () => {
               const splashRadius = 55;
               const splashDamage = damageToApply * 0.45; // 45% of primary bullet damage
               
-              enemiesRef.current.forEach((otherEnemy) => {
-                if (otherEnemy === enemy || otherEnemy.isDead) return;
-                const sdx = proj.x - otherEnemy.x;
-                const sdy = proj.y - otherEnemy.y;
-                const sdist = Math.sqrt(sdx * sdx + sdy * sdy);
+              const splashCandidates =
+                querySpatialIndex(
+                  enemyCollisionIndex,
+                  proj.x,
+                  proj.y,
+                  splashRadius +
+                    enemyCollisionIndex.maxRadius,
+                ).entries
+                  .filter((entry) => {
+                    const otherEnemy = entry.item;
+                    if (
+                      otherEnemy === enemy ||
+                      otherEnemy.isDead
+                    ) {
+                      return false;
+                    }
 
-                if (sdist < splashRadius + otherEnemy.size) {
+                    const sdx = proj.x - entry.x;
+                    const sdy = proj.y - entry.y;
+                    const radius =
+                      splashRadius + entry.radius;
+                    return (
+                      sdx * sdx + sdy * sdy <
+                      radius * radius
+                    );
+                  })
+                  .sort(
+                    (left, right) =>
+                      left.order - right.order,
+                  );
+
+              splashCandidates.forEach(({ item: otherEnemy }) => {
                   otherEnemy.health -= splashDamage;
                   otherEnemy.flashTicks = 4;
 
@@ -4724,7 +4764,6 @@ export const EnergySwarmGame: React.FC = () => {
                       }
                     }
                   }
-                }
               });
             }
 
