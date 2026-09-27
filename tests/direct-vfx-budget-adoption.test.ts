@@ -69,18 +69,18 @@ test("all six historical direct boss/cinematic VFX sites now use the bounded hel
   assert.equal(boundedPushes, 6);
 });
 
-test("VFX budget adoption does not change historical spawn probability gates", () => {
-  const expectedProbabilityFragments = [
-    "Math.random() < 0.1",
-    "Math.random() < 0.4",
-    "Math.random() < 0.3",
-    "Math.random() < 0.20",
+test("VFX budget adoption preserves historical baseline probabilities after cadence normalization", () => {
+  const expectedBaselineProbabilities = [
+    "projectFrameProbability(0.1, delta)",
+    "projectFrameProbability(0.4, delta)",
+    "projectFrameProbability(0.3, delta)",
+    "projectFrameProbability(0.20, delta)",
   ];
 
-  for (const fragment of expectedProbabilityFragments) {
+  for (const fragment of expectedBaselineProbabilities) {
     assert.ok(
       game.includes(fragment),
-      `missing historical probability gate: ${fragment}`,
+      `missing historical baseline probability: ${fragment}`,
     );
   }
 });
