@@ -47,6 +47,7 @@ import { PauseMenu } from "../components/PauseMenu";
 import { ResultScreen } from "../components/ResultScreen";
 import { CompanionPanel } from "../components/CompanionPanel";
 import { UpgradeSelector } from "../components/UpgradeSelector";
+import { MobileTouchOverlay } from "../components/MobileTouchOverlay";
 
 export const EnergySwarmGame: React.FC = () => {
   // --- REACT VIEWPORT GAME STATES (Low-frequency updates) ---
@@ -4438,15 +4439,8 @@ export const EnergySwarmGame: React.FC = () => {
                   </div>
                 )}
 
-                {/* MOBILE NAVIGATION BUTTONPAD ASSIST */}
-                <div className="flex sm:hidden justify-center items-center gap-1.5 mt-2">
-                  <button onClick={() => moveMobileDPad("LEFT")} className="p-2.5 bg-slate-900 border border-slate-800 rounded text-xs font-mono font-bold active:scale-[0.95]">&larr;</button>
-                  <div className="flex flex-col gap-1.5">
-                    <button onClick={() => moveMobileDPad("UP")} className="p-2.5 bg-slate-900 border border-slate-800 rounded text-xs font-mono font-bold active:scale-[0.95]">&uarr;</button>
-                    <button onClick={() => moveMobileDPad("DOWN")} className="p-2.5 bg-slate-900 border border-slate-800 rounded text-xs font-mono font-bold active:scale-[0.95]">&darr;</button>
-                  </div>
-                  <button onClick={() => moveMobileDPad("RIGHT")} className="p-2.5 bg-slate-900 border border-slate-800 rounded text-xs font-mono font-bold active:scale-[0.95]">&rarr;</button>
-                </div>
+                {/* MOBILE / ANDROID THUMB-ZONE MOVEMENT OVERLAY */}
+                <MobileTouchOverlay onMove={moveMobileDPad} />
               </div>
             </div>
 
