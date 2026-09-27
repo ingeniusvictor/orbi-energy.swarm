@@ -23,7 +23,11 @@ import { triggerExplosion, updateParticle, drawParticle } from "./particleSystem
 import { backgroundRenderer } from "./backgroundRenderer";
 import { getWaveConfig, INTER_WAVE_DURATION, BOSS_WAVE_NUMBER, BLACKOUT_DEVOURER_CANON } from "./waveDirector";
 import {
+  advanceInfiniteRuntimeState,
   createCampaignRuntimeState,
+  createInfiniteRuntimeState,
+  getRuntimeSector,
+  getRuntimeWaveNumber,
   resolveRuntimeWaveDescriptor,
   type RuntimeProgressionState,
 } from "./runtimeProgressionRouter";
@@ -35,8 +39,10 @@ import {
   applyCampaignVictoryCheckpoint,
   applyFinalRunCommit,
   createRunCommitLedger,
+  type CampaignVictoryCheckpointInput,
   type RunCommitLedger,
 } from "./runPersistence";
+import { beginInfiniteAfterCampaignVictory } from "./campaignInfiniteHandoff";
 import { MID_RUN_UPGRADES, UpgradeDefinition, generateUpgradeChoices } from "./upgrades";
 
 import { 
@@ -488,47 +494,66 @@ export const EnergySwarmGame: React.FC = () => {
   };
 
   // --- SAVE CURRENT PROGRESSION HELPER ---
-  const commitStats = (isVictory: boolean, currentScore: number) => {
+  const getCampaignVictoryCheckpointInput = (
+    currentScore: number,
+  ): CampaignVictoryCheckpointInput => {
+    const bestSwarmSize = swarmRef.current.length + 1;
+    const bestWaveReached = currentWaveRef.current;
+    const memories = Object.entries(upgradesLevel).map(
+      ([k, v]) => `${k}:${v}`,
+    );
+    const isBossFightAttempted =
+      bossSessionStartTimeRef.current > 0;
+    const bossFightDurationMs =
+      isBossFightAttempted &&
+      bossSessionEndTimeRef.current >
+        bossSessionStartTimeRef.current
+        ? bossSessionEndTimeRef.current -
+          bossSessionStartTimeRef.current
+        : 0;
+    const playerMaxShield =
+      SHIELD_MAX +
+      (upgradesLevel.hydrogen_deflector || 0) * 15;
+    const remainingIntegrityPercent = Math.round(
+      (shieldRef.current / playerMaxShield) * 100,
+    );
+
+    return {
+      currentScore,
+      bestWaveReached,
+      bestSwarmSize,
+      nanoCreditsBalance: nanoCreditsRef.current,
+      gameMemories: memories,
+      bossFightDurationMs,
+      remainingIntegrityPercent,
+      preferredBossFormation: getFormationMostUsed(),
+      bossCodexSeenPhases: Array.from(
+        { length: bossMaxPhaseReachedRef.current },
+        (_, i) => i + 1,
+      ),
+      bossCodexSeenAttacks: bossAttacksSeenThisRunRef.current,
+      firstVictoryAt: new Date().toISOString(),
+    };
+  };
+
+  const commitStats = (
+    isVictory: boolean,
+    currentScore: number,
+  ) => {
     const fresh = loadGameStats();
     const bestSwarmSize = swarmRef.current.length + 1;
     const bestWaveReached = currentWaveRef.current;
-    const memories = Object.entries(upgradesLevel).map(([k, v]) => `${k}:${v}`);
+    const memories = Object.entries(upgradesLevel).map(
+      ([k, v]) => `${k}:${v}`,
+    );
 
     let workingStats = fresh;
     let workingLedger = runCommitLedgerRef.current;
 
     if (isVictory) {
-      const isBossFightAttempted = bossSessionStartTimeRef.current > 0;
-      const bossFightDurationMs =
-        isBossFightAttempted &&
-        bossSessionEndTimeRef.current > bossSessionStartTimeRef.current
-          ? bossSessionEndTimeRef.current - bossSessionStartTimeRef.current
-          : 0;
-
-      const playerMaxShield =
-        SHIELD_MAX + (upgradesLevel.hydrogen_deflector || 0) * 15;
-      const remainingIntegrityPercent = Math.round(
-        (shieldRef.current / playerMaxShield) * 100,
-      );
-
       const checkpoint = applyCampaignVictoryCheckpoint(
         workingStats,
-        {
-          currentScore,
-          bestWaveReached,
-          bestSwarmSize,
-          nanoCreditsBalance: nanoCreditsRef.current,
-          gameMemories: memories,
-          bossFightDurationMs,
-          remainingIntegrityPercent,
-          preferredBossFormation: getFormationMostUsed(),
-          bossCodexSeenPhases: Array.from(
-            { length: bossMaxPhaseReachedRef.current },
-            (_, i) => i + 1,
-          ),
-          bossCodexSeenAttacks: bossAttacksSeenThisRunRef.current,
-          firstVictoryAt: new Date().toISOString(),
-        },
+        getCampaignVictoryCheckpointInput(currentScore),
         workingLedger,
       );
 
@@ -1185,6 +1210,74 @@ export const EnergySwarmGame: React.FC = () => {
     commitStats(won, scoreRef.current);
   };
 
+  const enterInfiniteAfterCampaignVictory = () => {
+    const fresh = loadGameStats();
+    const handoff = beginInfiniteAfterCampaignVictory(
+      fresh,
+      getCampaignVictoryCheckpointInput(scoreRef.current),
+      runCommitLedgerRef.current,
+      `orbi-run-${runStartTimeRef.current}`,
+    );
+
+    runCommitLedgerRef.current = handoff.checkpoint.ledger;
+    updateStatsAndSave(handoff.checkpoint.stats);
+    setHighScore(handoff.checkpoint.stats.highScore);
+
+    const infiniteRuntime =
+      createInfiniteRuntimeState(handoff.session);
+    runtimeProgressionRef.current = infiniteRuntime;
+
+    const infiniteSector = getRuntimeSector(infiniteRuntime);
+    const infiniteWave = getRuntimeWaveNumber(infiniteRuntime);
+
+    currentWaveRef.current = infiniteSector;
+    setCurrentWave(infiniteSector);
+
+    waveActiveRef.current = false;
+    waveBudgetSpawnedRef.current = 0;
+    waveTimeRemainingRef.current = 0;
+    spawnTimerRef.current = 0;
+    waveBreakTimerRef.current = INTER_WAVE_DURATION;
+    setIsWaveBreak(true);
+    setWaveBreakTimeLeft(
+      Math.ceil(INTER_WAVE_DURATION / 1000),
+    );
+
+    bossActiveRef.current = false;
+    bossRef.current = null;
+    enemiesRef.current = [];
+    projectilesRef.current = [];
+    hazardZonesRef.current = [];
+    shieldNodesRef.current = [];
+    bossCurrentAttackRef.current = null;
+    bossIntroTimeRef.current = null;
+    setBossAttackName(null);
+    setBossIntroTime(null);
+    setBossTransitionName(null);
+    setBossShieldNodes(0);
+    setIsCoreExposed(false);
+
+    if (handoff.descriptor.biomeIntent) {
+      setActiveBiome(handoff.descriptor.biomeIntent);
+      playBiomeChangeSound();
+    }
+
+    setWaveName(
+      `INFINITE SWARM // SECTOR ${infiniteSector} · WAVE ${infiniteWave}/${handoff.descriptor.waveCount}`,
+    );
+
+    playVictorySound();
+    postDialogue(
+      "COMPANION",
+      "¡RESONANCIA PURIFICADA! El Devorador ha caído, pero la red continúa expandiéndose.",
+    );
+    postDialogue(
+      "SYSTEM",
+      `CAMPAÑA COMPLETADA. ENLACE INFINITO ABIERTO: SECTOR ${infiniteSector} · OLEADA ${infiniteWave}/${handoff.descriptor.waveCount}.`,
+    );
+    startBgm("HIGH_INTENSITY");
+  };
+
   // --- PROCEDURAL REWARDS & ENEMY SPAWN MULTIPLIERS ---
   const spawnResource = (x: number, y: number, forceType?: "NANO" | "ENERGY" | "ORBI") => {
     if (resourcesRef.current.length >= MAX_RESOURCES) return;
@@ -1361,43 +1454,100 @@ export const EnergySwarmGame: React.FC = () => {
         // Clear active hazards
         hazardZonesRef.current = [];
 
-        const completedWave = currentWaveRef.current;
-        // Advance wave tier
-        currentWaveRef.current += 1;
-        runtimeProgressionRef.current = createCampaignRuntimeState(
-          currentWaveRef.current,
-        );
-        setCurrentWave(currentWaveRef.current);
+        const completedRuntime =
+          runtimeProgressionRef.current;
 
-        // Open mid-run upgrades selector on intermission for specific reward waves!
-        if (UPGRADE_REWARD_WAVES.includes(completedWave)) {
-          triggerUpgradeSelection();
-        }
+        if (completedRuntime.mode === "INFINITE") {
+          const completedSector =
+            getRuntimeSector(completedRuntime);
+          const completedWave =
+            getRuntimeWaveNumber(completedRuntime);
+          const nextRuntime =
+            advanceInfiniteRuntimeState(completedRuntime);
+          const nextDescriptor =
+            resolveRuntimeWaveDescriptor(nextRuntime);
+          const nextSector = getRuntimeSector(nextRuntime);
+          const nextWave = getRuntimeWaveNumber(nextRuntime);
 
-        if (currentWaveRef.current === BOSS_WAVE_NUMBER) {
-          // Warning before boss entry!
-          setWaveName("BOSS WARNING: DEVOURER APPROACHING");
-          postDialogue("COMPANION", "¡ALERTA MÁXIMA! Firma del Blackout Devourer detectada en el sector.");
-          startBgm("BOSS");
-        } else {
-          setWaveName("PREPARATION BREAK");
-          postDialogue("COMPANION", `Oleada completada. Prepárate para el Sector ${currentWaveRef.current}.`);
-          
-          // Rotate Biome procedurally on new wave
-          const bIdx = (currentWaveRef.current - 1) % BIOME_ROTATION.length;
-          const nextBiome = BIOME_ROTATION[bIdx];
-          setActiveBiome(nextBiome);
-          playBiomeChangeSound();
+          runtimeProgressionRef.current = nextRuntime;
+          currentWaveRef.current = nextSector;
+          setCurrentWave(nextSector);
 
-          triggerExplosion(
-            particlesRef.current,
-            getQualityConfig(stats.qualityPreset).maxParticles,
-            ParticleType.BIOME_PORTAL,
-            playerPosRef.current.x,
-            playerPosRef.current.y,
-            "#a78bfa",
-            20
+          setWaveName(
+            `INFINITE LINK // SECTOR ${nextSector} · WAVE ${nextWave}/${nextDescriptor.waveCount}`,
           );
+          postDialogue(
+            "COMPANION",
+            `Sector ${completedSector} · oleada ${completedWave} purificada. Preparando Sector ${nextSector} · oleada ${nextWave}/${nextDescriptor.waveCount}.`,
+          );
+
+          if (
+            nextSector !== completedSector &&
+            nextDescriptor.biomeIntent
+          ) {
+            setActiveBiome(nextDescriptor.biomeIntent);
+            playBiomeChangeSound();
+            triggerExplosion(
+              particlesRef.current,
+              getQualityConfig(stats.qualityPreset).maxParticles,
+              ParticleType.BIOME_PORTAL,
+              playerPosRef.current.x,
+              playerPosRef.current.y,
+              "#a78bfa",
+              20,
+            );
+          }
+
+          startBgm("HIGH_INTENSITY");
+        } else {
+          const completedWave = currentWaveRef.current;
+
+          // Advance handcrafted campaign sector.
+          currentWaveRef.current += 1;
+          runtimeProgressionRef.current =
+            createCampaignRuntimeState(
+              currentWaveRef.current,
+            );
+          setCurrentWave(currentWaveRef.current);
+
+          // Open mid-run upgrades selector on intermission for specific reward waves!
+          if (UPGRADE_REWARD_WAVES.includes(completedWave)) {
+            triggerUpgradeSelection();
+          }
+
+          if (currentWaveRef.current === BOSS_WAVE_NUMBER) {
+            // Warning before boss entry!
+            setWaveName("BOSS WARNING: DEVOURER APPROACHING");
+            postDialogue(
+              "COMPANION",
+              "¡ALERTA MÁXIMA! Firma del Blackout Devourer detectada en el sector.",
+            );
+            startBgm("BOSS");
+          } else {
+            setWaveName("PREPARATION BREAK");
+            postDialogue(
+              "COMPANION",
+              `Oleada completada. Prepárate para el Sector ${currentWaveRef.current}.`,
+            );
+            
+            // Rotate Biome procedurally on new campaign wave.
+            const bIdx =
+              (currentWaveRef.current - 1) %
+              BIOME_ROTATION.length;
+            const nextBiome = BIOME_ROTATION[bIdx];
+            setActiveBiome(nextBiome);
+            playBiomeChangeSound();
+
+            triggerExplosion(
+              particlesRef.current,
+              getQualityConfig(stats.qualityPreset).maxParticles,
+              ParticleType.BIOME_PORTAL,
+              playerPosRef.current.x,
+              playerPosRef.current.y,
+              "#a78bfa",
+              20,
+            );
+          }
         }
       }
     } else {
@@ -2403,10 +2553,10 @@ export const EnergySwarmGame: React.FC = () => {
       }
     }
 
-    // After 5 seconds, finalize the victory
+    // After 5 seconds, checkpoint the campaign victory and continue into Infinite Swarm.
     if (bossDefeatedSequenceTimerRef.current <= 0) {
       bossDefeatedSequenceActiveRef.current = false;
-      triggerGameOver(true);
+      enterInfiniteAfterCampaignVictory();
     }
   };
 
@@ -4115,10 +4265,18 @@ export const EnergySwarmGame: React.FC = () => {
   };
 
   const getBossResult = () => {
-    if (victory) return "DEFEATED";
+    if (
+      victory ||
+      runCommitLedgerRef.current.campaignVictoryCommitted
+    ) {
+      return "DEFEATED";
+    }
     if (currentWave === 10) return "SURVIVED PHASE 1";
     return "NOT ENCOUNTERED";
   };
+
+  const currentThreatDescriptor =
+    getCurrentRuntimeDescriptor();
 
   return (
     <div className="orbi-game-root w-full min-h-screen bg-slate-950 flex flex-col items-center justify-center overflow-x-hidden relative select-none">
@@ -4431,33 +4589,56 @@ export const EnergySwarmGame: React.FC = () => {
 
                   {/* LIVE WAVE INTEL PANEL */}
                   <div className="space-y-1.5 border-t border-slate-900 pt-3">
-                    <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block">THREAT INTEL (WAVE {currentWave})</span>
+                    <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block">
+                      THREAT INTEL (
+                      {currentThreatDescriptor.sourceMode === "INFINITE"
+                        ? `SECTOR ${currentThreatDescriptor.sector} · WAVE ${currentThreatDescriptor.waveNumber}/${currentThreatDescriptor.waveCount}`
+                        : `WAVE ${currentWave}`}
+                      )
+                    </span>
                     <div className="bg-slate-900/40 border border-slate-850/60 p-2 rounded-lg space-y-1.5 text-[10px] font-mono">
                       <div className="flex justify-between items-center">
-                        <span className="text-slate-300 font-bold uppercase truncate max-w-[120px]" title={getWaveConfig(currentWave).displayName}>{getWaveConfig(currentWave).displayName}</span>
+                        <span
+                          className="text-slate-300 font-bold uppercase truncate max-w-[120px]"
+                          title={currentThreatDescriptor.display.displayName}
+                        >
+                          {currentThreatDescriptor.display.displayName}
+                        </span>
                         <span 
                           className="text-[8px] font-bold px-1.5 py-0.1 rounded uppercase shrink-0"
                           style={{ 
-                            color: getWaveConfig(currentWave).introColor, 
-                            backgroundColor: `${getWaveConfig(currentWave).introColor}15`,
-                            border: `1px solid ${getWaveConfig(currentWave).introColor}30`
+                            color: currentThreatDescriptor.display.accentColor, 
+                            backgroundColor: `${currentThreatDescriptor.display.accentColor}15`,
+                            border: `1px solid ${currentThreatDescriptor.display.accentColor}30`
                           }}
                         >
-                          {getWaveConfig(currentWave).warningLevel}
+                          {currentThreatDescriptor.display.warningLevel}
                         </span>
                       </div>
-                      <p className="text-[9px] text-slate-500 leading-relaxed italic">"{getWaveConfig(currentWave).subtitle}"</p>
+                      <p className="text-[9px] text-slate-500 leading-relaxed italic">
+                        "{currentThreatDescriptor.display.subtitle}"
+                      </p>
                       
-                      {getWaveConfig(currentWave).environmentalModifier && (
+                      {currentThreatDescriptor.modifiers.length > 0 && (
                         <div className="flex flex-col gap-0.5 border-t border-slate-900 pt-1.5">
-                          <span className="text-[8px] text-rose-400 font-black tracking-widest uppercase flex items-center gap-1">⚠️ WAVE MODIFIER:</span>
-                          <span className="text-[9.5px] text-rose-300 font-bold uppercase">{getWaveConfig(currentWave).environmentalModifier?.replace(/_/g, " ")}</span>
+                          <span className="text-[8px] text-rose-400 font-black tracking-widest uppercase flex items-center gap-1">
+                            ⚠️ WAVE MODIFIER:
+                          </span>
+                          <span className="text-[9.5px] text-rose-300 font-bold uppercase">
+                            {currentThreatDescriptor.modifiers
+                              .map((modifier) => modifier.replace(/_/g, " "))
+                              .join(" · ")}
+                          </span>
                         </div>
                       )}
 
                       <div className="flex flex-col gap-0.5 border-t border-slate-900 pt-1.5">
-                        <span className="text-[8px] text-amber-400 font-black tracking-widest uppercase block">💡 RECOMMENDATION:</span>
-                        <p className="text-[9px] text-slate-400 leading-relaxed">{getWaveConfig(currentWave).tacticalAdvice}</p>
+                        <span className="text-[8px] text-amber-400 font-black tracking-widest uppercase block">
+                          💡 RECOMMENDATION:
+                        </span>
+                        <p className="text-[9px] text-slate-400 leading-relaxed">
+                          {currentThreatDescriptor.display.tacticalAdvice}
+                        </p>
                       </div>
                     </div>
                   </div>
