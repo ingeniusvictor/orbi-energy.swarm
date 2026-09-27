@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Play, RotateCcw, Volume2, VolumeX, Keyboard, LogOut, Settings, Globe } from "lucide-react";
+import { Play, RotateCcw, Volume2, VolumeX, Keyboard, LogOut, Settings, Globe, Camera } from "lucide-react";
 import { playClickSound } from "../game/audio";
 import { useGameTranslation } from "../i18n";
 
@@ -7,6 +7,7 @@ interface PauseMenuProps {
   onResume: () => void;
   onRestart: () => void;
   onExitToMenu: () => void;
+  onEnterPhotoMode: () => void;
   audioMuted: boolean;
   onToggleMute: () => void;
   screenShakeMode: "FULL" | "REDUCED" | "OFF";
@@ -21,6 +22,7 @@ export const PauseMenu: React.FC<PauseMenuProps> = ({
   onResume,
   onRestart,
   onExitToMenu,
+  onEnterPhotoMode,
   audioMuted,
   onToggleMute,
   screenShakeMode,
@@ -110,7 +112,20 @@ export const PauseMenu: React.FC<PauseMenuProps> = ({
               {language === "es" ? "AJUSTES DE VIDEO Y EFECTOS" : "VIDEO & EFFECT SETTINGS"}
             </button>
 
-            {/* 4. KEY BINDINGS CONTROLS */}
+            {/* 4. PHOTO MODE */}
+            <button
+              id="photo-mode-btn"
+              onClick={() => {
+                playClickSound();
+                onEnterPhotoMode();
+              }}
+              className="w-full py-2.5 rounded bg-indigo-950/35 hover:bg-indigo-950/55 text-indigo-300 border border-indigo-500/30 transition flex items-center justify-center gap-2 text-xs uppercase"
+            >
+              <Camera size={13} />
+              {language === "es" ? "MODO FOTO — ESCENA LIMPIA" : "PHOTO MODE — CLEAN SCENE"}
+            </button>
+
+            {/* 5. KEY BINDINGS CONTROLS */}
             <button
               id="controls-btn"
               onClick={() => {
@@ -123,7 +138,7 @@ export const PauseMenu: React.FC<PauseMenuProps> = ({
               {language === "es" ? "VER CONTROLES" : "VIEW CONTROLS"}
             </button>
 
-            {/* 5. TOGGLE AUDIO */}
+            {/* 6. TOGGLE AUDIO */}
             <button
               id="audio-toggle-btn"
               onClick={() => {
@@ -162,7 +177,7 @@ export const PauseMenu: React.FC<PauseMenuProps> = ({
               </button>
             </div>
 
-            {/* 6. RETURN TO MENU */}
+            {/* 7. RETURN TO MENU */}
             <button
               id="exit-btn"
               onClick={() => {
@@ -355,6 +370,10 @@ export const PauseMenu: React.FC<PauseMenuProps> = ({
               <div className="flex justify-between py-1 border-b border-slate-850">
                 <span>Key P / Escape</span>
                 <span className="text-white">{language === "es" ? "Pausar / Reanudar" : "Pause / Resume"}</span>
+              </div>
+              <div className="flex justify-between py-1 border-b border-slate-850">
+                <span>F10</span>
+                <span className="text-white">{language === "es" ? "Entrar / salir de Modo Foto" : "Enter / exit Photo Mode"}</span>
               </div>
               <div className="flex justify-between py-1 border-b border-slate-850">
                 <span>Key M</span>

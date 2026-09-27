@@ -143,6 +143,8 @@ export const EnergySwarmGame: React.FC = () => {
   // --- REACT VIEWPORT GAME STATES (Low-frequency updates) ---
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  const [isPhotoMode, setIsPhotoMode] = useState(false);
+  const [photoHintVisible, setPhotoHintVisible] = useState(false);
   const [isGameOver, setIsGameOver] = useState(false);
   const [victory, setVictory] = useState(false);
 
@@ -810,6 +812,20 @@ export const EnergySwarmGame: React.FC = () => {
 
       const key = e.key.toUpperCase();
 
+      if (isPhotoMode) {
+        if (key === "F10" || e.key === "Escape") {
+          e.preventDefault();
+          exitPhotoMode();
+        }
+        return;
+      }
+
+      if (key === "F10") {
+        e.preventDefault();
+        enterPhotoMode();
+        return;
+      }
+
       if (isUpgradeSelectionOpenRef.current) {
         e.preventDefault();
         if (key === "1") {
@@ -868,7 +884,7 @@ export const EnergySwarmGame: React.FC = () => {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
-  }, [isPlaying, isPaused, upgradesLevel]);
+  }, [isPlaying, isPaused, isPhotoMode, upgradesLevel]);
 
   // --- ANDROID / WEB APP LIFECYCLE SAFETY ---
   useEffect(() => {
@@ -987,6 +1003,8 @@ export const EnergySwarmGame: React.FC = () => {
   const startGame = () => {
     initAudio();
     setIsPlaying(true);
+    setIsPhotoMode(false);
+    setPhotoHintVisible(false);
     setPausedState(false);
     setIsGameOver(false);
     setVictory(false);
@@ -1140,6 +1158,40 @@ export const EnergySwarmGame: React.FC = () => {
       stopBgm();
     }
   };
+
+  const enterPhotoMode = () => {
+    if (!isPlaying || isGameOver || isUpgradeSelectionOpenRef.current) return;
+
+    if (!isPausedRef.current) {
+      playPauseSound();
+      setPausedState(true);
+      stopBgm();
+    }
+
+    setIsPhotoMode(true);
+    setPhotoHintVisible(true);
+  };
+
+  const exitPhotoMode = () => {
+    setIsPhotoMode(false);
+    setPhotoHintVisible(false);
+    setPausedState(true);
+    lastTimeRef.current = performance.now();
+  };
+
+  useEffect(() => {
+    if (!isPhotoMode) {
+      setPhotoHintVisible(false);
+      return;
+    }
+
+    setPhotoHintVisible(true);
+    const timeout = window.setTimeout(() => {
+      setPhotoHintVisible(false);
+    }, 2400);
+
+    return () => window.clearTimeout(timeout);
+  }, [isPhotoMode]);
 
   // --- TOGGLE MUTE ---
   const toggleMute = () => {
@@ -1409,6 +1461,8 @@ export const EnergySwarmGame: React.FC = () => {
   // --- CORE GAME OVER TRIGGER ---
   const triggerGameOver = (won: boolean) => {
     loopActiveRef.current = false;
+    setIsPhotoMode(false);
+    setPhotoHintVisible(false);
     setIsGameOver(true);
     setVictory(won);
     stopBgm();
@@ -5548,6 +5602,7 @@ export const EnergySwarmGame: React.FC = () => {
           ? "true"
           : "false"
       }
+      data-photo-mode={isPhotoMode ? "true" : "false"}
     >
       
       {/* INITIAL START SCREEN MENUS */}
@@ -5583,12 +5638,15 @@ export const EnergySwarmGame: React.FC = () => {
       )}
 
       {/* PAUSE MENU DRAWERS */}
-      {isPlaying && isPaused && (
+      {isPlaying && isPaused && !isPhotoMode && (
         <PauseMenu
           onResume={togglePause}
           onRestart={startGame}
+          onEnterPhotoMode={enterPhotoMode}
           onExitToMenu={() => {
             stopBgm();
+            setIsPhotoMode(false);
+            setPhotoHintVisible(false);
             setIsPlaying(false);
             setPausedState(false);
           }}
@@ -5613,6 +5671,16 @@ export const EnergySwarmGame: React.FC = () => {
             saveGameStats(next);
           }}
         />
+      )}
+
+      {isPhotoMode && photoHintVisible && (
+        <div
+          className="orbi-photo-mode-hint fixed right-4 top-4 z-[70] rounded-lg border border-cyan-400/20 bg-slate-950/75 px-3 py-2 text-[10px] font-mono uppercase tracking-[0.12em] text-cyan-200 shadow-xl backdrop-blur-md pointer-events-none"
+          role="status"
+          aria-live="polite"
+        >
+          PHOTO MODE · ESC / F10 → PAUSE
+        </div>
       )}
 
       {/* GAMEOVER / VICTORY SUMMARY BOARDS */}
@@ -5663,7 +5731,7 @@ export const EnergySwarmGame: React.FC = () => {
       )}
 
       {/* CINEMATIC WAVE INTRODUCTION BANNER OVERLAY */}
-      {waveIntroConfig && (
+      {waveIntroConfig && !isPhotoMode && (
         <div className="fixed inset-0 flex items-center justify-center z-40 pointer-events-none select-none">
           <div className="bg-slate-950/85 border border-slate-900 rounded-xl p-6 shadow-[0_0_50px_rgba(0,0,0,0.85)] max-w-lg w-full text-center space-y-4 animate-scaleUp backdrop-blur-md">
             <span 
@@ -6103,7 +6171,7 @@ export const EnergySwarmGame: React.FC = () => {
       )}
 
       {/* BRANDING LABEL WATERMARK FOOTER */}
-      <div className="mt-3 lg:mt-1.5 text-[9px] md:text-[10px] font-mono text-slate-600 text-center flex flex-col gap-0.5">
+      <div className="orbi-brand-footer mt-3 lg:mt-1.5 text-[9px] md:text-[10px] font-mono text-slate-600 text-center flex flex-col gap-0.5">
         <div>ORBI ENERGY SWARM &bull; v0.2.0-beta.1</div>
         <div>Created by Víctor Marcel León Pacheco &bull; &copy; 2026 ORBI Ecosystem SpA</div>
       </div>

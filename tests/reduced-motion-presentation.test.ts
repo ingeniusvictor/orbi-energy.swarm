@@ -16,8 +16,13 @@ const game = read("src/game/EnergySwarmGame.tsx");
 const es10aStart = css.indexOf(
   "/* ES-10A — Reduced-motion presentation completion.",
 );
+const es10aEnd = css.indexOf(
+  "/* ES-12C1 — Premium launch deck scroll affordance",
+  es10aStart + 1,
+);
 assert.ok(es10aStart >= 0);
-const es10a = css.slice(es10aStart);
+assert.ok(es10aEnd > es10aStart);
+const es10a = css.slice(es10aStart, es10aEnd);
 
 test("existing premium and boss reduced-motion foundations remain present", () => {
   assert.match(

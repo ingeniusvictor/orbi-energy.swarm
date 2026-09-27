@@ -1712,3 +1712,65 @@ body {
   border-radius: 999px;
   border: 2px solid rgba(2, 6, 23, 0.72);
 }
+
+
+/* ES-12C2 — Clean Photo Mode.
+   Simulation remains paused; this only removes DOM chrome around the canvas. */
+.orbi-game-root[data-photo-mode="true"] .orbi-game-hud,
+.orbi-game-root[data-photo-mode="true"] .orbi-tactical-rail,
+.orbi-game-root[data-photo-mode="true"] .orbi-logistics-deck,
+.orbi-game-root[data-photo-mode="true"] .orbi-touch-overlay,
+.orbi-game-root[data-photo-mode="true"] .orbi-touch-formation-carousel,
+.orbi-game-root[data-photo-mode="true"] .orbi-orientation-hint,
+.orbi-game-root[data-photo-mode="true"] .orbi-boss-hud,
+.orbi-game-root[data-photo-mode="true"] .orbi-brand-footer {
+  display: none !important;
+}
+
+.orbi-game-root[data-photo-mode="true"] .orbi-game-shell {
+  width: 100%;
+  max-width: none;
+  padding-inline: clamp(0.35rem, 1.2vw, 1rem);
+}
+
+.orbi-game-root[data-photo-mode="true"] .orbi-game-workspace {
+  grid-template-columns: minmax(0, 1fr) !important;
+  grid-template-areas: "battlefield" !important;
+  width: min(100%, 1600px);
+  margin-inline: auto;
+}
+
+.orbi-game-root[data-photo-mode="true"] .orbi-battlefield {
+  grid-area: battlefield !important;
+  width: 100%;
+  max-width: 1600px;
+  margin-inline: auto;
+}
+
+.orbi-game-root[data-photo-mode="true"] .orbi-battlefield > div {
+  border-color: rgba(34, 211, 238, 0.16);
+  box-shadow:
+    0 24px 80px rgba(0, 0, 0, 0.45),
+    0 0 60px rgba(34, 211, 238, 0.04);
+}
+
+.orbi-photo-mode-hint {
+  animation: orbi-photo-hint-in 180ms ease-out both;
+}
+
+@keyframes orbi-photo-hint-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .orbi-photo-mode-hint {
+    animation: none !important;
+  }
+}
