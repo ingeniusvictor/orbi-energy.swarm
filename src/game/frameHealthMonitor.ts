@@ -129,13 +129,11 @@ export const classifyFrameHealthWindow = (
 };
 
 export const resetFrameHealthState = (
-  state: FrameHealthState,
+  _state: FrameHealthState,
 ): FrameHealthState => ({
   samples: [],
   elapsedMs: 0,
-  consecutivePressuredWindows:
-    state.consecutivePressuredWindows,
-  lastWindow: state.lastWindow,
+  consecutivePressuredWindows: 0,
 });
 
 export const stepFrameHealthMonitor = (
