@@ -11,11 +11,11 @@ interface CampaignArcProps {
 const HEADER = {
   es: {
     title: "ARCO DE CAMPAÑA",
-    subtitle: "10 sectores para dominar el enjambre antes del modo infinito.",
+    subtitle: "10 sectores para dominar el enjambre y enfrentar al Blackout Devourer.",
   },
   en: {
     title: "CAMPAIGN ARC",
-    subtitle: "10 sectors to master the swarm before endless mode.",
+    subtitle: "10 sectors to master the swarm and face the Blackout Devourer.",
   },
 } as const;
 
