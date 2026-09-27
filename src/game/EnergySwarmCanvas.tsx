@@ -135,6 +135,7 @@ export function drawFoton(
   hasGoldenCore: boolean = false,
   flashProfile: FlashAccessibilityProfile =
     projectFlashAccessibility("FULL"),
+  shieldRatio: number = 1,
 ) {
   // Historical FULL mode preserves the original invincibility flicker.
   if (
@@ -167,12 +168,23 @@ export function drawFoton(
     ctx.restore();
   }
 
+  const damageHighlightStrength =
+    playerFlash > 0
+      ? flashProfile.friendlyWhiteFlashStrength *
+        Math.max(
+          0,
+          Math.min(1, playerFlash / 60),
+        )
+      : 0;
+
   drawFotonTacticalAvatar(ctx, {
     x,
     y,
     time,
     pointerX: pointerPos.x,
     pointerY: pointerPos.y,
+    shieldRatio,
+    damageHighlightStrength,
   });
 }
 
