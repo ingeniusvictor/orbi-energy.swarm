@@ -241,7 +241,7 @@ test("BUDGET_AND_CLEAR still sees the champion because milestone enemies remain 
   );
   assert.match(
     transitions,
-    /!enemy\.isDead && !enemy\.isBoss/,
+    /countLivingStandardEnemies\([\s\S]*enemiesRef\.current/,
   );
 
   const spawn = section(
