@@ -51,3 +51,11 @@ test("campaign guide remains presentation-only", () => {
   assert.doesNotMatch(guide, /enemyBudget|spawnInterval|difficultyMultiplier|maxConcurrentEnemies/);
   assert.doesNotMatch(guide, /setStats|saveGameStats|onStartGame/);
 });
+
+
+test("player-facing campaign arc does not promise unimplemented endless mode", () => {
+  const arc = read("src/components/CampaignArc.tsx");
+  assert.doesNotMatch(arc, /before endless mode/i);
+  assert.doesNotMatch(arc, /antes del modo infinito/i);
+  assert.match(arc, /Blackout Devourer/);
+});
