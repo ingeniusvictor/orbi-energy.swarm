@@ -32,5 +32,8 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Release contract
+        run: npm run release:verify
+
       - name: Production build
         run: npm run build
