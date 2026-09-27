@@ -26,11 +26,11 @@ interface GameplayRuntime {
   config: FotonGameplay3DRuntimeConfig;
   status: RuntimeStatus;
   disposed: boolean;
-  renderer: THREE.WebGLRenderer;
-  scene: THREE.Scene;
-  camera: THREE.PerspectiveCamera;
-  root: THREE.Group;
-  model: THREE.Object3D | null;
+  renderer: any;
+  scene: any;
+  camera: any;
+  root: any;
+  model: any;
   lastFrameAt: number;
   lastMotionAt: number;
 }
@@ -73,9 +73,9 @@ export const getFotonGameplay3DRuntimeConfig = (
   }
 };
 
-const disposeObject3D = (root: THREE.Object3D) => {
-  root.traverse((object) => {
-    const mesh = object as THREE.Mesh;
+const disposeObject3D = (root: any) => {
+  root.traverse((object: any) => {
+    const mesh = object;
     mesh.geometry?.dispose?.();
 
     const materialValue = mesh.material;
@@ -91,9 +91,9 @@ const disposeObject3D = (root: THREE.Object3D) => {
           value &&
           typeof value === "object" &&
           "isTexture" in value &&
-          (value as THREE.Texture).isTexture
+          (value as any).isTexture
         ) {
-          (value as THREE.Texture).dispose();
+          (value as any).dispose?.();
         }
       }
       material.dispose?.();
@@ -206,7 +206,7 @@ const createRuntime = (
   const loader = new GLTFLoader();
   loader.load(
     `${import.meta.env.BASE_URL}assets/orbi-foton.glb`,
-    (gltf) => {
+    (gltf: any) => {
       if (next.disposed) {
         disposeObject3D(gltf.scene);
         return;
@@ -233,8 +233,8 @@ const createRuntime = (
         1.72 / maxDimension,
       );
 
-      model.traverse((object) => {
-        const mesh = object as THREE.Mesh;
+      model.traverse((object: any) => {
+        const mesh = object;
         if (!mesh.isMesh) return;
 
         mesh.frustumCulled = true;
@@ -252,9 +252,7 @@ const createRuntime = (
           if (
             "envMapIntensity" in material
           ) {
-            (
-              material as THREE.MeshStandardMaterial
-            ).envMapIntensity = 0.82;
+            (material as any).envMapIntensity = 0.82;
           }
           material.needsUpdate = true;
         }
