@@ -1460,3 +1460,26 @@ body {
     font-size: 0.5rem;
   }
 }
+
+
+/* ES-06D — Boss counterplay hints */
+.orbi-boss-attack-copy {
+  display: grid;
+  gap: 0.12rem;
+  min-width: 0;
+}
+
+.orbi-boss-counter-hint {
+  color: rgba(203, 213, 225, 0.86);
+  font-size: 0.52rem;
+  line-height: 1.35;
+  letter-spacing: 0.01em;
+  text-transform: none;
+}
+
+@media (max-width: 719px), (orientation: landscape) and (max-height: 520px) {
+  .orbi-boss-counter-hint {
+    max-width: min(68vw, 360px);
+    white-space: normal;
+  }
+}

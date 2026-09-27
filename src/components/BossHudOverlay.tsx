@@ -1,5 +1,7 @@
 import React from "react";
 import { BLACKOUT_DEVOURER_CANON } from "../game/waveDirector";
+import { getBossCounterHint, resolveBossAttackId } from "../game/bossTelegraphGuide";
+import { useGameTranslation } from "../i18n";
 
 type BossLabelsMode = "FULL" | "IMPORTANT" | "OFF";
 
@@ -43,7 +45,13 @@ export const BossHudOverlay: React.FC<BossHudOverlayProps> = ({
   bossLabelsMode,
   onSkipIntro,
 }) => {
+  const { language } = useGameTranslation();
   const healthRatio = bossMaxHp > 0 ? bossHp / bossMaxHp : 0;
+  const bossAttackId = resolveBossAttackId(
+    bossAttackName,
+    BLACKOUT_DEVOURER_CANON.attacks,
+  );
+  const counterHint = getBossCounterHint(bossAttackId, language);
   const healthPercent = Math.max(0, Math.min(100, Math.round(healthRatio * 100)));
   const showAttack =
     Boolean(bossAttackName) &&
@@ -122,7 +130,14 @@ export const BossHudOverlay: React.FC<BossHudOverlayProps> = ({
         {showAttack && bossAttackName && (
           <div className="orbi-boss-alert orbi-boss-alert--attack">
             <span className="orbi-boss-alert-pulse" aria-hidden="true" />
-            <span>ATTACK: {bossAttackName}</span>
+            <div className="orbi-boss-attack-copy">
+              <span>ATTACK: {bossAttackName}</span>
+              {counterHint && (
+                <span className="orbi-boss-counter-hint">
+                  {language === "es" ? "RESPUESTA" : "COUNTER"}: {counterHint}
+                </span>
+              )}
+            </div>
           </div>
         )}
 
