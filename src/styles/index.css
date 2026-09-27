@@ -1686,3 +1686,29 @@ body {
     transition-delay: 0ms !important;
   }
 }
+
+
+/* ES-12C1 — Premium launch deck scroll affordance */
+.orbi-start-deck {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(34, 211, 238, 0.38) rgba(15, 23, 42, 0.55);
+}
+
+.orbi-start-deck::-webkit-scrollbar {
+  width: 8px;
+}
+
+.orbi-start-deck::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.45);
+  border-radius: 999px;
+}
+
+.orbi-start-deck::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    180deg,
+    rgba(34, 211, 238, 0.42),
+    rgba(99, 102, 241, 0.38)
+  );
+  border-radius: 999px;
+  border: 2px solid rgba(2, 6, 23, 0.72);
+}

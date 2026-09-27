@@ -6104,7 +6104,7 @@ export const EnergySwarmGame: React.FC = () => {
 
       {/* BRANDING LABEL WATERMARK FOOTER */}
       <div className="mt-3 lg:mt-1.5 text-[9px] md:text-[10px] font-mono text-slate-600 text-center flex flex-col gap-0.5">
-        <div>ORBI ENERGY SWARM &bull; v0.2.6b-bilingual-localization</div>
+        <div>ORBI ENERGY SWARM &bull; v0.2.0-beta.1</div>
         <div>Created by Víctor Marcel León Pacheco &bull; &copy; 2026 ORBI Ecosystem SpA</div>
       </div>
 
