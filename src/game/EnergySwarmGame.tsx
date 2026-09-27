@@ -72,6 +72,8 @@ import {
 import {
   applyCampaignVictoryCheckpoint,
   applyFinalRunCommit,
+  applyInfiniteMilestoneRecord,
+  applyInfiniteProgressRecord,
   createRunCommitLedger,
   type CampaignVictoryCheckpointInput,
   type RunCommitLedger,
@@ -554,6 +556,42 @@ export const EnergySwarmGame: React.FC = () => {
     saveGameStats(nextStats);
   };
 
+  const persistInfiniteReach = (
+    sector: number,
+    waveNumber: number,
+  ) => {
+    const fresh = loadGameStats();
+    const nextStats = applyInfiniteProgressRecord(
+      fresh,
+      { sector, waveNumber },
+    );
+    updateStatsAndSave(nextStats);
+  };
+
+  const persistInfiniteMilestoneDefeat = (
+    enemy: Enemy,
+  ) => {
+    if (
+      !enemy.milestoneKind ||
+      !enemy.milestoneId
+    ) {
+      return;
+    }
+
+    const fresh = loadGameStats();
+    const transition = applyInfiniteMilestoneRecord(
+      fresh,
+      {
+        eventId: enemy.milestoneId,
+        kind: enemy.milestoneKind,
+      },
+      runCommitLedgerRef.current,
+    );
+
+    runCommitLedgerRef.current = transition.ledger;
+    updateStatsAndSave(transition.stats);
+  };
+
   // --- SAVE CURRENT PROGRESSION HELPER ---
   const getCampaignVictoryCheckpointInput = (
     currentScore: number,
@@ -632,6 +670,18 @@ export const EnergySwarmGame: React.FC = () => {
         gameMemories: memories,
         enemiesDestroyed: runEnemiesDestroyedRef.current,
         resourcesCollected: runResourcesCollectedRef.current,
+        infiniteSectorReached:
+          runtimeProgressionRef.current.mode === "INFINITE"
+            ? getRuntimeSector(
+                runtimeProgressionRef.current,
+              )
+            : undefined,
+        infiniteWaveReached:
+          runtimeProgressionRef.current.mode === "INFINITE"
+            ? getRuntimeWaveNumber(
+                runtimeProgressionRef.current,
+              )
+            : undefined,
       },
       workingLedger,
     );
@@ -1299,6 +1349,10 @@ export const EnergySwarmGame: React.FC = () => {
 
     currentWaveRef.current = infiniteSector;
     setCurrentWave(infiniteSector);
+    persistInfiniteReach(
+      infiniteSector,
+      infiniteWave,
+    );
 
     waveActiveRef.current = false;
     waveBudgetSpawnedRef.current = 0;
@@ -1620,6 +1674,10 @@ export const EnergySwarmGame: React.FC = () => {
           runtimeProgressionRef.current = nextRuntime;
           currentWaveRef.current = nextSector;
           setCurrentWave(nextSector);
+          persistInfiniteReach(
+            nextSector,
+            nextWave,
+          );
 
           setWaveName(
             `INFINITE LINK // SECTOR ${nextSector} · WAVE ${nextWave}/${nextDescriptor.waveCount}`,
@@ -2897,6 +2955,7 @@ export const EnergySwarmGame: React.FC = () => {
           markRuntimeBossRematchDefeated(
             bossRematchGateRef.current,
           );
+        persistInfiniteMilestoneDefeat(boss);
         bossActiveRef.current = false;
         bossRef.current = null;
         enemiesRef.current = [];
@@ -4212,6 +4271,13 @@ export const EnergySwarmGame: React.FC = () => {
                   if (otherEnemy.health <= 0) {
                     otherEnemy.isDead = true;
                     runEnemiesDestroyedRef.current += 1;
+                    if (
+                      otherEnemy.milestoneKind === "MINIBOSS"
+                    ) {
+                      persistInfiniteMilestoneDefeat(
+                        otherEnemy,
+                      );
+                    }
                     
                     const scoreReward =
                       getEnemyScoreReward(otherEnemy);
@@ -4268,6 +4334,11 @@ export const EnergySwarmGame: React.FC = () => {
             if (enemy.health <= 0) {
               enemy.isDead = true;
               runEnemiesDestroyedRef.current += 1;
+              if (
+                enemy.milestoneKind === "MINIBOSS"
+              ) {
+                persistInfiniteMilestoneDefeat(enemy);
+              }
               
               const scoreReward =
                 getEnemyScoreReward(enemy);
