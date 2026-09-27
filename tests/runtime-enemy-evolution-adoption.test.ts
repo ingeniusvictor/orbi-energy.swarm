@@ -325,7 +325,7 @@ test("Canvas renders a bounded identity marker only for evolved instances", () =
   );
 });
 
-test("live signature adoption remains contract-driven without duplicated signature IDs", () => {
+test("live signature adoption remains contract-driven through the cache without duplicated signature IDs", () => {
   const physics = section(
     game,
     "const updateEnginePhysics =",
@@ -334,7 +334,7 @@ test("live signature adoption remains contract-driven without duplicated signatu
 
   assert.match(
     physics,
-    /projectEvolvedSignatureBehavior/,
+    /getCachedEvolvedSignatureBehavior/,
   );
   assert.doesNotMatch(
     physics,
