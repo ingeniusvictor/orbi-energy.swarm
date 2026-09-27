@@ -81,6 +81,34 @@ test("legacy/corrupt array shapes are repaired while scalar progress survives", 
   assert.deepEqual(stats.recentRunArchive, []);
 });
 
+test("flash intensity storage accepts canonical modes and fails malformed values to REDUCED", () => {
+  const storage = installStorage();
+
+  storage.setItem(
+    STORAGE_KEY,
+    JSON.stringify({ flashIntensity: "FULL" }),
+  );
+  assert.equal(loadGameStats().flashIntensity, "FULL");
+
+  storage.setItem(
+    STORAGE_KEY,
+    JSON.stringify({ flashIntensity: "REDUCED" }),
+  );
+  assert.equal(
+    loadGameStats().flashIntensity,
+    "REDUCED",
+  );
+
+  storage.setItem(
+    STORAGE_KEY,
+    JSON.stringify({ flashIntensity: "UNKNOWN" }),
+  );
+  assert.equal(
+    loadGameStats().flashIntensity,
+    "REDUCED",
+  );
+});
+
 test("recent run archive migration keeps only sanitized bounded entries", () => {
   const storage = installStorage();
   storage.setItem(STORAGE_KEY, JSON.stringify({
