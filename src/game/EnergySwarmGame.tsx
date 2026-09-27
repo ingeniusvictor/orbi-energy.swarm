@@ -277,7 +277,10 @@ export const EnergySwarmGame: React.FC = () => {
   const bossAttacksSeenThisRunRef = useRef<string[]>([]);
 
   const updateRunMaxSwarmSize = () => {
-    updateRunMaxSwarmSize();
+    runMaxSwarmSizeRef.current = Math.max(
+      runMaxSwarmSizeRef.current,
+      swarmRef.current.length + 1,
+    );
   };
 
 
@@ -630,7 +633,6 @@ export const EnergySwarmGame: React.FC = () => {
     currentScore: number,
   ): CampaignVictoryCheckpointInput => {
     updateRunMaxSwarmSize();
-    updateRunMaxSwarmSize();
     const bestSwarmSize = runMaxSwarmSizeRef.current;
     const bestWaveReached = currentWaveRef.current;
     const memories = Object.entries(upgradesLevel).map(
@@ -675,6 +677,7 @@ export const EnergySwarmGame: React.FC = () => {
     currentScore: number,
   ) => {
     const fresh = loadGameStats();
+    updateRunMaxSwarmSize();
     const bestSwarmSize = runMaxSwarmSizeRef.current;
     const bestWaveReached = currentWaveRef.current;
     const memories = Object.entries(upgradesLevel).map(
