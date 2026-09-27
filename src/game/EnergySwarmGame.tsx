@@ -276,6 +276,10 @@ export const EnergySwarmGame: React.FC = () => {
   const runCommitLedgerRef = useRef<RunCommitLedger>(createRunCommitLedger());
   const bossAttacksSeenThisRunRef = useRef<string[]>([]);
 
+  const updateRunMaxSwarmSize = () => {
+    updateRunMaxSwarmSize();
+  };
+
 
   // Cosmetic / screen effects
   const screenShakeRef = useRef(0);
@@ -473,29 +477,52 @@ export const EnergySwarmGame: React.FC = () => {
   };
 
   const getStrongestAffinity = (): RunArchiveEntry["strongestAffinity"] => {
-    const counts: Record<string, number> = { solar: 0, hydro: 0, wind: 0, thermal: 0 };
-    swarmRef.current.forEach(m => {
-      if (m.affinity === "solar") counts.solar++;
-      else if (m.affinity === "hydro") counts.hydro++;
-      else if (m.affinity === "wind") counts.wind++;
-      else if (m.affinity === "thermal") counts.thermal++;
+    const counts: Record<
+      Exclude<RunArchiveEntry["strongestAffinity"], "none">,
+      number
+    > = {
+      solar: 0,
+      hydro: 0,
+      wind: 0,
+      thermal: 0,
+      nuclear: 0,
+      quantum: 0,
+    };
+
+    swarmRef.current.forEach((member) => {
+      counts[member.affinity] += 1;
     });
 
     const upgrades = activeRunUpgradesRef.current;
-    if (upgrades.solar_overcharge) counts.solar += upgrades.solar_overcharge * 5;
-    if (upgrades.hydro_regenesis) counts.hydro += upgrades.hydro_regenesis * 5;
-    if (upgrades.wind_acceleration) counts.wind += upgrades.wind_acceleration * 5;
-    if (upgrades.thermal_expansion) counts.thermal += upgrades.thermal_expansion * 5;
+    if (upgrades.solar_overcharge) {
+      counts.solar += upgrades.solar_overcharge * 5;
+    }
+    if (upgrades.hydro_regenesis) {
+      counts.hydro += upgrades.hydro_regenesis * 5;
+    }
+    if (upgrades.wind_acceleration) {
+      counts.wind += upgrades.wind_acceleration * 5;
+    }
+    if (upgrades.thermal_expansion) {
+      counts.thermal += upgrades.thermal_expansion * 5;
+    }
+    if (upgrades.nuclear_density) {
+      counts.nuclear += upgrades.nuclear_density * 5;
+    }
+    if (upgrades.quantum_fracture) {
+      counts.quantum += upgrades.quantum_fracture * 5;
+    }
 
-    let best = "none";
+    let best: RunArchiveEntry["strongestAffinity"] = "none";
     let max = 0;
-    for (const [aff, val] of Object.entries(counts)) {
-      if (val > max) {
-        max = val;
-        best = aff;
+    for (const [affinity, value] of Object.entries(counts)) {
+      if (value > max) {
+        max = value;
+        best =
+          affinity as RunArchiveEntry["strongestAffinity"];
       }
     }
-    return best as RunArchiveEntry["strongestAffinity"];
+    return best;
   };
 
   // --- COMPANION LUX-8 DIALOGUES WRITING ---
@@ -602,6 +629,8 @@ export const EnergySwarmGame: React.FC = () => {
   const getCampaignVictoryCheckpointInput = (
     currentScore: number,
   ): CampaignVictoryCheckpointInput => {
+    updateRunMaxSwarmSize();
+    updateRunMaxSwarmSize();
     const bestSwarmSize = runMaxSwarmSizeRef.current;
     const bestWaveReached = currentWaveRef.current;
     const memories = Object.entries(upgradesLevel).map(
@@ -1262,6 +1291,7 @@ export const EnergySwarmGame: React.FC = () => {
     };
 
     swarmRef.current.push(member);
+    updateRunMaxSwarmSize();
     playRecruitSound();
 
     // Floating notification for recruitment
@@ -1552,6 +1582,7 @@ export const EnergySwarmGame: React.FC = () => {
         xp: 0
       };
       swarmRef.current.push(g);
+      updateRunMaxSwarmSize();
       postDialogue("COMPANION", "¡FUSIÓN SOLAR DETECTADA! Guardián Solar Prime convocado.");
     } else {
       // Create Hydro Leviathan
@@ -1574,6 +1605,7 @@ export const EnergySwarmGame: React.FC = () => {
         xp: 0
       };
       swarmRef.current.push(l);
+      updateRunMaxSwarmSize();
       postDialogue("COMPANION", "¡FUSIÓN HÍDRICA DETECTADA! Hidro-Leviatán estabilizado en órbita.");
     }
   };
