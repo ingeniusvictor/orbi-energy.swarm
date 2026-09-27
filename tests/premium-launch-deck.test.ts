@@ -72,9 +72,16 @@ test("Enter remains a documented keyboard fallback rather than primary-only laun
 test("launch deck has a visible scroll affordance for genuinely short viewports", () => {
   assert.match(
     start,
-    /orbi-start-deck[\s\S]*max-h-\[74vh\][\s\S]*overflow-y-auto/,
+    /orbi-start-deck[\s\S]*overflow-y-auto/,
   );
-  assert.match(css, /\.orbi-start-deck \{/);
+  assert.doesNotMatch(
+    start,
+    /orbi-start-deck[^"]*max-h-\[74vh\]/,
+  );
+  assert.match(
+    css,
+    /\.orbi-start-deck \{[\s\S]*max-height:\s*min\(78dvh, calc\(100dvh - 11\.5rem\)\)/,
+  );
   assert.match(
     css,
     /scrollbar-width: thin/,
