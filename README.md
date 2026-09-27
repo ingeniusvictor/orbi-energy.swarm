@@ -1,6 +1,8 @@
-# ORBI ENERGY SWARM (v0.1.0-prototype-recovery-baseline)
+# ORBI ENERGY SWARM (v0.2.0-beta.1)
 
-A standalone hardened React, TypeScript, and HTML5 Canvas game. This release represents a frozen visual and technical baseline recovered from the ORBI Life game ecosystem.
+A standalone React, TypeScript, and HTML5 Canvas sci-fi swarm game evolving from the preserved ORBI recovery baseline into a premium Web + Android + Infinite Swarm product.
+
+> **Release status:** BETA. Automated repository, gameplay, responsive, accessibility and software performance contracts are active. This is not yet an RC: human visual certification, manual Infinite play-feel validation and real-device Android thermal/battery/OEM validation remain open.
 
 ## Core Objective
 Pilot the **Orbi Foton** leader, synchronize with an autonomous tactical swarm of energy collectors, and harvest crystallized energy fragments while repelling hostile parasites and drones across six procedurally shifting cybernetic biomes.

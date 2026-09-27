@@ -1,7 +1,7 @@
 {
   "name": "orbi-energy-swarm",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0-beta.1",
   "type": "module",
   "packageManager": "npm@10.9.2",
   "engines": {
@@ -18,7 +18,8 @@
     "test": "npm run test:repo && npm run test:gameplay && npm run test:platform",
     "test:repo": "node --test tests/*.test.mjs",
     "test:gameplay": "tsx --test tests/gameplay/*.test.ts",
-    "test:platform": "tsx --test tests/*.test.ts"
+    "test:platform": "tsx --test tests/*.test.ts",
+    "release:verify": "node scripts/verify-release.mjs"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
