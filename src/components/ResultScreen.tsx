@@ -11,6 +11,10 @@ interface ResultScreenProps {
   maxSwarmSize: number;
   enemiesDestroyed: number;
   nanoCreditsGained: number;
+  bestInfiniteSector?: number;
+  bestInfiniteWave?: number;
+  infiniteMinibossesDefeated?: number;
+  infiniteBossRematchesDefeated?: number;
   onRestart: () => void;
   onExitToMenu: () => void;
 
@@ -40,6 +44,10 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
   maxSwarmSize,
   enemiesDestroyed,
   nanoCreditsGained,
+  bestInfiniteSector = 0,
+  bestInfiniteWave = 0,
+  infiniteMinibossesDefeated = 0,
+  infiniteBossRematchesDefeated = 0,
   onRestart,
   onExitToMenu,
   activeRunUpgrades,
@@ -297,6 +305,38 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
             </div>
           </div>
         </div>
+
+        {/* INFINITE SWARM RECORD SUMMARY */}
+        {bestInfiniteSector >= 11 && (
+          <div className="bg-cyan-950/10 rounded-xl p-3 border border-cyan-500/20 text-left font-mono text-[10px] space-y-2">
+            <div className="flex items-center justify-between border-b border-cyan-950/60 pb-1.5">
+              <span className="text-cyan-300 font-black uppercase tracking-[0.14em]">
+                ∞ {language === "es" ? "ARCHIVO INFINITE SWARM" : "INFINITE SWARM ARCHIVE"}
+              </span>
+              <span className="text-[8px] rounded-full border border-emerald-500/25 bg-emerald-500/10 px-2 py-0.5 text-emerald-300 uppercase">
+                {language === "es" ? "PERSISTENTE" : "PERSISTENT"}
+              </span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
+              <div className="rounded-lg border border-slate-800/70 bg-slate-950/55 p-2">
+                <div className="text-[8px] text-slate-500 uppercase">{language === "es" ? "MEJOR SECTOR" : "BEST SECTOR"}</div>
+                <div className="text-base font-black text-cyan-300">{bestInfiniteSector}</div>
+              </div>
+              <div className="rounded-lg border border-slate-800/70 bg-slate-950/55 p-2">
+                <div className="text-[8px] text-slate-500 uppercase">{language === "es" ? "OLEADA" : "WAVE"}</div>
+                <div className="text-base font-black text-indigo-300">{bestInfiniteWave}</div>
+              </div>
+              <div className="rounded-lg border border-slate-800/70 bg-slate-950/55 p-2">
+                <div className="text-[8px] text-slate-500 uppercase">WARDENS</div>
+                <div className="text-base font-black text-amber-300">{infiniteMinibossesDefeated}</div>
+              </div>
+              <div className="rounded-lg border border-slate-800/70 bg-slate-950/55 p-2">
+                <div className="text-[8px] text-slate-500 uppercase">REMATCHES</div>
+                <div className="text-base font-black text-pink-300">{infiniteBossRematchesDefeated}</div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* NOTIFY MEMENTO MESSAGE */}
         <div className="text-[10px] font-mono text-slate-500 leading-relaxed max-w-xs mx-auto">
