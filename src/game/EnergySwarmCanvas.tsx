@@ -4,6 +4,7 @@ import {
   FormationType, EnemyType, OrbiType
 } from "./types";
 import { CANVAS_WIDTH, CANVAS_HEIGHT } from "./constants";
+import { getCanvasBackingStoreSize } from "./canvasResolution";
 import { getActiveLanguage } from "../i18n";
 
 interface EnergySwarmCanvasProps {
@@ -37,6 +38,33 @@ export const EnergySwarmCanvas: React.FC<EnergySwarmCanvasProps> = ({
   onPointerDown,
   onPointerUp
 }) => {
+  React.useEffect(() => {
+    const syncBackingStore = () => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+
+      const { dpr, width, height } = getCanvasBackingStoreSize(
+        CANVAS_WIDTH,
+        CANVAS_HEIGHT,
+        window.devicePixelRatio,
+      );
+
+      if (canvas.width !== width) canvas.width = width;
+      if (canvas.height !== height) canvas.height = height;
+      canvas.dataset.logicalWidth = String(CANVAS_WIDTH);
+      canvas.dataset.logicalHeight = String(CANVAS_HEIGHT);
+      canvas.dataset.pixelRatio = String(dpr);
+    };
+
+    syncBackingStore();
+    window.addEventListener("resize", syncBackingStore);
+    window.visualViewport?.addEventListener("resize", syncBackingStore);
+
+    return () => {
+      window.removeEventListener("resize", syncBackingStore);
+      window.visualViewport?.removeEventListener("resize", syncBackingStore);
+    };
+  }, [canvasRef]);
 
   // We perform drawing logic directly using requestAnimationFrame inside parent,
   // but let's provide a robust, responsive Canvas frame wrapper with CSS constraints.
