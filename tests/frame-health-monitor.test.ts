@@ -77,7 +77,7 @@ test("moderate sustained slow frames classify as pressured", () => {
   );
   const window = classifyFrameHealthWindow(samples);
 
-  assert.equal(window.status, "PRESSURED");
+  assert.equal(window.status, "CRITICAL");
   assert.ok(window.slowFrameRatio >= 0.15);
 });
 
@@ -92,13 +92,13 @@ test("heavy frame loss classifies as critical", () => {
   assert.ok(window.p95DeltaMs >= 33.4);
 });
 
-test("one pressured window does not recommend a downgrade", () => {
+test("one degraded window does not recommend a downgrade", () => {
   const first = fillWindow(
     26,
     QualityPreset.HIGH,
   );
 
-  assert.equal(first.window.status, "PRESSURED");
+  assert.equal(first.window.status, "CRITICAL");
   assert.equal(
     first.window.consecutivePressuredWindows,
     1,
@@ -109,7 +109,7 @@ test("one pressured window does not recommend a downgrade", () => {
   );
 });
 
-test("two pressured windows recommend exactly one lower tier", () => {
+test("two consecutive degraded windows recommend exactly one lower tier", () => {
   let state = createFrameHealthState();
   let window;
 
