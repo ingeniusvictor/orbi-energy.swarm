@@ -35,6 +35,7 @@ import {
   isRuntimeWaveComplete,
   shouldTickRuntimeTimer,
 } from "./runtimeCompletionPolicy";
+import { projectRuntimeCombatPressure } from "./runtimeCombatPressure";
 import {
   applyCampaignVictoryCheckpoint,
   applyFinalRunCommit,
@@ -291,6 +292,11 @@ export const EnergySwarmGame: React.FC = () => {
 
   const getCurrentRuntimeDescriptor = () =>
     resolveRuntimeWaveDescriptor(runtimeProgressionRef.current);
+
+  const getCurrentCombatPressure = () =>
+    projectRuntimeCombatPressure(
+      getCurrentRuntimeDescriptor(),
+    );
 
   const setUpgradeSelectionOpen = (open: boolean) => {
     setIsUpgradeSelectionOpen(open);
@@ -1614,12 +1620,16 @@ export const EnergySwarmGame: React.FC = () => {
     ) return;
 
     const biomeCfg = getBiomeConfig(activeBiome);
+    const combatPressure =
+      projectRuntimeCombatPressure(descriptor);
 
     // Pick a random enemy type or use the forced type
     const comp = descriptor.spawn.enemyComposition;
     const type = forcedType || (comp[Math.floor(Math.random() * comp.length)] || EnemyType.CRAWLER);
-    const difficultyMultiplier =
-      descriptor.pressure.legacyDifficultyMultiplier ?? 1;
+    const healthMultiplier =
+      combatPressure.enemyHealthMultiplier;
+    const movementSpeedMultiplier =
+      combatPressure.enemyMovementSpeedMultiplier;
 
     // Pick spawn boundaries (coherently outside the camera viewport but within 1600x960 world)
     const cam = cameraStateRef.current;
@@ -1650,21 +1660,29 @@ export const EnergySwarmGame: React.FC = () => {
 
     // Ensure we are not spawning right on top of the player!
     const distToPlayer = Math.sqrt((ex - playerPosRef.current.x) ** 2 + (ey - playerPosRef.current.y) ** 2);
-    if (distToPlayer < 150) {
+    const spawnSafetyRadius = Math.max(
+      150,
+      combatPressure.spawnSafetyRadius,
+    );
+    if (distToPlayer < spawnSafetyRadius) {
       const angle = Math.random() * Math.PI * 2;
-      ex = Math.max(16, Math.min(WORLD_WIDTH - 16, playerPosRef.current.x + Math.cos(angle) * 300));
-      ey = Math.max(16, Math.min(WORLD_HEIGHT - 16, playerPosRef.current.y + Math.sin(angle) * 300));
+      const relocationRadius = Math.max(
+        300,
+        spawnSafetyRadius * 2,
+      );
+      ex = Math.max(16, Math.min(WORLD_WIDTH - 16, playerPosRef.current.x + Math.cos(angle) * relocationRadius));
+      ey = Math.max(16, Math.min(WORLD_HEIGHT - 16, playerPosRef.current.y + Math.sin(angle) * relocationRadius));
     }
 
     // Class Attributes
-    let health = 15 * difficultyMultiplier;
-    let speed = (0.8 + Math.random() * 0.6) * biomeCfg.enemySpeedMultiplier;
+    let health = 15 * healthMultiplier;
+    let speed = (0.8 + Math.random() * 0.6) * biomeCfg.enemySpeedMultiplier * movementSpeedMultiplier;
     let size = 10;
     let color = "#ef4444"; // standard Red crawler
 
     if (type === EnemyType.PARASITE) {
-      health = 8 * difficultyMultiplier;
-      let baseSpeed = 1.8 * biomeCfg.enemySpeedMultiplier;
+      health = 8 * healthMultiplier;
+      let baseSpeed = 1.8 * biomeCfg.enemySpeedMultiplier * movementSpeedMultiplier;
       if (descriptor.modifiers.includes("PARASITE_SPEED_SURGE")) {
         baseSpeed *= 1.4;
       }
@@ -1672,23 +1690,23 @@ export const EnergySwarmGame: React.FC = () => {
       size = 8;
       color = "#f43f5e"; // rose pink parasite
     } else if (type === EnemyType.DRONE) {
-      health = 20 * difficultyMultiplier;
-      speed = 0.7 * biomeCfg.enemySpeedMultiplier;
+      health = 20 * healthMultiplier;
+      speed = 0.7 * biomeCfg.enemySpeedMultiplier * movementSpeedMultiplier;
       size = 11;
       color = "#a855f7"; // purple drone
     } else if (type === EnemyType.SPLITTER) {
-      health = 18 * difficultyMultiplier;
-      speed = 0.9 * biomeCfg.enemySpeedMultiplier;
+      health = 18 * healthMultiplier;
+      speed = 0.9 * biomeCfg.enemySpeedMultiplier * movementSpeedMultiplier;
       size = 12;
       color = "#22c55e"; // Green splitter
     } else if (type === EnemyType.DISRUPTOR) {
-      health = 25 * difficultyMultiplier;
-      speed = 0.9 * biomeCfg.enemySpeedMultiplier;
+      health = 25 * healthMultiplier;
+      speed = 0.9 * biomeCfg.enemySpeedMultiplier * movementSpeedMultiplier;
       size = 11;
       color = "#eab308"; // Amber disruptor
     } else if (type === EnemyType.BLACKOUT_ELITE) {
-      health = 45 * difficultyMultiplier;
-      speed = 0.5 * biomeCfg.enemySpeedMultiplier;
+      health = 45 * healthMultiplier;
+      speed = 0.5 * biomeCfg.enemySpeedMultiplier * movementSpeedMultiplier;
       size = 15;
       color = "#3b82f6"; // Blue elite armored
     }
@@ -2957,6 +2975,10 @@ export const EnergySwarmGame: React.FC = () => {
 
     const simulationDescriptor =
       getCurrentRuntimeDescriptor();
+    const simulationCombatPressure =
+      projectRuntimeCombatPressure(
+        simulationDescriptor,
+      );
     if (waveActiveRef.current && !bossActiveRef.current) {
       if (currentWaveRef.current === 1) {
         const waveDuration =
@@ -3117,7 +3139,9 @@ export const EnergySwarmGame: React.FC = () => {
       enemy.speed = originalSpeed;
 
       // Shoot & pulse attack timers
-      enemy.shootCooldown -= delta / 16.6;
+      enemy.shootCooldown -=
+        (delta / 16.6) *
+        simulationCombatPressure.enemyAttackRateMultiplier;
       if (enemy.shootCooldown <= 0) {
         if (enemy.type === EnemyType.DRONE) {
           enemy.shootCooldown = 110 + Math.random() * 80;
@@ -3227,7 +3251,12 @@ export const EnergySwarmGame: React.FC = () => {
 
     if (res.type === "NANO") {
       // Harvest permanent Nano credits multiplier by sector config
-      const val = Math.round(res.amount * getBiomeConfig(activeBiome).crystalValueMultiplier);
+      const combatPressure = getCurrentCombatPressure();
+      const val = Math.round(
+        res.amount *
+          getBiomeConfig(activeBiome).crystalValueMultiplier *
+          combatPressure.resourceValueMultiplier,
+      );
       nanoCreditsRef.current += val;
       runNanoCreditsEarnedRef.current += val;
       setNanoCredits(nanoCreditsRef.current);
@@ -3381,7 +3410,18 @@ export const EnergySwarmGame: React.FC = () => {
 
   // --- SHOOT AI TRIGGER FROM ENEMY DRONE ---
   const shootFromEnemy = (enemy: Enemy) => {
-    if (projectilesRef.current.length >= MAX_PROJECTILES) return;
+    const combatPressure = getCurrentCombatPressure();
+    const hostileProjectileCount =
+      projectilesRef.current.filter(
+        (projectile) => !projectile.fromPlayer,
+      ).length;
+    const hostileProjectileBudget =
+      combatPressure.projectileBudget ?? MAX_PROJECTILES;
+
+    if (
+      projectilesRef.current.length >= MAX_PROJECTILES ||
+      hostileProjectileCount >= hostileProjectileBudget
+    ) return;
 
     if (enemy.type === EnemyType.DRONE || enemy.type === EnemyType.BOSS_DEVOURER) {
       const dx = playerPosRef.current.x - enemy.x;
@@ -3414,6 +3454,7 @@ export const EnergySwarmGame: React.FC = () => {
   // --- DETECT SINGLE-IMPACT COLLISION SWEEPS ---
   const detectAndResolveCollisions = () => {
     const quality = getQualityConfig(stats.qualityPreset);
+    const combatPressure = getCurrentCombatPressure();
 
     // 1. PROJECTILES vs ENEMIES / PLAYER
     projectilesRef.current.forEach((proj) => {
@@ -3743,7 +3784,10 @@ export const EnergySwarmGame: React.FC = () => {
           const attackType = bossCurrentAttackRef.current === "devourer_charge" ? "devourer_charge" : "contact_damage";
           damagePlayerFromBoss(baseDamage, attackType);
         } else {
-          damagePlayer(baseDamage);
+          damagePlayer(
+            baseDamage *
+              combatPressure.contactDamageMultiplier,
+          );
         }
       }
     });
@@ -3752,6 +3796,15 @@ export const EnergySwarmGame: React.FC = () => {
   // --- SPAWN SPLITTED ENEMY PARTS ---
   const spawnMinionSplit = (x: number, y: number, size: number) => {
     if (enemiesRef.current.length >= MAX_ENEMIES) return;
+    const combatPressure = getCurrentCombatPressure();
+    const splitHealthMultiplier =
+      combatPressure.sourceMode === "INFINITE"
+        ? combatPressure.enemyHealthMultiplier
+        : 1;
+    const splitSpeedMultiplier =
+      combatPressure.sourceMode === "INFINITE"
+        ? combatPressure.enemyMovementSpeedMultiplier
+        : 1;
     enemiesRef.current.push({
       id: Math.random().toString(),
       type: EnemyType.CRAWLER,
@@ -3759,9 +3812,9 @@ export const EnergySwarmGame: React.FC = () => {
       y,
       vx: 0,
       vy: 0,
-      health: 12,
-      maxHealth: 12,
-      speed: 1.1,
+      health: 12 * splitHealthMultiplier,
+      maxHealth: 12 * splitHealthMultiplier,
+      speed: 1.1 * splitSpeedMultiplier,
       size,
       color: "#22c55e",
       shootCooldown: 120,
