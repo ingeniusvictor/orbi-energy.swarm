@@ -30,14 +30,14 @@ const section = (
   return game.slice(start, end);
 };
 
-test("live runtime consumes the certified signature behavior projector", () => {
+test("live runtime consumes the certified signature behavior cache", () => {
   assert.match(
     game,
-    /projectEvolvedSignatureBehavior/,
+    /createEnemySignatureBehaviorCache/,
   );
   assert.match(
     game,
-    /runtimeEnemySignatureBehavior/,
+    /enemySignatureBehaviorCache/,
   );
   assert.doesNotMatch(
     game,
@@ -46,7 +46,7 @@ test("live runtime consumes the certified signature behavior projector", () => {
   );
 });
 
-test("enemy simulation projects signature behavior from per-instance metadata", () => {
+test("enemy simulation resolves cached signature behavior from enemy identity", () => {
   const physics = section(
     "const updateEnginePhysics =",
     "// --- COLLECT RESOURCES SCRIPT ---",
@@ -54,7 +54,11 @@ test("enemy simulation projects signature behavior from per-instance metadata", 
 
   assert.match(
     physics,
-    /const signatureBehavior =[\s\S]*projectEvolvedSignatureBehavior\([\s\S]*enemy\.evolvedSignature,[\s\S]*enemy\.evolvedSpecialIntensity/,
+    /const signatureBehavior =[\s\S]*enemySignatureBehaviorCacheRef\.current\.get\(enemy\)/,
+  );
+  assert.doesNotMatch(
+    physics,
+    /projectEvolvedSignatureBehavior\(/,
   );
 });
 
