@@ -116,11 +116,15 @@ test("final run commit includes Infinite reach only when runtime mode is INFINIT
 
   assert.match(
     commit,
-    /infiniteSectorReached:[\s\S]*runtimeProgressionRef\.current\.mode === "INFINITE"[\s\S]*getRuntimeSector/,
+    /const infiniteSectorReached =[\s\S]*runtimeProgressionRef\.current\.mode === "INFINITE"[\s\S]*getRuntimeSector/,
   );
   assert.match(
     commit,
-    /infiniteWaveReached:[\s\S]*runtimeProgressionRef\.current\.mode === "INFINITE"[\s\S]*getRuntimeWaveNumber/,
+    /const infiniteWaveReached =[\s\S]*runtimeProgressionRef\.current\.mode === "INFINITE"[\s\S]*getRuntimeWaveNumber/,
+  );
+  assert.match(
+    commit,
+    /infiniteSectorReached,[\s\S]*infiniteWaveReached,[\s\S]*runArchiveEntry/,
   );
 });
 
