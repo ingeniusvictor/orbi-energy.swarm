@@ -7,9 +7,9 @@ const game = readFileSync(
   "utf8",
 );
 
-test("EnergySwarmGame resolves runtime descriptors through the unified router", () => {
+test("EnergySwarmGame resolves runtime descriptors through the cached unified router", () => {
   assert.match(game, /createCampaignRuntimeState/);
-  assert.match(game, /resolveRuntimeWaveDescriptor/);
+  assert.match(game, /getCachedRuntimeProjectionBundle/);
   assert.match(game, /runtimeProgressionRef/);
   assert.match(game, /getCurrentRuntimeDescriptor/);
   assert.doesNotMatch(game, /createCampaignRuntimeWaveDescriptor/);
