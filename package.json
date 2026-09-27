@@ -15,9 +15,10 @@
     "clean": "node scripts/clean.mjs",
     "lint": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
-    "test": "npm run test:repo && npm run test:gameplay",
+    "test": "npm run test:repo && npm run test:gameplay && npm run test:platform",
     "test:repo": "node --test tests/*.test.mjs",
-    "test:gameplay": "tsx --test tests/gameplay/*.test.ts"
+    "test:gameplay": "tsx --test tests/gameplay/*.test.ts",
+    "test:platform": "tsx --test tests/*.test.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
