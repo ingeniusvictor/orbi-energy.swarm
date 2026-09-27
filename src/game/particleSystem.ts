@@ -110,6 +110,29 @@ export function drawParticle(ctx: CanvasRenderingContext2D, p: Particle) {
 }
 
 /**
+ * Appends one cosmetic particle without exceeding the active quality budget.
+ * Returns true when the particle is accepted and false when it is dropped.
+ */
+export function pushParticleWithinBudget(
+  particles: Particle[],
+  maxCap: number,
+  particle: Particle,
+): boolean {
+  const safeCap =
+    typeof maxCap === "number" &&
+    Number.isFinite(maxCap)
+      ? Math.max(0, Math.floor(maxCap))
+      : 0;
+
+  if (particles.length >= safeCap) {
+    return false;
+  }
+
+  particles.push(particle);
+  return true;
+}
+
+/**
  * Spawns a batch of particles for a specific trigger.
  */
 export function triggerExplosion(

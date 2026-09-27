@@ -19,7 +19,12 @@ import {
 import { FORMATIONS, calculateSwarmOffset } from "./formations";
 import { getBiomeConfig, BIOME_ROTATION } from "./biomes";
 import { getQualityConfig } from "./quality";
-import { triggerExplosion, updateParticle, drawParticle } from "./particleSystem";
+import {
+  triggerExplosion,
+  updateParticle,
+  drawParticle,
+  pushParticleWithinBudget,
+} from "./particleSystem";
 import { backgroundRenderer } from "./backgroundRenderer";
 import { getWaveConfig, INTER_WAVE_DURATION, BOSS_WAVE_NUMBER, BLACKOUT_DEVOURER_CANON } from "./waveDirector";
 import {
@@ -307,6 +312,16 @@ export const EnergySwarmGame: React.FC = () => {
 
   // Stats Ref to access stats synchronously in high-frequency engine
   const statsRef = useRef<GameStats | null>(null);
+
+  const pushVfxParticle = (particle: Particle) =>
+    pushParticleWithinBudget(
+      particlesRef.current,
+      getQualityConfig(
+        statsRef.current?.qualityPreset ??
+          stats.qualityPreset,
+      ).maxParticles,
+      particle,
+    );
 
   // Input Arbitration Refs
   const isMouseDownRef = useRef(false);
@@ -2457,7 +2472,7 @@ export const EnergySwarmGame: React.FC = () => {
         if (Math.random() < 0.1) {
           const px = node.x + (Math.random() - 0.5) * 8;
           const py = node.y + (Math.random() - 0.5) * 8;
-          particlesRef.current.push({
+          pushVfxParticle({
             id: Math.random().toString(),
             type: ParticleType.FUSION,
             x: px,
@@ -2714,7 +2729,7 @@ export const EnergySwarmGame: React.FC = () => {
         
         if (Math.random() < 0.4) {
           const randDist = Math.random() * beamLength;
-          particlesRef.current.push({
+          pushVfxParticle({
             id: Math.random().toString(),
             type: ParticleType.FUSION,
             x: bx + randDist * dx + (Math.random() - 0.5) * 15,
@@ -2763,7 +2778,7 @@ export const EnergySwarmGame: React.FC = () => {
         if (Math.random() < 0.3) {
           const pAngle = Math.random() * Math.PI * 2;
           const pDist = 30 + Math.random() * (pullRadius - 30);
-          particlesRef.current.push({
+          pushVfxParticle({
             id: Math.random().toString(),
             type: ParticleType.FUSION,
             x: gx + Math.cos(pAngle) * pDist,
@@ -2829,7 +2844,7 @@ export const EnergySwarmGame: React.FC = () => {
         if (Math.random() < 0.4) {
           const pAngle = bossAttackAngleRef.current + 0.5 + Math.random() * (Math.PI * 2 - 1.0);
           const pDist = 50 + Math.random() * 300;
-          particlesRef.current.push({
+          pushVfxParticle({
             id: Math.random().toString(),
             type: ParticleType.FUSION,
             x: bx + Math.cos(pAngle) * pDist,
@@ -2904,7 +2919,7 @@ export const EnergySwarmGame: React.FC = () => {
 
       case "devourer_charge": {
         if (Math.random() < 0.4) {
-          particlesRef.current.push({
+          pushVfxParticle({
             id: Math.random().toString(),
             type: ParticleType.FUSION,
             x: boss.x + (Math.random() - 0.5) * 30,
@@ -3032,7 +3047,7 @@ export const EnergySwarmGame: React.FC = () => {
         const startY = playerPosRef.current.y;
         
         // Spawn purifiers pointing towards the collapsing boss
-        particlesRef.current.push({
+        pushVfxParticle({
           id: Math.random().toString(),
           type: ParticleType.FUSION,
           x: startX,
