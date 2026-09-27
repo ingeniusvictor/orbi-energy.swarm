@@ -34,13 +34,13 @@ export const StartScreen: React.FC<StartScreenProps> = ({
   };
 
   return (
-    <div className="orbi-premium-entry absolute inset-0 z-50 flex flex-col items-center justify-center p-4 text-white select-none overflow-y-auto">
+    <div className="orbi-premium-entry absolute inset-0 z-50 flex flex-col items-center justify-start xl:justify-center p-4 md:p-6 text-white select-none overflow-y-auto">
       <PremiumBackdrop />
       {/* GLOWING HEADER */}
       <div className="relative z-10 text-center mb-5">
         <div className="flex justify-center items-center gap-2 mb-1">
           <span className="orbi-premium-eyebrow px-2.5 py-1 text-[10px] md:text-xs font-mono rounded-full bg-cyan-400/8 text-cyan-200 border border-cyan-300/20 tracking-[0.12em]">
-            WEB DEMO v0.2.6b-bilingual-localization
+            PUBLIC BETA v0.2.0-beta.1
           </span>
           <span className="text-xs font-mono text-slate-400">© 2026 ORBI ECOSYSTEM</span>
         </div>
@@ -80,9 +80,9 @@ export const StartScreen: React.FC<StartScreenProps> = ({
       </div>
 
       {/* CORE GLASS CARD PANEL */}
-      <div className="orbi-premium-panel relative z-10 w-full max-w-xl rounded-2xl p-5 md:p-6 backdrop-blur-2xl">
+      <div className="orbi-premium-panel orbi-start-deck relative z-10 w-full max-w-[1500px] max-h-[74vh] overflow-y-auto rounded-2xl p-4 md:p-5 xl:p-6 backdrop-blur-2xl">
         {/* NAV BAR */}
-        <div className="flex flex-wrap gap-1.5 md:gap-2 mb-5 border-b border-slate-800 pb-3 justify-center">
+        <div className="orbi-start-tabs sticky top-0 z-30 -mx-1 mb-4 flex flex-wrap gap-1.5 md:gap-2 border-b border-slate-800/80 bg-slate-950/90 px-1 pb-3 pt-1 justify-center backdrop-blur-xl">
           <button
             onClick={() => clickTab("MAIN")}
             className={`px-3 py-1.5 rounded text-xs font-mono font-semibold transition ${
@@ -135,98 +135,200 @@ export const StartScreen: React.FC<StartScreenProps> = ({
 
         {/* TAB 1: MAIN LAUNCH & STATS */}
         {activeTab === "MAIN" && (
-          <div className="space-y-5 animate-fadeIn">
-            {/* PROGRESS OVERVIEW */}
-            <div className="grid grid-cols-2 gap-3 text-center">
-              <div className="bg-slate-950/60 p-2.5 rounded border border-slate-800/80">
-                <div className="text-slate-400 text-[10px] font-mono">{t("startScreen.highScore")}</div>
-                <div className="text-lg md:text-xl font-bold font-mono text-cyan-400">{formatNumber(stats.highScore)}</div>
-              </div>
-              <div className="bg-slate-950/60 p-2.5 rounded border border-slate-800/80">
-                <div className="text-slate-400 text-[10px] font-mono">{t("startScreen.bestWave")}</div>
-                <div className="text-lg md:text-xl font-bold font-mono text-pink-400">{t("hud.wave")} {stats.bestWave}</div>
-              </div>
-              <div className="bg-slate-950/60 p-2.5 rounded border border-slate-800/80">
-                <div className="text-slate-400 text-[10px] font-mono">{t("startScreen.maxPopulation")}</div>
-                <div className="text-lg md:text-xl font-bold font-mono text-amber-400">{stats.bestSwarmSize} ORBIS</div>
-              </div>
-              <div className="bg-slate-950/60 p-2.5 rounded border border-slate-800/80">
-                <div className="text-slate-400 text-[10px] font-mono">{t("startScreen.totalMissions")}</div>
-                <div className="text-lg md:text-xl font-bold font-mono text-slate-300">{stats.totalRuns}</div>
-              </div>
-            </div>
-
-            {/* INFINITE SWARM PERSISTENT ARCHIVE */}
-            <div className="rounded-xl border border-cyan-500/20 bg-cyan-950/10 p-3 shadow-[inset_0_0_28px_rgba(34,211,238,0.04)]">
-              <div className="flex items-center justify-between gap-3 mb-2">
-                <div className="text-left">
-                  <div className="text-[10px] font-black font-mono tracking-[0.16em] text-cyan-300 uppercase">
-                    ∞ INFINITE SWARM
+          <div className="orbi-start-main-grid grid gap-4 xl:grid-cols-[0.9fr_1.25fr_0.95fr] animate-fadeIn">
+            {/* LEFT — PILOT / CAMPAIGN RECORD */}
+            <section className="orbi-start-record order-2 xl:order-1 space-y-3 rounded-2xl border border-cyan-500/15 bg-slate-950/45 p-4 shadow-[inset_0_0_45px_rgba(34,211,238,0.035)]">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <div className="text-[10px] font-black font-mono uppercase tracking-[0.18em] text-cyan-300">
+                    {language === "es" ? "REGISTRO DEL PILOTO" : "PILOT RECORD"}
                   </div>
-                  <div className="text-[9px] font-mono text-slate-500 uppercase">
-                    {language === "es" ? "ARCHIVO DE MAESTRÍA" : "MASTERY ARCHIVE"}
+                  <div className="text-[9px] font-mono uppercase tracking-[0.12em] text-slate-500">
+                    {language === "es" ? "TELEMETRÍA PERSISTENTE" : "PERSISTENT TELEMETRY"}
                   </div>
                 </div>
-                <span className={`text-[9px] font-mono px-2 py-1 rounded-full border ${hasInfiniteRecord ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300" : "border-slate-700 bg-slate-900/70 text-slate-500"}`}>
-                  {hasInfiniteRecord
-                    ? (language === "es" ? "SINCRONIZADO" : "SYNCED")
-                    : (language === "es" ? "BLOQUEADO" : "LOCKED")}
+                <span className="rounded-full border border-cyan-500/20 bg-cyan-500/10 px-2 py-1 text-[9px] font-mono text-cyan-300">
+                  BETA
                 </span>
               </div>
 
-              {hasInfiniteRecord ? (
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
-                  <div className="rounded-lg bg-slate-950/55 border border-slate-800/70 p-2">
-                    <div className="text-[8px] text-slate-500 font-mono uppercase">{language === "es" ? "MEJOR SECTOR" : "BEST SECTOR"}</div>
-                    <div className="text-base font-black font-mono text-cyan-300">{stats.bestInfiniteSector}</div>
+              <div className="grid grid-cols-2 gap-2 text-center">
+                <div className="rounded-lg border border-slate-800/80 bg-slate-950/65 p-2.5">
+                  <div className="text-[9px] font-mono uppercase text-slate-500">{t("startScreen.highScore")}</div>
+                  <div className="text-xl font-black font-mono text-cyan-300">{formatNumber(stats.highScore)}</div>
+                </div>
+                <div className="rounded-lg border border-slate-800/80 bg-slate-950/65 p-2.5">
+                  <div className="text-[9px] font-mono uppercase text-slate-500">{t("startScreen.bestWave")}</div>
+                  <div className="text-xl font-black font-mono text-pink-300">{t("hud.wave")} {stats.bestWave}</div>
+                </div>
+                <div className="rounded-lg border border-slate-800/80 bg-slate-950/65 p-2.5">
+                  <div className="text-[9px] font-mono uppercase text-slate-500">{t("startScreen.maxPopulation")}</div>
+                  <div className="text-lg font-black font-mono text-amber-300">{stats.bestSwarmSize} ORBIS</div>
+                </div>
+                <div className="rounded-lg border border-slate-800/80 bg-slate-950/65 p-2.5">
+                  <div className="text-[9px] font-mono uppercase text-slate-500">{t("startScreen.totalMissions")}</div>
+                  <div className="text-lg font-black font-mono text-slate-200">{stats.totalRuns}</div>
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-cyan-500/20 bg-cyan-950/10 p-3">
+                <div className="mb-2 flex items-center justify-between gap-2">
+                  <div>
+                    <div className="text-[10px] font-black font-mono tracking-[0.16em] text-cyan-300 uppercase">
+                      ∞ INFINITE SWARM
+                    </div>
+                    <div className="text-[8px] font-mono text-slate-500 uppercase">
+                      {language === "es" ? "ARCHIVO DE MAESTRÍA" : "MASTERY ARCHIVE"}
+                    </div>
                   </div>
-                  <div className="rounded-lg bg-slate-950/55 border border-slate-800/70 p-2">
-                    <div className="text-[8px] text-slate-500 font-mono uppercase">{language === "es" ? "OLEADA" : "WAVE"}</div>
-                    <div className="text-base font-black font-mono text-indigo-300">{stats.bestInfiniteWave}</div>
+                  <span className={`rounded-full border px-2 py-1 text-[8px] font-mono ${
+                    hasInfiniteRecord
+                      ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
+                      : "border-slate-700 bg-slate-900/70 text-slate-500"
+                  }`}>
+                    {hasInfiniteRecord
+                      ? (language === "es" ? "SINCRONIZADO" : "SYNCED")
+                      : (language === "es" ? "BLOQUEADO" : "LOCKED")}
+                  </span>
+                </div>
+
+                {hasInfiniteRecord ? (
+                  <div className="grid grid-cols-2 gap-2 text-center">
+                    <div className="rounded-lg bg-slate-950/55 p-2">
+                      <div className="text-[8px] text-slate-500 font-mono uppercase">{language === "es" ? "MEJOR SECTOR" : "BEST SECTOR"}</div>
+                      <div className="text-base font-black font-mono text-cyan-300">{stats.bestInfiniteSector}</div>
+                    </div>
+                    <div className="rounded-lg bg-slate-950/55 p-2">
+                      <div className="text-[8px] text-slate-500 font-mono uppercase">{language === "es" ? "OLEADA" : "WAVE"}</div>
+                      <div className="text-base font-black font-mono text-indigo-300">{stats.bestInfiniteWave}</div>
+                    </div>
                   </div>
-                  <div className="rounded-lg bg-slate-950/55 border border-slate-800/70 p-2">
-                    <div className="text-[8px] text-slate-500 font-mono uppercase">WARDENS</div>
-                    <div className="text-base font-black font-mono text-amber-300">{stats.infiniteMinibossesDefeated}</div>
-                  </div>
-                  <div className="rounded-lg bg-slate-950/55 border border-slate-800/70 p-2">
-                    <div className="text-[8px] text-slate-500 font-mono uppercase">REMATCHES</div>
-                    <div className="text-base font-black font-mono text-pink-300">{stats.infiniteBossRematchesDefeated}</div>
+                ) : (
+                  <p className="text-[9px] font-mono text-slate-500 leading-relaxed">
+                    {language === "es"
+                      ? "Derrota al Blackout Devourer y abre el Sector 11 para activar la progresión infinita."
+                      : "Defeat the Blackout Devourer and open Sector 11 to activate Infinite progression."}
+                  </p>
+                )}
+              </div>
+
+              <RecentRunArchivePanel
+                entries={stats.recentRunArchive}
+                limit={1}
+                compact
+              />
+            </section>
+
+            {/* CENTER — HERO / WORLD PITCH */}
+            <section className="orbi-start-hero order-3 xl:order-2 overflow-hidden rounded-2xl border border-indigo-500/20 bg-[radial-gradient(circle_at_50%_35%,rgba(34,211,238,0.09),transparent_34%),radial-gradient(circle_at_50%_70%,rgba(139,92,246,0.08),transparent_36%),rgba(2,6,23,0.55)] p-4 md:p-5">
+              <div className="orbi-start-hero-stage relative min-h-[320px] overflow-hidden rounded-xl border border-cyan-500/10 bg-slate-950/55">
+                <div className="absolute inset-0 opacity-60 [background-image:linear-gradient(rgba(34,211,238,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(34,211,238,0.04)_1px,transparent_1px)] [background-size:32px_32px]" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="orbi-start-core relative h-56 w-56 md:h-64 md:w-64">
+                    <div className="absolute inset-0 rounded-full border border-cyan-400/20 shadow-[0_0_80px_rgba(34,211,238,0.12)]" />
+                    <div className="absolute inset-5 rounded-full border border-indigo-400/20 [transform:rotateX(68deg)]" />
+                    <div className="absolute inset-10 rounded-full border border-violet-400/20 [transform:rotateY(68deg)]" />
+                    <div className="absolute inset-[27%] rounded-full bg-[radial-gradient(circle_at_35%_30%,#fef3c7_0%,#f59e0b_15%,#22d3ee_40%,#0f172a_70%)] shadow-[0_0_60px_rgba(34,211,238,0.42),0_0_120px_rgba(139,92,246,0.18)]" />
+                    <div className="absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow-[0_0_24px_white]" />
                   </div>
                 </div>
-              ) : (
-                <p className="text-[10px] font-mono text-slate-500 leading-relaxed text-left">
-                  {language === "es"
-                    ? "Completa la campaña y derrota al Blackout Devourer para abrir el Sector 11 y comenzar tu récord infinito."
-                    : "Complete the campaign and defeat the Blackout Devourer to open Sector 11 and begin your Infinite record."}
-                </p>
-              )}
-            </div>
 
-            <RecentRunArchivePanel
-              entries={stats.recentRunArchive}
-              limit={3}
-            />
+                <div className="absolute left-4 top-4 rounded-full border border-cyan-500/20 bg-slate-950/75 px-3 py-1 text-[9px] font-mono uppercase tracking-[0.16em] text-cyan-300">
+                  FOTON // COMMAND CORE
+                </div>
+                <div className="absolute bottom-4 left-4 right-4 rounded-xl border border-slate-800/70 bg-slate-950/80 p-3 backdrop-blur-md">
+                  <div className="text-[9px] font-mono uppercase tracking-[0.16em] text-amber-300">
+                    {language === "es" ? "SISTEMA TÁCTICO AUTÓNOMO" : "AUTONOMOUS TACTICAL SYSTEM"}
+                  </div>
+                  <p className="mt-1 text-[10px] leading-relaxed text-slate-400">
+                    {language === "es"
+                      ? "Coordina tu enjambre, adapta formaciones y sobrevive a una red hostil que evoluciona contigo."
+                      : "Coordinate your swarm, adapt formations and survive a hostile network that evolves with you."}
+                  </p>
+                </div>
+              </div>
 
-            {/* PREPARATION MEMENTO */}
-            <div className="bg-slate-950/30 p-3 rounded border border-slate-800/40 text-center text-xs text-slate-400 leading-relaxed">
-              {t("startScreen.sloganDesc")}
-            </div>
+              <div className="mt-4">
+                <CampaignArc language={language} />
+              </div>
+            </section>
 
-            <CampaignArc language={language} />
+            {/* RIGHT — ALWAYS-REACHABLE LAUNCH CONTROL */}
+            <aside className="orbi-start-launch order-1 xl:order-3 xl:sticky xl:top-14 self-start rounded-2xl border border-amber-500/25 bg-[linear-gradient(180deg,rgba(120,53,15,0.12),rgba(2,6,23,0.72))] p-4 shadow-[0_20px_70px_rgba(0,0,0,0.32),inset_0_0_40px_rgba(245,158,11,0.04)]">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <div className="text-[10px] font-black font-mono uppercase tracking-[0.18em] text-amber-300">
+                    {language === "es" ? "CONTROL DE LANZAMIENTO" : "LAUNCH CONTROL"}
+                  </div>
+                  <div className="text-[8px] font-mono uppercase tracking-[0.12em] text-slate-500">
+                    ORBI // FOTON-01
+                  </div>
+                </div>
+                <span className="h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_16px_rgba(52,211,153,0.9)]" />
+              </div>
 
-            {/* START BUTTON */}
-            <button
-              onClick={() => {
-                playClickSound();
-                onStartGame();
-              }}
-              className="orbi-premium-cta w-full py-4 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-300 hover:from-amber-400 hover:via-yellow-300 hover:to-amber-300 text-slate-950 font-black tracking-[0.12em] text-sm flex justify-center items-center gap-2 cursor-pointer transition duration-300 active:scale-[0.98]"
-            >
-              <Play size={16} fill="white" />
-              {t("startScreen.activateSync")}
-            </button>
+              <div className="mt-4 rounded-xl border border-slate-800/70 bg-slate-950/60 p-3">
+                <div className="grid grid-cols-2 gap-2 text-[9px] font-mono">
+                  <div>
+                    <div className="uppercase text-slate-600">{language === "es" ? "MODO" : "MODE"}</div>
+                    <div className="font-bold text-cyan-300">{hasInfiniteRecord ? "CAMPAIGN / ∞" : "CAMPAIGN"}</div>
+                  </div>
+                  <div>
+                    <div className="uppercase text-slate-600">{language === "es" ? "CALIDAD" : "QUALITY"}</div>
+                    <div className="font-bold text-indigo-300">{stats.qualityPreset}</div>
+                  </div>
+                  <div>
+                    <div className="uppercase text-slate-600">{language === "es" ? "MEJOR OLEADA" : "BEST WAVE"}</div>
+                    <div className="font-bold text-pink-300">{stats.bestWave}</div>
+                  </div>
+                  <div>
+                    <div className="uppercase text-slate-600">{language === "es" ? "RUNS" : "RUNS"}</div>
+                    <div className="font-bold text-slate-200">{stats.totalRuns}</div>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                data-primary-start-cta="true"
+                onClick={() => {
+                  playClickSound();
+                  onStartGame();
+                }}
+                className="orbi-premium-cta mt-4 w-full rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-300 px-4 py-4 text-sm font-black tracking-[0.14em] text-slate-950 shadow-[0_12px_45px_rgba(245,158,11,0.22)] transition duration-300 hover:from-amber-400 hover:via-yellow-300 hover:to-amber-300 active:scale-[0.98]"
+              >
+                <span className="flex items-center justify-center gap-2">
+                  <Play size={17} fill="currentColor" />
+                  {t("startScreen.activateSync")}
+                </span>
+              </button>
+
+              <div className="mt-2 flex items-center justify-center gap-2 text-[8px] font-mono uppercase tracking-[0.12em] text-slate-600">
+                <span>ENTER</span>
+                <span>•</span>
+                <span>{language === "es" ? "ATAJO DE TECLADO" : "KEYBOARD SHORTCUT"}</span>
+              </div>
+
+              <div className="mt-4 rounded-xl border border-cyan-500/10 bg-cyan-950/10 p-3 text-[10px] leading-relaxed text-slate-400">
+                {t("startScreen.sloganDesc")}
+              </div>
+
+              <div className="mt-4 grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => clickTab("CONTROLS")}
+                  className="rounded-lg border border-slate-800 bg-slate-900/60 px-3 py-2 text-[9px] font-mono uppercase text-slate-300 transition hover:border-cyan-500/30 hover:text-cyan-300"
+                >
+                  {t("startScreen.controlsTab")}
+                </button>
+                <button
+                  onClick={() => clickTab("SETTINGS")}
+                  className="rounded-lg border border-slate-800 bg-slate-900/60 px-3 py-2 text-[9px] font-mono uppercase text-slate-300 transition hover:border-indigo-500/30 hover:text-indigo-300"
+                >
+                  {t("startScreen.settingsTab")}
+                </button>
+              </div>
+            </aside>
           </div>
-        )}
+        ))}
 
         {/* TAB 2: HOW TO PLAY */}
         {activeTab === "HOW_TO" && (
