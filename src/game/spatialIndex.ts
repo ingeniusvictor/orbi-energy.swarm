@@ -211,7 +211,7 @@ export const findNearestSpatialItem = <T>(
     const dy = entry.y - y;
     const distanceSquared = dx * dx + dy * dy;
 
-    if (distanceSquared > maxRangeSquared) {
+    if (distanceSquared >= maxRangeSquared) {
       continue;
     }
 
