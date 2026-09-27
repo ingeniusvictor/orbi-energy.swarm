@@ -1421,3 +1421,42 @@ body {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
+
+
+/* ES-06A — Contextual mission objective row */
+.orbi-hud-objective {
+  grid-area: objective;
+  overflow: hidden;
+  padding: 0.1rem 0.15rem;
+}
+
+.orbi-game-hud {
+  grid-template-areas:
+    "shield wave"
+    "objective objective"
+    "swarm score"
+    "actions actions";
+}
+
+@media (min-width: 720px) and (max-width: 1279px) {
+  .orbi-game-hud {
+    grid-template-areas:
+      "shield wave actions"
+      "objective objective objective"
+      "score score swarm";
+  }
+}
+
+@media (min-width: 1280px) {
+  .orbi-game-hud {
+    grid-template-areas:
+      "shield wave swarm score actions"
+      "objective objective objective objective objective";
+  }
+}
+
+@media (orientation: landscape) and (max-height: 520px) {
+  .orbi-hud-objective span:last-child {
+    font-size: 0.5rem;
+  }
+}
