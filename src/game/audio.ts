@@ -1,3 +1,9 @@
+import {
+  extendTacticalPriorityWindow,
+  getAudioMixMultiplier,
+  type AudioMixLane,
+} from "./audioMixPolicy";
+
 // Procedural Audio Engine for ORBI ENERGY SWARM
 // Generates deep synth waves and retro sound effects on the fly using Web Audio API
 
@@ -6,6 +12,34 @@ let isMuted = false;
 let currentBgmNode: OscillatorNode | null = null;
 let bgmTimer: NodeJS.Timeout | null = null;
 let bgmSequenceActive = false;
+let tacticalPriorityUntil = 0;
+
+const isTacticalPriorityActive = (
+  ctx: AudioContext,
+) => ctx.currentTime < tacticalPriorityUntil;
+
+const beginTacticalPriority = (
+  ctx: AudioContext,
+  durationSeconds: number,
+) => {
+  tacticalPriorityUntil =
+    extendTacticalPriorityWindow(
+      ctx.currentTime,
+      tacticalPriorityUntil,
+      durationSeconds,
+    );
+};
+
+const laneGain = (
+  ctx: AudioContext,
+  value: number,
+  lane: AudioMixLane,
+) =>
+  value *
+  getAudioMixMultiplier(
+    lane,
+    isTacticalPriorityActive(ctx),
+  );
 
 // Safe init function that resumes context upon user gesture
 export const initAudio = (): AudioContext | null => {
@@ -46,10 +80,21 @@ export const getMuteState = (): boolean => {
 
 // --- SYNTH PROCEDURAL SOUND GENERATORS ---
 
-function createGain(ctx: AudioContext, duration: number, startVal = 0.1): GainNode {
+function createGain(
+  ctx: AudioContext,
+  duration: number,
+  startVal = 0.1,
+  lane: AudioMixLane = "STANDARD",
+): GainNode {
   const gain = ctx.createGain();
-  gain.gain.setValueAtTime(startVal, ctx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
+  gain.gain.setValueAtTime(
+    laneGain(ctx, startVal, lane),
+    ctx.currentTime,
+  );
+  gain.gain.exponentialRampToValueAtTime(
+    0.0001,
+    ctx.currentTime + duration,
+  );
   return gain;
 }
 
@@ -169,7 +214,10 @@ export const playRecruitSound = () => {
     osc.frequency.setValueAtTime(note, now + index * 0.08);
 
     gain.gain.setValueAtTime(0, now);
-    gain.gain.linearRampToValueAtTime(0.08, now + index * 0.08 + 0.02);
+    gain.gain.linearRampToValueAtTime(
+      laneGain(ctx, 0.08, "STANDARD"),
+      now + index * 0.08 + 0.02,
+    );
     gain.gain.exponentialRampToValueAtTime(0.0001, now + index * 0.08 + 0.25);
 
     osc.connect(gain);
@@ -356,7 +404,10 @@ export const playDroneChargeSound = () => {
   osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.5);
 
   gain.gain.setValueAtTime(0, ctx.currentTime);
-  gain.gain.linearRampToValueAtTime(0.04, ctx.currentTime + 0.1);
+  gain.gain.linearRampToValueAtTime(
+    laneGain(ctx, 0.04, "STANDARD"),
+    ctx.currentTime + 0.1,
+  );
   gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.5);
 
   osc.connect(gain);
@@ -367,9 +418,17 @@ export const playDroneChargeSound = () => {
 };
 
 // 14. Disruptor Charge Sound
-export const playDisruptorChargeSound = () => {
+export const playDisruptorChargeSound = (
+  tacticalPriority = false,
+) => {
   const ctx = initAudio();
   if (!ctx || isMuted) return;
+
+  if (tacticalPriority) {
+    beginTacticalPriority(ctx, 1.0);
+  }
+  const lane: AudioMixLane =
+    tacticalPriority ? "TACTICAL" : "STANDARD";
 
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
@@ -384,7 +443,10 @@ export const playDisruptorChargeSound = () => {
   filter.frequency.setValueAtTime(400, ctx.currentTime);
 
   gain.gain.setValueAtTime(0, ctx.currentTime);
-  gain.gain.linearRampToValueAtTime(0.05, ctx.currentTime + 0.8);
+  gain.gain.linearRampToValueAtTime(
+    laneGain(ctx, 0.05, lane),
+    ctx.currentTime + 0.8,
+  );
   gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 1.0);
 
   osc.connect(filter);
@@ -396,12 +458,25 @@ export const playDisruptorChargeSound = () => {
 };
 
 // 15. Disruptor Pulse Sound
-export const playDisruptorPulseSound = () => {
+export const playDisruptorPulseSound = (
+  tacticalPriority = false,
+) => {
   const ctx = initAudio();
   if (!ctx || isMuted) return;
 
+  if (tacticalPriority) {
+    beginTacticalPriority(ctx, 0.4);
+  }
+  const lane: AudioMixLane =
+    tacticalPriority ? "TACTICAL" : "STANDARD";
+
   const osc = ctx.createOscillator();
-  const gain = createGain(ctx, 0.4, 0.15);
+  const gain = createGain(
+    ctx,
+    0.4,
+    0.15,
+    lane,
+  );
 
   osc.type = "triangle";
   osc.frequency.setValueAtTime(400, ctx.currentTime);
@@ -577,7 +652,17 @@ export const startBgm = (intensity: "EXPLORATION" | "HIGH_INTENSITY" | "BOSS") =
     filter.frequency.setValueAtTime(intensity === "BOSS" ? 400 : 800, now);
     filter.frequency.exponentialRampToValueAtTime(100, now + tempo / 1000);
 
-    const volume = intensity === "BOSS" ? 0.04 : intensity === "HIGH_INTENSITY" ? 0.03 : 0.05;
+    const baseVolume =
+      intensity === "BOSS"
+        ? 0.04
+        : intensity === "HIGH_INTENSITY"
+          ? 0.03
+          : 0.05;
+    const volume = laneGain(
+      ctx,
+      baseVolume,
+      "BGM",
+    );
     gainNode.gain.setValueAtTime(volume, now);
     gainNode.gain.exponentialRampToValueAtTime(0.0001, now + (tempo / 1000) * 0.95);
 
@@ -604,6 +689,7 @@ export const playBossArrivalSound = () => {
 
   const now = ctx.currentTime;
   const duration = 1.5;
+  beginTacticalPriority(ctx, duration);
 
   const subOsc = ctx.createOscillator();
   const subGain = ctx.createGain();
@@ -628,7 +714,12 @@ export const playBossArrivalSound = () => {
   // High Pitch Beep Alarm Overlay
   [0, 0.4, 0.8].forEach((delay) => {
     const alarmOsc = ctx.createOscillator();
-    const alarmGain = createGain(ctx, 0.25, 0.1);
+    const alarmGain = createGain(
+      ctx,
+      0.25,
+      0.1,
+      "TACTICAL",
+    );
     alarmOsc.type = "sine";
     alarmOsc.frequency.setValueAtTime(987.77, now + delay); // B5 alarm tone
     alarmOsc.connect(alarmGain);
@@ -644,9 +735,15 @@ export const playBossPhaseTransitionSound = () => {
   if (!ctx || isMuted) return;
 
   const now = ctx.currentTime;
+  beginTacticalPriority(ctx, 0.8);
   const osc = ctx.createOscillator();
   const filter = ctx.createBiquadFilter();
-  const gain = createGain(ctx, 0.8, 0.15);
+  const gain = createGain(
+    ctx,
+    0.8,
+    0.15,
+    "TACTICAL",
+  );
 
   osc.type = "sawtooth";
   osc.frequency.setValueAtTime(80, now);
@@ -671,6 +768,8 @@ export const playBossChargeSound = () => {
   const ctx = initAudio();
   if (!ctx || isMuted) return;
 
+  beginTacticalPriority(ctx, 0.4);
+
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
 
@@ -694,8 +793,15 @@ export const playBossShardsSound = () => {
   const ctx = initAudio();
   if (!ctx || isMuted) return;
 
+  beginTacticalPriority(ctx, 0.2);
+
   const osc = ctx.createOscillator();
-  const gain = createGain(ctx, 0.2, 0.08);
+  const gain = createGain(
+    ctx,
+    0.2,
+    0.08,
+    "TACTICAL",
+  );
 
   osc.type = "triangle";
   osc.frequency.setValueAtTime(700, ctx.currentTime);
@@ -713,9 +819,16 @@ export const playBossPulseSound = () => {
   const ctx = initAudio();
   if (!ctx || isMuted) return;
 
+  beginTacticalPriority(ctx, 0.6);
+
   const osc = ctx.createOscillator();
   const filter = ctx.createBiquadFilter();
-  const gain = createGain(ctx, 0.6, 0.2);
+  const gain = createGain(
+    ctx,
+    0.6,
+    0.2,
+    "TACTICAL",
+  );
 
   osc.type = "sawtooth";
   osc.frequency.setValueAtTime(120, ctx.currentTime);
