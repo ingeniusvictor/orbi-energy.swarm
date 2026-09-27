@@ -509,13 +509,6 @@ export const EnergySwarmGame: React.FC = () => {
     if (upgrades.thermal_expansion) {
       counts.thermal += upgrades.thermal_expansion * 5;
     }
-    if (upgrades.nuclear_density) {
-      counts.nuclear += upgrades.nuclear_density * 5;
-    }
-    if (upgrades.quantum_fracture) {
-      counts.quantum += upgrades.quantum_fracture * 5;
-    }
-
     let best: RunArchiveEntry["strongestAffinity"] = "none";
     let max = 0;
     for (const [affinity, value] of Object.entries(counts)) {
