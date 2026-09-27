@@ -3715,8 +3715,8 @@ export const EnergySwarmGame: React.FC = () => {
             playDisruptorChargeSound();
           }
         } else if (enemy.type === EnemyType.PARASITE) {
-          // Twitchy lunging behavior. Evolved PHASE_LUNGE only scales
-          // the existing oscillation through the certified signature contract.
+          // Twitchy lunging behavior. Evolved signature scaling only adjusts
+          // the existing oscillation through the certified behavior contract.
           const lungePhase =
             timeElapsedRef.current *
               0.015 *
