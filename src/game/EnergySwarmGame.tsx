@@ -51,6 +51,7 @@ import { MobileTouchOverlay } from "../components/MobileTouchOverlay";
 import { OrientationHint } from "../components/OrientationHint";
 import { BossHudOverlay } from "../components/BossHudOverlay";
 import { shouldPauseForLifecycle, shouldResetFrameClock, type LifecycleSignal } from "./lifecyclePolicy";
+import { createTouchDirectionState, getTouchMovementVector, hasActiveTouchDirection, type TouchDirection } from "./touchControls";
 
 export const EnergySwarmGame: React.FC = () => {
   // --- REACT VIEWPORT GAME STATES (Low-frequency updates) ---
@@ -131,6 +132,7 @@ export const EnergySwarmGame: React.FC = () => {
   const fusionEnergyRef = useRef(0);
 
   const keysPressedRef = useRef<Record<string, boolean>>({});
+  const touchDirectionsRef = useRef(createTouchDirectionState());
 
   // Entity Lists
   const swarmRef = useRef<OrbiMember[]>([]);
@@ -222,7 +224,7 @@ export const EnergySwarmGame: React.FC = () => {
   // Input Arbitration Refs
   const isMouseDownRef = useRef(false);
   const mouseDownPosRef = useRef({ x: 0, y: 0, time: 0 });
-  const lastInputTypeRef = useRef<"KEYBOARD" | "MOUSE_DRAG" | "CLICK_TO_MOVE" | "NONE">("NONE");
+  const lastInputTypeRef = useRef<"KEYBOARD" | "TOUCH_PAD" | "MOUSE_DRAG" | "CLICK_TO_MOVE" | "NONE">("NONE");
   const clickToMoveTargetRef = useRef<{ x: number; y: number } | null>(null);
 
   // Patch 0B.4 - Combat Readability Refs
@@ -591,6 +593,7 @@ export const EnergySwarmGame: React.FC = () => {
   useEffect(() => {
     const resetTransientInput = () => {
       keysPressedRef.current = {};
+      touchDirectionsRef.current = createTouchDirectionState();
       isMouseDownRef.current = false;
       mouseDownPosRef.current = { x: 0, y: 0, time: 0 };
       lastInputTypeRef.current = "NONE";
@@ -730,6 +733,7 @@ export const EnergySwarmGame: React.FC = () => {
     // Initial cleanups
     playerPosRef.current = { x: WORLD_WIDTH / 2, y: WORLD_HEIGHT / 2 };
     pointerRef.current = { x: WORLD_WIDTH / 2, y: WORLD_HEIGHT / 2 };
+    touchDirectionsRef.current = createTouchDirectionState();
     shieldRef.current = SHIELD_MAX + (upgradesLevel.hydrogen_deflector || 0) * 15;
     scoreRef.current = 0;
     fusionEnergyRef.current = 0;
@@ -2411,6 +2415,12 @@ export const EnergySwarmGame: React.FC = () => {
     if (keysPressedRef.current["A"] || keysPressedRef.current["ARROWLEFT"]) dirX -= 1;
     if (keysPressedRef.current["D"] || keysPressedRef.current["ARROWRIGHT"]) dirX += 1;
 
+    const touchLookVector = getTouchMovementVector(touchDirectionsRef.current);
+    if (dirX === 0 && dirY === 0 && (touchLookVector.x !== 0 || touchLookVector.y !== 0)) {
+      dirX = touchLookVector.x;
+      dirY = touchLookVector.y;
+    }
+
     // fallback to pointer direction if dragging or moving
     if (dirX === 0 && dirY === 0 && isMouseDownRef.current) {
       const dx = pointerRef.current.x - playerPosRef.current.x;
@@ -2467,7 +2477,7 @@ export const EnergySwarmGame: React.FC = () => {
     // Keep cameraOffsetRef updated for backwards-compatible drawings
     cameraOffsetRef.current = { x: cam.shakeX, y: cam.shakeY };
 
-    // 3. Foton movement physics (interpolated towards keys or pointer)
+    // 3. Foton movement physics (keyboard/touch share the same delta model)
     let moveX = 0;
     let moveY = 0;
 
@@ -2476,24 +2486,37 @@ export const EnergySwarmGame: React.FC = () => {
     if (keysPressedRef.current["A"] || keysPressedRef.current["ARROWLEFT"]) moveX -= 1;
     if (keysPressedRef.current["D"] || keysPressedRef.current["ARROWRIGHT"]) moveX += 1;
 
+    const hasKeyboardMovement = moveX !== 0 || moveY !== 0;
+    const touchMoveVector = getTouchMovementVector(touchDirectionsRef.current);
+    const hasTouchMovement = touchMoveVector.x !== 0 || touchMoveVector.y !== 0;
+
+    // Keyboard wins if both hardware and touch input are active. Otherwise held
+    // touch directions feed the exact same speed/formation/disruption pipeline.
+    if (!hasKeyboardMovement && hasTouchMovement) {
+      moveX = touchMoveVector.x;
+      moveY = touchMoveVector.y;
+    }
+
     const pSpeedBase = PLAYER_BASE_SPEED * FORMATIONS[activeFormation].speedMod * (1.0 + (upgradesLevel.quantum_core || 0) * 0.1);
     const speedUpgradeMultiplier = 1.0 + (activeRunUpgradesRef.current.quantum_stabilization || 0) * 0.15;
     const pSpeed = pSpeedBase * speedUpgradeMultiplier * disruptRecoveryRef.current;
-    
-    // Check key motion override
-    if (moveX !== 0 || moveY !== 0) {
+
+    if (hasKeyboardMovement) {
       lastInputTypeRef.current = "KEYBOARD";
+      clickToMoveTargetRef.current = null;
+    } else if (hasTouchMovement) {
+      lastInputTypeRef.current = "TOUCH_PAD";
       clickToMoveTargetRef.current = null;
     }
 
-    if (lastInputTypeRef.current === "KEYBOARD") {
+    if (lastInputTypeRef.current === "KEYBOARD" || lastInputTypeRef.current === "TOUCH_PAD") {
       if (moveX !== 0 || moveY !== 0) {
-        // Normalize diagonals
+        // Normalize diagonals so two held directions do not move faster.
         const len = Math.sqrt(moveX * moveX + moveY * moveY);
         playerPosRef.current.x += (moveX / len) * pSpeed * (delta / 16.6);
         playerPosRef.current.y += (moveY / len) * pSpeed * (delta / 16.6);
       } else {
-        // No keys pressed: Foton stands still!
+        // No hardware/touch direction held: Foton stands still.
         lastInputTypeRef.current = "NONE";
       }
     } else if (lastInputTypeRef.current === "MOUSE_DRAG") {
@@ -3957,14 +3980,25 @@ export const EnergySwarmGame: React.FC = () => {
     }
   };
 
-  // --- MOBILE VIRTUAL BUTTON MOVEMENT ASSIST ---
-  const moveMobileDPad = (dir: "UP" | "DOWN" | "LEFT" | "RIGHT") => {
-    initAudio();
-    const pSpeed = PLAYER_BASE_SPEED * 8;
-    if (dir === "UP") playerPosRef.current.y -= pSpeed;
-    if (dir === "DOWN") playerPosRef.current.y += pSpeed;
-    if (dir === "LEFT") playerPosRef.current.x -= pSpeed;
-    if (dir === "RIGHT") playerPosRef.current.x += pSpeed;
+  // --- MOBILE / ANDROID HELD-DIRECTION INPUT ---
+  const setMobileTouchDirection = (dir: TouchDirection, pressed: boolean) => {
+    if (pressed && (!isPlaying || isPausedRef.current || isGameOver || isUpgradeSelectionOpenRef.current)) {
+      return;
+    }
+
+    if (pressed) initAudio();
+
+    touchDirectionsRef.current = {
+      ...touchDirectionsRef.current,
+      [dir]: pressed,
+    };
+
+    if (pressed) {
+      lastInputTypeRef.current = "TOUCH_PAD";
+      clickToMoveTargetRef.current = null;
+    } else if (!hasActiveTouchDirection(touchDirectionsRef.current) && lastInputTypeRef.current === "TOUCH_PAD") {
+      lastInputTypeRef.current = "NONE";
+    }
   };
 
   const getFormationMostUsed = () => {
@@ -4400,7 +4434,7 @@ export const EnergySwarmGame: React.FC = () => {
                 )}
 
                 {/* MOBILE / ANDROID THUMB-ZONE MOVEMENT OVERLAY */}
-                <MobileTouchOverlay onMove={moveMobileDPad} />
+                <MobileTouchOverlay onDirectionChange={setMobileTouchDirection} />
                 <OrientationHint />
               </div>
             </div>
