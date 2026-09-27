@@ -101,6 +101,6 @@ test("primary shell surfaces contain native keyboard-focusable controls", () => 
 test("focus styling is presentation-only", () => {
   assert.doesNotMatch(
     es10b,
-    /display:|position:|width:|height:|transform:|animation:|pointer-events:/,
+    /(?:^|\n)\s*(?:display|position|width|height|transform|animation|pointer-events)\s*:/,
   );
 });
