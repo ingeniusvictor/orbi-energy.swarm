@@ -6,6 +6,7 @@ import {
 import type {
   BiomeType,
   EnemyType,
+  FormationType,
   WaveConfig,
 } from "./types";
 import {
@@ -28,10 +29,13 @@ export interface RuntimeWaveDescriptor {
   waveCount: number;
   display: {
     name: string;
+    displayName: string;
     subtitle: string;
     description: string;
     tacticalAdvice: string;
     warningLevel: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+    accentColor: string;
+    recommendedFormation: FormationType | null;
   };
   completionPolicy: RuntimeWaveCompletionPolicy;
   biomeIntent: BiomeType | null;
@@ -79,6 +83,14 @@ export interface RuntimeWaveDescriptor {
 export const createCampaignRuntimeWaveDescriptor = (
   waveNumber: number,
 ): RuntimeWaveDescriptor => {
+  if (
+    !Number.isInteger(waveNumber) ||
+    waveNumber < 1 ||
+    waveNumber > BOSS_WAVE_NUMBER
+  ) {
+    throw new RangeError("Campaign runtime waves are limited to Sectors 1–10.");
+  }
+
   const cfg = getWaveConfig(waveNumber);
   const bossWave = cfg.waveNumber === BOSS_WAVE_NUMBER;
 
@@ -89,11 +101,14 @@ export const createCampaignRuntimeWaveDescriptor = (
     waveNumber: cfg.waveNumber,
     waveCount: BOSS_WAVE_NUMBER,
     display: {
-      name: cfg.displayName,
+      name: cfg.name,
+      displayName: cfg.displayName,
       subtitle: cfg.subtitle,
       description: cfg.description,
       tacticalAdvice: cfg.tacticalAdvice,
       warningLevel: cfg.warningLevel,
+      accentColor: cfg.introColor,
+      recommendedFormation: cfg.recommendedFormation ?? null,
     },
     completionPolicy: bossWave
       ? { type: "BOSS_DEFEAT" }
@@ -171,6 +186,7 @@ export const createInfiniteRuntimeWaveDescriptor = (
     waveCount: execution.waveCount,
     display: {
       name: `Infinite Sector ${execution.sector} · Wave ${execution.waveIndex}/${execution.waveCount}`,
+      displayName: `Infinite Sector ${execution.sector} · Wave ${execution.waveIndex}/${execution.waveCount}`,
       subtitle: humanize(effective.tier),
       description:
         execution.mutators.length > 0
@@ -179,6 +195,15 @@ export const createInfiniteRuntimeWaveDescriptor = (
       tacticalAdvice:
         "Adapt formation and movement to the active threat mix while preserving swarm integrity.",
       warningLevel: infiniteWarningLevel(session),
+      accentColor:
+        effective.tier === "MASTERY"
+          ? "#22d3ee"
+          : effective.tier === "ADVANCED_COMBINATION"
+            ? "#a78bfa"
+            : effective.tier === "HIGH_PRESSURE"
+              ? "#fb7185"
+              : "#f43f5e",
+      recommendedFormation: null,
     },
     completionPolicy: { type: "BUDGET_AND_CLEAR" },
     biomeIntent: execution.biome,
@@ -231,11 +256,15 @@ export const campaignDescriptorMatchesWaveConfig = (
     descriptor.sourceMode === "CAMPAIGN" &&
     descriptor.sector === cfg.waveNumber &&
     descriptor.waveNumber === cfg.waveNumber &&
-    descriptor.display.name === cfg.displayName &&
+    descriptor.display.name === cfg.name &&
+    descriptor.display.displayName === cfg.displayName &&
     descriptor.display.subtitle === cfg.subtitle &&
     descriptor.display.description === cfg.description &&
     descriptor.display.tacticalAdvice === cfg.tacticalAdvice &&
     descriptor.display.warningLevel === cfg.warningLevel &&
+    descriptor.display.accentColor === cfg.introColor &&
+    descriptor.display.recommendedFormation ===
+      (cfg.recommendedFormation ?? null) &&
     descriptor.completionPolicy.type === expectedPolicy &&
     (
       expectedPolicy !== "TIMEBOX" ||
