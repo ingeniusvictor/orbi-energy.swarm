@@ -1,9 +1,8 @@
 import React from "react";
-
-type TouchDirection = "UP" | "DOWN" | "LEFT" | "RIGHT";
+import type { TouchDirection } from "../game/touchControls";
 
 interface MobileTouchOverlayProps {
-  onMove: (direction: TouchDirection) => void;
+  onDirectionChange: (direction: TouchDirection, pressed: boolean) => void;
 }
 
 const controlLabel: Record<TouchDirection, string> = {
@@ -13,23 +12,37 @@ const controlLabel: Record<TouchDirection, string> = {
   RIGHT: "Move right",
 };
 
-export const MobileTouchOverlay: React.FC<MobileTouchOverlayProps> = ({ onMove }) => {
-  const triggerMove = (
+export const MobileTouchOverlay: React.FC<MobileTouchOverlayProps> = ({
+  onDirectionChange,
+}) => {
+  const beginPointerDirection = (
     event: React.PointerEvent<HTMLButtonElement>,
     direction: TouchDirection,
   ) => {
     event.preventDefault();
     event.stopPropagation();
-    onMove(direction);
+    event.currentTarget.setPointerCapture(event.pointerId);
+    onDirectionChange(direction, true);
   };
 
-  const triggerKeyboardMove = (
+  const endPointerDirection = (
+    event: React.PointerEvent<HTMLButtonElement>,
+    direction: TouchDirection,
+  ) => {
+    event.preventDefault();
+    event.stopPropagation();
+    onDirectionChange(direction, false);
+  };
+
+  const handleKeyboardDirection = (
     event: React.KeyboardEvent<HTMLButtonElement>,
     direction: TouchDirection,
+    pressed: boolean,
   ) => {
     if (event.key !== "Enter" && event.key !== " ") return;
     event.preventDefault();
-    onMove(direction);
+    if (event.repeat && pressed) return;
+    onDirectionChange(direction, pressed);
   };
 
   const button = (direction: TouchDirection, glyph: string, className: string) => (
@@ -37,8 +50,13 @@ export const MobileTouchOverlay: React.FC<MobileTouchOverlayProps> = ({ onMove }
       type="button"
       className={`orbi-touch-button ${className}`}
       aria-label={controlLabel[direction]}
-      onPointerDown={(event) => triggerMove(event, direction)}
-      onKeyDown={(event) => triggerKeyboardMove(event, direction)}
+      data-touch-direction={direction}
+      onPointerDown={(event) => beginPointerDirection(event, direction)}
+      onPointerUp={(event) => endPointerDirection(event, direction)}
+      onPointerCancel={(event) => endPointerDirection(event, direction)}
+      onKeyDown={(event) => handleKeyboardDirection(event, direction, true)}
+      onKeyUp={(event) => handleKeyboardDirection(event, direction, false)}
+      onContextMenu={(event) => event.preventDefault()}
     >
       <span aria-hidden="true">{glyph}</span>
     </button>
