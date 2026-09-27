@@ -2127,12 +2127,18 @@ export const EnergySwarmGame: React.FC = () => {
     ey = Math.max(16, Math.min(WORLD_HEIGHT - 16, ey));
 
     // Ensure we are not spawning right on top of the player!
-    const distToPlayer = Math.sqrt((ex - playerPosRef.current.x) ** 2 + (ey - playerPosRef.current.y) ** 2);
+    const spawnDx = ex - playerPosRef.current.x;
+    const spawnDy = ey - playerPosRef.current.y;
+    const spawnDistanceSquared =
+      spawnDx * spawnDx + spawnDy * spawnDy;
     const spawnSafetyRadius = Math.max(
       150,
       combatPressure.spawnSafetyRadius,
     );
-    if (distToPlayer < spawnSafetyRadius) {
+    if (
+      spawnDistanceSquared <
+      spawnSafetyRadius * spawnSafetyRadius
+    ) {
       const angle = Math.random() * Math.PI * 2;
       const relocationRadius = Math.max(
         300,
@@ -2834,8 +2840,11 @@ export const EnergySwarmGame: React.FC = () => {
         const projX = bx + t * dx;
         const projY = by + t * dy;
 
-        const distToBeam = Math.sqrt((px - projX) * (px - projX) + (py - projY) * (py - projY));
-        if (distToBeam < 25) {
+        const beamDx = px - projX;
+        const beamDy = py - projY;
+        const distToBeamSquared =
+          beamDx * beamDx + beamDy * beamDy;
+        if (distToBeamSquared < 25 * 25) {
           damagePlayerFromBoss(1.6 * (delta / 16.6), "devourer_beam");
         }
         
@@ -3790,7 +3799,7 @@ export const EnergySwarmGame: React.FC = () => {
         playerPosRef.current.x - strikeTarget.x;
       const dy =
         playerPosRef.current.y - strikeTarget.y;
-      const distance = Math.sqrt(dx * dx + dy * dy);
+      const distanceSquared = dx * dx + dy * dy;
 
       playDisruptorPulseSound();
       screenShakeRef.current = Math.max(
@@ -3810,8 +3819,9 @@ export const EnergySwarmGame: React.FC = () => {
       );
 
       if (
-        distance <=
-        electricalStormConfig.strikeRadius
+        distanceSquared <=
+        electricalStormConfig.strikeRadius *
+          electricalStormConfig.strikeRadius
       ) {
         damagePlayer(
           electricalStormConfig.baseDamage *
@@ -4160,7 +4170,7 @@ export const EnergySwarmGame: React.FC = () => {
 
       const dx = playerPosRef.current.x - res.x;
       const dy = playerPosRef.current.y - res.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
+      const distanceSquared = dx * dx + dy * dy;
 
       // Apply Nano Catalyst plus bounded unstable-field attraction.
       const basePullRadius =
@@ -4176,21 +4186,35 @@ export const EnergySwarmGame: React.FC = () => {
           ? fieldProfile.attractionSpeedMultiplier
           : 1);
 
-      if (dist > 0.001 && dist < pullRadius) {
-        // pull towards player
+      const pullRadiusSquared =
+        pullRadius * pullRadius;
+      if (
+        distanceSquared > 0.001 * 0.001 &&
+        distanceSquared < pullRadiusSquared
+      ) {
+        // Exact normalization is only needed once attraction is active.
+        const distance = Math.sqrt(distanceSquared);
         res.x +=
-          (dx / dist) * pullSpeed * (delta / 16.6);
+          (dx / distance) *
+          pullSpeed *
+          (delta / 16.6);
         res.y +=
-          (dy / dist) * pullSpeed * (delta / 16.6);
+          (dy / distance) *
+          pullSpeed *
+          (delta / 16.6);
       }
 
       // Collision pickup trigger remains unchanged and always reachable.
-      if (dist < 15) {
+      if (distanceSquared < 15 * 15) {
         triggerResourceCollect(res);
       }
     });
 
-    resourcesRef.current = resourcesRef.current.filter((r) => !r.consumed && r.size > 0); // size <= 0 or consumed represents collected
+    compactArrayInPlace(
+      resourcesRef.current,
+      (resource) =>
+        !resource.consumed && resource.size > 0,
+    ); // size <= 0 or consumed represents collected
 
     // 10. SINGLE-IMPACT COLLISION SWEEPS
     detectAndResolveCollisions();
@@ -4398,9 +4422,12 @@ export const EnergySwarmGame: React.FC = () => {
     if (enemy.type === EnemyType.DRONE || enemy.type === EnemyType.BOSS_DEVOURER) {
       const dx = playerPosRef.current.x - enemy.x;
       const dy = playerPosRef.current.y - enemy.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
+      const distanceSquared = dx * dx + dy * dy;
 
-      if (dist > 0 && dist < 320) {
+      if (
+        distanceSquared > 0 &&
+        distanceSquared < 320 * 320
+      ) {
         const projectileSpeed =
           2.2 *
           (enemy.evolvedProjectileSpeedMultiplier ??
@@ -5128,6 +5155,8 @@ export const EnergySwarmGame: React.FC = () => {
       // Compact radar: local coordinates centered on the player (Foton)
       // Radius representing 320 world units
       const radiusWorld = 320;
+      const radiusWorldSquared =
+        radiusWorld * radiusWorld;
       const scale = (size / 2) / radiusWorld;
       const px = playerPosRef.current.x;
       const py = playerPosRef.current.y;
@@ -5145,8 +5174,8 @@ export const EnergySwarmGame: React.FC = () => {
       swarmRef.current.forEach((m) => {
         const dx = m.x - px;
         const dy = m.y - py;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < radiusWorld) {
+        const distanceSquared = dx * dx + dy * dy;
+        if (distanceSquared < radiusWorldSquared) {
           ctx.beginPath();
           ctx.arc(cx + dx * scale, cy + dy * scale, 1.5, 0, Math.PI * 2);
           ctx.fill();
@@ -5157,8 +5186,8 @@ export const EnergySwarmGame: React.FC = () => {
       enemiesRef.current.forEach((e) => {
         const dx = e.x - px;
         const dy = e.y - py;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < radiusWorld) {
+        const distanceSquared = dx * dx + dy * dy;
+        if (distanceSquared < radiusWorldSquared) {
           ctx.beginPath();
           if (e.isBoss) {
             // Big pulsating boss icon
@@ -5184,8 +5213,8 @@ export const EnergySwarmGame: React.FC = () => {
         if (res.consumed || res.size <= 0) return;
         const dx = res.x - px;
         const dy = res.y - py;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < radiusWorld) {
+        const distanceSquared = dx * dx + dy * dy;
+        if (distanceSquared < radiusWorldSquared) {
           ctx.beginPath();
           let color = "#eab308"; // yellow quantum
           if (res.orbiAffinity === "solar") color = "#f97316"; // orange solar
@@ -5624,10 +5653,13 @@ export const EnergySwarmGame: React.FC = () => {
     if (isMouseDownRef.current) {
       const dx = e.clientX - mouseDownPosRef.current.x;
       const dy = e.clientY - mouseDownPosRef.current.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
+      const distanceSquared = dx * dx + dy * dy;
       
       // If dragged more than 8 pixels, or mouse held down, trigger drag
-      if (dist > 8 || (Date.now() - mouseDownPosRef.current.time > 150)) {
+      if (
+        distanceSquared > 8 * 8 ||
+        Date.now() - mouseDownPosRef.current.time > 150
+      ) {
         lastInputTypeRef.current = "MOUSE_DRAG";
         clickToMoveTargetRef.current = null;
       }
@@ -5641,9 +5673,12 @@ export const EnergySwarmGame: React.FC = () => {
     const duration = Date.now() - mouseDownPosRef.current.time;
     const dx = e.clientX - mouseDownPosRef.current.x;
     const dy = e.clientY - mouseDownPosRef.current.y;
-    const dist = Math.sqrt(dx * dx + dy * dy);
+    const distanceSquared = dx * dx + dy * dy;
 
-    if (duration < 200 && dist < 10) {
+    if (
+      duration < 200 &&
+      distanceSquared < 10 * 10
+    ) {
       // It's a click-to-move tap!
       lastInputTypeRef.current = "CLICK_TO_MOVE";
       
