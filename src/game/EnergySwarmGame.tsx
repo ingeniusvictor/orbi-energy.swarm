@@ -199,6 +199,8 @@ export const EnergySwarmGame: React.FC = () => {
 
   const runStartTimeRef = useRef<number>(0);
   const runEndTimeRef = useRef<number>(0);
+  const runEnemiesDestroyedRef = useRef<number>(0);
+  const runResourcesCollectedRef = useRef<number>(0);
   const bossAttacksSeenThisRunRef = useRef<string[]>([]);
 
 
@@ -499,8 +501,8 @@ export const EnergySwarmGame: React.FC = () => {
       bestSwarmSize: peakSwarm,
       totalRuns: fresh.totalRuns + 1,
       totalVictories: isVictory ? fresh.totalVictories + 1 : fresh.totalVictories,
-      totalEnemiesDestroyed: fresh.totalEnemiesDestroyed + stats.totalEnemiesDestroyed, // accumulation during run
-      totalResourcesCollected: fresh.totalResourcesCollected + stats.totalResourcesCollected,
+      totalEnemiesDestroyed: fresh.totalEnemiesDestroyed + runEnemiesDestroyedRef.current,
+      totalResourcesCollected: fresh.totalResourcesCollected + runResourcesCollectedRef.current,
       totalNanoCredits: nanoCreditsRef.current, // persistent balance
       bossDefeated: isVictory || fresh.bossDefeated,
       gameMemories: memories,
@@ -814,9 +816,9 @@ export const EnergySwarmGame: React.FC = () => {
     // Recruits initial Orbi member
     addSwarmMember();
 
-    // Reset statistics trackers for this run
-    stats.totalEnemiesDestroyed = 0;
-    stats.totalResourcesCollected = 0;
+    // Reset run-local telemetry without mutating persistent React profile state.
+    runEnemiesDestroyedRef.current = 0;
+    runResourcesCollectedRef.current = 0;
 
     setIsWaveBreak(true);
     setWaveBreakTimeLeft(Math.ceil(2500 / 1000));
@@ -2992,7 +2994,7 @@ export const EnergySwarmGame: React.FC = () => {
     res.consumed = true;
     res.size = 0; // Mark collected
 
-    stats.totalResourcesCollected += 1;
+    runResourcesCollectedRef.current += 1;
     playCrystalSound(res.type === "ENERGY");
 
     // Spawn tiny sparkles
@@ -3400,7 +3402,7 @@ export const EnergySwarmGame: React.FC = () => {
                   // Cascading destruction check for splash-damaged targets
                   if (otherEnemy.health <= 0) {
                     otherEnemy.isDead = true;
-                    stats.totalEnemiesDestroyed += 1;
+                    runEnemiesDestroyedRef.current += 1;
                     
                     const scoreReward = otherEnemy.isBoss ? 1500 : (otherEnemy.type === EnemyType.BLACKOUT_ELITE ? 250 : (otherEnemy.isMinion ? 15 : 80));
                     scoreRef.current += scoreReward;
@@ -3445,7 +3447,7 @@ export const EnergySwarmGame: React.FC = () => {
             // Check destruction of the directly-hit enemy
             if (enemy.health <= 0) {
               enemy.isDead = true;
-              stats.totalEnemiesDestroyed += 1;
+              runEnemiesDestroyedRef.current += 1;
               
               const scoreReward = enemy.isBoss ? 1500 : (enemy.type === EnemyType.BLACKOUT_ELITE ? 250 : (enemy.isMinion ? 15 : 80));
               scoreRef.current += scoreReward;
@@ -4124,7 +4126,7 @@ export const EnergySwarmGame: React.FC = () => {
           highScore={highScore}
           waveReached={currentWave}
           maxSwarmSize={swarmSize}
-          enemiesDestroyed={stats.totalEnemiesDestroyed}
+          enemiesDestroyed={runEnemiesDestroyedRef.current}
           nanoCreditsGained={score * 2} // match progression ratios
           onRestart={startGame}
           onExitToMenu={() => {
