@@ -28,6 +28,10 @@ import {
   type RuntimeProgressionState,
 } from "./runtimeProgressionRouter";
 import {
+  isRuntimeWaveComplete,
+  shouldTickRuntimeTimer,
+} from "./runtimeCompletionPolicy";
+import {
   applyCampaignVictoryCheckpoint,
   applyFinalRunCommit,
   createRunCommitLedger,
@@ -1322,9 +1326,24 @@ export const EnergySwarmGame: React.FC = () => {
     if (bossActiveRef.current) return;
 
     if (waveActiveRef.current) {
-      // Count down wave duration
-      waveTimeRemainingRef.current -= delta;
-      if (waveTimeRemainingRef.current <= 0) {
+      const descriptor = getCurrentRuntimeDescriptor();
+
+      if (shouldTickRuntimeTimer(descriptor)) {
+        waveTimeRemainingRef.current -= delta;
+      }
+
+      const livingEnemyCount = enemiesRef.current.filter(
+        (enemy) => !enemy.isDead && !enemy.isBoss,
+      ).length;
+
+      const waveComplete = isRuntimeWaveComplete(descriptor, {
+        remainingTimeMs: waveTimeRemainingRef.current,
+        spawnedEnemyCount: waveBudgetSpawnedRef.current,
+        livingEnemyCount,
+        bossDefeated: false,
+      });
+
+      if (waveComplete) {
         // Wave complete! Transition into intermission
         waveActiveRef.current = false;
         waveBreakTimerRef.current = INTER_WAVE_DURATION;
@@ -1390,11 +1409,14 @@ export const EnergySwarmGame: React.FC = () => {
         // Start the wave!
         waveActiveRef.current = true;
         const descriptor = getCurrentRuntimeDescriptor();
-        const cfg = getWaveConfig(currentWaveRef.current); // presentation-only WaveIntro contract
+        const cfg =
+          descriptor.sourceMode === "CAMPAIGN"
+            ? getWaveConfig(currentWaveRef.current)
+            : null; // presentation-only WaveIntro contract
         waveTimeRemainingRef.current =
           descriptor.completionPolicy.type === "TIMEBOX"
             ? descriptor.completionPolicy.durationMs
-            : cfg.duration;
+            : (cfg?.duration ?? 0);
         waveBudgetSpawnedRef.current = 0;
         setIsWaveBreak(false);
         setWaveName(descriptor.display.name);
@@ -1413,7 +1435,7 @@ export const EnergySwarmGame: React.FC = () => {
           hazardZonesRef.current = [];
         }
 
-        // Trigger visual cinematic Wave Intro overlay
+        // Trigger visual cinematic Wave Intro overlay for handcrafted campaign waves.
         setWaveIntroConfig(cfg);
         setTimeout(() => {
           setWaveIntroConfig(null);
