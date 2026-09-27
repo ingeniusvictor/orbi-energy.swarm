@@ -1884,6 +1884,10 @@ export const EnergySwarmGame: React.FC = () => {
         spawningMiniboss && minibossProfile
           ? minibossProfile.milestoneId
           : undefined,
+      milestoneMovementSpeedMultiplier:
+        spawningMiniboss && minibossProfile
+          ? minibossProfile.movementSpeedMultiplier
+          : undefined,
       milestoneContactDamageMultiplier:
         spawningMiniboss && minibossProfile
           ? minibossProfile.contactDamageMultiplier
@@ -3381,14 +3385,19 @@ export const EnergySwarmGame: React.FC = () => {
 
               // Direct charge vector towards Foton leader
               const tAngle = Math.atan2(playerPosRef.current.y - enemy.y, playerPosRef.current.x - enemy.x);
+              const milestoneDashMultiplier =
+                enemy.milestoneMovementSpeedMultiplier ??
+                1;
               enemy.vx =
                 Math.cos(tAngle) *
                 7.5 *
-                simulationMutatorEffects.enemySpeedMultiplier;
+                simulationMutatorEffects.enemySpeedMultiplier *
+                milestoneDashMultiplier;
               enemy.vy =
                 Math.sin(tAngle) *
                 7.5 *
-                simulationMutatorEffects.enemySpeedMultiplier;
+                simulationMutatorEffects.enemySpeedMultiplier *
+                milestoneDashMultiplier;
 
               playEliteChargeSound();
             }
