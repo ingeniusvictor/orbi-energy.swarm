@@ -4,6 +4,7 @@ import { GameStats, QualityPreset } from "../game/types";
 import { playClickSound } from "../game/audio";
 import { useGameTranslation, formatNumber } from "../i18n";
 import PremiumBackdrop from "./presentation/PremiumBackdrop";
+import CampaignArc from "./CampaignArc";
 
 interface StartScreenProps {
   stats: GameStats;
@@ -157,6 +158,8 @@ export const StartScreen: React.FC<StartScreenProps> = ({
             <div className="bg-slate-950/30 p-3 rounded border border-slate-800/40 text-center text-xs text-slate-400 leading-relaxed">
               {t("startScreen.sloganDesc")}
             </div>
+
+            <CampaignArc language={language} />
 
             {/* START BUTTON */}
             <button
