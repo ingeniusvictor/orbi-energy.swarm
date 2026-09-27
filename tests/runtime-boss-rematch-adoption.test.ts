@@ -66,7 +66,7 @@ test("wave completion is blocked until a BOSS_REMATCH gate is resolved", () => {
 
   assert.match(
     transitions,
-    /projectInfiniteMilestoneEncounter\(descriptor\)/,
+    /runtimeProjection\.milestoneEncounter/,
   );
   assert.match(
     transitions,
