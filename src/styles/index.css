@@ -1714,6 +1714,100 @@ body {
 }
 
 
+/* ES-12F1 — Launch Deck vertical viewport fit.
+   Keep the wide premium composition, but derive the deck from dynamic viewport
+   height and compress only when the browser has limited vertical real estate. */
+.orbi-start-deck {
+  max-height: min(78dvh, calc(100dvh - 11.5rem));
+  min-height: 0;
+  overscroll-behavior: contain;
+  scroll-padding-bottom: 1.5rem;
+}
+
+.orbi-start-campaign {
+  scroll-margin-bottom: 1.5rem;
+}
+
+@media (min-width: 1280px) and (max-height: 950px) {
+  .orbi-premium-entry {
+    justify-content: flex-start !important;
+    padding-top: 0.7rem !important;
+    padding-bottom: 0.7rem !important;
+  }
+
+  .orbi-start-header {
+    margin-bottom: 0.45rem !important;
+  }
+
+  .orbi-start-header .orbi-premium-title {
+    font-size: clamp(2.65rem, 4.4vw, 4.15rem) !important;
+    margin-top: 0.4rem !important;
+  }
+
+  .orbi-start-header p {
+    margin-top: 0.45rem !important;
+  }
+
+  .orbi-start-language {
+    margin-bottom: 0.55rem !important;
+  }
+
+  .orbi-start-deck {
+    max-height: calc(100dvh - 8.65rem);
+    padding: 0.85rem !important;
+  }
+
+  .orbi-start-tabs {
+    margin-bottom: 0.65rem !important;
+    padding-bottom: 0.55rem !important;
+  }
+
+  .orbi-start-main-grid {
+    gap: 0.7rem !important;
+  }
+
+  .orbi-start-record,
+  .orbi-start-hero,
+  .orbi-start-launch {
+    padding: 0.75rem !important;
+  }
+
+  .orbi-start-record {
+    gap: 0.6rem;
+  }
+
+  .orbi-start-hero-stage {
+    min-height: 300px !important;
+  }
+
+  .orbi-start-campaign {
+    margin-top: 0.65rem !important;
+  }
+
+  .orbi-start-launch {
+    top: 0.7rem !important;
+  }
+}
+
+@media (min-width: 1280px) and (max-height: 780px) {
+  .orbi-start-header {
+    display: none;
+  }
+
+  .orbi-start-language {
+    margin-top: 0 !important;
+  }
+
+  .orbi-start-deck {
+    max-height: calc(100dvh - 4.25rem);
+  }
+
+  .orbi-start-hero-stage {
+    min-height: 260px !important;
+  }
+}
+
+
 /* ES-12C2 — Clean Photo Mode.
    Simulation remains paused; this only removes DOM chrome around the canvas. */
 .orbi-game-root[data-photo-mode="true"] .orbi-game-hud,
