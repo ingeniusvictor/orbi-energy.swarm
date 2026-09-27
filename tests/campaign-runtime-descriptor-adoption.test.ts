@@ -18,11 +18,13 @@ const section = (
   return game.slice(start, end);
 };
 
-test("campaign runtime imports the certified wave descriptor bridge", () => {
+test("campaign runtime imports the unified certified descriptor router", () => {
   assert.match(
     game,
-    /createCampaignRuntimeWaveDescriptor.*runtimeWaveDescriptor/,
+    /resolveRuntimeWaveDescriptor[\s\S]*runtimeProgressionRouter/,
   );
+  assert.match(game, /createCampaignRuntimeState/);
+  assert.doesNotMatch(game, /createCampaignRuntimeWaveDescriptor/);
 });
 
 test("regular enemy spawning no longer reads WaveConfig directly", () => {
@@ -79,7 +81,7 @@ test("campaign wave activation uses descriptor metadata and boss policy", () => 
 
   assert.match(
     transitions,
-    /createCampaignRuntimeWaveDescriptor/,
+    /getCurrentRuntimeDescriptor\(\)/,
   );
   assert.match(
     transitions,

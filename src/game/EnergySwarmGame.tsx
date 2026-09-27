@@ -22,7 +22,11 @@ import { getQualityConfig } from "./quality";
 import { triggerExplosion, updateParticle, drawParticle } from "./particleSystem";
 import { backgroundRenderer } from "./backgroundRenderer";
 import { getWaveConfig, INTER_WAVE_DURATION, BOSS_WAVE_NUMBER, BLACKOUT_DEVOURER_CANON } from "./waveDirector";
-import { createCampaignRuntimeWaveDescriptor } from "./runtimeWaveDescriptor";
+import {
+  createCampaignRuntimeState,
+  resolveRuntimeWaveDescriptor,
+  type RuntimeProgressionState,
+} from "./runtimeProgressionRouter";
 import {
   applyCampaignVictoryCheckpoint,
   applyFinalRunCommit,
@@ -154,6 +158,9 @@ export const EnergySwarmGame: React.FC = () => {
 
   // Wave Manager states inside refs
   const currentWaveRef = useRef(1);
+  const runtimeProgressionRef = useRef<RuntimeProgressionState>(
+    createCampaignRuntimeState(1),
+  );
   const waveActiveRef = useRef(false);
   const waveBudgetSpawnedRef = useRef(0);
   const waveTimeRemainingRef = useRef(0);
@@ -271,6 +278,9 @@ export const EnergySwarmGame: React.FC = () => {
   const formationUseCountsRef = useRef<Record<string, number>>({});
   const hazardZonesRef = useRef<Array<{ x: number, y: number, r: number }>>([]);
   const formationCooldownRef = useRef(0);
+
+  const getCurrentRuntimeDescriptor = () =>
+    resolveRuntimeWaveDescriptor(runtimeProgressionRef.current);
 
   const setUpgradeSelectionOpen = (open: boolean) => {
     setIsUpgradeSelectionOpen(open);
@@ -784,6 +794,7 @@ export const EnergySwarmGame: React.FC = () => {
     particlesRef.current = [];
 
     currentWaveRef.current = 1;
+    runtimeProgressionRef.current = createCampaignRuntimeState(1);
     waveActiveRef.current = false;
     waveBreakTimerRef.current = 2500; // 2.5 seconds visual preparation break
 
@@ -1334,6 +1345,9 @@ export const EnergySwarmGame: React.FC = () => {
         const completedWave = currentWaveRef.current;
         // Advance wave tier
         currentWaveRef.current += 1;
+        runtimeProgressionRef.current = createCampaignRuntimeState(
+          currentWaveRef.current,
+        );
         setCurrentWave(currentWaveRef.current);
 
         // Open mid-run upgrades selector on intermission for specific reward waves!
@@ -1375,7 +1389,7 @@ export const EnergySwarmGame: React.FC = () => {
       if (waveBreakTimerRef.current <= 0) {
         // Start the wave!
         waveActiveRef.current = true;
-        const descriptor = createCampaignRuntimeWaveDescriptor(currentWaveRef.current);
+        const descriptor = getCurrentRuntimeDescriptor();
         const cfg = getWaveConfig(currentWaveRef.current); // presentation-only WaveIntro contract
         waveTimeRemainingRef.current =
           descriptor.completionPolicy.type === "TIMEBOX"
@@ -1421,7 +1435,7 @@ export const EnergySwarmGame: React.FC = () => {
 
   // --- SPAWN REGULAR ENEMY ---
   const spawnEnemy = (forcedType?: EnemyType) => {
-    const descriptor = createCampaignRuntimeWaveDescriptor(currentWaveRef.current);
+    const descriptor = getCurrentRuntimeDescriptor();
     if (
       enemiesRef.current.length >=
       Math.min(MAX_ENEMIES, descriptor.spawn.maxConcurrentEnemies)
@@ -2770,7 +2784,7 @@ export const EnergySwarmGame: React.FC = () => {
     handleWaveTransitions(delta);
 
     const simulationDescriptor =
-      createCampaignRuntimeWaveDescriptor(currentWaveRef.current);
+      getCurrentRuntimeDescriptor();
     if (waveActiveRef.current && !bossActiveRef.current) {
       if (currentWaveRef.current === 1) {
         const waveDuration =
@@ -3462,7 +3476,7 @@ export const EnergySwarmGame: React.FC = () => {
                       if (!otherEnemy.isMinion) {
                         spawnResource(otherEnemy.x, otherEnemy.y);
                         const currentWaveDescriptor =
-                          createCampaignRuntimeWaveDescriptor(currentWaveRef.current);
+                          getCurrentRuntimeDescriptor();
                         if (currentWaveDescriptor.modifiers.includes("CORE_DROP_BOOST")) {
                           spawnResource(otherEnemy.x + Math.random() * 16 - 8, otherEnemy.y + Math.random() * 16 - 8);
                         }
@@ -3510,7 +3524,7 @@ export const EnergySwarmGame: React.FC = () => {
                 if (!enemy.isMinion) {
                   spawnResource(enemy.x, enemy.y);
                   const currentWaveDescriptor =
-                    createCampaignRuntimeWaveDescriptor(currentWaveRef.current);
+                    getCurrentRuntimeDescriptor();
                   if (currentWaveDescriptor.modifiers.includes("CORE_DROP_BOOST")) {
                     spawnResource(enemy.x + Math.random() * 16 - 8, enemy.y + Math.random() * 16 - 8);
                   }
