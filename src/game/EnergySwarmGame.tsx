@@ -4462,8 +4462,11 @@ export const EnergySwarmGame: React.FC = () => {
           const node = shieldNodesRef.current[s];
           const ndx = proj.x - node.x;
           const ndy = proj.y - node.y;
-          const ndist = Math.sqrt(ndx * ndx + ndy * ndy);
-          if (ndist < 14 + proj.size) {
+          const shieldCollisionRadius = 14 + proj.size;
+          if (
+            ndx * ndx + ndy * ndy <
+            shieldCollisionRadius * shieldCollisionRadius
+          ) {
             proj.life = 0;
             hitShieldNode = true;
             node.health -= proj.damage;
@@ -4831,9 +4834,14 @@ export const EnergySwarmGame: React.FC = () => {
         // Enemy projectiles vs Player core
         const dx = proj.x - playerPosRef.current.x;
         const dy = proj.y - playerPosRef.current.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
+        const playerProjectileCollisionRadius =
+          16 + proj.size;
 
-        if (dist < 16 + proj.size) {
+        if (
+          dx * dx + dy * dy <
+          playerProjectileCollisionRadius *
+            playerProjectileCollisionRadius
+        ) {
           proj.life = 0; // Destroy projectile
           if (proj.color === "#3b82f6") {
             damagePlayerFromBoss(proj.damage, "orbital_shards");
@@ -4852,30 +4860,56 @@ export const EnergySwarmGame: React.FC = () => {
     });
 
     // 2. ENEMIES CONTACT DAMAGE vs PLAYER CORE
-    enemiesRef.current.forEach((enemy) => {
-      if (enemy.isDead) return;
+    // Reuse the live collision index instead of scanning every enemy.
+    // Sorting by original array order preserves simultaneous-contact semantics.
+    const playerContactCandidates = querySpatialIndex(
+      enemyCollisionIndex,
+      playerPosRef.current.x,
+      playerPosRef.current.y,
+      16 + enemyCollisionIndex.maxRadius,
+    ).entries
+      .filter((entry) => {
+        const enemy = entry.item;
+        if (enemy.isDead) return false;
 
-      const dx = playerPosRef.current.x - enemy.x;
-      const dy = playerPosRef.current.y - enemy.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
+        const dx =
+          playerPosRef.current.x - entry.x;
+        const dy =
+          playerPosRef.current.y - entry.y;
+        const collisionRadius = 16 + entry.radius;
 
-      if (dist < 16 + enemy.size) {
-        // Trigger contact damage
-        const baseDamage = enemy.type === EnemyType.BOSS_DEVOURER ? 25 : 15;
-        if (enemy.type === EnemyType.BOSS_DEVOURER) {
-          const attackType = bossCurrentAttackRef.current === "devourer_charge" ? "devourer_charge" : "contact_damage";
-          damagePlayerFromBoss(baseDamage, attackType);
-        } else {
-          damagePlayer(
-            baseDamage *
-              combatPressure.contactDamageMultiplier *
-              mutatorEffects.incomingDamageMultiplier *
-              (enemy.milestoneContactDamageMultiplier ??
-                1) *
-              (enemy.evolvedContactDamageMultiplier ??
-                1),
-          );
-        }
+        return (
+          dx * dx + dy * dy <
+          collisionRadius * collisionRadius
+        );
+      })
+      .sort(
+        (left, right) =>
+          left.order - right.order,
+      );
+
+    playerContactCandidates.forEach(({ item: enemy }) => {
+      // Trigger contact damage
+      const baseDamage =
+        enemy.type === EnemyType.BOSS_DEVOURER
+          ? 25
+          : 15;
+      if (enemy.type === EnemyType.BOSS_DEVOURER) {
+        const attackType =
+          bossCurrentAttackRef.current === "devourer_charge"
+            ? "devourer_charge"
+            : "contact_damage";
+        damagePlayerFromBoss(baseDamage, attackType);
+      } else {
+        damagePlayer(
+          baseDamage *
+            combatPressure.contactDamageMultiplier *
+            mutatorEffects.incomingDamageMultiplier *
+            (enemy.milestoneContactDamageMultiplier ??
+              1) *
+            (enemy.evolvedContactDamageMultiplier ??
+              1),
+        );
       }
     });
 
