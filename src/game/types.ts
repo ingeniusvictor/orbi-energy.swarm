@@ -111,6 +111,8 @@ export interface Enemy {
   milestoneId?: string;
   milestoneMovementSpeedMultiplier?: number;
   milestoneContactDamageMultiplier?: number;
+  milestoneDamageMultiplier?: number;
+  milestoneAttackRateMultiplier?: number;
   milestoneRewardMultiplier?: number;
 }
 
