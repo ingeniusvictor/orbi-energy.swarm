@@ -107,6 +107,11 @@ export interface Enemy {
   slowTimer?: number; // Hydro slow effect timer
   isMinion?: boolean; // If split from Splitter or spawned as support
   chargeTimer?: number; // Universal attack/charge telegraph timer
+  milestoneKind?: "MINIBOSS" | "BOSS_REMATCH";
+  milestoneId?: string;
+  milestoneMovementSpeedMultiplier?: number;
+  milestoneContactDamageMultiplier?: number;
+  milestoneRewardMultiplier?: number;
 }
 
 export interface Projectile {
