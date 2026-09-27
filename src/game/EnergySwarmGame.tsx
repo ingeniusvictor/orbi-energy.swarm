@@ -201,6 +201,7 @@ export const EnergySwarmGame: React.FC = () => {
   const runEndTimeRef = useRef<number>(0);
   const runEnemiesDestroyedRef = useRef<number>(0);
   const runResourcesCollectedRef = useRef<number>(0);
+  const runNanoCreditsEarnedRef = useRef<number>(0);
   const bossAttacksSeenThisRunRef = useRef<string[]>([]);
 
 
@@ -819,6 +820,7 @@ export const EnergySwarmGame: React.FC = () => {
     // Reset run-local telemetry without mutating persistent React profile state.
     runEnemiesDestroyedRef.current = 0;
     runResourcesCollectedRef.current = 0;
+    runNanoCreditsEarnedRef.current = 0;
 
     setIsWaveBreak(true);
     setWaveBreakTimeLeft(Math.ceil(2500 / 1000));
@@ -3012,6 +3014,7 @@ export const EnergySwarmGame: React.FC = () => {
       // Harvest permanent Nano credits multiplier by sector config
       const val = Math.round(res.amount * getBiomeConfig(activeBiome).crystalValueMultiplier);
       nanoCreditsRef.current += val;
+      runNanoCreditsEarnedRef.current += val;
       setNanoCredits(nanoCreditsRef.current);
       scoreRef.current += 10;
     } else if (res.type === "ENERGY") {
@@ -4127,7 +4130,7 @@ export const EnergySwarmGame: React.FC = () => {
           waveReached={currentWave}
           maxSwarmSize={swarmSize}
           enemiesDestroyed={runEnemiesDestroyedRef.current}
-          nanoCreditsGained={score * 2} // match progression ratios
+          nanoCreditsGained={runNanoCreditsEarnedRef.current}
           onRestart={startGame}
           onExitToMenu={() => {
             setIsPlaying(false);
