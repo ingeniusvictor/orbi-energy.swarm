@@ -11,6 +11,7 @@ import {
   type FlashIntensityMode,
 } from "./flashAccessibility";
 import { getActiveLanguage } from "../i18n";
+import { drawFotonTacticalAvatar } from "./fotonTacticalRenderer";
 
 interface EnergySwarmCanvasProps {
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
@@ -147,66 +148,32 @@ export function drawFoton(
   const { x, y } = playerPos;
 
   if (hasGoldenCore) {
-    // Elegant pulsing golden crown ring around Orbi Foton
+    // Golden Core reward remains an external command halo around the new body.
     ctx.save();
-    ctx.strokeStyle = "rgba(251, 191, 36, 0.85)";
+    ctx.strokeStyle = "rgba(251, 191, 36, 0.88)";
     ctx.lineWidth = 1.8;
     ctx.shadowColor = "#f59e0b";
-    ctx.shadowBlur = 12 + Math.sin(time * 0.006) * 4;
+    ctx.shadowBlur =
+      12 + Math.sin(time * 0.006) * 4;
     ctx.beginPath();
-    ctx.arc(x, y, 18 + Math.sin(time * 0.005) * 1.5, 0, Math.PI * 2);
+    ctx.arc(
+      x,
+      y,
+      20 + Math.sin(time * 0.005) * 1.5,
+      0,
+      Math.PI * 2,
+    );
     ctx.stroke();
     ctx.restore();
   }
 
-  ctx.save();
-  ctx.translate(x, y);
-
-  // 1. Draw central core glow
-  const glow = ctx.createRadialGradient(0, 0, 2, 0, 0, 16);
-  glow.addColorStop(0, "#ffffff");
-  glow.addColorStop(0.3, "#f59e0b"); // Amber core
-  glow.addColorStop(0.8, "rgba(245, 158, 11, 0.2)");
-  glow.addColorStop(1, "rgba(245, 158, 11, 0)");
-  ctx.fillStyle = glow;
-  ctx.beginPath();
-  ctx.arc(0, 0, 16, 0, Math.PI * 2);
-  ctx.fill();
-
-  // 2. Draw outer orbital rings
-  ctx.strokeStyle = "rgba(245, 158, 11, 0.4)";
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.arc(0, 0, 24, 0, Math.PI * 2);
-  ctx.stroke();
-
-  // Rotating satellite node
-  const satAngle = time * 0.003;
-  ctx.fillStyle = "#fbbf24";
-  ctx.beginPath();
-  ctx.arc(Math.cos(satAngle) * 24, Math.sin(satAngle) * 24, 3, 0, Math.PI * 2);
-  ctx.fill();
-
-  // 3. Draw cybernetic directional pupil eyeball pointing towards cursor
-  const dx = pointerPos.x - x;
-  const dy = pointerPos.y - y;
-  const angle = Math.atan2(dy, dx);
-
-  ctx.rotate(angle);
-  
-  // White eye backdrop
-  ctx.fillStyle = "#ffffff";
-  ctx.beginPath();
-  ctx.arc(5, 0, 4, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Cyan pupil
-  ctx.fillStyle = "#06b6d4";
-  ctx.beginPath();
-  ctx.arc(6.5, 0, 2, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.restore();
+  drawFotonTacticalAvatar(ctx, {
+    x,
+    y,
+    time,
+    pointerX: pointerPos.x,
+    pointerY: pointerPos.y,
+  });
 }
 
 /**
