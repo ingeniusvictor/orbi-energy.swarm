@@ -29,13 +29,16 @@ test("campaign wave advancement keeps the runtime router synchronized", () => {
   );
 });
 
-test("current Devourer victory behavior remains unchanged in router adoption phase", () => {
-  const start = game.indexOf("const updateBossDefeatSequence");
-  const end = game.indexOf("// --- ENGINE UPDATES", start);
+test("Devourer victory switches the live router into infinite runtime", () => {
+  const start = game.indexOf("const enterInfiniteAfterCampaignVictory");
+  const end = game.indexOf("// --- PROCEDURAL REWARDS", start);
   assert.ok(start >= 0 && end > start);
 
   const block = game.slice(start, end);
-  assert.match(block, /triggerGameOver\(true\)/);
+  assert.match(block, /createInfiniteRuntimeState/);
+  assert.match(block, /runtimeProgressionRef\.current = infiniteRuntime/);
+  assert.match(block, /getRuntimeSector\(infiniteRuntime\)/);
+  assert.match(block, /getRuntimeWaveNumber\(infiniteRuntime\)/);
 });
 
 test("campaign-only WaveConfig presentation lookup remains inside the campaign loop", () => {
