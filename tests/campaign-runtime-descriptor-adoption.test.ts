@@ -96,10 +96,10 @@ test("campaign wave activation uses descriptor metadata and boss policy", () => 
     /descriptor\.modifiers\.includes\("BLACKOUT_HAZARD_ZONES"\)/,
   );
 
-  // WaveConfig remains only for the existing WaveIntro component contract.
+  // WaveConfig remains only for the existing handcrafted campaign WaveIntro contract.
   assert.match(
     transitions,
-    /getWaveConfig\(currentWaveRef\.current\); \/\/ presentation-only WaveIntro contract/,
+    /descriptor\.sourceMode === "CAMPAIGN"[\s\S]*getWaveConfig\(currentWaveRef\.current\)/,
   );
 });
 
