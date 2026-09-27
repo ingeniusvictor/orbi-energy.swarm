@@ -9,6 +9,7 @@ export interface SpatialIndexEntry<T> {
 export interface SpatialIndex<T> {
   cellSize: number;
   buckets: Map<string, SpatialIndexEntry<T>[]>;
+  entriesByOrder: Map<number, SpatialIndexEntry<T>>;
   size: number;
   maxRadius: number;
 }
@@ -32,6 +33,13 @@ export interface NearestSpatialResult<T> {
   candidateChecks: number;
 }
 
+export interface CollisionSpatialResult<T> {
+  item: T | null;
+  entry: SpatialIndexEntry<T> | null;
+  distanceSquared: number;
+  candidateChecks: number;
+}
+
 export const ENEMY_SPATIAL_CELL_SIZE = 128;
 
 const keyForCell = (cellX: number, cellY: number) =>
@@ -47,6 +55,7 @@ export const createSpatialIndex = <T>(
 ): SpatialIndex<T> => ({
   cellSize: normalizeCellSize(cellSize),
   buckets: new Map(),
+  entriesByOrder: new Map(),
   size: 0,
   maxRadius: 0,
 });
@@ -87,6 +96,7 @@ export const insertSpatialIndexEntry = <T>(
     index.buckets.set(key, [entry]);
   }
 
+  index.entriesByOrder.set(order, entry);
   index.size += 1;
   index.maxRadius = Math.max(
     index.maxRadius,
@@ -229,6 +239,127 @@ export const findNearestSpatialItem = <T>(
   return {
     item: bestEntry?.item ?? null,
     distanceSquared: bestDistanceSquared,
+    candidateChecks: query.candidateChecks,
+  };
+};
+
+
+export const relocateSpatialIndexEntry = <T>(
+  index: SpatialIndex<T>,
+  order: number,
+  x: number,
+  y: number,
+  radius?: number,
+) => {
+  const entry = index.entriesByOrder.get(order);
+  if (
+    !entry ||
+    !Number.isFinite(x) ||
+    !Number.isFinite(y)
+  ) {
+    return false;
+  }
+
+  const oldCellX = Math.floor(entry.x / index.cellSize);
+  const oldCellY = Math.floor(entry.y / index.cellSize);
+  const newCellX = Math.floor(x / index.cellSize);
+  const newCellY = Math.floor(y / index.cellSize);
+  const oldKey = keyForCell(oldCellX, oldCellY);
+  const newKey = keyForCell(newCellX, newCellY);
+
+  if (oldKey !== newKey) {
+    const oldBucket = index.buckets.get(oldKey);
+    if (oldBucket) {
+      const position = oldBucket.indexOf(entry);
+      if (position >= 0) {
+        oldBucket.splice(position, 1);
+      }
+      if (oldBucket.length === 0) {
+        index.buckets.delete(oldKey);
+      }
+    }
+
+    const newBucket = index.buckets.get(newKey);
+    if (newBucket) {
+      newBucket.push(entry);
+    } else {
+      index.buckets.set(newKey, [entry]);
+    }
+  }
+
+  entry.x = x;
+  entry.y = y;
+  if (radius !== undefined && Number.isFinite(radius)) {
+    entry.radius = Math.max(0, radius);
+    index.maxRadius = Math.max(
+      index.maxRadius,
+      entry.radius,
+    );
+  }
+
+  return true;
+};
+
+export const findFirstCollidingSpatialItem = <T>(
+  index: SpatialIndex<T>,
+  x: number,
+  y: number,
+  subjectRadius: number,
+  include?: (item: T) => boolean,
+): CollisionSpatialResult<T> => {
+  if (
+    !Number.isFinite(x) ||
+    !Number.isFinite(y) ||
+    !Number.isFinite(subjectRadius) ||
+    subjectRadius < 0
+  ) {
+    return {
+      item: null,
+      entry: null,
+      distanceSquared: Number.POSITIVE_INFINITY,
+      candidateChecks: 0,
+    };
+  }
+
+  const query = querySpatialIndex(
+    index,
+    x,
+    y,
+    subjectRadius + index.maxRadius,
+  );
+  let firstEntry: SpatialIndexEntry<T> | null = null;
+  let firstDistanceSquared =
+    Number.POSITIVE_INFINITY;
+
+  for (const entry of query.entries) {
+    if (include && !include(entry.item)) continue;
+
+    const dx = x - entry.x;
+    const dy = y - entry.y;
+    const distanceSquared = dx * dx + dy * dy;
+    const collisionRadius =
+      subjectRadius + entry.radius;
+
+    if (
+      distanceSquared >=
+      collisionRadius * collisionRadius
+    ) {
+      continue;
+    }
+
+    if (
+      firstEntry === null ||
+      entry.order < firstEntry.order
+    ) {
+      firstEntry = entry;
+      firstDistanceSquared = distanceSquared;
+    }
+  }
+
+  return {
+    item: firstEntry?.item ?? null,
+    entry: firstEntry,
+    distanceSquared: firstDistanceSquared,
     candidateChecks: query.candidateChecks,
   };
 };
