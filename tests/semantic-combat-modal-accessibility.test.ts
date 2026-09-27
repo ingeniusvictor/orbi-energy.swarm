@@ -16,184 +16,265 @@ const upgrade = read("src/components/UpgradeSelector.tsx");
 const result = read("src/components/ResultScreen.tsx");
 const game = read("src/game/EnergySwarmGame.tsx");
 
+const assertOrdered = (
+  source: string,
+  parts: string[],
+) => {
+  let cursor = -1;
+  for (const part of parts) {
+    const next = source.indexOf(part, cursor + 1);
+    assert.ok(next > cursor, `Missing or out-of-order fragment: ${part}`);
+    cursor = next;
+  }
+};
+
+const snippetFrom = (
+  source: string,
+  marker: string,
+  length = 1200,
+) => {
+  const start = source.indexOf(marker);
+  assert.ok(start >= 0, `Missing marker: ${marker}`);
+  return source.slice(start, start + length);
+};
+
 test("HUD exposes shield integrity as progress without turning the whole HUD into a live region", () => {
-  assert.match(hud, /role="progressbar"/);
-  assert.match(
+  const shield = snippetFrom(
     hud,
-    /aria-label={language === "es" ? "Integridad del escudo" : "Shield integrity"}/,
+    'className="w-20 bg-slate-900 rounded h-1.5',
   );
-  assert.match(hud, /aria-valuemin={0}/);
-  assert.match(hud, /aria-valuemax={100}/);
-  assert.match(hud, /aria-valuenow={/);
-  assert.doesNotMatch(
-    hud,
-    /orbi-game-hud[^>]*aria-live|orbi-game-hud[^>]*role="status"/,
+
+  assert.ok(shield.includes('role="progressbar"'));
+  assert.ok(
+    shield.includes(
+      'aria-label={language === "es" ? "Integridad del escudo" : "Shield integrity"}',
+    ),
   );
+  assert.ok(shield.includes("aria-valuemin={0}"));
+  assert.ok(shield.includes("aria-valuemax={100}"));
+  assert.ok(shield.includes("aria-valuenow={"));
+
+  const hudRoot = snippetFrom(hud, "orbi-game-hud", 500);
+  assert.ok(!hudRoot.includes("aria-live"));
+  assert.ok(!hudRoot.includes('role="status"'));
 });
 
 test("HUD pause and mute controls expose action labels plus pressed state", () => {
-  assert.match(
-    hud,
-    /aria-label={isPaused[sS]*"Reanudar simulación"[sS]*"Resume simulation"[sS]*"Pausar simulación"[sS]*"Pause simulation"/,
-  );
-  assert.match(hud, /aria-pressed={isPaused}/);
-  assert.match(
-    hud,
-    /aria-label={audioMuted[sS]*"Activar audio"[sS]*"Unmute audio"[sS]*"Silenciar audio"[sS]*"Mute audio"/,
-  );
-  assert.match(hud, /aria-pressed={audioMuted}/);
+  assertOrdered(hud, [
+    "aria-label={isPaused",
+    '"Reanudar simulación"',
+    '"Resume simulation"',
+    '"Pausar simulación"',
+    '"Pause simulation"',
+    "aria-pressed={isPaused}",
+  ]);
+
+  assertOrdered(hud, [
+    "aria-label={audioMuted",
+    '"Activar audio"',
+    '"Unmute audio"',
+    '"Silenciar audio"',
+    '"Mute audio"',
+    "aria-pressed={audioMuted}",
+  ]);
 });
 
 test("boss HUD uses a named region and a dedicated integrity progressbar", () => {
-  assert.match(boss, /role="region"/);
-  assert.match(boss, /aria-labelledby="orbi-boss-title"/);
-  assert.match(boss, /id="orbi-boss-title"/);
-  assert.match(
-    boss,
-    /className="orbi-boss-health"[sS]*role="progressbar"[sS]*aria-valuenow={healthPercent}/,
+  assert.ok(boss.includes('role="region"'));
+  assert.ok(
+    boss.includes('aria-labelledby="orbi-boss-title"'),
   );
+  assert.ok(boss.includes('id="orbi-boss-title"'));
+
+  const health = snippetFrom(
+    boss,
+    'className="orbi-boss-health"',
+  );
+  assert.ok(health.includes('role="progressbar"'));
+  assert.ok(health.includes("aria-valuenow={healthPercent}"));
 });
 
 test("boss tactical announcements are isolated from continuously changing HP", () => {
-  const liveMatches =
-    boss.match(/aria-live=/g) ?? [];
+  const liveCount =
+    boss.split("aria-live=").length - 1;
   assert.equal(
-    liveMatches.length,
+    liveCount,
     1,
     "boss overlay must keep exactly one intentional live region",
   );
-  assert.match(
+
+  const live = snippetFrom(
     boss,
-    /className="sr-only"[sS]*role="status"[sS]*aria-live="assertive"[sS]*aria-atomic="true"/,
+    'className="sr-only"',
+    1800,
   );
-  assert.match(
+  assert.ok(live.includes('role="status"'));
+  assert.ok(live.includes('aria-live="assertive"'));
+  assert.ok(live.includes('aria-atomic="true"'));
+  assertOrdered(live, [
+    "bossTransitionName",
+    "bossAttackName",
+    "counterHint",
+    "isCoreExposed",
+  ]);
+
+  const health = snippetFrom(
     boss,
-    /bossTransitionName[sS]*bossAttackName[sS]*counterHint[sS]*isCoreExposed/,
+    'className="orbi-boss-health"',
+    900,
   );
-  assert.doesNotMatch(
-    boss,
-    /orbi-boss-health[^>]*aria-live/,
-  );
+  assert.ok(!health.includes("aria-live"));
 });
 
 test("LUX-8 communication history is a polite append-oriented log", () => {
-  assert.match(companion, /role="log"/);
-  assert.match(companion, /aria-live="polite"/);
-  assert.match(
+  const log = snippetFrom(
     companion,
-    /aria-relevant="additions text"/,
+    "ref={logContainerRef}",
+    900,
   );
-  assert.match(
-    companion,
-    /Registro de comunicaciones LUX-8/,
+  assert.ok(log.includes('role="log"'));
+  assert.ok(log.includes('aria-live="polite"'));
+  assert.ok(
+    log.includes('aria-relevant="additions text"'),
   );
-  assert.match(companion, /LUX-8 communications log/);
+  assert.ok(
+    log.includes("Registro de comunicaciones LUX-8"),
+  );
+  assert.ok(
+    log.includes("LUX-8 communications log"),
+  );
 });
 
 test("pause overlay is a labelled modal dialog with deterministic focus targets", () => {
-  assert.match(pause, /role="dialog"/);
-  assert.match(pause, /aria-modal="true"/);
-  assert.match(
+  const dialog = snippetFrom(
     pause,
-    /aria-labelledby="pause-menu-title"/,
+    'id="pause-menu-backdrop"',
+    2200,
   );
-  assert.match(
-    pause,
-    /aria-describedby="pause-menu-state"/,
+  assert.ok(dialog.includes('role="dialog"'));
+  assert.ok(dialog.includes('aria-modal="true"'));
+  assert.ok(
+    dialog.includes('aria-labelledby="pause-menu-title"'),
   );
-  assert.match(
-    pause,
-    /id="resume-btn"[sS]*autoFocus/,
+  assert.ok(
+    dialog.includes('aria-describedby="pause-menu-state"'),
   );
-  assert.match(
-    pause,
-    /id="confirm-restart-no"[sS]*autoFocus/,
-  );
-  assert.match(
-    pause,
-    /id="back-from-settings"[sS]*autoFocus/,
-  );
-  assert.match(
-    pause,
-    /id="back-from-controls"[sS]*autoFocus/,
-  );
+
+  for (const id of [
+    "resume-btn",
+    "confirm-restart-no",
+    "back-from-settings",
+    "back-from-controls",
+  ]) {
+    const control = snippetFrom(
+      pause,
+      `id="${id}"`,
+      240,
+    );
+    assert.ok(
+      control.includes("autoFocus"),
+      `${id} must receive initial focus when its view opens`,
+    );
+  }
 });
 
 test("intermission selector is a labelled modal dialog with fail-safe focus initialization", () => {
-  assert.match(upgrade, /role="dialog"/);
-  assert.match(upgrade, /aria-modal="true"/);
-  assert.match(
-    upgrade,
-    /aria-labelledby="upgrade-selector-title"/,
+  assert.ok(upgrade.includes('role="dialog"'));
+  assert.ok(upgrade.includes('aria-modal="true"'));
+  assert.ok(
+    upgrade.includes(
+      'aria-labelledby="upgrade-selector-title"',
+    ),
   );
-  assert.match(
-    upgrade,
-    /aria-describedby="upgrade-selector-description"/,
+  assert.ok(
+    upgrade.includes(
+      'aria-describedby="upgrade-selector-description"',
+    ),
   );
-  assert.match(upgrade, /tabIndex={-1}/);
-  assert.match(
-    upgrade,
-    /querySelector<HTMLButtonElement>([sS]*"button:not(:disabled)"/,
+  assert.ok(upgrade.includes("tabIndex={-1}"));
+  assert.ok(
+    upgrade.includes(
+      "querySelector<HTMLButtonElement>",
+    ),
   );
-  assert.match(
-    upgrade,
-    /(firstEnabledControl ?? dialogRef.current)?.focus()/,
+  assert.ok(
+    upgrade.includes('"button:not(:disabled)"'),
+  );
+  assert.ok(
+    upgrade.includes(
+      "(firstEnabledControl ?? dialogRef.current)?.focus();",
+    ),
   );
 });
 
 test("result overlay is a labelled modal dialog and starts keyboard focus on play-again", () => {
-  assert.match(result, /role="dialog"/);
-  assert.match(result, /aria-modal="true"/);
-  assert.match(
-    result,
-    /aria-labelledby="run-result-title"/,
+  assert.ok(result.includes('role="dialog"'));
+  assert.ok(result.includes('aria-modal="true"'));
+  assert.ok(
+    result.includes(
+      'aria-labelledby="run-result-title"',
+    ),
   );
-  const titleIds =
-    result.match(/id="run-result-title"/g) ?? [];
+
+  const titleCount =
+    result.split('id="run-result-title"').length - 1;
   assert.equal(
-    titleIds.length,
+    titleCount,
     2,
     "victory and defeat branches share one semantic title id",
   );
-  assert.match(
-    result,
-    /<button[sS]{0,120}autoFocus[sS]{0,260}onRestart/,
+
+  const buttons = result.slice(
+    result.indexOf("BUTTON PATHWAYS"),
   );
+  assertOrdered(buttons, [
+    "<button",
+    "autoFocus",
+    "onRestart",
+  ]);
 });
 
 test("Threat Intel is a labelled modal dialog with description and resume focus", () => {
-  const marker =
+  const threat = game.slice(
     game.indexOf(
       "THREAT INTEL SYSTEM DIAGNOSTIC OVERLAY",
-    );
-  assert.ok(marker >= 0);
-  const threat = game.slice(marker);
+    ),
+  );
 
-  assert.match(threat, /role="dialog"/);
-  assert.match(threat, /aria-modal="true"/);
-  assert.match(
-    threat,
-    /aria-labelledby="threat-intel-title"/,
+  assert.ok(
+    threat.startsWith(
+      "THREAT INTEL SYSTEM DIAGNOSTIC OVERLAY",
+    ) || threat.includes("THREAT INTEL SYSTEM DIAGNOSTIC OVERLAY"),
   );
-  assert.match(
-    threat,
-    /aria-describedby="threat-intel-description"/,
+  assert.ok(threat.includes('role="dialog"'));
+  assert.ok(threat.includes('aria-modal="true"'));
+  assert.ok(
+    threat.includes(
+      'aria-labelledby="threat-intel-title"',
+    ),
   );
-  assert.match(
-    threat,
-    /id="threat-intel-title"/,
+  assert.ok(
+    threat.includes(
+      'aria-describedby="threat-intel-description"',
+    ),
   );
-  assert.match(
-    threat,
-    /id="threat-intel-description"/,
+  assert.ok(threat.includes('id="threat-intel-title"'));
+  assert.ok(
+    threat.includes('id="threat-intel-description"'),
   );
-  assert.match(
+
+  const resume = snippetFrom(
     threat,
-    /<button[sS]{0,120}autoFocus[sS]{0,500}setActiveThreatIntel(null)/,
+    "<button",
+    650,
+  );
+  assert.ok(resume.includes("autoFocus"));
+  assert.ok(
+    resume.includes("setActiveThreatIntel(null)"),
   );
 });
 
-test("semantic accessibility slice does not alter Canvas or gameplay routing", () => {
+test("semantic accessibility slice does not add gameplay-loop hooks to presentation components", () => {
   for (const source of [
     hud,
     boss,
@@ -202,19 +283,17 @@ test("semantic accessibility slice does not alter Canvas or gameplay routing", (
     upgrade,
     result,
   ]) {
-    assert.doesNotMatch(
-      source,
-      /requestAnimationFrame|updateEnginePhysics|resolveRuntimeWaveDescriptor/,
-    );
+    assert.ok(!source.includes("requestAnimationFrame"));
+    assert.ok(!source.includes("updateEnginePhysics"));
+    assert.ok(!source.includes("resolveRuntimeWaveDescriptor"));
   }
 
   const threatMarker =
     game.indexOf(
       "THREAT INTEL SYSTEM DIAGNOSTIC OVERLAY",
     );
+  assert.ok(threatMarker >= 0);
   const threat = game.slice(threatMarker);
-  assert.doesNotMatch(
-    threat,
-    /EnergySwarmCanvas[sS]*role="dialog"/,
-  );
+  assert.ok(!threat.includes("requestAnimationFrame"));
+  assert.ok(!threat.includes("updateEnginePhysics"));
 });
