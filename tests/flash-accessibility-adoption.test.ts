@@ -173,7 +173,7 @@ test("enemy REDUCED flash is a bounded highlight and does not early-return", () 
 test("game render loop projects one flash profile and passes it to enemies, swarm and FOTON", () => {
   const render = section(
     game,
-    "// 4. Draw enemies",
+    "const flashProfile =",
     "// 8. Draw active floating text feedback",
   );
 
