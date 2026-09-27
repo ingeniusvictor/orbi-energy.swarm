@@ -5,6 +5,11 @@ import {
 } from "./types";
 import { CANVAS_WIDTH, CANVAS_HEIGHT } from "./constants";
 import { getCanvasBackingStoreSize } from "./canvasResolution";
+import {
+  projectFlashAccessibility,
+  type FlashAccessibilityProfile,
+  type FlashIntensityMode,
+} from "./flashAccessibility";
 import { getActiveLanguage } from "../i18n";
 
 interface EnergySwarmCanvasProps {
@@ -14,6 +19,7 @@ interface EnergySwarmCanvasProps {
   activeFormation: FormationType;
   playerPos: { x: number; y: number };
   playerFlash: number; // Ticks of invuln flash
+  flashIntensity: FlashIntensityMode;
   cameraOffset: { x: number; y: number };
   drawNebula: boolean;
   drawPlanets: boolean;
@@ -35,11 +41,15 @@ export const EnergySwarmCanvas: React.FC<EnergySwarmCanvasProps> = ({
   canvasRef,
   isPaused,
   playerFlash,
+  flashIntensity,
   maxDpr,
   onPointerMove,
   onPointerDown,
   onPointerUp
 }) => {
+  const flashProfile =
+    projectFlashAccessibility(flashIntensity);
+
   React.useEffect(() => {
     const syncBackingStore = () => {
       const canvas = canvasRef.current;
@@ -89,9 +99,18 @@ export const EnergySwarmCanvas: React.FC<EnergySwarmCanvasProps> = ({
       />
 
       {/* Screen flash on hit overlay */}
-      {playerFlash > 0 && playerFlash % 4 < 2 && (
-        <div className="absolute inset-0 border-4 border-red-600/30 bg-red-600/5 pointer-events-none animate-fadeIn" />
-      )}
+      {playerFlash > 0 &&
+        (!flashProfile.screenOverlayFlickers ||
+          playerFlash % 4 < 2) && (
+          <div
+            className="absolute inset-0 border-4 border-red-600/30 bg-red-600/5 pointer-events-none animate-fadeIn"
+            style={{
+              opacity:
+                flashProfile.screenOverlayOpacity,
+            }}
+            data-flash-intensity={flashProfile.mode}
+          />
+        )}
 
       {/* PAUSED GAME OVERLAY PORTAL */}
       {isPaused && (
@@ -112,10 +131,18 @@ export function drawFoton(
   playerFlash: number,
   time: number,
   pointerPos: { x: number; y: number },
-  hasGoldenCore: boolean = false
+  hasGoldenCore: boolean = false,
+  flashProfile: FlashAccessibilityProfile =
+    projectFlashAccessibility("FULL"),
 ) {
-  // Invincibility flicker
-  if (playerFlash > 0 && Math.floor(playerFlash / 3) % 2 === 0) return;
+  // Historical FULL mode preserves the original invincibility flicker.
+  if (
+    flashProfile.fotonFullFlicker &&
+    playerFlash > 0 &&
+    Math.floor(playerFlash / 3) % 2 === 0
+  ) {
+    return;
+  }
 
   const { x, y } = playerPos;
 
@@ -188,7 +215,9 @@ export function drawFoton(
 export function drawSwarmRoster(
   ctx: CanvasRenderingContext2D,
   swarm: OrbiMember[],
-  time: number
+  time: number,
+  flashProfile: FlashAccessibilityProfile =
+    projectFlashAccessibility("FULL"),
 ) {
   const drawSingleMember = (member: OrbiMember, idx: number) => {
     // LOD Thresholds
@@ -223,15 +252,30 @@ export function drawSwarmRoster(
     }
     const r = member.size + localPulse;
 
-    // Apply shoot flashing
-    const isFlashing = member.flashTicks && member.flashTicks > 0;
-    if (isFlashing) {
-      ctx.shadowBlur = member.size * (isNear ? 3.0 : 2.0);
+    // Apply shoot flashing. FULL preserves the historical white-body flash;
+    // REDUCED keeps the member color and limits the white highlight to glow.
+    const isFlashing =
+      Boolean(member.flashTicks && member.flashTicks > 0);
+    if (
+      isFlashing &&
+      flashProfile.friendlyWhiteFlashStrength >= 1
+    ) {
+      ctx.shadowBlur =
+        member.size * (isNear ? 3.0 : 2.0);
       ctx.shadowColor = "#ffffff";
       ctx.fillStyle = "#ffffff";
     } else {
-      ctx.shadowBlur = member.size * (isNear ? 2.0 : 1.0);
-      ctx.shadowColor = member.color;
+      const reducedFlashStrength = isFlashing
+        ? flashProfile.friendlyWhiteFlashStrength
+        : 0;
+      ctx.shadowBlur =
+        member.size *
+        (isNear ? 2.0 : 1.0) *
+        (1 + reducedFlashStrength * 0.2);
+      ctx.shadowColor =
+        reducedFlashStrength > 0
+          ? `rgba(255,255,255,${reducedFlashStrength})`
+          : member.color;
       ctx.fillStyle = member.color;
     }
 
@@ -651,7 +695,9 @@ export function drawEnemiesList(
   ctx: CanvasRenderingContext2D,
   enemies: Enemy[],
   time: number,
-  playerPos: { x: number; y: number }
+  playerPos: { x: number; y: number },
+  flashProfile: FlashAccessibilityProfile =
+    projectFlashAccessibility("FULL"),
 ) {
   enemies.forEach((enemy) => {
     if (enemy.isDead) return;
@@ -719,8 +765,13 @@ export function drawEnemiesList(
       ctx.restore();
     }
 
-    // Apply white hit flashing (for high intensity impact frames)
-    if (enemy.flashTicks > 0) {
+    // Apply hit flash. FULL preserves the historical full-white replacement
+    // and early return. REDUCED draws only a bounded highlight so telegraphs
+    // and the enemy silhouette remain visible.
+    if (
+      enemy.flashTicks > 0 &&
+      flashProfile.enemyWhiteFlashStrength >= 1
+    ) {
       ctx.shadowBlur = enemy.size * 2.5;
       ctx.shadowColor = "#ffffff";
       ctx.fillStyle = "#ffffff";
@@ -729,6 +780,29 @@ export function drawEnemiesList(
       ctx.fill();
       ctx.restore();
       return;
+    }
+
+    if (
+      enemy.flashTicks > 0 &&
+      flashProfile.enemyWhiteFlashStrength > 0
+    ) {
+      ctx.save();
+      ctx.globalAlpha =
+        flashProfile.enemyWhiteFlashStrength;
+      ctx.shadowBlur = enemy.size * 1.2;
+      ctx.shadowColor = "#ffffff";
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(
+        0,
+        0,
+        enemy.size * 1.08,
+        0,
+        Math.PI * 2,
+      );
+      ctx.stroke();
+      ctx.restore();
     }
 
     // DRAW WEAPONS CHARGING TELEGRAPHS (drawn behind the enemy body)
