@@ -45,20 +45,19 @@ import {
   createInfiniteRuntimeState,
   getRuntimeSector,
   getRuntimeWaveNumber,
-  resolveRuntimeWaveDescriptor,
   type RuntimeProgressionState,
 } from "./runtimeProgressionRouter";
 import {
   isRuntimeWaveComplete,
   shouldTickRuntimeTimer,
 } from "./runtimeCompletionPolicy";
-import { projectRuntimeCombatPressure } from "./runtimeCombatPressure";
+import {
+  createRuntimeProjectionBundleCache,
+  getCachedRuntimeProjectionBundle,
+  type RuntimeProjectionBundleCache,
+} from "./runtimeProjectionBundleCache";
 import { resolveEvolvedEnemySpawn } from "./runtimeEnemyEvolution";
 import { createEnemySignatureBehaviorCache } from "./enemySignatureBehaviorCache";
-import {
-  getRuntimeMutatedEnemyBudget,
-  projectRuntimeMutatorEffects,
-} from "./runtimeMutatorEffects";
 import {
   getReducedVisibilityOverlayProfile,
   getResourceFieldProfile,
@@ -68,10 +67,7 @@ import {
   getElectricalStormConfig,
   stepElectricalStormRuntime,
 } from "./runtimeElectricalStorm";
-import {
-  projectInfiniteMilestoneEncounter,
-  type InfiniteMilestoneEncounterProfile,
-} from "./runtimeMilestoneEncounter";
+import type { InfiniteMilestoneEncounterProfile } from "./runtimeMilestoneEncounter";
 import {
   createRuntimeMinibossGateState,
   markRuntimeMinibossSpawned,
@@ -401,18 +397,25 @@ export const EnergySwarmGame: React.FC = () => {
     createRuntimeBossRematchGateState(),
   );
 
+  const runtimeProjectionBundleCacheRef =
+    useRef<RuntimeProjectionBundleCache>(
+      createRuntimeProjectionBundleCache(),
+    );
+
+  const getCurrentRuntimeProjection = () =>
+    getCachedRuntimeProjectionBundle(
+      runtimeProjectionBundleCacheRef.current,
+      runtimeProgressionRef.current,
+    );
+
   const getCurrentRuntimeDescriptor = () =>
-    resolveRuntimeWaveDescriptor(runtimeProgressionRef.current);
+    getCurrentRuntimeProjection().descriptor;
 
   const getCurrentCombatPressure = () =>
-    projectRuntimeCombatPressure(
-      getCurrentRuntimeDescriptor(),
-    );
+    getCurrentRuntimeProjection().combatPressure;
 
   const getCurrentMutatorEffects = () =>
-    projectRuntimeMutatorEffects(
-      getCurrentRuntimeDescriptor(),
-    );
+    getCurrentRuntimeProjection().mutatorEffects;
 
   const isActiveBossRematch = () =>
     bossRef.current?.milestoneKind === "BOSS_REMATCH";
@@ -1032,6 +1035,8 @@ export const EnergySwarmGame: React.FC = () => {
     runCommitLedgerRef.current = createRunCommitLedger();
     frameHealthRef.current = createFrameHealthState();
     frameHealthRecommendationShownRef.current = null;
+    runtimeProjectionBundleCacheRef.current =
+      createRuntimeProjectionBundleCache();
     runMaxSwarmSizeRef.current = 1;
     reactUpdateAccumulatorMsRef.current = 0;
     bossDamageDealtRef.current = 0;
@@ -1718,9 +1723,11 @@ export const EnergySwarmGame: React.FC = () => {
     if (bossActiveRef.current) return;
 
     if (waveActiveRef.current) {
-      const descriptor = getCurrentRuntimeDescriptor();
+      const runtimeProjection =
+        getCurrentRuntimeProjection();
+      const descriptor = runtimeProjection.descriptor;
       const effectiveEnemyBudget =
-        getRuntimeMutatedEnemyBudget(descriptor);
+        runtimeProjection.enemyBudget;
       const completionDescriptor =
         effectiveEnemyBudget === descriptor.spawn.enemyBudget
           ? descriptor
@@ -1741,7 +1748,7 @@ export const EnergySwarmGame: React.FC = () => {
       ).length;
 
       const milestoneEncounter =
-        projectInfiniteMilestoneEncounter(descriptor);
+        runtimeProjection.milestoneEncounter;
       const bossRematchProfile =
         milestoneEncounter?.kind === "BOSS_REMATCH"
           ? milestoneEncounter
@@ -1843,7 +1850,10 @@ export const EnergySwarmGame: React.FC = () => {
           const nextRuntime =
             advanceInfiniteRuntimeState(completedRuntime);
           const nextDescriptor =
-            resolveRuntimeWaveDescriptor(nextRuntime);
+            getCachedRuntimeProjectionBundle(
+              runtimeProjectionBundleCacheRef.current,
+              nextRuntime,
+            ).descriptor;
           const nextSector = getRuntimeSector(nextRuntime);
           const nextWave = getRuntimeWaveNumber(nextRuntime);
 
@@ -1989,7 +1999,9 @@ export const EnergySwarmGame: React.FC = () => {
 
   // --- SPAWN REGULAR ENEMY ---
   const spawnEnemy = (forcedType?: EnemyType) => {
-    const descriptor = getCurrentRuntimeDescriptor();
+    const runtimeProjection =
+      getCurrentRuntimeProjection();
+    const descriptor = runtimeProjection.descriptor;
     if (
       enemiesRef.current.length >=
       Math.min(MAX_ENEMIES, descriptor.spawn.maxConcurrentEnemies)
@@ -1997,17 +2009,17 @@ export const EnergySwarmGame: React.FC = () => {
 
     const biomeCfg = getBiomeConfig(activeBiome);
     const combatPressure =
-      projectRuntimeCombatPressure(descriptor);
+      runtimeProjection.combatPressure;
     const mutatorEffects =
-      projectRuntimeMutatorEffects(descriptor);
+      runtimeProjection.mutatorEffects;
     const milestoneEncounter =
-      projectInfiniteMilestoneEncounter(descriptor);
+      runtimeProjection.milestoneEncounter;
     const minibossProfile =
       milestoneEncounter?.kind === "MINIBOSS"
         ? milestoneEncounter
         : null;
     const effectiveEnemyBudget =
-      getRuntimeMutatedEnemyBudget(descriptor);
+      runtimeProjection.enemyBudget;
 
     minibossGateRef.current =
       syncRuntimeMinibossGate(
@@ -3291,10 +3303,12 @@ export const EnergySwarmGame: React.FC = () => {
       delta;
     updateRunMaxSwarmSize();
 
+    const frameRuntimeProjection =
+      getCurrentRuntimeProjection();
     const frameDescriptor =
-      getCurrentRuntimeDescriptor();
+      frameRuntimeProjection.descriptor;
     const frameMutatorEffects =
-      projectRuntimeMutatorEffects(frameDescriptor);
+      frameRuntimeProjection.mutatorEffects;
 
     // 1. Invincibility timer ticks
     if (invincibilityTimerRef.current > 0) {
@@ -3712,24 +3726,18 @@ export const EnergySwarmGame: React.FC = () => {
     // 5. Spawning script & wave transition timers
     handleWaveTransitions(delta);
 
+    const simulationRuntimeProjection =
+      getCurrentRuntimeProjection();
     const simulationDescriptor =
-      getCurrentRuntimeDescriptor();
+      simulationRuntimeProjection.descriptor;
     const simulationCombatPressure =
-      projectRuntimeCombatPressure(
-        simulationDescriptor,
-      );
+      simulationRuntimeProjection.combatPressure;
     const simulationMutatorEffects =
-      projectRuntimeMutatorEffects(
-        simulationDescriptor,
-      );
+      simulationRuntimeProjection.mutatorEffects;
     const simulationEnemyBudget =
-      getRuntimeMutatedEnemyBudget(
-        simulationDescriptor,
-      );
+      simulationRuntimeProjection.enemyBudget;
     const simulationMilestoneEncounter =
-      projectInfiniteMilestoneEncounter(
-        simulationDescriptor,
-      );
+      simulationRuntimeProjection.milestoneEncounter;
     minibossGateRef.current =
       stepRuntimeMinibossGate(
         syncRuntimeMinibossGate(
@@ -5389,10 +5397,12 @@ export const EnergySwarmGame: React.FC = () => {
     // 9. Infinite reduced-visibility field: battlefield only.
     // HUD and tactical radar render after this overlay and stay readable.
     if (waveActiveRef.current) {
+      const renderRuntimeProjection =
+        getCurrentRuntimeProjection();
       const renderDescriptor =
-        getCurrentRuntimeDescriptor();
+        renderRuntimeProjection.descriptor;
       const renderMutatorEffects =
-        projectRuntimeMutatorEffects(renderDescriptor);
+        renderRuntimeProjection.mutatorEffects;
       const visibilityProfile =
         getReducedVisibilityOverlayProfile(
           renderMutatorEffects,
@@ -5448,16 +5458,14 @@ export const EnergySwarmGame: React.FC = () => {
       stormState.targetX !== null &&
       stormState.targetY !== null
     ) {
+      const stormRuntimeProjection =
+        getCurrentRuntimeProjection();
       const stormDescriptor =
-        getCurrentRuntimeDescriptor();
+        stormRuntimeProjection.descriptor;
       const stormEffects =
-        projectRuntimeMutatorEffects(
-          stormDescriptor,
-        );
+        stormRuntimeProjection.mutatorEffects;
       const stormPressure =
-        projectRuntimeCombatPressure(
-          stormDescriptor,
-        );
+        stormRuntimeProjection.combatPressure;
       const stormConfig =
         stormDescriptor.sourceMode === "INFINITE"
           ? getElectricalStormConfig(
