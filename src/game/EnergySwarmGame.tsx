@@ -48,6 +48,7 @@ import { ResultScreen } from "../components/ResultScreen";
 import { CompanionPanel } from "../components/CompanionPanel";
 import { UpgradeSelector } from "../components/UpgradeSelector";
 import { MobileTouchOverlay } from "../components/MobileTouchOverlay";
+import { MobileFormationCarousel } from "../components/MobileFormationCarousel";
 import { OrientationHint } from "../components/OrientationHint";
 import { BossHudOverlay } from "../components/BossHudOverlay";
 import { shouldPauseForLifecycle, shouldResetFrameClock, type LifecycleSignal } from "./lifecyclePolicy";
@@ -4436,8 +4437,13 @@ export const EnergySwarmGame: React.FC = () => {
                   />
                 )}
 
-                {/* MOBILE / ANDROID THUMB-ZONE MOVEMENT OVERLAY */}
+                {/* MOBILE / ANDROID THUMB-ZONE CONTROLS */}
                 <MobileTouchOverlay onDirectionChange={setMobileTouchDirection} />
+                <MobileFormationCarousel
+                  activeFormation={activeFormation}
+                  onChangeFormation={triggerFormationChange}
+                  disabled={isPaused || isGameOver || isUpgradeSelectionOpen}
+                />
                 <OrientationHint />
               </div>
             </div>
