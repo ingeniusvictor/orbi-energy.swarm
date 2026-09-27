@@ -5,6 +5,7 @@ import test from "node:test";
 import {
   ENEMY_SPATIAL_CELL_SIZE,
   buildSpatialIndex,
+  findAllCollidingSpatialItems,
   insertSpatialIndexEntry,
   querySpatialIndex,
 } from "../src/game/spatialIndex.ts";
@@ -73,24 +74,14 @@ const spatialSplashIds = (
 ) => {
   const index = buildEnemyIndex(enemies);
 
-  return querySpatialIndex(
+  return findAllCollidingSpatialItems(
     index,
     x,
     y,
-    splashRadius + index.maxRadius,
-  ).entries
-    .filter((entry) => {
-      const candidate = entry.item;
-      if (candidate === primary || candidate.isDead) {
-        return false;
-      }
-      const dx = x - entry.x;
-      const dy = y - entry.y;
-      const radius = splashRadius + entry.radius;
-      return dx * dx + dy * dy < radius * radius;
-    })
-    .sort((left, right) => left.order - right.order)
-    .map((entry) => entry.item.id);
+    splashRadius,
+    (candidate) =>
+      candidate !== primary && !candidate.isDead,
+  ).entries.map((entry) => entry.item.id);
 };
 
 test("spatial thermal splash target set and order match legacy full scan", () => {
@@ -285,15 +276,15 @@ test("live thermal splash uses indexed candidates in original enemy order withou
 
   assert.match(
     thermal,
-    /querySpatialIndex\([\s\S]*enemyCollisionIndex/,
+    /findAllCollidingSpatialItems\([\s\S]*enemyCollisionIndex,[\s\S]*proj\.x,[\s\S]*proj\.y,[\s\S]*splashRadius/,
   );
   assert.match(
     thermal,
-    /\.sort\([\s\S]*left\.order - right\.order/,
+    /otherEnemy !== enemy &&[\s\S]*!otherEnemy\.isDead/,
   );
-  assert.match(
+  assert.doesNotMatch(
     thermal,
-    /sdx \* sdx \+ sdy \* sdy <[\s\S]*radius \* radius/,
+    /querySpatialIndex|\.filter\(|\.sort\(/,
   );
   assert.doesNotMatch(
     thermal,
