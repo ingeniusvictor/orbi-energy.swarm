@@ -193,11 +193,12 @@ export function generateUpgradeChoices(
     selected.push(item);
   }
 
-  // If we still don't have 3, backfill with whatever is not in selected
+  // If category-diversity skipping left us with fewer than 3, backfill only
+  // from the already-eligible pool. Never reintroduce maxed/invalid upgrades.
   if (selected.length < 3) {
-    for (const item of MID_RUN_UPGRADES) {
+    for (const item of pool) {
       if (selected.length >= 3) break;
-      if (!selected.some(s => s.id === item.id)) {
+      if (!selected.some((s) => s.id === item.id)) {
         selected.push(item);
       }
     }
