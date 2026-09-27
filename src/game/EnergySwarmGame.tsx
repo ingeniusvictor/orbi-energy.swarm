@@ -138,6 +138,13 @@ import { OrientationHint } from "../components/OrientationHint";
 import { useViewportComposition } from "../components/useViewportComposition";
 import { BossHudOverlay } from "../components/BossHudOverlay";
 import { shouldPauseForLifecycle, shouldResetFrameClock, type LifecycleSignal } from "./lifecyclePolicy";
+import {
+  createPerformanceDiagnosticsState,
+  stepPerformanceDiagnostics,
+  type PerformanceDiagnosticsSnapshot,
+  type PerformanceDiagnosticsState,
+} from "./performanceDiagnostics";
+import PerformanceDiagnosticsOverlay from "../components/PerformanceDiagnosticsOverlay";
 import { createTouchDirectionState, getTouchMovementVector, hasActiveTouchDirection, type TouchDirection } from "./touchControls";
 
 type InfiniteBossRematchProfile = Extract<
@@ -153,6 +160,12 @@ export const EnergySwarmGame: React.FC = () => {
   const [isPaused, setIsPaused] = useState(false);
   const [isPhotoMode, setIsPhotoMode] = useState(false);
   const [photoHintVisible, setPhotoHintVisible] = useState(false);
+  const [performanceDiagnosticsEnabled, setPerformanceDiagnosticsEnabled] =
+    useState(false);
+  const [
+    performanceDiagnosticsSnapshot,
+    setPerformanceDiagnosticsSnapshot,
+  ] = useState<PerformanceDiagnosticsSnapshot | null>(null);
   const [isGameOver, setIsGameOver] = useState(false);
   const [victory, setVictory] = useState(false);
 
@@ -211,6 +224,11 @@ export const EnergySwarmGame: React.FC = () => {
   const loopActiveRef = useRef(false);
   const lastTimeRef = useRef(0);
   const timeElapsedRef = useRef(0);
+  const performanceDiagnosticsEnabledRef = useRef(false);
+  const performanceDiagnosticsStateRef =
+    useRef<PerformanceDiagnosticsState>(
+      createPerformanceDiagnosticsState(),
+    );
   const isPausedRef = useRef(false);
   const touchDirectionsRef = useRef(createTouchDirectionState());
 
@@ -832,6 +850,12 @@ export const EnergySwarmGame: React.FC = () => {
 
       const key = e.key.toUpperCase();
 
+      if (key === "F3") {
+        e.preventDefault();
+        togglePerformanceDiagnostics();
+        return;
+      }
+
       if (isPhotoMode) {
         if (key === "F10" || e.key === "Escape") {
           e.preventDefault();
@@ -1020,6 +1044,15 @@ export const EnergySwarmGame: React.FC = () => {
   };
 
   // --- GAME START TRIGGER ---
+  const togglePerformanceDiagnostics = () => {
+    const next = !performanceDiagnosticsEnabledRef.current;
+    performanceDiagnosticsEnabledRef.current = next;
+    performanceDiagnosticsStateRef.current =
+      createPerformanceDiagnosticsState();
+    setPerformanceDiagnosticsSnapshot(null);
+    setPerformanceDiagnosticsEnabled(next);
+  };
+
   const startGame = () => {
     initAudio();
     setIsPlaying(true);
@@ -1035,6 +1068,9 @@ export const EnergySwarmGame: React.FC = () => {
     runCommitLedgerRef.current = createRunCommitLedger();
     frameHealthRef.current = createFrameHealthState();
     frameHealthRecommendationShownRef.current = null;
+    performanceDiagnosticsStateRef.current =
+      createPerformanceDiagnosticsState();
+    setPerformanceDiagnosticsSnapshot(null);
     runtimeProjectionBundleCacheRef.current =
       createRuntimeProjectionBundleCache();
     runMaxSwarmSizeRef.current = 1;
@@ -3090,6 +3126,12 @@ export const EnergySwarmGame: React.FC = () => {
     // Clamp huge deltas when switching tabs to avoid teleportation crashes
     if (delta > 100) delta = 16.6;
 
+    const diagnosticsActive =
+      performanceDiagnosticsEnabledRef.current;
+    const loopCpuStartedAt = diagnosticsActive
+      ? performance.now()
+      : 0;
+
     const frameHealth = stepFrameHealthMonitor(
       frameHealthRef.current,
       delta,
@@ -3143,8 +3185,21 @@ export const EnergySwarmGame: React.FC = () => {
       (t) => t.life > 0,
     );
 
+    const physicsStartedAt = diagnosticsActive
+      ? performance.now()
+      : 0;
     updateEnginePhysics(delta);
+    const physicsFinishedAt = diagnosticsActive
+      ? performance.now()
+      : 0;
+
+    const renderStartedAt = diagnosticsActive
+      ? performance.now()
+      : 0;
     renderCanvasScene();
+    const renderFinishedAt = diagnosticsActive
+      ? performance.now()
+      : 0;
 
     // Preserve the historical 10-frame @ 60 Hz HUD sync cadence by elapsed time.
     const hudCadence = stepCadenceAccumulator(
@@ -3157,6 +3212,38 @@ export const EnergySwarmGame: React.FC = () => {
       setScore(scoreRef.current);
       setShield(shieldRef.current);
       setSwarmSize(swarmRef.current.length + 1);
+    }
+
+    if (diagnosticsActive) {
+      const loopCpuFinishedAt = performance.now();
+      const diagnostics = stepPerformanceDiagnostics(
+        performanceDiagnosticsStateRef.current,
+        {
+          frameMs: delta,
+          loopCpuMs:
+            loopCpuFinishedAt - loopCpuStartedAt,
+          physicsMs:
+            physicsFinishedAt - physicsStartedAt,
+          renderMs:
+            renderFinishedAt - renderStartedAt,
+          enemies: enemiesRef.current.length,
+          projectiles: projectilesRef.current.length,
+          particles: particlesRef.current.length,
+          swarm: swarmRef.current.length + 1,
+          qualityPreset:
+            statsRef.current?.qualityPreset ??
+            stats.qualityPreset,
+          frameHealthStatus:
+            frameHealthRef.current.lastWindow?.status,
+        },
+      );
+      performanceDiagnosticsStateRef.current =
+        diagnostics.state;
+      if (diagnostics.snapshot) {
+        setPerformanceDiagnosticsSnapshot(
+          diagnostics.snapshot,
+        );
+      }
     }
 
     requestAnimationFrame(gameLoop);
@@ -6210,6 +6297,12 @@ export const EnergySwarmGame: React.FC = () => {
                   onPointerUp={handlePointerUp}
                   time={timeElapsedRef.current}
                 />
+
+                {performanceDiagnosticsEnabled && (
+                  <PerformanceDiagnosticsOverlay
+                    snapshot={performanceDiagnosticsSnapshot}
+                  />
+                )}
 
                 {/* IMMERSIVE BOSS HUD OVERLAY */}
                 {bossActiveRef.current && bossRef.current && !bossRef.current.isDead && (
