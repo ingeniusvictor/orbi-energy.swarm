@@ -1,3 +1,4 @@
+import { normalizeFlashIntensityMode } from "./flashAccessibility";
 import {
   FormationType,
   QualityPreset,
@@ -240,6 +241,7 @@ export function loadGameStats(): GameStats {
       discoveredThreats: Array.isArray(parsed.discoveredThreats) ? parsed.discoveredThreats : [],
       bossCodexSeenAttacks: Array.isArray(parsed.bossCodexSeenAttacks) ? parsed.bossCodexSeenAttacks : [],
       bossCodexSeenPhases: Array.isArray(parsed.bossCodexSeenPhases) ? parsed.bossCodexSeenPhases : [1],
+      flashIntensity: normalizeFlashIntensityMode(parsed.flashIntensity),
       bestInfiniteSector: safeRecordInteger(parsed.bestInfiniteSector),
       bestInfiniteWave: safeRecordInteger(parsed.bestInfiniteWave),
       infiniteMinibossesDefeated: safeRecordInteger(parsed.infiniteMinibossesDefeated),
