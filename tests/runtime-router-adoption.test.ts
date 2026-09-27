@@ -25,7 +25,7 @@ test("new runs reset runtime progression to campaign Sector 1", () => {
 test("campaign wave advancement keeps the runtime router synchronized", () => {
   assert.match(
     game,
-    /currentWaveRef\.current \+= 1;[\s\S]*runtimeProgressionRef\.current = createCampaignRuntimeState\([\s\S]*currentWaveRef\.current/,
+    /currentWaveRef\.current \+= 1;[\s\S]*runtimeProgressionRef\.current\s*=\s*createCampaignRuntimeState\([\s\S]*currentWaveRef\.current/,
   );
 });
 
