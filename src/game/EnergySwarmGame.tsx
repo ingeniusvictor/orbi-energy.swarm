@@ -99,6 +99,7 @@ import {
   EnergySwarmCanvas, drawFoton, drawSwarmRoster, drawResources, 
   drawEnemiesList, drawProjectilesList 
 } from "./EnergySwarmCanvas";
+import { projectFlashAccessibility } from "./flashAccessibility";
 
 import { StartScreen } from "../components/StartScreen";
 import { GameHud } from "../components/GameHud";
@@ -5020,8 +5021,20 @@ export const EnergySwarmGame: React.FC = () => {
     // 3. Draw active shooter projectiles
     drawProjectilesList(ctx, projectilesRef.current);
 
+    const flashProfile =
+      projectFlashAccessibility(
+        statsRef.current?.flashIntensity ??
+          stats.flashIntensity,
+      );
+
     // 4. Draw enemies
-    drawEnemiesList(ctx, enemiesRef.current, timeElapsedRef.current, playerPosRef.current);
+    drawEnemiesList(
+      ctx,
+      enemiesRef.current,
+      timeElapsedRef.current,
+      playerPosRef.current,
+      flashProfile,
+    );
 
     // 5. Draw active Particles
     particlesRef.current.forEach((p) => {
@@ -5029,10 +5042,23 @@ export const EnergySwarmGame: React.FC = () => {
     });
 
     // 6. Draw swarm shooters
-    drawSwarmRoster(ctx, swarmRef.current, timeElapsedRef.current);
+    drawSwarmRoster(
+      ctx,
+      swarmRef.current,
+      timeElapsedRef.current,
+      flashProfile,
+    );
 
     // 7. Draw Orbi Foton leader eyeball
-    drawFoton(ctx, playerPosRef.current, playerFlashRef.current, timeElapsedRef.current, pointerRef.current, (stats.bossVictories || 0) > 0);
+    drawFoton(
+      ctx,
+      playerPosRef.current,
+      playerFlashRef.current,
+      timeElapsedRef.current,
+      pointerRef.current,
+      (stats.bossVictories || 0) > 0,
+      flashProfile,
+    );
 
     // 8. Draw active floating text feedback (such as CRITICAL or BLOCK)
     ctx.save();
@@ -5802,6 +5828,7 @@ export const EnergySwarmGame: React.FC = () => {
                   activeFormation={activeFormation}
                   playerPos={playerPosRef.current}
                   playerFlash={playerFlashRef.current}
+                  flashIntensity={stats.flashIntensity || "FULL"}
                   cameraOffset={cameraOffsetRef.current}
                   drawNebula={getQualityConfig(stats.qualityPreset).drawNebula}
                   drawPlanets={getQualityConfig(stats.qualityPreset).drawPlanets}
