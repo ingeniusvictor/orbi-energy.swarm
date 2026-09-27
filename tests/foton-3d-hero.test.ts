@@ -153,7 +153,7 @@ test("pointer parallax remains bounded and cosmetic", () => {
   );
 });
 
-test("gameplay runtime never imports Three.js or the menu hero", () => {
+test("EnergySwarmGame stays decoupled from Three.js and the menu hero", () => {
   assert.doesNotMatch(
     game,
     /from ["']three["']|GLTFLoader|Foton3DHero/,

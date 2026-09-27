@@ -5486,6 +5486,8 @@ export const EnergySwarmGame: React.FC = () => {
       (stats.bossVictories || 0) > 0,
       flashProfile,
       fotonShieldRatio,
+      stats.qualityPreset,
+      isPausedRef.current,
     );
 
     // 8. Draw active floating text feedback (such as CRITICAL or BLOCK)
@@ -6281,6 +6283,7 @@ export const EnergySwarmGame: React.FC = () => {
                   drawNebula={getQualityConfig(stats.qualityPreset).drawNebula}
                   drawPlanets={getQualityConfig(stats.qualityPreset).drawPlanets}
                   maxDpr={getQualityConfig(stats.qualityPreset).maxDPR}
+                  qualityPreset={stats.qualityPreset}
                   screenShake={screenShakeRef.current}
                   swarm={swarmRef.current}
                   enemies={enemiesRef.current}

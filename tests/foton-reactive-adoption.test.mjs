@@ -94,10 +94,14 @@ test("critical pulse remains cosmetic and bounded", () => {
   );
 });
 
-test("reactive Foton path remains free of Three.js and persistent state writes", () => {
+test("reactive overlay stays presentation-only while Three.js is isolated behind the dedicated GLB renderer", () => {
   const combined = canvas + tactical;
   assert.doesNotMatch(
     combined,
     /from ["']three["']|GLTFLoader|WebGLRenderer|localStorage|saveGameStats/,
+  );
+  assert.match(
+    canvas,
+    /getFotonGameplay3DFrame/,
   );
 });

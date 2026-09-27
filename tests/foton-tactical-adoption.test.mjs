@@ -24,14 +24,18 @@ assert.ok(start >= 0);
 assert.ok(end > start);
 const foton = canvas.slice(start, end);
 
-test("drawFoton delegates the body to the tactical GLB-inspired renderer", () => {
+test("tactical avatar remains only the loading or failure fallback", () => {
   assert.match(
     canvas,
-    /import \{ drawFotonTacticalAvatar \} from "\.\/fotonTacticalRenderer"/,
+    /drawFotonTacticalAvatar/,
   );
   assert.match(
     foton,
-    /drawFotonTacticalAvatar\(ctx,[\s\S]*pointerX: pointerPos\.x[\s\S]*pointerY: pointerPos\.y/,
+    /const glbFrame = getFotonGameplay3DFrame/,
+  );
+  assert.match(
+    foton,
+    /if \(glbFrame\)[\s\S]*ctx\.drawImage\([\s\S]*return;[\s\S]*Loading\/failure fallback only[\s\S]*drawFotonTacticalAvatar/,
   );
 });
 
@@ -55,7 +59,7 @@ test("Golden Core reward halo remains around the tactical avatar", () => {
   );
   assert.match(
     foton,
-    /20 \+ Math\.sin\(time \* 0\.005\) \* 1\.5/,
+    /29 \+ Math\.sin\(time \* 0\.005\) \* 1\.5/,
   );
 });
 
@@ -81,11 +85,15 @@ test("tactical renderer carries the premium Foton shell vocabulary", () => {
   }
 });
 
-test("gameplay renderer remains Canvas-only with no Three.js or GLTF runtime", () => {
+test("combat and tactical fallback remain free of direct Three.js dependencies", () => {
   const combined = canvas + tactical + game;
   assert.doesNotMatch(
     combined,
     /from ["']three["']|GLTFLoader|WebGLRenderer/,
+  );
+  assert.match(
+    canvas,
+    /from "\.\/fotonGameplay3DRenderer"/,
   );
 });
 
