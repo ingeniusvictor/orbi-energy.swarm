@@ -3,21 +3,16 @@ import {
   type InfiniteProgressionTier,
 } from "./infiniteSectorDirector";
 import type { RuntimeWaveDescriptor } from "./runtimeWaveDescriptor";
-import { EnemyType } from "./types";
+import {
+  EnemyType,
+  type EvolvedEnemySignature,
+  type EvolvedEnemyVariantId,
+} from "./types";
 
-export type EvolvedEnemyVariantId =
-  | "BULWARK_CRAWLER"
-  | "PHASE_PARASITE"
-  | "LANCE_DRONE"
-  | "BROOD_SPLITTER"
-  | "NULL_DISRUPTOR";
-
-export type EvolvedEnemySignature =
-  | "ARMORED_MOMENTUM"
-  | "PHASE_LUNGE"
-  | "LANCE_VOLLEY"
-  | "BROOD_RELEASE"
-  | "NULL_PULSE";
+export type {
+  EvolvedEnemySignature,
+  EvolvedEnemyVariantId,
+} from "./types";
 
 export interface EvolvedEnemyVariantProfile {
   id: EvolvedEnemyVariantId;
