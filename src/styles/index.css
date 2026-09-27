@@ -585,6 +585,78 @@ body {
   overscroll-behavior: contain;
 }
 
+/* ES-04E — Profile-driven HUD composition.
+   Runtime viewport classes are authoritative when JavaScript is available.
+   Existing media queries above remain the no-JS / progressive fallback. */
+.orbi-hud-objective {
+  grid-area: objective;
+  min-width: 0;
+}
+
+.orbi-game-root[data-viewport-class="PHONE_PORTRAIT"] .orbi-game-hud,
+.orbi-game-root[data-viewport-class="PHONE_LANDSCAPE"] .orbi-game-hud {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-areas:
+    "shield wave"
+    "objective objective"
+    "swarm score"
+    "actions actions";
+  gap: 0.4rem 0.55rem;
+}
+
+.orbi-game-root[data-viewport-class="PHONE_PORTRAIT"]
+  .orbi-game-hud:not(:has(.orbi-hud-objective)),
+.orbi-game-root[data-viewport-class="PHONE_LANDSCAPE"]
+  .orbi-game-hud:not(:has(.orbi-hud-objective)) {
+  grid-template-areas:
+    "shield wave"
+    "swarm score"
+    "actions actions";
+}
+
+.orbi-game-root[data-viewport-class="TABLET_PORTRAIT"] .orbi-game-hud,
+.orbi-game-root[data-viewport-class="TABLET_LANDSCAPE"] .orbi-game-hud {
+  grid-template-columns: 1.25fr 1fr 0.8fr;
+  grid-template-areas:
+    "shield wave actions"
+    "objective objective objective"
+    "score score swarm";
+  gap: 0.45rem 0.65rem;
+}
+
+.orbi-game-root[data-viewport-class="TABLET_PORTRAIT"]
+  .orbi-game-hud:not(:has(.orbi-hud-objective)),
+.orbi-game-root[data-viewport-class="TABLET_LANDSCAPE"]
+  .orbi-game-hud:not(:has(.orbi-hud-objective)) {
+  grid-template-areas:
+    "shield wave actions"
+    "score score swarm";
+}
+
+.orbi-game-root[data-viewport-class="LAPTOP"] .orbi-game-hud,
+.orbi-game-root[data-viewport-class="DESKTOP"] .orbi-game-hud,
+.orbi-game-root[data-viewport-class="ULTRAWIDE"] .orbi-game-hud {
+  grid-template-columns:
+    minmax(150px, 1.35fr)
+    minmax(170px, 1.25fr)
+    auto
+    auto
+    auto;
+  grid-template-areas:
+    "shield wave swarm score actions"
+    "objective objective objective objective objective";
+  gap: 0.45rem 0.75rem;
+}
+
+.orbi-game-root[data-viewport-class="LAPTOP"]
+  .orbi-game-hud:not(:has(.orbi-hud-objective)),
+.orbi-game-root[data-viewport-class="DESKTOP"]
+  .orbi-game-hud:not(:has(.orbi-hud-objective)),
+.orbi-game-root[data-viewport-class="ULTRAWIDE"]
+  .orbi-game-hud:not(:has(.orbi-hud-objective)) {
+  grid-template-areas: "shield wave swarm score actions";
+}
+
 /* ES-04A — Coarse-pointer touch overlay */
 .orbi-touch-overlay {
   display: none;
