@@ -33,7 +33,6 @@ import {
   findFirstCollidingSpatialItem,
   findNearestSpatialItem,
   insertSpatialIndexEntry,
-  querySpatialIndex,
   relocateSpatialIndexEntry,
   type SpatialIndex,
 } from "./spatialIndex";
@@ -4807,35 +4806,15 @@ export const EnergySwarmGame: React.FC = () => {
               const splashDamage = damageToApply * 0.45; // 45% of primary bullet damage
               
               const splashCandidates =
-                querySpatialIndex(
+                findAllCollidingSpatialItems(
                   enemyCollisionIndex,
                   proj.x,
                   proj.y,
-                  splashRadius +
-                    enemyCollisionIndex.maxRadius,
-                ).entries
-                  .filter((entry) => {
-                    const otherEnemy = entry.item;
-                    if (
-                      otherEnemy === enemy ||
-                      otherEnemy.isDead
-                    ) {
-                      return false;
-                    }
-
-                    const sdx = proj.x - entry.x;
-                    const sdy = proj.y - entry.y;
-                    const radius =
-                      splashRadius + entry.radius;
-                    return (
-                      sdx * sdx + sdy * sdy <
-                      radius * radius
-                    );
-                  })
-                  .sort(
-                    (left, right) =>
-                      left.order - right.order,
-                  );
+                  splashRadius,
+                  (otherEnemy) =>
+                    otherEnemy !== enemy &&
+                    !otherEnemy.isDead,
+                ).entries;
 
               splashCandidates.forEach(({ item: otherEnemy }) => {
                   otherEnemy.health -= splashDamage;
