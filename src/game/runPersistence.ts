@@ -230,7 +230,6 @@ export const applyCampaignVictoryCheckpoint = (
     ),
     bossDefeated: true,
     gameMemories: [...input.gameMemories],
-    recentRunArchive,
     bossVictories:
       (fresh.bossVictories ?? 0) + (countVictory ? 1 : 0),
     firstBossVictoryAt:
@@ -336,6 +335,7 @@ export const applyFinalRunCommit = (
       fresh.totalNanoCredits,
     ),
     gameMemories: [...input.gameMemories],
+    recentRunArchive,
   };
 
   nextLedger.runCountCommitted = true;
