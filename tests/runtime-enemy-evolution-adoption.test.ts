@@ -190,7 +190,15 @@ test("enemy projectile speed adopts per-instance evolution without changing boss
   );
   assert.match(
     shoot,
-    /const vx = \(dx \/ dist\) \* projectileSpeed/,
+    /const baseAngle = Math\.atan2\(dy, dx\)/,
+  );
+  assert.match(
+    shoot,
+    /const vx =[\s\S]*Math\.cos\(shotAngle\) \* projectileSpeed/,
+  );
+  assert.match(
+    shoot,
+    /const vy =[\s\S]*Math\.sin\(shotAngle\) \* projectileSpeed/,
   );
   assert.match(
     shoot,
@@ -317,13 +325,17 @@ test("Canvas renders a bounded identity marker only for evolved instances", () =
   );
 });
 
-test("signature mechanics remain metadata-only in ES-08B", () => {
+test("live signature adoption remains contract-driven without duplicated signature IDs", () => {
   const physics = section(
     game,
     "const updateEnginePhysics =",
     "// --- COLLECT RESOURCES SCRIPT ---",
   );
 
+  assert.match(
+    physics,
+    /projectEvolvedSignatureBehavior/,
+  );
   assert.doesNotMatch(
     physics,
     /ARMORED_MOMENTUM|PHASE_LUNGE|LANCE_VOLLEY|BROOD_RELEASE|NULL_PULSE/,
