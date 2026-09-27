@@ -193,30 +193,21 @@ export const applyCampaignVictoryCheckpoint = (
     ...input.bossCodexSeenAttacks,
   ]);
 
-  const infiniteProgressStats =
-    input.infiniteSectorReached !== undefined &&
-    input.infiniteWaveReached !== undefined
-      ? applyInfiniteProgressRecord(fresh, {
-          sector: input.infiniteSectorReached,
-          waveNumber: input.infiniteWaveReached,
-        })
-      : fresh;
-
   const stats: GameStats = {
-    ...infiniteProgressStats,
+    ...fresh,
     highScore: Math.max(
-      infiniteProgressStats.highScore,
+      fresh.highScore,
       integerNonNegative(input.currentScore),
     ),
     bestWave: Math.max(
-      infiniteProgressStats.bestWave,
+      fresh.bestWave,
       integerNonNegative(input.bestWaveReached),
     ),
     bestSwarmSize: Math.max(
-      infiniteProgressStats.bestSwarmSize,
+      fresh.bestSwarmSize,
       integerNonNegative(input.bestSwarmSize),
     ),
-    totalRuns: infiniteProgressStats.totalRuns + (countRun ? 1 : 0),
+    totalRuns: fresh.totalRuns + (countRun ? 1 : 0),
     totalVictories:
       fresh.totalVictories + (countVictory ? 1 : 0),
     // Run telemetry intentionally stays untouched at the campaign checkpoint.
@@ -263,9 +254,17 @@ export const applyFinalRunCommit = (
   const nextLedger = copyLedger(ledger);
   const countRun = !nextLedger.runCountCommitted;
   const commitTelemetry = !nextLedger.telemetryCommitted;
+  const infiniteProgressStats =
+    input.infiniteSectorReached !== undefined &&
+    input.infiniteWaveReached !== undefined
+      ? applyInfiniteProgressRecord(fresh, {
+          sector: input.infiniteSectorReached,
+          waveNumber: input.infiniteWaveReached,
+        })
+      : fresh;
 
   const stats: GameStats = {
-    ...fresh,
+    ...infiniteProgressStats,
     highScore: Math.max(
       infiniteProgressStats.highScore,
       integerNonNegative(input.currentScore),
