@@ -85,6 +85,21 @@ export enum EnemyType {
   BOSS_DEVOURER = "BOSS_DEVOURER"
 }
 
+export type EvolvedEnemyVariantId =
+  | "BULWARK_CRAWLER"
+  | "PHASE_PARASITE"
+  | "LANCE_DRONE"
+  | "BROOD_SPLITTER"
+  | "NULL_DISRUPTOR";
+
+export type EvolvedEnemySignature =
+  | "ARMORED_MOMENTUM"
+  | "PHASE_LUNGE"
+  | "LANCE_VOLLEY"
+  | "BROOD_RELEASE"
+  | "NULL_PULSE";
+
+
 export interface Enemy {
   id: string;
   type: EnemyType;
@@ -114,6 +129,13 @@ export interface Enemy {
   milestoneDamageMultiplier?: number;
   milestoneAttackRateMultiplier?: number;
   milestoneRewardMultiplier?: number;
+  evolvedVariantId?: EvolvedEnemyVariantId;
+  evolvedSignature?: EvolvedEnemySignature;
+  evolvedContactDamageMultiplier?: number;
+  evolvedAttackRateMultiplier?: number;
+  evolvedProjectileSpeedMultiplier?: number;
+  evolvedRewardMultiplier?: number;
+  evolvedSpecialIntensity?: number;
 }
 
 export interface Projectile {
