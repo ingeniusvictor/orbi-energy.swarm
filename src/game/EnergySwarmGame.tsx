@@ -49,7 +49,10 @@ import {
   getElectricalStormConfig,
   stepElectricalStormRuntime,
 } from "./runtimeElectricalStorm";
-import { projectInfiniteMilestoneEncounter } from "./runtimeMilestoneEncounter";
+import {
+  projectInfiniteMilestoneEncounter,
+  type InfiniteMilestoneEncounterProfile,
+} from "./runtimeMilestoneEncounter";
 import {
   createRuntimeMinibossGateState,
   markRuntimeMinibossSpawned,
@@ -57,6 +60,15 @@ import {
   stepRuntimeMinibossGate,
   syncRuntimeMinibossGate,
 } from "./runtimeMinibossGate";
+import {
+  createRuntimeBossRematchGateState,
+  isRuntimeBossRematchResolved,
+  markRuntimeBossRematchDefeated,
+  markRuntimeBossRematchSpawned,
+  requestRuntimeBossRematch,
+  stepRuntimeBossRematchGate,
+  syncRuntimeBossRematchGate,
+} from "./runtimeBossRematchGate";
 import {
   applyCampaignVictoryCheckpoint,
   applyFinalRunCommit,
@@ -96,6 +108,11 @@ import { OrientationHint } from "../components/OrientationHint";
 import { BossHudOverlay } from "../components/BossHudOverlay";
 import { shouldPauseForLifecycle, shouldResetFrameClock, type LifecycleSignal } from "./lifecyclePolicy";
 import { createTouchDirectionState, getTouchMovementVector, hasActiveTouchDirection, type TouchDirection } from "./touchControls";
+
+type InfiniteBossRematchProfile = Extract<
+  InfiniteMilestoneEncounterProfile,
+  { kind: "BOSS_REMATCH" }
+>;
 
 export const EnergySwarmGame: React.FC = () => {
   // --- REACT VIEWPORT GAME STATES (Low-frequency updates) ---
@@ -316,6 +333,9 @@ export const EnergySwarmGame: React.FC = () => {
   const minibossGateRef = useRef(
     createRuntimeMinibossGateState(),
   );
+  const bossRematchGateRef = useRef(
+    createRuntimeBossRematchGateState(),
+  );
 
   const getCurrentRuntimeDescriptor = () =>
     resolveRuntimeWaveDescriptor(runtimeProgressionRef.current);
@@ -329,6 +349,9 @@ export const EnergySwarmGame: React.FC = () => {
     projectRuntimeMutatorEffects(
       getCurrentRuntimeDescriptor(),
     );
+
+  const isActiveBossRematch = () =>
+    bossRef.current?.milestoneKind === "BOSS_REMATCH";
 
   const setUpgradeSelectionOpen = (open: boolean) => {
     setIsUpgradeSelectionOpen(open);
@@ -878,6 +901,8 @@ export const EnergySwarmGame: React.FC = () => {
       createElectricalStormRuntimeState();
     minibossGateRef.current =
       createRuntimeMinibossGateState();
+    bossRematchGateRef.current =
+      createRuntimeBossRematchGateState();
     bossActiveRef.current = false;
     bossRef.current = null;
 
@@ -1287,6 +1312,8 @@ export const EnergySwarmGame: React.FC = () => {
 
     bossActiveRef.current = false;
     bossRef.current = null;
+    bossRematchGateRef.current =
+      createRuntimeBossRematchGateState();
     enemiesRef.current = [];
     projectilesRef.current = [];
     hazardZonesRef.current = [];
@@ -1483,7 +1510,65 @@ export const EnergySwarmGame: React.FC = () => {
         (enemy) => !enemy.isDead && !enemy.isBoss,
       ).length;
 
-      const waveComplete = isRuntimeWaveComplete(
+      const milestoneEncounter =
+        projectInfiniteMilestoneEncounter(descriptor);
+      const bossRematchProfile =
+        milestoneEncounter?.kind === "BOSS_REMATCH"
+          ? milestoneEncounter
+          : null;
+
+      bossRematchGateRef.current =
+        syncRuntimeBossRematchGate(
+          bossRematchGateRef.current,
+          descriptor.descriptorId,
+          milestoneEncounter,
+        );
+      bossRematchGateRef.current =
+        stepRuntimeBossRematchGate(
+          bossRematchGateRef.current,
+          delta,
+        );
+
+      if (bossRematchProfile) {
+        const rematchRequest =
+          requestRuntimeBossRematch(
+            bossRematchGateRef.current,
+            bossRematchProfile,
+            {
+              spawnedEnemyCount:
+                waveBudgetSpawnedRef.current,
+              effectiveEnemyBudget,
+              livingRegularEnemyCount:
+                livingEnemyCount,
+            },
+          );
+        bossRematchGateRef.current =
+          rematchRequest.state;
+
+        if (rematchRequest.telegraphStarted) {
+          setWaveName(
+            "BOSS REMATCH INBOUND // BLACKOUT DEVOURER",
+          );
+          playBossChargeSound();
+          postDialogue(
+            "SYSTEM",
+            `MILESTONE REMATCH LOCKED: ${bossRematchProfile.milestoneId}. Devourer recurrence inbound.`,
+          );
+          addFloatingText(
+            "⚠ DEVOURER REMATCH INBOUND",
+            playerPosRef.current.x,
+            playerPosRef.current.y - 60,
+            "#ec4899",
+          );
+        }
+
+        if (rematchRequest.readyToSpawn) {
+          spawnBoss(bossRematchProfile);
+          return;
+        }
+      }
+
+      const baseWaveComplete = isRuntimeWaveComplete(
         completionDescriptor,
         {
         remainingTimeMs: waveTimeRemainingRef.current,
@@ -1492,6 +1577,12 @@ export const EnergySwarmGame: React.FC = () => {
           bossDefeated: false,
         },
       );
+      const waveComplete =
+        baseWaveComplete &&
+        isRuntimeBossRematchResolved(
+          bossRematchGateRef.current,
+          milestoneEncounter,
+        );
 
       if (waveComplete) {
         // Wave complete! Transition into intermission
@@ -1940,26 +2031,36 @@ export const EnergySwarmGame: React.FC = () => {
   };
 
   // --- SPAWN GIANT DEVOURER BOSS ---
-  const spawnBoss = () => {
+  const spawnBoss = (
+    rematchProfile: InfiniteBossRematchProfile | null = null,
+  ) => {
     // 1. Clear residual standard enemies
     enemiesRef.current = [];
     hazardZonesRef.current = [];
 
+    const isRematch = rematchProfile !== null;
     bossActiveRef.current = true;
-    bossSessionStartTimeRef.current = Date.now();
 
-    // Increment boss attempts persistently
-    const currentStats = statsRef.current || stats;
-    const nextStats = {
-      ...currentStats,
-      bossAttempts: (currentStats.bossAttempts || 0) + 1
-    };
-    updateStatsAndSave(nextStats);
+    if (!isRematch) {
+      bossSessionStartTimeRef.current = Date.now();
 
-    const health = BLACKOUT_DEVOURER_CANON.maxHealth;
+      // Campaign boss attempts remain persistent. Infinite rematches are isolated.
+      const currentStats = statsRef.current || stats;
+      const nextStats = {
+        ...currentStats,
+        bossAttempts: (currentStats.bossAttempts || 0) + 1
+      };
+      updateStatsAndSave(nextStats);
+    }
+
+    const health =
+      BLACKOUT_DEVOURER_CANON.maxHealth *
+      (rematchProfile?.healthMultiplier ?? 1);
 
     const boss: Enemy = {
-      id: "blackout_devourer_boss",
+      id: isRematch
+        ? `blackout_devourer_rematch_${rematchProfile?.sector ?? "infinite"}`
+        : "blackout_devourer_boss",
       type: EnemyType.BOSS_DEVOURER,
       x: WORLD_WIDTH / 2,
       y: -80, // Enters from top center
@@ -1976,7 +2077,17 @@ export const EnergySwarmGame: React.FC = () => {
       isDead: false,
       isBoss: true,
       bossPhase: 1,
-      flashTicks: 0
+      flashTicks: 0,
+      milestoneKind: isRematch ? "BOSS_REMATCH" : undefined,
+      milestoneId: rematchProfile?.milestoneId,
+      milestoneContactDamageMultiplier:
+        rematchProfile?.damageMultiplier,
+      milestoneDamageMultiplier:
+        rematchProfile?.damageMultiplier,
+      milestoneAttackRateMultiplier:
+        rematchProfile?.attackRateMultiplier,
+      milestoneRewardMultiplier:
+        rematchProfile?.rewardMultiplier,
     };
 
     enemiesRef.current.push(boss);
@@ -2017,9 +2128,24 @@ export const EnergySwarmGame: React.FC = () => {
       40
     );
 
+    if (isRematch) {
+      bossRematchGateRef.current =
+        markRuntimeBossRematchSpawned(
+          bossRematchGateRef.current,
+        );
+      setWaveName(
+        `DEVOURER REMATCH // SECTOR ${rematchProfile?.sector ?? currentWaveRef.current}`,
+      );
+    }
+
     startBgm("HIGH_INTENSITY");
     playBossArrivalSound();
-    postDialogue("COMPANION", "¡ALERTA! Concentración de energía Blackout masiva en el sector central. ¡El Devorador está entrando!");
+    postDialogue(
+      "COMPANION",
+      isRematch
+        ? "¡RESONANCIA HOSTIL RECURRENTE! El Blackout Devourer ha regresado como rematch infinito."
+        : "¡ALERTA! Concentración de energía Blackout masiva en el sector central. ¡El Devorador está entrando!",
+    );
   };
 
   const skipBossIntro = () => {
@@ -2189,7 +2315,12 @@ export const EnergySwarmGame: React.FC = () => {
     if ((boss.bossPhase || 1) === 1 && hpPercentage <= 0.70) {
       boss.bossPhase = 2;
       setBossPhase(2);
-      bossMaxPhaseReachedRef.current = Math.max(bossMaxPhaseReachedRef.current, 2);
+      if (!isActiveBossRematch()) {
+        bossMaxPhaseReachedRef.current = Math.max(
+          bossMaxPhaseReachedRef.current,
+          2,
+        );
+      }
       playBossPhaseTransitionSound();
       phaseTransitionTimerRef.current = 2000;
       setBossTransitionName("PHASE 2: COLLAPSE ENGINE");
@@ -2202,7 +2333,12 @@ export const EnergySwarmGame: React.FC = () => {
     if ((boss.bossPhase || 1) === 2 && hpPercentage <= 0.35) {
       boss.bossPhase = 3;
       setBossPhase(3);
-      bossMaxPhaseReachedRef.current = Math.max(bossMaxPhaseReachedRef.current, 3);
+      if (!isActiveBossRematch()) {
+        bossMaxPhaseReachedRef.current = Math.max(
+          bossMaxPhaseReachedRef.current,
+          3,
+        );
+      }
       playBossPhaseTransitionSound();
       phaseTransitionTimerRef.current = 2000;
       setBossTransitionName("PHASE 3: SINGULARITY CROWN");
@@ -2296,7 +2432,10 @@ export const EnergySwarmGame: React.FC = () => {
 
     // 7. ACTIVE ATTACK COOLDOWNS / SELECTION
     if (bossCurrentAttackRef.current === null) {
-      bossAttackTimerRef.current -= delta;
+      const bossAttackRateMultiplier =
+        boss.milestoneAttackRateMultiplier ?? 1;
+      bossAttackTimerRef.current -=
+        delta * bossAttackRateMultiplier;
       if (bossAttackTimerRef.current <= 0) {
         const possibleAttacks = BLACKOUT_DEVOURER_CANON.attacks.filter(
           (a) => a.minimumPhase <= (boss.bossPhase || 1) && !bossLastAttacksRef.current.includes(a.id)
@@ -2320,7 +2459,10 @@ export const EnergySwarmGame: React.FC = () => {
           bossAttackAngleRef.current = Math.atan2(playerPosRef.current.y - boss.y, playerPosRef.current.x - boss.x);
           bossAttackTargetPosRef.current = { x: playerPosRef.current.x, y: playerPosRef.current.y };
 
-          if (!bossAttacksSeenThisRunRef.current.includes(chosen.id)) {
+          if (
+            !isActiveBossRematch() &&
+            !bossAttacksSeenThisRunRef.current.includes(chosen.id)
+          ) {
             bossAttacksSeenThisRunRef.current.push(chosen.id);
           }
 
@@ -2745,9 +2887,40 @@ export const EnergySwarmGame: React.FC = () => {
       }
     }
 
-    // After 5 seconds, checkpoint the campaign victory and continue into Infinite Swarm.
+    // After 5 seconds, either resolve an isolated infinite rematch or
+    // checkpoint the original campaign victory.
     if (bossDefeatedSequenceTimerRef.current <= 0) {
       bossDefeatedSequenceActiveRef.current = false;
+
+      if (boss?.milestoneKind === "BOSS_REMATCH") {
+        bossRematchGateRef.current =
+          markRuntimeBossRematchDefeated(
+            bossRematchGateRef.current,
+          );
+        bossActiveRef.current = false;
+        bossRef.current = null;
+        enemiesRef.current = [];
+        projectilesRef.current = [];
+        hazardZonesRef.current = [];
+        shieldNodesRef.current = [];
+        bossCurrentAttackRef.current = null;
+        bossIntroTimeRef.current = null;
+        setBossAttackName(null);
+        setBossIntroTime(null);
+        setBossTransitionName(null);
+        setBossShieldNodes(0);
+        setIsCoreExposed(false);
+        setBossHp(0);
+        setWaveName("DEVOURER REMATCH PURGED");
+        playVictorySound();
+        postDialogue(
+          "SYSTEM",
+          "RECURRENCIA DEVOURER SELLADA. Reanudando Infinite Swarm.",
+        );
+        startBgm("HIGH_INTENSITY");
+        return;
+      }
+
       enterInfiniteAfterCampaignVictory();
     }
   };
@@ -3936,7 +4109,9 @@ export const EnergySwarmGame: React.FC = () => {
 
             if (enemy.type === EnemyType.BOSS_DEVOURER) {
               setBossHp(Math.max(0, enemy.health));
-              bossDamageDealtRef.current += damageToApply;
+              if (enemy.milestoneKind !== "BOSS_REMATCH") {
+                bossDamageDealtRef.current += damageToApply;
+              }
             }
 
             // Hit-Stop time-lag freezing (Section 6)
@@ -4015,7 +4190,11 @@ export const EnergySwarmGame: React.FC = () => {
 
                   if (otherEnemy.type === EnemyType.BOSS_DEVOURER) {
                     setBossHp(Math.max(0, otherEnemy.health));
-                    bossDamageDealtRef.current += splashDamage;
+                    if (
+                      otherEnemy.milestoneKind !== "BOSS_REMATCH"
+                    ) {
+                      bossDamageDealtRef.current += splashDamage;
+                    }
                   }
 
                   // Small visual thermal splash explosion
@@ -4052,10 +4231,19 @@ export const EnergySwarmGame: React.FC = () => {
                     );
 
                     if (otherEnemy.isBoss) {
-                      bossSessionEndTimeRef.current = Date.now();
+                      const rematch =
+                        otherEnemy.milestoneKind === "BOSS_REMATCH";
+                      if (!rematch) {
+                        bossSessionEndTimeRef.current = Date.now();
+                      }
                       bossDefeatedSequenceActiveRef.current = true;
                       bossDefeatedSequenceTimerRef.current = 5000;
-                      postDialogue("COMPANION", "¡SISTEMAS DEL DEVORADOR CRÍTICAS! Reacción en cadena termodinámica detectada. ¡Sincronizando pulso de purga final!");
+                      postDialogue(
+                        "COMPANION",
+                        rematch
+                          ? "¡REMATCH DEL DEVORADOR COLAPSANDO! Mantén sincronía mientras sellamos esta recurrencia."
+                          : "¡SISTEMAS DEL DEVORADOR CRÍTICAS! Reacción en cadena termodinámica detectada. ¡Sincronizando pulso de purga final!",
+                      );
                     } else {
                       // Only spawn drops & splits if not a minion (Section 2.4 - sin recompensa duplicada)
                       if (!otherEnemy.isMinion) {
@@ -4100,11 +4288,20 @@ export const EnergySwarmGame: React.FC = () => {
 
               // Spawn drops
               if (enemy.isBoss) {
-                // Start cinematic boss defeat sequence
-                bossSessionEndTimeRef.current = Date.now();
+                // Start cinematic boss defeat sequence.
+                const rematch =
+                  enemy.milestoneKind === "BOSS_REMATCH";
+                if (!rematch) {
+                  bossSessionEndTimeRef.current = Date.now();
+                }
                 bossDefeatedSequenceActiveRef.current = true;
                 bossDefeatedSequenceTimerRef.current = 5000;
-                postDialogue("COMPANION", "¡SISTEMAS DEL DEVORADOR CRÍTICAS! Reacción en cadena termodinámica detectada. ¡Sincronizando pulso de purga final!");
+                postDialogue(
+                  "COMPANION",
+                  rematch
+                    ? "¡REMATCH DEL DEVORADOR COLAPSANDO! Mantén sincronía mientras sellamos esta recurrencia."
+                    : "¡SISTEMAS DEL DEVORADOR CRÍTICAS! Reacción en cadena termodinámica detectada. ¡Sincronizando pulso de purga final!",
+                );
               } else {
                 // Only spawn resource or splits if NOT a minion (Section 2.4)
                 if (!enemy.isMinion) {
@@ -4215,11 +4412,20 @@ export const EnergySwarmGame: React.FC = () => {
   const damagePlayerFromBoss = (dmg: number, attackType: string) => {
     if (invincibilityTimerRef.current > 0) return;
 
-    if (bossAttacksHitByTypeRef.current && bossAttacksHitByTypeRef.current[attackType] !== undefined) {
+    const rematch = isActiveBossRematch();
+    if (
+      !rematch &&
+      bossAttacksHitByTypeRef.current &&
+      bossAttacksHitByTypeRef.current[attackType] !== undefined
+    ) {
       bossAttacksHitByTypeRef.current[attackType]++;
     }
 
-    damagePlayer(dmg);
+    const damageMultiplier =
+      rematch
+        ? (bossRef.current?.milestoneDamageMultiplier ?? 1)
+        : 1;
+    damagePlayer(dmg * damageMultiplier);
   };
 
   // --- DAMAGE PLAYER CORE ENGINE ---
@@ -4234,7 +4440,10 @@ export const EnergySwarmGame: React.FC = () => {
     shieldRef.current = Math.max(0, shieldRef.current - finalDamage);
     setShield(shieldRef.current);
 
-    if (bossActiveRef.current) {
+    if (
+      bossActiveRef.current &&
+      !isActiveBossRematch()
+    ) {
       bossDamageTakenRef.current += finalDamage;
     }
 
