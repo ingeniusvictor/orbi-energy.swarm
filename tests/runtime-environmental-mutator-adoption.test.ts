@@ -72,7 +72,10 @@ test("UNSTABLE_RESOURCE_FIELDS modulates attraction but never reward value or pi
     physics,
     /fieldProfile\.attractionSpeedMultiplier/,
   );
-  assert.match(physics, /if \(dist < 15\)/);
+  assert.match(
+    physics,
+    /distanceSquared < 15 \* 15/,
+  );
 
   const collect = section(
     "const triggerResourceCollect =",
@@ -96,7 +99,7 @@ test("resource attraction avoids divide-by-zero under environmental fields", () 
 
   assert.match(
     physics,
-    /dist > 0\.001 && dist < pullRadius/,
+    /distanceSquared > 0\.001 \* 0\.001 &&[\s\S]*distanceSquared < pullRadiusSquared[\s\S]*const distance = Math\.sqrt\(distanceSquared\)/,
   );
 });
 

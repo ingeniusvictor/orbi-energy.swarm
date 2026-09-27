@@ -86,11 +86,11 @@ test("storm damage requires player to remain inside the locked visible radius", 
 
   assert.match(
     physics,
-    /const distance = Math\.sqrt\(dx \* dx \+ dy \* dy\)/,
+    /const distanceSquared = dx \* dx \+ dy \* dy/,
   );
   assert.match(
     physics,
-    /distance <=[\s\S]*electricalStormConfig\.strikeRadius/,
+    /distanceSquared <=[\s\S]*electricalStormConfig\.strikeRadius \*[\s\S]*electricalStormConfig\.strikeRadius/,
   );
   assert.match(
     physics,

@@ -656,20 +656,36 @@ export function drawResources(
       if (labelsMode === "FULL") {
         drawLabelText = true;
       } else if (labelsMode === "PROXIMITY") {
-        const dist = playerPos ? Math.sqrt((res.x - playerPos.x) ** 2 + (res.y - playerPos.y) ** 2) : 999;
-        const ageMs = res.spawnTime ? (Date.now() - res.spawnTime) : 0;
+        const dx = playerPos
+          ? res.x - playerPos.x
+          : Number.POSITIVE_INFINITY;
+        const dy = playerPos
+          ? res.y - playerPos.y
+          : Number.POSITIVE_INFINITY;
+        const distanceSquared =
+          dx * dx + dy * dy;
+        const ageMs = res.spawnTime
+          ? Date.now() - res.spawnTime
+          : 0;
         
         const droppedVisible = ageMs < 2000;
-        const closeVisible = dist < 120;
+        const closeVisible =
+          distanceSquared < 120 * 120;
 
         if (droppedVisible || closeVisible) {
           drawLabelText = true;
           if (droppedVisible && !closeVisible) {
             if (ageMs > 1500) {
-              labelOpacity = 1.0 - (ageMs - 1500) / 500;
+              labelOpacity =
+                1.0 - (ageMs - 1500) / 500;
             }
           } else if (closeVisible) {
-            labelOpacity = Math.min(1.0, (120 - dist) / 40);
+            const distance =
+              Math.sqrt(distanceSquared);
+            labelOpacity = Math.min(
+              1.0,
+              (120 - distance) / 40,
+            );
           }
         }
       }
