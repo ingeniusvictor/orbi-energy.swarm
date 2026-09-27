@@ -3,6 +3,7 @@ import { Play, Cpu, Volume2, VolumeX, Globe } from "lucide-react";
 import { GameStats, QualityPreset } from "../game/types";
 import { playClickSound } from "../game/audio";
 import { useGameTranslation, formatNumber } from "../i18n";
+import PremiumBackdrop from "./presentation/PremiumBackdrop";
 
 interface StartScreenProps {
   stats: GameStats;
@@ -30,25 +31,26 @@ export const StartScreen: React.FC<StartScreenProps> = ({
   };
 
   return (
-    <div className="absolute inset-0 z-50 flex flex-col items-center justify-center p-4 bg-slate-950/90 text-white select-none backdrop-blur-md overflow-y-auto">
+    <div className="orbi-premium-entry absolute inset-0 z-50 flex flex-col items-center justify-center p-4 text-white select-none overflow-y-auto">
+      <PremiumBackdrop />
       {/* GLOWING HEADER */}
-      <div className="text-center mb-5">
+      <div className="relative z-10 text-center mb-5">
         <div className="flex justify-center items-center gap-2 mb-1">
-          <span className="px-2 py-0.5 text-xs font-mono rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">
+          <span className="orbi-premium-eyebrow px-2.5 py-1 text-[10px] md:text-xs font-mono rounded-full bg-cyan-400/8 text-cyan-200 border border-cyan-300/20 tracking-[0.12em]">
             WEB DEMO v0.2.6b-bilingual-localization
           </span>
           <span className="text-xs font-mono text-slate-400">© 2026 ORBI ECOSYSTEM</span>
         </div>
-        <h1 className="text-3xl md:text-5xl font-sans font-bold tracking-tight text-amber-500 drop-shadow-[0_0_15px_rgba(245,158,11,0.5)]">
+        <h1 className="orbi-premium-title text-4xl sm:text-5xl md:text-6xl font-black leading-[0.92] mt-3">
           ORBI ENERGY SWARM
         </h1>
-        <p className="text-slate-400 text-xs md:text-sm font-mono mt-1 uppercase">
+        <p className="text-slate-300/80 text-[10px] md:text-xs font-mono mt-3 uppercase tracking-[0.22em]">
           {t("startScreen.tacticalSlogan")}
         </p>
       </div>
 
       {/* QUICK FLOATING LANGUAGE CHANGER */}
-      <div className="flex items-center gap-2 mb-4 bg-slate-900/60 px-3 py-1.5 rounded-full border border-slate-800/80 backdrop-blur-sm">
+      <div className="relative z-10 flex items-center gap-2 mb-4 bg-slate-950/55 px-3 py-1.5 rounded-full border border-cyan-200/10 backdrop-blur-xl shadow-[0_10px_36px_rgba(0,0,0,0.28)]">
         <Globe size={11} className="text-amber-400" />
         <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">{t("general.language")}:</span>
         <button
@@ -75,7 +77,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({
       </div>
 
       {/* CORE GLASS CARD PANEL */}
-      <div className="w-full max-w-xl bg-slate-900/60 border border-slate-800 rounded-xl p-5 md:p-6 shadow-2xl backdrop-blur-xl relative">
+      <div className="orbi-premium-panel relative z-10 w-full max-w-xl rounded-2xl p-5 md:p-6 backdrop-blur-2xl">
         {/* NAV BAR */}
         <div className="flex flex-wrap gap-1.5 md:gap-2 mb-5 border-b border-slate-800 pb-3 justify-center">
           <button
@@ -162,7 +164,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({
                 playClickSound();
                 onStartGame();
               }}
-              className="w-full py-4 rounded-lg bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 font-semibold tracking-wide text-sm flex justify-center items-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(245,158,11,0.25)] transition duration-250 active:scale-[0.98]"
+              className="orbi-premium-cta w-full py-4 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-300 hover:from-amber-400 hover:via-yellow-300 hover:to-amber-300 text-slate-950 font-black tracking-[0.12em] text-sm flex justify-center items-center gap-2 cursor-pointer transition duration-300 active:scale-[0.98]"
             >
               <Play size={16} fill="white" />
               {t("startScreen.activateSync")}
