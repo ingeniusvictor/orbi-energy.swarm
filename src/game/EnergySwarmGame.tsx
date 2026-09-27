@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState, useCallback } from "react";
 import { 
   BiomeType, OrbiType, EnemyType, FormationType, ParticleType, 
   OrbiMember, Enemy, Projectile, Resource, Particle, GameStats, 
-  DialogueMessage, QualityPreset, WaveConfig
+  DialogueMessage, QualityPreset, WaveConfig, type RunArchiveEntry
 } from "./types";
 
 import { 
@@ -272,6 +272,7 @@ export const EnergySwarmGame: React.FC = () => {
   const runEnemiesDestroyedRef = useRef<number>(0);
   const runResourcesCollectedRef = useRef<number>(0);
   const runNanoCreditsEarnedRef = useRef<number>(0);
+  const runMaxSwarmSizeRef = useRef<number>(1);
   const runCommitLedgerRef = useRef<RunCommitLedger>(createRunCommitLedger());
   const bossAttacksSeenThisRunRef = useRef<string[]>([]);
 
@@ -471,7 +472,7 @@ export const EnergySwarmGame: React.FC = () => {
     setUpgradeSelectionOpen(true);
   };
 
-  const getStrongestAffinity = () => {
+  const getStrongestAffinity = (): RunArchiveEntry["strongestAffinity"] => {
     const counts: Record<string, number> = { solar: 0, hydro: 0, wind: 0, thermal: 0 };
     swarmRef.current.forEach(m => {
       if (m.affinity === "solar") counts.solar++;
@@ -494,7 +495,7 @@ export const EnergySwarmGame: React.FC = () => {
         best = aff;
       }
     }
-    return best;
+    return best as RunArchiveEntry["strongestAffinity"];
   };
 
   // --- COMPANION LUX-8 DIALOGUES WRITING ---
@@ -601,7 +602,7 @@ export const EnergySwarmGame: React.FC = () => {
   const getCampaignVictoryCheckpointInput = (
     currentScore: number,
   ): CampaignVictoryCheckpointInput => {
-    const bestSwarmSize = swarmRef.current.length + 1;
+    const bestSwarmSize = runMaxSwarmSizeRef.current;
     const bestWaveReached = currentWaveRef.current;
     const memories = Object.entries(upgradesLevel).map(
       ([k, v]) => `${k}:${v}`,
@@ -645,7 +646,7 @@ export const EnergySwarmGame: React.FC = () => {
     currentScore: number,
   ) => {
     const fresh = loadGameStats();
-    const bestSwarmSize = swarmRef.current.length + 1;
+    const bestSwarmSize = runMaxSwarmSizeRef.current;
     const bestWaveReached = currentWaveRef.current;
     const memories = Object.entries(upgradesLevel).map(
       ([k, v]) => `${k}:${v}`,
@@ -665,6 +666,49 @@ export const EnergySwarmGame: React.FC = () => {
       workingLedger = checkpoint.ledger;
     }
 
+    const infiniteSectorReached =
+      runtimeProgressionRef.current.mode === "INFINITE"
+        ? getRuntimeSector(runtimeProgressionRef.current)
+        : undefined;
+    const infiniteWaveReached =
+      runtimeProgressionRef.current.mode === "INFINITE"
+        ? getRuntimeWaveNumber(runtimeProgressionRef.current)
+        : undefined;
+    const completedAtMs =
+      runEndTimeRef.current > 0
+        ? runEndTimeRef.current
+        : Date.now();
+    const runArchiveEntry: RunArchiveEntry = {
+      runId: `orbi-run-${runStartTimeRef.current}`,
+      completedAt: new Date(completedAtMs).toISOString(),
+      outcome: workingLedger.campaignVictoryCommitted
+        ? "CAMPAIGN_CLEARED"
+        : "DEFEAT",
+      score: currentScore,
+      campaignWaveReached: Math.min(
+        bestWaveReached,
+        BOSS_WAVE_NUMBER,
+      ),
+      durationMs: Math.max(
+        0,
+        completedAtMs - runStartTimeRef.current,
+      ),
+      enemiesDestroyed: runEnemiesDestroyedRef.current,
+      maxSwarmSize: bestSwarmSize,
+      strongestAffinity: getStrongestAffinity(),
+      mostUsedFormation: getFormationMostUsed(),
+      temporaryBuild: {
+        ...activeRunUpgradesRef.current,
+      },
+      ...(infiniteSectorReached !== undefined &&
+      infiniteWaveReached !== undefined
+        ? {
+            infiniteSectorReached,
+            infiniteWaveReached,
+          }
+        : {}),
+    };
+
     const finalCommit = applyFinalRunCommit(
       workingStats,
       {
@@ -675,18 +719,9 @@ export const EnergySwarmGame: React.FC = () => {
         gameMemories: memories,
         enemiesDestroyed: runEnemiesDestroyedRef.current,
         resourcesCollected: runResourcesCollectedRef.current,
-        infiniteSectorReached:
-          runtimeProgressionRef.current.mode === "INFINITE"
-            ? getRuntimeSector(
-                runtimeProgressionRef.current,
-              )
-            : undefined,
-        infiniteWaveReached:
-          runtimeProgressionRef.current.mode === "INFINITE"
-            ? getRuntimeWaveNumber(
-                runtimeProgressionRef.current,
-              )
-            : undefined,
+        infiniteSectorReached,
+        infiniteWaveReached,
+        runArchiveEntry,
       },
       workingLedger,
     );
@@ -902,6 +937,7 @@ export const EnergySwarmGame: React.FC = () => {
     runStartTimeRef.current = Date.now();
     runEndTimeRef.current = 0;
     runCommitLedgerRef.current = createRunCommitLedger();
+    runMaxSwarmSizeRef.current = 1;
     bossDamageDealtRef.current = 0;
     bossShieldNodesDestroyedRef.current = 0;
     bossDamageTakenRef.current = 0;
@@ -3048,6 +3084,14 @@ export const EnergySwarmGame: React.FC = () => {
       // Return early to freeze rest of physical ticks!
       return;
     }
+
+    formationUseCountsRef.current[activeFormation] =
+      (formationUseCountsRef.current[activeFormation] ?? 0) +
+      delta;
+    runMaxSwarmSizeRef.current = Math.max(
+      runMaxSwarmSizeRef.current,
+      swarmRef.current.length + 1,
+    );
 
     const frameDescriptor =
       getCurrentRuntimeDescriptor();
@@ -5281,13 +5325,13 @@ export const EnergySwarmGame: React.FC = () => {
     }
   };
 
-  const getFormationMostUsed = () => {
-    let best = "none";
+  const getFormationMostUsed = (): RunArchiveEntry["mostUsedFormation"] => {
+    let best: RunArchiveEntry["mostUsedFormation"] = "none";
     let max = 0;
     for (const [f, count] of Object.entries(formationUseCountsRef.current)) {
       if (count > max) {
         max = count;
-        best = f;
+        best = f as RunArchiveEntry["mostUsedFormation"];
       }
     }
     return best;
@@ -5408,7 +5452,7 @@ export const EnergySwarmGame: React.FC = () => {
           score={score}
           highScore={highScore}
           waveReached={currentWave}
-          maxSwarmSize={swarmSize}
+          maxSwarmSize={runMaxSwarmSizeRef.current}
           enemiesDestroyed={runEnemiesDestroyedRef.current}
           nanoCreditsGained={runNanoCreditsEarnedRef.current}
           bestInfiniteSector={stats.bestInfiniteSector}
