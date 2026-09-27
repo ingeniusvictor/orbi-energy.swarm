@@ -1634,3 +1634,29 @@ body {
     white-space: normal;
   }
 }
+
+
+/* ES-10A — Reduced-motion presentation completion.
+   Keep gameplay/Canvas timing untouched; only nonessential DOM motion and
+   shell/control transitions become static or effectively immediate. */
+@media (prefers-reduced-motion: reduce) {
+  html:focus-within {
+    scroll-behavior: auto;
+  }
+
+  .orbi-premium-entry [class*="animate-"],
+  .orbi-game-root [class*="animate-"] {
+    animation: none !important;
+  }
+
+  .orbi-premium-entry .transition,
+  .orbi-premium-entry [class*="transition-"],
+  .orbi-game-root .transition,
+  .orbi-game-root [class*="transition-"],
+  .orbi-touch-button,
+  .orbi-touch-formation-button,
+  .orbi-boss-health-fill {
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+  }
+}
