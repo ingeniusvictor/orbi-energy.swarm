@@ -28,6 +28,7 @@ interface EnergySwarmCanvasProps {
   onPointerDown: (e: React.PointerEvent<HTMLCanvasElement>) => void;
   onPointerUp: (e: React.PointerEvent<HTMLCanvasElement>) => void;
   time: number;
+  maxDpr: number;
 }
 
 export const EnergySwarmCanvas: React.FC<EnergySwarmCanvasProps> = ({
@@ -36,7 +37,8 @@ export const EnergySwarmCanvas: React.FC<EnergySwarmCanvasProps> = ({
   playerFlash,
   onPointerMove,
   onPointerDown,
-  onPointerUp
+  onPointerUp,
+  maxDpr
 }) => {
   React.useEffect(() => {
     const syncBackingStore = () => {
@@ -47,6 +49,7 @@ export const EnergySwarmCanvas: React.FC<EnergySwarmCanvasProps> = ({
         CANVAS_WIDTH,
         CANVAS_HEIGHT,
         window.devicePixelRatio,
+        maxDpr,
       );
 
       if (canvas.width !== width) canvas.width = width;
@@ -64,7 +67,7 @@ export const EnergySwarmCanvas: React.FC<EnergySwarmCanvasProps> = ({
       window.removeEventListener("resize", syncBackingStore);
       window.visualViewport?.removeEventListener("resize", syncBackingStore);
     };
-  }, [canvasRef]);
+  }, [canvasRef, maxDpr]);
 
   // We perform drawing logic directly using requestAnimationFrame inside parent,
   // but let's provide a robust, responsive Canvas frame wrapper with CSS constraints.
