@@ -48,6 +48,7 @@ import { ResultScreen } from "../components/ResultScreen";
 import { CompanionPanel } from "../components/CompanionPanel";
 import { UpgradeSelector } from "../components/UpgradeSelector";
 import { MobileTouchOverlay } from "../components/MobileTouchOverlay";
+import { BossHudOverlay } from "../components/BossHudOverlay";
 
 export const EnergySwarmGame: React.FC = () => {
   // --- REACT VIEWPORT GAME STATES (Low-frequency updates) ---
@@ -4121,7 +4122,7 @@ export const EnergySwarmGame: React.FC = () => {
               </div>
 
               {!isLeftPanelCollapsed && (
-                <div className="space-y-4 animate-fadeIn">
+                <div className="orbi-side-deck-content space-y-4 animate-fadeIn">
                   <div className="space-y-1.5">
                     <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block">AUDIO SYSTEM</span>
                     <button
@@ -4313,130 +4314,18 @@ export const EnergySwarmGame: React.FC = () => {
 
                 {/* IMMERSIVE BOSS HUD OVERLAY */}
                 {bossActiveRef.current && bossRef.current && !bossRef.current.isDead && (
-                  <div className="absolute top-4 left-4 right-4 z-20 pointer-events-none flex flex-col items-center gap-1.5 max-w-md mx-auto">
-                    {/* Boss Name & Subtitle */}
-                    <div className="flex flex-col items-center text-center">
-                      <span className="text-xs font-bold tracking-widest text-pink-500 font-sans uppercase animate-pulse">
-                        ⚠️ MAJOR COLLAPSE DETECTED ⚠️
-                      </span>
-                      <h2 className="text-lg font-extrabold tracking-tight text-white font-sans uppercase flex items-center gap-2">
-                        {BLACKOUT_DEVOURER_CANON.displayName}
-                        <span className="text-[10px] font-mono bg-pink-500/15 border border-pink-500/30 text-pink-400 px-1.5 py-0.5 rounded-sm">
-                          PHASE {bossPhase}
-                        </span>
-                      </h2>
-                      <p className="text-[9px] font-mono tracking-widest text-slate-400 uppercase">
-                        {BLACKOUT_DEVOURER_CANON.subtitle}
-                      </p>
-                    </div>
-
-                    {/* SEGMENTED 3-PHASE HP BAR */}
-                    <div className="w-full h-3.5 bg-slate-950/80 border border-slate-800/80 rounded-sm p-[2px] flex gap-[2px] relative overflow-hidden backdrop-blur-md">
-                      {/* Segment 1: Phase 1 (100% to 70%) */}
-                      <div className="flex-1 h-full bg-slate-900 rounded-2xs overflow-hidden relative">
-                        <div 
-                          className="h-full bg-gradient-to-r from-pink-700 to-pink-500 transition-all duration-300"
-                          style={{
-                            width: `${Math.max(0, Math.min(100, ((bossHp / bossMaxHp) - 0.70) / 0.30 * 100))}%`
-                          }}
-                        />
-                      </div>
-                      {/* Divider */}
-                      <div className="w-[1px] h-full bg-slate-800" />
-                      {/* Segment 2: Phase 2 (70% to 35%) */}
-                      <div className="flex-1 h-full bg-slate-900 rounded-2xs overflow-hidden relative">
-                        <div 
-                          className="h-full bg-gradient-to-r from-purple-700 to-purple-500 transition-all duration-300"
-                          style={{
-                            width: `${Math.max(0, Math.min(100, ((bossHp / bossMaxHp) - 0.35) / 0.35 * 100))}%`
-                          }}
-                        />
-                      </div>
-                      {/* Divider */}
-                      <div className="w-[1px] h-full bg-slate-800" />
-                      {/* Segment 3: Phase 3 (35% to 0%) */}
-                      <div className="flex-1 h-full bg-slate-900 rounded-2xs overflow-hidden relative">
-                        <div 
-                          className="h-full bg-gradient-to-r from-red-700 to-red-500 transition-all duration-300"
-                          style={{
-                            width: `${Math.max(0, Math.min(100, (bossHp / bossMaxHp) / 0.35 * 100))}%`
-                          }}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Numeric status & Active info */}
-                    <div className="w-full flex justify-between items-center text-[10px] font-mono text-slate-300 px-1">
-                      <span>INTEGRITY: {Math.ceil(bossHp)} / {bossMaxHp}</span>
-                      <span className="text-pink-400 font-bold">{Math.round((bossHp / bossMaxHp) * 100)}%</span>
-                    </div>
-
-                    {/* ACTIVE STATE OVERLAYS */}
-                    {bossIntroTime !== null && (
-                      <div className="w-full bg-black/75 border border-pink-500/40 p-2 rounded flex flex-col items-center pointer-events-auto mt-2 backdrop-blur-sm animate-fade-in">
-                        <span className="text-[10px] font-bold text-pink-400 uppercase tracking-wider mb-1">
-                          Aproximación de Amenaza
-                        </span>
-                        <button
-                          onClick={skipBossIntro}
-                          className="px-3 py-1 bg-pink-500 hover:bg-pink-600 text-white font-sans text-xs font-bold tracking-wider rounded-sm shadow-lg pointer-events-auto cursor-pointer flex items-center gap-1.5 transition-all duration-150 active:scale-95"
-                        >
-                          <span>[SPACE] SKIP INTRO</span>
-                        </button>
-                      </div>
-                    )}
-
-                    {bossTransitionName !== null && (
-                      <div className="w-full bg-purple-950/90 border border-purple-500/50 p-2 rounded flex flex-col items-center mt-2 backdrop-blur-sm text-center animate-pulse">
-                        <span className="text-[10px] font-bold text-purple-400 tracking-wider">
-                          MUTACIÓN EN CURSO
-                        </span>
-                        <span className="text-xs font-extrabold text-white uppercase font-sans">
-                          {bossTransitionName}
-                        </span>
-                      </div>
-                    )}
-
-                    {(() => {
-                      if (!bossAttackName) return null;
-                      const mode = stats.bossLabelsMode || "FULL";
-                      if (mode === "OFF") return null;
-                      if (mode === "IMPORTANT") {
-                        // Only show critical/heavy warning labels
-                        const isHeavy = ["devourer_charge", "singularity_pulse", "rotating_eclipse_lanes"].some(
-                          id => bossAttackName.toLowerCase().includes(id.replace("_", " ")) || 
-                                bossAttackName.toLowerCase().includes("carga") || 
-                                bossAttackName.toLowerCase().includes("eclipse") || 
-                                bossAttackName.toLowerCase().includes("pulso") || 
-                                bossAttackName.toLowerCase().includes("singularidad") || 
-                                bossAttackName.toLowerCase().includes("charge") || 
-                                bossAttackName.toLowerCase().includes("pulse") || 
-                                bossAttackName.toLowerCase().includes("lane")
-                        );
-                        if (!isHeavy) return null;
-                      }
-                      return (
-                        <div className="flex items-center gap-1.5 bg-black/55 border border-pink-500/20 px-2.5 py-0.5 rounded-full mt-0.5 backdrop-blur-md animate-fadeIn">
-                          <span className="w-1.5 h-1.5 rounded-full bg-pink-500 animate-ping" />
-                          <span className="text-[9px] font-mono tracking-wider text-pink-400 uppercase">
-                            ATTACK: {bossAttackName}
-                          </span>
-                        </div>
-                      );
-                    })()}
-
-                    {bossShieldNodes > 0 && (
-                      <div className="flex items-center gap-1.5 bg-blue-950/70 border border-blue-500/30 px-3 py-1 rounded-sm mt-0.5 backdrop-blur-md text-blue-300 font-mono text-[9px] uppercase tracking-wider">
-                        <span>🛡️ Segmented Shield Nodes: <strong className="text-blue-400">{bossShieldNodes}</strong></span>
-                      </div>
-                    )}
-
-                    {isCoreExposed && (
-                      <div className="flex items-center gap-1.5 bg-yellow-950/80 border border-yellow-500/50 px-3 py-1 rounded-sm mt-1 backdrop-blur-md text-yellow-300 font-mono text-[9px] uppercase tracking-widest animate-bounce">
-                        <span>⚠️ CORE EXPOSED — DOUBLE DAMAGE ACTIVE ⚠️</span>
-                      </div>
-                    )}
-                  </div>
+                  <BossHudOverlay
+                    bossPhase={bossPhase}
+                    bossHp={bossHp}
+                    bossMaxHp={bossMaxHp}
+                    bossIntroTime={bossIntroTime}
+                    bossTransitionName={bossTransitionName}
+                    bossAttackName={bossAttackName}
+                    bossShieldNodes={bossShieldNodes}
+                    isCoreExposed={isCoreExposed}
+                    bossLabelsMode={stats.bossLabelsMode || "FULL"}
+                    onSkipIntro={skipBossIntro}
+                  />
                 )}
 
                 {/* MOBILE / ANDROID THUMB-ZONE MOVEMENT OVERLAY */}
@@ -4463,7 +4352,7 @@ export const EnergySwarmGame: React.FC = () => {
               </div>
 
               {!isRightPanelCollapsed && (
-                <div className="animate-fadeIn">
+                <div className="orbi-side-deck-content animate-fadeIn">
                   <CompanionPanel
                     stats={stats}
                     swarm={swarmRef.current}
