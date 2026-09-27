@@ -4,11 +4,14 @@ import test from "node:test";
 import {
   generateInfiniteSectorRecipe,
   getInfiniteProgressionTier,
+  validateInfiniteSectorRecipe,
 } from "../src/game/infiniteSectorDirector.ts";
 import { EnemyType } from "../src/game/types.ts";
 
 test("infinite progression tiers begin at Sector 11", () => {
   assert.throws(() => getInfiniteProgressionTier(10), RangeError);
+  assert.throws(() => getInfiniteProgressionTier(11.5), RangeError);
+  assert.throws(() => getInfiniteProgressionTier(Number.NaN), RangeError);
   assert.equal(getInfiniteProgressionTier(11), "MASTERY");
   assert.equal(getInfiniteProgressionTier(25), "MASTERY");
   assert.equal(getInfiniteProgressionTier(26), "ADVANCED_COMBINATION");
@@ -47,6 +50,10 @@ test("Sectors 11–1000 always stay inside certified recipe bounds", () => {
     );
 
     assert.equal(recipe.sector, sector);
+    assert.deepEqual(validateInfiniteSectorRecipe(recipe), {
+      valid: true,
+      errors: [],
+    });
     assert.ok(recipe.enemyBudget >= 28 && recipe.enemyBudget <= 180);
     assert.ok(
       recipe.maxConcurrentEnemies >= 14 &&
@@ -108,4 +115,24 @@ test("recovery sectors reduce pressure after 25-sector milestones", () => {
   assert.ok(recovery.enemyBudget <= next.enemyBudget);
   assert.ok(recovery.maxConcurrentEnemies <= next.maxConcurrentEnemies);
   assert.ok(recovery.spawnIntervalFrames >= next.spawnIntervalFrames);
+});
+
+
+test("validator reports illegal recipes without mutating them", () => {
+  const recipe = generateInfiniteSectorRecipe(101, "invalid-check");
+  const invalid = {
+    ...recipe,
+    enemyBudget: 999,
+    enemyComposition: [EnemyType.BOSS_DEVOURER],
+    fairness: {
+      ...recipe.fairness,
+      minTelegraphMs: 100,
+    },
+  };
+
+  const validation = validateInfiniteSectorRecipe(invalid);
+  assert.equal(validation.valid, false);
+  assert.ok(validation.errors.includes("enemyBudget"));
+  assert.ok(validation.errors.includes("enemyComposition"));
+  assert.ok(validation.errors.includes("minTelegraphMs"));
 });
