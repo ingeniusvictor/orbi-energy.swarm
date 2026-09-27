@@ -247,6 +247,7 @@ export const campaignDescriptorMatchesWaveConfig = (
   descriptor: RuntimeWaveDescriptor,
   cfg: WaveConfig,
 ) => {
+  const bossWave = cfg.waveNumber === BOSS_WAVE_NUMBER;
   const expectedPolicy =
     cfg.waveNumber === BOSS_WAVE_NUMBER
       ? "BOSS_DEFEAT"
