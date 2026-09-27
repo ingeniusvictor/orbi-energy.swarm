@@ -23,7 +23,10 @@ type MutatorEffectPatch = Partial<
   >
 >;
 
-const MUTATOR_EFFECTS = {
+const MUTATOR_EFFECTS: Record<
+  InfiniteMutator,
+  MutatorEffectPatch
+> = {
   ELECTRICAL_STORM: {
     electricalStormIntensity: 1,
   },
@@ -54,7 +57,7 @@ const MUTATOR_EFFECTS = {
   DOUBLE_THREAT: {
     enemyBudgetMultiplier: 1.35,
   },
-} satisfies Record<InfiniteMutator, MutatorEffectPatch>;
+};
 
 const NEUTRAL_EFFECTS: Omit<
   RuntimeMutatorEffectProfile,
