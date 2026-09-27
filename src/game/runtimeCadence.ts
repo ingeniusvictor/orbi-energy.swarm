@@ -120,7 +120,8 @@ export const stepCadenceAccumulator = (
       : HUD_SYNC_INTERVAL_MS;
 
   const next = safeAccumulator + safeDelta;
-  if (next < safeInterval) {
+  const boundaryEpsilonMs = 0.000001;
+  if (next + boundaryEpsilonMs < safeInterval) {
     return {
       nextAccumulatorMs: next,
       shouldFlush: false,
@@ -129,7 +130,9 @@ export const stepCadenceAccumulator = (
 
   return {
     nextAccumulatorMs:
-      next % safeInterval,
+      next >= safeInterval
+        ? next % safeInterval
+        : 0,
     shouldFlush: true,
   };
 };
