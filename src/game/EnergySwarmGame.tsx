@@ -20,6 +20,12 @@ import { FORMATIONS, calculateSwarmOffset } from "./formations";
 import { getBiomeConfig, BIOME_ROTATION } from "./biomes";
 import { getQualityConfig } from "./quality";
 import {
+  ENEMY_SPATIAL_CELL_SIZE,
+  buildSpatialIndex,
+  findNearestSpatialItem,
+  type SpatialIndex,
+} from "./spatialIndex";
+import {
   triggerExplosion,
   updateParticle,
   drawParticle,
@@ -3484,6 +3490,8 @@ export const EnergySwarmGame: React.FC = () => {
 
     const recoilDamping =
       projectFrameDamping(0.82, delta);
+    let targetingEnemyIndex: SpatialIndex<Enemy> | null =
+      null;
 
     swarmRef.current.forEach((member, idx) => {
       // Decelerate shooting recoil and flash ticks with 60 Hz baseline parity.
@@ -3589,8 +3597,23 @@ export const EnergySwarmGame: React.FC = () => {
       // Shooting logic
       member.shootCooldown -= delta / 16.6;
       if (member.shootCooldown <= 0) {
-        member.shootCooldown = 65 - (activeFormation === FormationType.CIRCLE ? 15 : 0); // speed mod
-        shootFromSwarm(member);
+        member.shootCooldown =
+          65 -
+          (activeFormation === FormationType.CIRCLE
+            ? 15
+            : 0);
+
+        targetingEnemyIndex ??= buildSpatialIndex(
+          enemiesRef.current,
+          {
+            cellSize: ENEMY_SPATIAL_CELL_SIZE,
+            getX: (enemy) => enemy.x,
+            getY: (enemy) => enemy.y,
+            getRadius: (enemy) => enemy.size,
+            include: (enemy) => !enemy.isDead,
+          },
+        );
+        shootFromSwarm(member, targetingEnemyIndex);
       }
     });
 
@@ -4178,32 +4201,30 @@ export const EnergySwarmGame: React.FC = () => {
   };
 
   // --- SHOOT TRIGGER FROM SWARM FOLLOWER ---
-  const shootFromSwarm = (member: OrbiMember) => {
+  const shootFromSwarm = (
+    member: OrbiMember,
+    enemyIndex: SpatialIndex<Enemy>,
+  ) => {
     if (projectilesRef.current.length >= MAX_PROJECTILES) return;
 
-    // Find nearest living enemy target
-    let nearest: Enemy | null = null;
-    let minDist = 999999;
+    const maxRange =
+      300 +
+      (activeFormation === FormationType.SHIELD
+        ? 100
+        : 0);
+    const nearest = findNearestSpatialItem(
+      enemyIndex,
+      member.x,
+      member.y,
+      maxRange,
+      (enemy) => !enemy.isDead,
+    );
 
-    enemiesRef.current.forEach((enemy) => {
-      if (enemy.isDead) return;
-      const dx = enemy.x - member.x;
-      const dy = enemy.y - member.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist < minDist) {
-        minDist = dist;
-        nearest = enemy;
-      }
-    });
-
-    // Check weapon range matching
-    const maxRange = 300 + (activeFormation === FormationType.SHIELD ? 100 : 0);
-
-    if (nearest && minDist < maxRange) {
-      const target: Enemy = nearest;
+    if (nearest.item) {
+      const target = nearest.item;
       const dx = target.x - member.x;
       const dy = target.y - member.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
+      const dist = Math.sqrt(nearest.distanceSquared);
 
       // Weapon vectors and elemental modifications (Section 14)
       let speedFactor = 1.0;
