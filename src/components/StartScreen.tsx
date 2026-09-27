@@ -25,6 +25,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({
 }) => {
   const { language, setLanguage, t } = useGameTranslation();
   const [activeTab, setActiveTab] = useState<"MAIN" | "HOW_TO" | "CONTROLS" | "SETTINGS" | "ABOUT" | "CODEX">("MAIN");
+  const hasInfiniteRecord = stats.bestInfiniteSector >= 11;
 
   const clickTab = (tab: "MAIN" | "HOW_TO" | "CONTROLS" | "SETTINGS" | "ABOUT" | "CODEX") => {
     playClickSound();
@@ -152,6 +153,52 @@ export const StartScreen: React.FC<StartScreenProps> = ({
                 <div className="text-slate-400 text-[10px] font-mono">{t("startScreen.totalMissions")}</div>
                 <div className="text-lg md:text-xl font-bold font-mono text-slate-300">{stats.totalRuns}</div>
               </div>
+            </div>
+
+            {/* INFINITE SWARM PERSISTENT ARCHIVE */}
+            <div className="rounded-xl border border-cyan-500/20 bg-cyan-950/10 p-3 shadow-[inset_0_0_28px_rgba(34,211,238,0.04)]">
+              <div className="flex items-center justify-between gap-3 mb-2">
+                <div className="text-left">
+                  <div className="text-[10px] font-black font-mono tracking-[0.16em] text-cyan-300 uppercase">
+                    ∞ INFINITE SWARM
+                  </div>
+                  <div className="text-[9px] font-mono text-slate-500 uppercase">
+                    {language === "es" ? "ARCHIVO DE MAESTRÍA" : "MASTERY ARCHIVE"}
+                  </div>
+                </div>
+                <span className={`text-[9px] font-mono px-2 py-1 rounded-full border ${hasInfiniteRecord ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300" : "border-slate-700 bg-slate-900/70 text-slate-500"}`}>
+                  {hasInfiniteRecord
+                    ? (language === "es" ? "SINCRONIZADO" : "SYNCED")
+                    : (language === "es" ? "BLOQUEADO" : "LOCKED")}
+                </span>
+              </div>
+
+              {hasInfiniteRecord ? (
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
+                  <div className="rounded-lg bg-slate-950/55 border border-slate-800/70 p-2">
+                    <div className="text-[8px] text-slate-500 font-mono uppercase">{language === "es" ? "MEJOR SECTOR" : "BEST SECTOR"}</div>
+                    <div className="text-base font-black font-mono text-cyan-300">{stats.bestInfiniteSector}</div>
+                  </div>
+                  <div className="rounded-lg bg-slate-950/55 border border-slate-800/70 p-2">
+                    <div className="text-[8px] text-slate-500 font-mono uppercase">{language === "es" ? "OLEADA" : "WAVE"}</div>
+                    <div className="text-base font-black font-mono text-indigo-300">{stats.bestInfiniteWave}</div>
+                  </div>
+                  <div className="rounded-lg bg-slate-950/55 border border-slate-800/70 p-2">
+                    <div className="text-[8px] text-slate-500 font-mono uppercase">WARDENS</div>
+                    <div className="text-base font-black font-mono text-amber-300">{stats.infiniteMinibossesDefeated}</div>
+                  </div>
+                  <div className="rounded-lg bg-slate-950/55 border border-slate-800/70 p-2">
+                    <div className="text-[8px] text-slate-500 font-mono uppercase">REMATCHES</div>
+                    <div className="text-base font-black font-mono text-pink-300">{stats.infiniteBossRematchesDefeated}</div>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-[10px] font-mono text-slate-500 leading-relaxed text-left">
+                  {language === "es"
+                    ? "Completa la campaña y derrota al Blackout Devourer para abrir el Sector 11 y comenzar tu récord infinito."
+                    : "Complete the campaign and defeat the Blackout Devourer to open Sector 11 and begin your Infinite record."}
+                </p>
+              )}
             </div>
 
             {/* PREPARATION MEMENTO */}
