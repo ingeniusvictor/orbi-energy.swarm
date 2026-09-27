@@ -9,7 +9,8 @@ test("mobile movement controls live in a dedicated overlay component", () => {
   const overlay = read("src/components/MobileTouchOverlay.tsx");
 
   assert.match(game, /MobileTouchOverlay/);
-  assert.match(game, /onMove=\{moveMobileDPad\}/);
+  assert.match(game, /onDirectionChange=\{setMobileTouchDirection\}/);
+  assert.doesNotMatch(game, /moveMobileDPad/);
   assert.doesNotMatch(game, /MOBILE NAVIGATION BUTTONPAD ASSIST/);
 
   for (const direction of ["UP", "DOWN", "LEFT", "RIGHT"]) {
