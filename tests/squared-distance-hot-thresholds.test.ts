@@ -157,7 +157,7 @@ test("pointer drag and click thresholds keep their exact 8px and 10px boundaries
   const pointers = section(
     game,
     "const handlePointerMove =",
-    "// --- KEY LISTENER LISTENERS ---",
+    "// --- MOBILE / ANDROID HELD-DIRECTION INPUT ---",
   );
 
   assert.match(
