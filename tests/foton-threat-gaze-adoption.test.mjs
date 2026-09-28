@@ -16,7 +16,7 @@ test("game maintains low-cadence threat gaze refs", () => {
   );
   assert.match(
     game,
-    /fotonThreatTargetIdRef = useRef<string \| null>\(null\)/,
+    /fotonThreatTargetRef = useRef<Enemy \| null>\(null\)/,
   );
   assert.match(
     game,
@@ -35,7 +35,7 @@ test("threat selection runs only after the 160ms cadence threshold", () => {
   );
   assert.match(
     game,
-    /selectFotonThreat\([\s\S]*enemiesRef\.current[\s\S]*fotonThreatTargetIdRef\.current/,
+    /selectFotonThreat\([\s\S]*enemyCollisionIndex,[\s\S]*bossRef\.current,[\s\S]*fotonThreatTargetRef\.current/,
   );
 });
 
@@ -46,7 +46,7 @@ test("Foton gaze state resets on every new run", () => {
   );
   assert.match(
     game,
-    /fotonThreatTargetIdRef\.current = null/,
+    /fotonThreatTargetRef\.current = null/,
   );
   assert.match(
     game,
@@ -102,12 +102,22 @@ test("GLB visual body and surrounding halos are reduced together", () => {
   );
 });
 
-test("threat tracking does not mutate combat or enemy state", () => {
+test("threat tracking reuses the collision spatial index and avoids a new full enemy scan", () => {
   const marker = game.indexOf(
-    "// Threat-aware Foton gaze updates at low cadence",
+    "// Reuse the collision spatial index for low-cadence Foton gaze.",
   );
   assert.ok(marker >= 0);
-  const section = game.slice(marker, marker + 1500);
+  const end = game.indexOf(
+    "// 1. PROJECTILES vs ENEMIES / PLAYER",
+    marker,
+  );
+  assert.ok(end > marker);
+  const section = game.slice(marker, end);
+
+  assert.match(section, /selectFotonThreat\([\s\S]*enemyCollisionIndex/);
+  assert.match(section, /bossRef\.current/);
+  assert.doesNotMatch(section, /enemiesRef\.current/);
+  assert.doesNotMatch(section, /buildSpatialIndex\(/);
   assert.doesNotMatch(
     section,
     /enemy\.x\s*=|enemy\.y\s*=|enemy\.health\s*=|damagePlayer|spawnEnemy/,

@@ -1,3 +1,7 @@
+import {
+  findNearestSpatialItem,
+  type SpatialIndex,
+} from "./spatialIndex";
 import type { Enemy } from "./types";
 
 export interface FotonThreatSelection {
@@ -5,6 +9,7 @@ export interface FotonThreatSelection {
   x: number;
   y: number;
   isBoss: boolean;
+  enemy?: Enemy;
 }
 
 export interface FotonThreatDirection {
@@ -27,91 +32,66 @@ const distanceSquared = (
   return dx * dx + dy * dy;
 };
 
+const toSelection = (
+  enemy: Enemy,
+): FotonThreatSelection => ({
+  id: enemy.id,
+  x: enemy.x,
+  y: enemy.y,
+  isBoss: enemy.isBoss,
+  enemy,
+});
+
 export const selectFotonThreat = (
-  enemies: readonly Enemy[],
+  enemyIndex: SpatialIndex<Enemy>,
+  boss: Enemy | null,
   playerX: number,
   playerY: number,
-  currentTargetId: string | null,
+  currentTarget: Enemy | null,
   maxRange = FOTON_THREAT_MAX_RANGE,
 ): FotonThreatSelection | null => {
-  let boss: Enemy | null = null;
-  let current: Enemy | null = null;
-  let nearest: Enemy | null = null;
-  let nearestDistanceSquared = Number.POSITIVE_INFINITY;
-  const maxRangeSquared = maxRange * maxRange;
-
-  for (const enemy of enemies) {
-    if (enemy.isDead) continue;
-
-    if (enemy.isBoss) {
-      boss = enemy;
-      break;
-    }
-
-    const d2 = distanceSquared(
-      enemy.x,
-      enemy.y,
-      playerX,
-      playerY,
-    );
-
-    if (enemy.id === currentTargetId) {
-      current = enemy;
-    }
-
-    if (
-      d2 < maxRangeSquared &&
-      d2 < nearestDistanceSquared
-    ) {
-      nearest = enemy;
-      nearestDistanceSquared = d2;
-    }
+  if (boss && !boss.isDead) {
+    return toSelection(boss);
   }
 
-  if (boss) {
-    return {
-      id: boss.id,
-      x: boss.x,
-      y: boss.y,
-      isBoss: true,
-    };
-  }
+  const nearest = findNearestSpatialItem(
+    enemyIndex,
+    playerX,
+    playerY,
+    maxRange,
+    (enemy) => !enemy.isDead && !enemy.isBoss,
+  );
 
-  if (!nearest) {
+  if (!nearest.item) {
     return null;
   }
 
-  if (current) {
+  if (
+    currentTarget &&
+    !currentTarget.isDead &&
+    !currentTarget.isBoss
+  ) {
     const currentDistanceSquared = distanceSquared(
-      current.x,
-      current.y,
+      currentTarget.x,
+      currentTarget.y,
       playerX,
       playerY,
     );
+    const maxRangeSquared = maxRange * maxRange;
     const retainThresholdSquared =
-      nearestDistanceSquared *
+      nearest.distanceSquared *
       RETAIN_DISTANCE_RATIO *
       RETAIN_DISTANCE_RATIO;
 
     if (
-      currentDistanceSquared <= maxRangeSquared &&
+      currentDistanceSquared < maxRangeSquared &&
       currentDistanceSquared <= retainThresholdSquared
     ) {
-      return {
-        id: current.id,
-        x: current.x,
-        y: current.y,
-        isBoss: false,
-      };
+      return toSelection(currentTarget);
     }
   }
 
-  return {
-    id: nearest.id,
-    x: nearest.x,
-    y: nearest.y,
-    isBoss: false,
-  };
+  return toSelection(nearest.item);
 };
 
 export const projectFotonThreatDirection = (
