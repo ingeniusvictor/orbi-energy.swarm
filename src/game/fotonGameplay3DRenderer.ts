@@ -35,6 +35,8 @@ interface GameplayRuntime {
   model: any;
   lastFrameAt: number;
   lastMotionAt: number;
+  threatDirectionX: number;
+  threatDirectionY: number;
 }
 
 export const FOTON_GAMEPLAY_DRAW_SIZE = 37.5;
@@ -203,6 +205,8 @@ const createRuntime = (
     model: null,
     lastFrameAt: 0,
     lastMotionAt: 0,
+    threatDirectionX: 0,
+    threatDirectionY: 0,
   };
 
   const loader = new GLTFLoader();
@@ -340,11 +344,11 @@ const stepRuntimeMotion = (
 
   const smoothing =
     1 - Math.exp(-elapsedSeconds * 6.5);
-  const dx = Number.isFinite((active as any).threatDirectionX)
-    ? Math.max(-1, Math.min(1, (active as any).threatDirectionX))
+  const dx = Number.isFinite(active.threatDirectionX)
+    ? Math.max(-1, Math.min(1, active.threatDirectionX))
     : 0;
-  const dy = Number.isFinite((active as any).threatDirectionY)
-    ? Math.max(-1, Math.min(1, (active as any).threatDirectionY))
+  const dy = Number.isFinite(active.threatDirectionY)
+    ? Math.max(-1, Math.min(1, active.threatDirectionY))
     : 0;
 
   const neutralYaw = 0.42;
@@ -387,9 +391,9 @@ export const getFotonGameplay3DFrame = (
     return null;
   }
 
-  (active as any).threatDirectionX =
+  active.threatDirectionX =
     request.threatDirectionX ?? 0;
-  (active as any).threatDirectionY =
+  active.threatDirectionY =
     request.threatDirectionY ?? 0;
 
   if (
