@@ -54,8 +54,9 @@ test("gameplay GLB keeps bounded quality-tier cadence", () => {
   );
 });
 
-test("gameplay GLB draw footprint matches historical Foton scale", () => {
-  assert.equal(FOTON_GAMEPLAY_DRAW_SIZE, 50);
+test("gameplay GLB draw footprint is exactly 25 percent smaller than the former 50px footprint", () => {
+  assert.equal(FOTON_GAMEPLAY_DRAW_SIZE, 37.5);
+  assert.equal(FOTON_GAMEPLAY_DRAW_SIZE / 50, 0.75);
 });
 
 test("all quality tiers keep GLB enabled", () => {
