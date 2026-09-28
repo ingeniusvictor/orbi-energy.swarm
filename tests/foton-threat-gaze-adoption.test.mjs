@@ -27,7 +27,7 @@ test("game maintains low-cadence threat gaze refs", () => {
 test("threat selection runs only after the 160ms cadence threshold", () => {
   assert.match(
     game,
-    /fotonThreatAccumulatorMsRef\.current \+= frameDeltaMs/,
+    /fotonThreatAccumulatorMsRef\.current \+= delta/,
   );
   assert.match(
     game,
