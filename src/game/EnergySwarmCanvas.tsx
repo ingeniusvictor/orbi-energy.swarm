@@ -13,11 +13,10 @@ import {
 import { getActiveLanguage } from "../i18n";
 import {
   drawFotonTacticalAvatar,
-  projectFotonIntegrityVisual,
 } from "./fotonTacticalRenderer";
 import {
   disposeFotonGameplay3D,
-  FOTON_GAMEPLAY_DRAW_SIZE,
+  FOTON_GAMEPLAY_COMPOSITE_SIZE,
   getFotonGameplay3DFrame,
   prewarmFotonGameplay3D,
 } from "./fotonGameplay3DRenderer";
@@ -157,6 +156,7 @@ export function drawFoton(
   qualityPreset: QualityPreset = QualityPreset.HIGH,
   isPaused: boolean = false,
   threatDirection: { x: number; y: number } = { x: 0, y: 0 },
+  orbiCount: number = 0,
 ) {
   // Historical FULL mode preserves the original invincibility flicker.
   if (
@@ -204,53 +204,37 @@ export function drawFoton(
     paused: isPaused,
     threatDirectionX: threatDirection.x,
     threatDirectionY: threatDirection.y,
+    orbiCount,
+    shieldRatio,
   });
 
   if (glbFrame) {
-    const integrity =
-      projectFotonIntegrityVisual(shieldRatio);
-
     ctx.save();
 
-    // Keep live shield integrity readable around the real 3D protagonist.
-    ctx.strokeStyle = "rgba(30,41,59,0.9)";
-    ctx.lineWidth = 2.2;
-    ctx.beginPath();
-    ctx.arc(x, y, 21.5, 0, Math.PI * 2);
-    ctx.stroke();
-
-    if (integrity.ratio > 0) {
-      ctx.strokeStyle = integrity.color;
-      ctx.beginPath();
-      ctx.arc(
-        x,
-        y,
-        20.5,
-        -Math.PI / 2,
-        -Math.PI / 2 +
-          Math.PI * 2 * integrity.ratio,
-      );
-      ctx.stroke();
-    }
-
+    // The simple 2D integrity ring is intentionally replaced by the detached
+    // 3D Dyson halo. The larger transparent composite keeps the GLB body at
+    // its 37.5px visual footprint while giving the orbital rings room.
     const half =
-      FOTON_GAMEPLAY_DRAW_SIZE / 2;
+      FOTON_GAMEPLAY_COMPOSITE_SIZE / 2;
     ctx.drawImage(
       glbFrame,
       x - half,
       y - half,
-      FOTON_GAMEPLAY_DRAW_SIZE,
-      FOTON_GAMEPLAY_DRAW_SIZE,
+      FOTON_GAMEPLAY_COMPOSITE_SIZE,
+      FOTON_GAMEPLAY_COMPOSITE_SIZE,
     );
 
     if (damageHighlightStrength > 0) {
+      ctx.globalCompositeOperation = "screen";
       ctx.globalAlpha =
-        damageHighlightStrength * 0.34;
-      ctx.strokeStyle = "#ffffff";
-      ctx.lineWidth = 2.5;
-      ctx.beginPath();
-      ctx.arc(x, y, 20.5, 0, Math.PI * 2);
-      ctx.stroke();
+        damageHighlightStrength * 0.28;
+      ctx.drawImage(
+        glbFrame,
+        x - half,
+        y - half,
+        FOTON_GAMEPLAY_COMPOSITE_SIZE,
+        FOTON_GAMEPLAY_COMPOSITE_SIZE,
+      );
     }
 
     ctx.restore();
