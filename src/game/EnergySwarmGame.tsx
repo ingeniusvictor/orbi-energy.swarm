@@ -4211,6 +4211,10 @@ export const EnergySwarmGame: React.FC = () => {
       },
     );
 
+    // Accumulate gaze cadence in O(1); target lookup reuses the
+    // collision spatial index later in this same frame.
+    fotonThreatAccumulatorMsRef.current += delta;
+
     // 7. Projectiles coordinates
     projectilesRef.current.forEach((proj) => {
       proj.x += proj.vx * (delta / 16.6);
@@ -4321,7 +4325,7 @@ export const EnergySwarmGame: React.FC = () => {
     ); // size <= 0 or consumed represents collected
 
     // 10. SINGLE-IMPACT COLLISION SWEEPS
-    detectAndResolveCollisions(delta);
+    detectAndResolveCollisions();
   };
 
   // --- COLLECT RESOURCES SCRIPT ---
@@ -4599,7 +4603,7 @@ export const EnergySwarmGame: React.FC = () => {
   };
 
   // --- DETECT SINGLE-IMPACT COLLISION SWEEPS ---
-  const detectAndResolveCollisions = (frameDeltaMs: number) => {
+  const detectAndResolveCollisions = () => {
     const quality = getQualityConfig(stats.qualityPreset);
     const combatPressure = getCurrentCombatPressure();
     const mutatorEffects = getCurrentMutatorEffects();
@@ -4618,7 +4622,6 @@ export const EnergySwarmGame: React.FC = () => {
 
     // Reuse the collision spatial index for low-cadence Foton gaze.
     // This avoids introducing any additional O(N) enemy scan.
-    fotonThreatAccumulatorMsRef.current += frameDeltaMs;
     if (
       fotonThreatAccumulatorMsRef.current >=
       FOTON_THREAT_REFRESH_MS
