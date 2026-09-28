@@ -5528,6 +5528,7 @@ export const EnergySwarmGame: React.FC = () => {
       stats.qualityPreset,
       isPausedRef.current,
       fotonThreatDirectionRef.current,
+      swarmRef.current.length,
     );
 
     // 8. Draw active floating text feedback (such as CRITICAL or BLOCK)

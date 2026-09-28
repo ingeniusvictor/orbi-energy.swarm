@@ -1,6 +1,11 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
+import {
+  FOTON_DYSON_HALO_RINGS,
+  getUnlockedDysonHaloRingCount,
+  type FotonDysonHaloRingDescriptor,
+} from "./fotonDysonHalo";
 import { QualityPreset } from "./types";
 
 export interface FotonGameplay3DRuntimeConfig {
@@ -16,12 +21,27 @@ export interface FotonGameplay3DFrameRequest {
   paused: boolean;
   threatDirectionX?: number | null;
   threatDirectionY?: number | null;
+  orbiCount?: number | null;
+  shieldRatio?: number | null;
 }
 
 type RuntimeStatus =
   | "LOADING"
   | "READY"
   | "FAILED";
+
+interface DysonHaloRuntimeRing {
+  descriptor: FotonDysonHaloRingDescriptor;
+  planeRoot: any;
+  spinRoot: any;
+  core: any;
+  glow: any;
+  coreMaterial: any;
+  glowMaterial: any;
+  accentMaterials: any[];
+  buildProgress: number;
+  indexCount: number;
+}
 
 interface GameplayRuntime {
   preset: QualityPreset;
@@ -32,14 +52,19 @@ interface GameplayRuntime {
   scene: any;
   camera: any;
   root: any;
+  haloRoot: any;
+  haloRings: DysonHaloRuntimeRing[];
   model: any;
   lastFrameAt: number;
   lastMotionAt: number;
   threatDirectionX: number;
   threatDirectionY: number;
+  orbiCount: number;
+  shieldRatio: number;
 }
 
 export const FOTON_GAMEPLAY_DRAW_SIZE = 37.5;
+export const FOTON_GAMEPLAY_COMPOSITE_SIZE = 49.2;
 
 export const getFotonGameplay3DRuntimeConfig = (
   preset: QualityPreset,
@@ -105,6 +130,245 @@ const disposeObject3D = (root: any) => {
   });
 };
 
+const clamp01 = (value: number) =>
+  Math.max(0, Math.min(1, value));
+
+const getDysonHaloGeometryDetail = (
+  preset: QualityPreset,
+) => {
+  switch (preset) {
+    case QualityPreset.LOW:
+      return { radialSegments: 4, tubularSegments: 44 };
+    case QualityPreset.MEDIUM:
+      return { radialSegments: 5, tubularSegments: 56 };
+    case QualityPreset.HIGH:
+      return { radialSegments: 6, tubularSegments: 72 };
+    case QualityPreset.ULTRA:
+    default:
+      return { radialSegments: 6, tubularSegments: 88 };
+  }
+};
+
+const createDysonHaloRing = (
+  descriptor: FotonDysonHaloRingDescriptor,
+  preset: QualityPreset,
+): DysonHaloRuntimeRing => {
+  const detail = getDysonHaloGeometryDetail(preset);
+  const planeRoot = new THREE.Group();
+  planeRoot.rotation.set(
+    descriptor.tilt[0],
+    descriptor.tilt[1],
+    descriptor.tilt[2],
+  );
+
+  const spinRoot = new THREE.Group();
+  planeRoot.add(spinRoot);
+
+  const geometry = new THREE.TorusGeometry(
+    descriptor.radius,
+    descriptor.tubeRadius,
+    detail.radialSegments,
+    detail.tubularSegments,
+  );
+  const indexCount =
+    geometry.index?.count ??
+    geometry.attributes.position.count;
+  geometry.setDrawRange(0, 0);
+
+  const coreMaterial = new THREE.MeshBasicMaterial({
+    color: descriptor.color,
+    transparent: true,
+    opacity: 0,
+    depthTest: true,
+    depthWrite: false,
+    toneMapped: false,
+  });
+  const core = new THREE.Mesh(
+    geometry,
+    coreMaterial,
+  );
+  spinRoot.add(core);
+
+  const glowMaterial = new THREE.MeshBasicMaterial({
+    color: descriptor.color,
+    transparent: true,
+    opacity: 0,
+    depthTest: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    toneMapped: false,
+  });
+  const glow = new THREE.Mesh(
+    geometry,
+    glowMaterial,
+  );
+  glow.scale.setScalar(1.035);
+  spinRoot.add(glow);
+
+  const accentMaterials: any[] = [];
+  const accentGeometry = new THREE.SphereGeometry(
+    descriptor.tubeRadius * 1.75,
+    preset === QualityPreset.LOW ? 5 : 7,
+    preset === QualityPreset.LOW ? 4 : 6,
+  );
+
+  for (
+    let index = 0;
+    index < descriptor.accentNodeCount;
+    index += 1
+  ) {
+    const angle =
+      descriptor.phase +
+      (index / descriptor.accentNodeCount) *
+        Math.PI *
+        2;
+    const material = new THREE.MeshBasicMaterial({
+      color: descriptor.accentColor,
+      transparent: true,
+      opacity: 0,
+      depthTest: true,
+      depthWrite: false,
+      toneMapped: false,
+    });
+    const node = new THREE.Mesh(
+      accentGeometry,
+      material,
+    );
+    node.position.set(
+      Math.cos(angle) * descriptor.radius,
+      Math.sin(angle) * descriptor.radius,
+      0,
+    );
+    spinRoot.add(node);
+    accentMaterials.push(material);
+  }
+
+  return {
+    descriptor,
+    planeRoot,
+    spinRoot,
+    core,
+    glow,
+    coreMaterial,
+    glowMaterial,
+    accentMaterials,
+    buildProgress: 0,
+    indexCount,
+  };
+};
+
+const createDysonHaloRuntime = (
+  preset: QualityPreset,
+) => {
+  const haloRoot = new THREE.Group();
+  const haloRings = FOTON_DYSON_HALO_RINGS.map(
+    (descriptor) =>
+      createDysonHaloRing(descriptor, preset),
+  );
+
+  for (const ring of haloRings) {
+    haloRoot.add(ring.planeRoot);
+  }
+
+  return { haloRoot, haloRings };
+};
+
+const stepDysonHalo = (
+  active: GameplayRuntime,
+  nowMs: number,
+  elapsedSeconds: number,
+) => {
+  const unlockedRingCount =
+    getUnlockedDysonHaloRingCount(
+      active.orbiCount,
+    );
+  const shieldRatio = clamp01(active.shieldRatio);
+  const timeSeconds = nowMs / 1000;
+
+  active.haloRoot.position.y =
+    active.root.position.y;
+
+  active.haloRings.forEach((ring, index) => {
+    const target = index < unlockedRingCount ? 1 : 0;
+    const step =
+      (elapsedSeconds * 1000) /
+      ring.descriptor.buildDurationMs;
+
+    if (target > ring.buildProgress) {
+      ring.buildProgress = Math.min(
+        target,
+        ring.buildProgress + step,
+      );
+    } else if (target < ring.buildProgress) {
+      ring.buildProgress = Math.max(
+        target,
+        ring.buildProgress - step,
+      );
+    }
+
+    const progress = ring.buildProgress;
+    ring.planeRoot.visible = progress > 0.002;
+
+    const revealCount =
+      progress <= 0
+        ? 0
+        : Math.max(
+            3,
+            Math.floor(
+              ring.indexCount * progress,
+            ),
+          );
+    ring.core.geometry.setDrawRange(
+      0,
+      revealCount,
+    );
+
+    const shieldIntensity =
+      0.48 + shieldRatio * 0.52;
+    ring.coreMaterial.opacity =
+      progress *
+      (0.5 + shieldIntensity * 0.28);
+    ring.glowMaterial.opacity =
+      progress *
+      (0.06 + shieldIntensity * 0.13);
+
+    for (const material of ring.accentMaterials) {
+      material.opacity =
+        progress *
+        (0.38 + shieldIntensity * 0.34);
+    }
+
+    const constructionScale =
+      0.88 + progress * 0.12;
+    ring.spinRoot.scale.setScalar(
+      constructionScale,
+    );
+    ring.spinRoot.rotation.z =
+      ring.descriptor.phase +
+      timeSeconds *
+        ring.descriptor.angularVelocity;
+
+    // Subtle independent precession keeps the three detached orbits alive
+    // without turning them into fast propellers or distracting from Foton.
+    ring.planeRoot.rotation.x =
+      ring.descriptor.tilt[0] +
+      Math.sin(
+        timeSeconds * 0.18 +
+          ring.descriptor.phase,
+      ) *
+        0.025;
+    ring.planeRoot.rotation.y =
+      ring.descriptor.tilt[1] +
+      Math.cos(
+        timeSeconds * 0.15 +
+          ring.descriptor.phase,
+      ) *
+        0.022;
+    ring.planeRoot.rotation.z =
+      ring.descriptor.tilt[2];
+  });
+};
+
 let runtime: GameplayRuntime | null = null;
 
 const createRuntime = (
@@ -126,7 +390,9 @@ const createRuntime = (
     0.1,
     100,
   );
-  camera.position.set(0, 0.04, 3.05);
+  // Pull the camera back just enough to preserve the 37.5px Foton body
+  // while leaving transparent room for detached Dyson halo orbits.
+  camera.position.set(0, 0.04, 4);
   camera.lookAt(0, 0.02, 0);
 
   const renderer = new THREE.WebGLRenderer({
@@ -193,6 +459,11 @@ const createRuntime = (
   const root = new THREE.Group();
   scene.add(root);
 
+  // The Dyson halo is a sibling scene layer, never part of the GLB/root.
+  const { haloRoot, haloRings } =
+    createDysonHaloRuntime(preset);
+  scene.add(haloRoot);
+
   const next: GameplayRuntime = {
     preset,
     config,
@@ -202,11 +473,15 @@ const createRuntime = (
     scene,
     camera,
     root,
+    haloRoot,
+    haloRings,
     model: null,
     lastFrameAt: 0,
     lastMotionAt: 0,
     threatDirectionX: 0,
     threatDirectionY: 0,
+    orbiCount: 0,
+    shieldRatio: 1,
   };
 
   const loader = new GLTFLoader();
@@ -301,6 +576,9 @@ const destroyRuntime = (
     disposeObject3D(active.model);
   }
 
+  active.scene.remove(active.haloRoot);
+  disposeObject3D(active.haloRoot);
+
   active.renderer.dispose();
   active.renderer.forceContextLoss?.();
 };
@@ -341,6 +619,11 @@ const stepRuntimeMotion = (
 
   active.root.position.y =
     Math.sin(timeSeconds * 0.81) * 0.025;
+  stepDysonHalo(
+    active,
+    nowMs,
+    elapsedSeconds,
+  );
 
   const smoothing =
     1 - Math.exp(-elapsedSeconds * 6.5);
@@ -395,6 +678,10 @@ export const getFotonGameplay3DFrame = (
     request.threatDirectionX ?? 0;
   active.threatDirectionY =
     request.threatDirectionY ?? 0;
+  active.orbiCount =
+    request.orbiCount ?? 0;
+  active.shieldRatio =
+    request.shieldRatio ?? 1;
 
   if (
     !request.paused &&

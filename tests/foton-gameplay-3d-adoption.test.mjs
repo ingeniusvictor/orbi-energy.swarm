@@ -119,14 +119,18 @@ test("GLB is the normal visible body and tactical 2D is fallback only", () => {
   assert.ok(fallbackIndex > returnIndex);
 });
 
-test("GLB uses the requested 25-percent smaller gameplay footprint and stays inside camera transforms", () => {
+test("GLB keeps the requested 37.5px body target while the detached halo gets a larger transparent composite", () => {
   assert.match(
     runtime,
     /FOTON_GAMEPLAY_DRAW_SIZE = 37\.5/,
   );
   assert.match(
+    runtime,
+    /FOTON_GAMEPLAY_COMPOSITE_SIZE = 49\.2/,
+  );
+  assert.match(
     foton,
-    /FOTON_GAMEPLAY_DRAW_SIZE/,
+    /FOTON_GAMEPLAY_COMPOSITE_SIZE/,
   );
   assert.doesNotMatch(
     canvas,

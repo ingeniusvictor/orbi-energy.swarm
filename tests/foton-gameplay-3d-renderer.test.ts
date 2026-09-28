@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  FOTON_GAMEPLAY_COMPOSITE_SIZE,
   FOTON_GAMEPLAY_DRAW_SIZE,
   getFotonGameplay3DRuntimeConfig,
 } from "../src/game/fotonGameplay3DRenderer.ts";
@@ -54,9 +55,14 @@ test("gameplay GLB keeps bounded quality-tier cadence", () => {
   );
 });
 
-test("gameplay GLB draw footprint is exactly 25 percent smaller than the former 50px footprint", () => {
+test("gameplay GLB body target stays exactly 25 percent smaller while halo composite adds transparent orbital room", () => {
   assert.equal(FOTON_GAMEPLAY_DRAW_SIZE, 37.5);
   assert.equal(FOTON_GAMEPLAY_DRAW_SIZE / 50, 0.75);
+  assert.equal(FOTON_GAMEPLAY_COMPOSITE_SIZE, 49.2);
+  assert.ok(
+    FOTON_GAMEPLAY_COMPOSITE_SIZE >
+      FOTON_GAMEPLAY_DRAW_SIZE,
+  );
 });
 
 test("all quality tiers keep GLB enabled", () => {
