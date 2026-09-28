@@ -87,16 +87,20 @@ test("threat gaze preserves a forward-facing bounded pose instead of autonomous 
   );
 });
 
-test("GLB visual body and surrounding halos are reduced together", () => {
+test("threat-aware GLB body stays compact while the new detached Dyson halo owns shield presentation", () => {
   assert.match(
     runtime,
     /FOTON_GAMEPLAY_DRAW_SIZE = 37\.5/,
   );
   assert.match(
+    runtime,
+    /FOTON_GAMEPLAY_COMPOSITE_SIZE = 49\.2/,
+  );
+  assert.match(
     canvas,
     /23 \+ Math\.sin\(time \* 0\.005\) \* 1\.2/,
   );
-  assert.match(
+  assert.doesNotMatch(
     canvas,
     /ctx\.arc\(x, y, 21\.5, 0, Math\.PI \* 2\)/,
   );
