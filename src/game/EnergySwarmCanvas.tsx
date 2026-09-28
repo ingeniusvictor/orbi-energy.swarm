@@ -156,6 +156,7 @@ export function drawFoton(
   shieldRatio: number = 1,
   qualityPreset: QualityPreset = QualityPreset.HIGH,
   isPaused: boolean = false,
+  threatDirection: { x: number; y: number } = { x: 0, y: 0 },
 ) {
   // Historical FULL mode preserves the original invincibility flicker.
   if (
@@ -180,7 +181,7 @@ export function drawFoton(
     ctx.arc(
       x,
       y,
-      29 + Math.sin(time * 0.005) * 1.5,
+      23 + Math.sin(time * 0.005) * 1.2,
       0,
       Math.PI * 2,
     );
@@ -201,6 +202,8 @@ export function drawFoton(
     nowMs: time,
     qualityPreset,
     paused: isPaused,
+    threatDirectionX: threatDirection.x,
+    threatDirectionY: threatDirection.y,
   });
 
   if (glbFrame) {
@@ -213,7 +216,7 @@ export function drawFoton(
     ctx.strokeStyle = "rgba(30,41,59,0.9)";
     ctx.lineWidth = 2.2;
     ctx.beginPath();
-    ctx.arc(x, y, 27.5, 0, Math.PI * 2);
+    ctx.arc(x, y, 21.5, 0, Math.PI * 2);
     ctx.stroke();
 
     if (integrity.ratio > 0) {
@@ -246,7 +249,7 @@ export function drawFoton(
       ctx.strokeStyle = "#ffffff";
       ctx.lineWidth = 2.5;
       ctx.beginPath();
-      ctx.arc(x, y, 26.5, 0, Math.PI * 2);
+      ctx.arc(x, y, 20.5, 0, Math.PI * 2);
       ctx.stroke();
     }
 
