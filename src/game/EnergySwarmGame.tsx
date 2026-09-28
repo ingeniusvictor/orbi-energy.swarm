@@ -335,7 +335,7 @@ export const EnergySwarmGame: React.FC = () => {
   const collisionEnemyIndexRef =
     useRef<SpatialIndex<Enemy> | null>(null);
   const fotonThreatAccumulatorMsRef = useRef(0);
-  const fotonThreatTargetIdRef = useRef<string | null>(null);
+  const fotonThreatTargetRef = useRef<Enemy | null>(null);
   const fotonThreatDirectionRef = useRef({ x: 0, y: 0 });
   const enemySignatureBehaviorCacheRef = useRef(
     createEnemySignatureBehaviorCache(),
@@ -1082,7 +1082,7 @@ export const EnergySwarmGame: React.FC = () => {
     frameHealthRef.current = createFrameHealthState();
     frameHealthRecommendationShownRef.current = null;
     fotonThreatAccumulatorMsRef.current = 0;
-    fotonThreatTargetIdRef.current = null;
+    fotonThreatTargetRef.current = null;
     fotonThreatDirectionRef.current = { x: 0, y: 0 };
     performanceDiagnosticsStateRef.current =
       createPerformanceDiagnosticsState();
@@ -4211,29 +4211,6 @@ export const EnergySwarmGame: React.FC = () => {
       },
     );
 
-    // Threat-aware Foton gaze updates at low cadence, never every render frame.
-    fotonThreatAccumulatorMsRef.current += delta;
-    if (
-      fotonThreatAccumulatorMsRef.current >=
-      FOTON_THREAT_REFRESH_MS
-    ) {
-      fotonThreatAccumulatorMsRef.current = 0;
-      const threat = selectFotonThreat(
-        enemiesRef.current,
-        playerPosRef.current.x,
-        playerPosRef.current.y,
-        fotonThreatTargetIdRef.current,
-      );
-      fotonThreatTargetIdRef.current =
-        threat?.id ?? null;
-      fotonThreatDirectionRef.current =
-        projectFotonThreatDirection(
-          playerPosRef.current.x,
-          playerPosRef.current.y,
-          threat,
-        ) ?? { x: 0, y: 0 };
-    }
-
     // 7. Projectiles coordinates
     projectilesRef.current.forEach((proj) => {
       proj.x += proj.vx * (delta / 16.6);
@@ -4344,7 +4321,7 @@ export const EnergySwarmGame: React.FC = () => {
     ); // size <= 0 or consumed represents collected
 
     // 10. SINGLE-IMPACT COLLISION SWEEPS
-    detectAndResolveCollisions();
+    detectAndResolveCollisions(delta);
   };
 
   // --- COLLECT RESOURCES SCRIPT ---
@@ -4622,7 +4599,7 @@ export const EnergySwarmGame: React.FC = () => {
   };
 
   // --- DETECT SINGLE-IMPACT COLLISION SWEEPS ---
-  const detectAndResolveCollisions = () => {
+  const detectAndResolveCollisions = (frameDeltaMs: number) => {
     const quality = getQualityConfig(stats.qualityPreset);
     const combatPressure = getCurrentCombatPressure();
     const mutatorEffects = getCurrentMutatorEffects();
@@ -4638,6 +4615,31 @@ export const EnergySwarmGame: React.FC = () => {
     );
     collisionEnemyIndexRef.current =
       enemyCollisionIndex;
+
+    // Reuse the collision spatial index for low-cadence Foton gaze.
+    // This avoids introducing any additional O(N) enemy scan.
+    fotonThreatAccumulatorMsRef.current += frameDeltaMs;
+    if (
+      fotonThreatAccumulatorMsRef.current >=
+      FOTON_THREAT_REFRESH_MS
+    ) {
+      fotonThreatAccumulatorMsRef.current = 0;
+      const threat = selectFotonThreat(
+        enemyCollisionIndex,
+        bossRef.current,
+        playerPosRef.current.x,
+        playerPosRef.current.y,
+        fotonThreatTargetRef.current,
+      );
+      fotonThreatTargetRef.current =
+        threat?.enemy ?? null;
+      fotonThreatDirectionRef.current =
+        projectFotonThreatDirection(
+          playerPosRef.current.x,
+          playerPosRef.current.y,
+          threat,
+        ) ?? { x: 0, y: 0 };
+    }
 
     // 1. PROJECTILES vs ENEMIES / PLAYER
     projectilesRef.current.forEach((proj) => {
