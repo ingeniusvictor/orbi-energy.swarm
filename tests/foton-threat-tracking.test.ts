@@ -7,6 +7,10 @@ import {
   projectFotonThreatDirection,
   selectFotonThreat,
 } from "../src/game/fotonThreatTracking.ts";
+import {
+  buildSpatialIndex,
+  ENEMY_SPATIAL_CELL_SIZE,
+} from "../src/game/spatialIndex.ts";
 import { EnemyType, type Enemy } from "../src/game/types.ts";
 
 const enemy = (
@@ -35,11 +39,20 @@ const enemy = (
   ...overrides,
 });
 
+const enemyIndex = (enemies: readonly Enemy[]) =>
+  buildSpatialIndex(enemies, {
+    cellSize: ENEMY_SPATIAL_CELL_SIZE,
+    getX: (item) => item.x,
+    getY: (item) => item.y,
+    getRadius: (item) => item.size,
+    include: (item) => !item.isDead,
+  });
+
 test("threat tracking cadence stays low frequency", () => {
   assert.equal(FOTON_THREAT_REFRESH_MS, 160);
 });
 
-test("active boss has visual gaze priority over nearer regular enemies", () => {
+test("active boss ref has visual gaze priority over nearer regular enemies", () => {
   const regular = enemy("near", 50, 0);
   const boss = enemy("boss", 500, 0, {
     type: EnemyType.BOSS_DEVOURER,
@@ -47,7 +60,8 @@ test("active boss has visual gaze priority over nearer regular enemies", () => {
   });
 
   const threat = selectFotonThreat(
-    [regular, boss],
+    enemyIndex([regular, boss]),
+    boss,
     0,
     0,
     null,
@@ -55,54 +69,63 @@ test("active boss has visual gaze priority over nearer regular enemies", () => {
 
   assert.equal(threat?.id, "boss");
   assert.equal(threat?.isBoss, true);
+  assert.equal(threat?.enemy, boss);
 });
 
-test("nearest living enemy is selected inside bounded range", () => {
+test("nearest living enemy is selected from the spatial index inside bounded range", () => {
+  const near = enemy("near", 100, 0);
   const threat = selectFotonThreat(
-    [
+    enemyIndex([
       enemy("far", 500, 0),
-      enemy("near", 100, 0),
+      near,
       enemy("dead", 20, 0, { isDead: true }),
-    ],
+    ]),
+    null,
     0,
     0,
     null,
   );
 
   assert.equal(threat?.id, "near");
+  assert.equal(threat?.enemy, near);
 });
 
-test("current target is retained across small distance changes", () => {
+test("current target object is retained across small distance changes", () => {
+  const current = enemy("current", 115, 0);
+  const next = enemy("new", 100, 0);
   const threat = selectFotonThreat(
-    [
-      enemy("current", 115, 0),
-      enemy("new", 100, 0),
-    ],
+    enemyIndex([current, next]),
+    null,
     0,
     0,
-    "current",
+    current,
   );
 
   assert.equal(threat?.id, "current");
+  assert.equal(threat?.enemy, current);
 });
 
-test("current target is replaced when another threat is clearly closer", () => {
+test("current target is replaced when another indexed threat is clearly closer", () => {
+  const current = enemy("current", 300, 0);
+  const next = enemy("new", 100, 0);
   const threat = selectFotonThreat(
-    [
-      enemy("current", 300, 0),
-      enemy("new", 100, 0),
-    ],
+    enemyIndex([current, next]),
+    null,
     0,
     0,
-    "current",
+    current,
   );
 
   assert.equal(threat?.id, "new");
+  assert.equal(threat?.enemy, next);
 });
 
 test("threats outside range do not control Foton gaze", () => {
   const threat = selectFotonThreat(
-    [enemy("outside", FOTON_THREAT_MAX_RANGE + 20, 0)],
+    enemyIndex([
+      enemy("outside", FOTON_THREAT_MAX_RANGE + 20, 0),
+    ]),
+    null,
     0,
     0,
     null,
