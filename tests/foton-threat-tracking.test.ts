@@ -124,8 +124,8 @@ test("projected gaze direction is normalized", () => {
   );
 
   assert.ok(direction);
-  assert.equal(direction.x, 0.6);
-  assert.equal(direction.y, 0.8);
+  assert.ok(Math.abs(direction.x - 0.6) < 1e-12);
+  assert.ok(Math.abs(direction.y - 0.8) < 1e-12);
 });
 
 test("no threat produces a neutral gaze request", () => {
