@@ -33,18 +33,26 @@ test("dedicated gameplay renderer owns Three.js and the real Foton GLB", () => {
   );
 });
 
-test("complete GLB continuously rotates through 360 degrees with bounded tilt motion", () => {
+test("complete GLB keeps its face forward and smoothly biases toward combat threat direction", () => {
   assert.match(
     runtime,
-    /active\.root\.rotation\.y \+=[\s\S]*elapsedSeconds \* 0\.58/,
+    /const neutralYaw = 0\.42/,
   );
   assert.match(
     runtime,
-    /active\.root\.rotation\.x =[\s\S]*Math\.sin\(timeSeconds \* 0\.67\) \* 0\.17/,
+    /const targetYaw = neutralYaw \+ dx \* 0\.72/,
   );
   assert.match(
     runtime,
-    /active\.root\.rotation\.z =[\s\S]*Math\.cos\(timeSeconds \* 0\.43\) \* 0\.1/,
+    /const targetPitch = neutralPitch - dy \* 0\.34/,
+  );
+  assert.match(
+    runtime,
+    /1 - Math\.exp\(-elapsedSeconds \* 6\.5\)/,
+  );
+  assert.doesNotMatch(
+    runtime,
+    /rotation\.y \+=[\s\S]*elapsedSeconds \* 0\.58/,
   );
 });
 
@@ -111,10 +119,10 @@ test("GLB is the normal visible body and tactical 2D is fallback only", () => {
   assert.ok(fallbackIndex > returnIndex);
 });
 
-test("GLB uses the historical gameplay footprint and stays inside camera transforms", () => {
+test("GLB uses the requested 25-percent smaller gameplay footprint and stays inside camera transforms", () => {
   assert.match(
     runtime,
-    /FOTON_GAMEPLAY_DRAW_SIZE = 50/,
+    /FOTON_GAMEPLAY_DRAW_SIZE = 37\.5/,
   );
   assert.match(
     foton,
