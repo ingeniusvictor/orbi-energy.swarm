@@ -14,6 +14,8 @@ export interface FotonGameplay3DFrameRequest {
   nowMs: number;
   qualityPreset: QualityPreset;
   paused: boolean;
+  threatDirectionX?: number | null;
+  threatDirectionY?: number | null;
 }
 
 type RuntimeStatus =
@@ -33,9 +35,11 @@ interface GameplayRuntime {
   model: any;
   lastFrameAt: number;
   lastMotionAt: number;
+  threatDirectionX: number;
+  threatDirectionY: number;
 }
 
-export const FOTON_GAMEPLAY_DRAW_SIZE = 50;
+export const FOTON_GAMEPLAY_DRAW_SIZE = 37.5;
 
 export const getFotonGameplay3DRuntimeConfig = (
   preset: QualityPreset,
@@ -201,6 +205,8 @@ const createRuntime = (
     model: null,
     lastFrameAt: 0,
     lastMotionAt: 0,
+    threatDirectionX: 0,
+    threatDirectionY: 0,
   };
 
   const loader = new GLTFLoader();
@@ -333,22 +339,36 @@ const stepRuntimeMotion = (
 
   const timeSeconds = nowMs / 1000;
 
-  // Continuous full 360-degree rotation around Y keeps the complete GLB
-  // visible over time; X/Z oscillation varies the viewing attitude.
-  active.root.rotation.y +=
-    elapsedSeconds * 0.58;
-  active.root.rotation.x =
-    Math.sin(timeSeconds * 0.67) * 0.17;
-  active.root.rotation.z =
-    Math.cos(timeSeconds * 0.43) * 0.1;
   active.root.position.y =
-    Math.sin(timeSeconds * 0.81) * 0.035;
+    Math.sin(timeSeconds * 0.81) * 0.025;
+
+  const smoothing =
+    1 - Math.exp(-elapsedSeconds * 6.5);
+  const dx = Number.isFinite(active.threatDirectionX)
+    ? Math.max(-1, Math.min(1, active.threatDirectionX))
+    : 0;
+  const dy = Number.isFinite(active.threatDirectionY)
+    ? Math.max(-1, Math.min(1, active.threatDirectionY))
+    : 0;
+
+  const neutralYaw = 0.42;
+  const neutralPitch = -0.08;
+  const neutralRoll = 0.04;
+  const targetYaw = neutralYaw + dx * 0.72;
+  const targetPitch = neutralPitch - dy * 0.34;
+  const targetRoll = neutralRoll - dx * dy * 0.08;
+
+  active.root.rotation.y +=
+    (targetYaw - active.root.rotation.y) * smoothing;
+  active.root.rotation.x +=
+    (targetPitch - active.root.rotation.x) * smoothing;
+  active.root.rotation.z +=
+    (targetRoll - active.root.rotation.z) * smoothing;
 
   active.camera.position.x =
-    Math.sin(timeSeconds * 0.29) * 0.045;
+    dx * 0.035;
   active.camera.position.y =
-    0.04 +
-    Math.cos(timeSeconds * 0.37) * 0.025;
+    0.04 - dy * 0.02;
   active.camera.lookAt(0, 0.02, 0);
 };
 
@@ -370,6 +390,11 @@ export const getFotonGameplay3DFrame = (
   ) {
     return null;
   }
+
+  active.threatDirectionX =
+    request.threatDirectionX ?? 0;
+  active.threatDirectionY =
+    request.threatDirectionY ?? 0;
 
   if (
     !request.paused &&

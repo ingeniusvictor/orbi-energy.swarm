@@ -59,7 +59,7 @@ test("Golden Core reward halo remains around the tactical avatar", () => {
   );
   assert.match(
     foton,
-    /29 \+ Math\.sin\(time \* 0\.005\) \* 1\.5/,
+    /23 \+ Math\.sin\(time \* 0\.005\) \* 1\.2/,
   );
 });
 
