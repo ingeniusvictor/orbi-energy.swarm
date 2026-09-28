@@ -151,6 +151,11 @@ import {
 } from "./performanceDiagnostics";
 import PerformanceDiagnosticsOverlay from "../components/PerformanceDiagnosticsOverlay";
 import { createTouchDirectionState, getTouchMovementVector, hasActiveTouchDirection, type TouchDirection } from "./touchControls";
+import {
+  FOTON_THREAT_REFRESH_MS,
+  projectFotonThreatDirection,
+  selectFotonThreat,
+} from "./fotonThreatTracking";
 
 type InfiniteBossRematchProfile = Extract<
   InfiniteMilestoneEncounterProfile,
@@ -329,6 +334,9 @@ export const EnergySwarmGame: React.FC = () => {
   const frameHealthRecommendationShownRef = useRef<QualityPreset | null>(null);
   const collisionEnemyIndexRef =
     useRef<SpatialIndex<Enemy> | null>(null);
+  const fotonThreatAccumulatorMsRef = useRef(0);
+  const fotonThreatTargetIdRef = useRef<string | null>(null);
+  const fotonThreatDirectionRef = useRef({ x: 0, y: 0 });
   const enemySignatureBehaviorCacheRef = useRef(
     createEnemySignatureBehaviorCache(),
   );
@@ -1073,6 +1081,9 @@ export const EnergySwarmGame: React.FC = () => {
     runCommitLedgerRef.current = createRunCommitLedger();
     frameHealthRef.current = createFrameHealthState();
     frameHealthRecommendationShownRef.current = null;
+    fotonThreatAccumulatorMsRef.current = 0;
+    fotonThreatTargetIdRef.current = null;
+    fotonThreatDirectionRef.current = { x: 0, y: 0 };
     performanceDiagnosticsStateRef.current =
       createPerformanceDiagnosticsState();
     setPerformanceDiagnosticsSnapshot(null);
@@ -4200,6 +4211,29 @@ export const EnergySwarmGame: React.FC = () => {
       },
     );
 
+    // Threat-aware Foton gaze updates at low cadence, never every render frame.
+    fotonThreatAccumulatorMsRef.current += delta;
+    if (
+      fotonThreatAccumulatorMsRef.current >=
+      FOTON_THREAT_REFRESH_MS
+    ) {
+      fotonThreatAccumulatorMsRef.current = 0;
+      const threat = selectFotonThreat(
+        enemiesRef.current,
+        playerPosRef.current.x,
+        playerPosRef.current.y,
+        fotonThreatTargetIdRef.current,
+      );
+      fotonThreatTargetIdRef.current =
+        threat?.id ?? null;
+      fotonThreatDirectionRef.current =
+        projectFotonThreatDirection(
+          playerPosRef.current.x,
+          playerPosRef.current.y,
+          threat,
+        ) ?? { x: 0, y: 0 };
+    }
+
     // 7. Projectiles coordinates
     projectilesRef.current.forEach((proj) => {
       proj.x += proj.vx * (delta / 16.6);
@@ -5488,6 +5522,7 @@ export const EnergySwarmGame: React.FC = () => {
       fotonShieldRatio,
       stats.qualityPreset,
       isPausedRef.current,
+      fotonThreatDirectionRef.current,
     );
 
     // 8. Draw active floating text feedback (such as CRITICAL or BLOCK)
