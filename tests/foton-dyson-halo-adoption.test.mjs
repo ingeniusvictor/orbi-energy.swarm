@@ -38,7 +38,7 @@ test("premium orbital language uses structural rails, instanced light segments a
 test("rings use atomic-sphere planes rather than widely concentric radii", () => {
   assert.match(halo, /radius: 1\.04/);
   assert.match(halo, /radius: 1\.055/);
-  assert.match(halo, /radius: 1\.07/);
+  assert.match(halo, /radius: 1\.068/);
   assert.match(halo, /tilt: \[0\.08, 0\.03, 0\.12\]/);
   assert.match(halo, /tilt: \[0\.96, 0\.34, -0\.48\]/);
   assert.match(halo, /tilt: \[-0\.88, -0\.44, 0\.68\]/);
