@@ -117,9 +117,21 @@ test("Golden Core is folded into the first cyan structural rail without adding a
     runtime,
     /emissiveIntensity =[\s\S]*active\.goldenCoreActive \? goldenPulse : 0/,
   );
+
+  const goldenBlockStart = runtime.indexOf("if (index === 0) {");
+  const goldenBlockEnd = runtime.indexOf(
+    "ring.segmentMaterial.opacity =",
+    goldenBlockStart,
+  );
+  assert.ok(goldenBlockStart >= 0);
+  assert.ok(goldenBlockEnd > goldenBlockStart);
+  const goldenBlock = runtime.slice(
+    goldenBlockStart,
+    goldenBlockEnd,
+  );
   assert.doesNotMatch(
-    runtime,
-    /goldenCoreActive[\s\S]*new THREE\.TorusGeometry/,
+    goldenBlock,
+    /new THREE\.(?:TorusGeometry|Group|Mesh|InstancedMesh)/,
   );
 });
 
