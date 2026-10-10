@@ -20,19 +20,31 @@ test("Dyson halo is a detached Three.js scene layer rather than part of the GLB 
   assert.doesNotMatch(runtime, /root\.add\(haloRoot\)/);
 });
 
-test("three independently tilted orbital rings use bounded geometry without postprocessing", () => {
+test("premium orbital language uses structural rails, instanced light segments and sparse red nodes", () => {
   assert.match(runtime, /new THREE\.TorusGeometry\(/);
+  assert.match(runtime, /new THREE\.BoxGeometry\(/);
   assert.match(runtime, /new THREE\.SphereGeometry\(/);
+  assert.match(runtime, /new THREE\.InstancedMesh\(/);
+  assert.match(runtime, /new THREE\.MeshStandardMaterial\(/);
   assert.match(runtime, /THREE\.AdditiveBlending/);
-  assert.match(runtime, /descriptor\.angularVelocity/);
-  assert.match(runtime, /descriptor\.tilt\[0\]/);
+  assert.match(runtime, /segmentMesh\.setMatrixAt/);
+  assert.match(runtime, /accentMesh\.setMatrixAt/);
   assert.doesNotMatch(
     runtime,
     /EffectComposer|UnrealBloomPass|SSAOPass/,
   );
 });
 
-test("ring construction uses draw range and smooth build progress instead of a hard pop", () => {
+test("rings use atomic-sphere planes rather than widely concentric radii", () => {
+  assert.match(halo, /radius: 1\.04/);
+  assert.match(halo, /radius: 1\.055/);
+  assert.match(halo, /radius: 1\.068/);
+  assert.match(halo, /tilt: \[0\.08, 0\.03, 0\.12\]/);
+  assert.match(halo, /tilt: \[0\.96, 0\.34, -0\.48\]/);
+  assert.match(halo, /tilt: \[-0\.88, -0\.44, 0\.68\]/);
+});
+
+test("ring construction remains progressive instead of hard-popping", () => {
   assert.match(runtime, /geometry\.setDrawRange\(0, 0\)/);
   assert.match(
     runtime,
@@ -42,20 +54,30 @@ test("ring construction uses draw range and smooth build progress instead of a h
     runtime,
     /ring\.core\.geometry\.setDrawRange\([\s\S]*revealCount/,
   );
+  assert.match(
+    runtime,
+    /ring\.segmentMesh\.count =[\s\S]*ring\.segmentCount \* progress/,
+  );
 });
 
-test("live Orbi count and shield ratio are cosmetic inputs to the renderer", () => {
+test("live swarm size is corrected to true collected Orbi before unlocking extra rings", () => {
   assert.match(
     game,
     /drawFoton\([\s\S]*fotonThreatDirectionRef\.current,[\s\S]*swarmRef\.current\.length/,
   );
   assert.match(canvas, /orbiCount,/);
-  assert.match(canvas, /shieldRatio,/);
   assert.match(runtime, /request\.orbiCount \?\? 0/);
-  assert.match(runtime, /request\.shieldRatio \?\? 1/);
+  assert.match(
+    runtime,
+    /getUnlockedDysonHaloRingCountFromSwarmSize\([\s\S]*active\.orbiCount/,
+  );
+  assert.match(
+    halo,
+    /Math\.max\(0, normalizeCount\(swarmMemberCount\) - 1\)/,
+  );
 });
 
-test("simple 2D integrity ring is replaced by the larger transparent Dyson composite", () => {
+test("simple 2D integrity ring stays replaced by the transparent Dyson composite", () => {
   assert.match(
     runtime,
     /FOTON_GAMEPLAY_DRAW_SIZE = 37\.5/,
@@ -72,6 +94,13 @@ test("simple 2D integrity ring is replaced by the larger transparent Dyson compo
     canvas,
     /projectFotonIntegrityVisual/,
   );
+});
+
+test("first cyan structural rail is tuned to visually absorb the legacy Golden Core circle", () => {
+  assert.match(halo, /id: "CYAN"[\s\S]*radius: 1\.04/);
+  assert.match(halo, /id: "CYAN"[\s\S]*railTubeRadius: 0\.046/);
+  assert.match(runtime, /ring\.coreMaterial\.opacity =[\s\S]*progress \* 0\.95/);
+  assert.match(runtime, /color: 0x111827/);
 });
 
 test("canonical palette stays cyan emerald gold with subtle red accents", () => {

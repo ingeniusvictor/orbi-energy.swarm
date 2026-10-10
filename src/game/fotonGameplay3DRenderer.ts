@@ -3,7 +3,7 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 import {
   FOTON_DYSON_HALO_RINGS,
-  getUnlockedDysonHaloRingCount,
+  getUnlockedDysonHaloRingCountFromSwarmSize,
   type FotonDysonHaloRingDescriptor,
 } from "./fotonDysonHalo";
 import { QualityPreset } from "./types";
@@ -21,6 +21,8 @@ export interface FotonGameplay3DFrameRequest {
   paused: boolean;
   threatDirectionX?: number | null;
   threatDirectionY?: number | null;
+  // Legacy name kept at the Canvas boundary. The current caller supplies the
+  // live swarm-member count, including the free initial companion.
   orbiCount?: number | null;
   shieldRatio?: number | null;
 }
@@ -38,7 +40,11 @@ interface DysonHaloRuntimeRing {
   glow: any;
   coreMaterial: any;
   glowMaterial: any;
-  accentMaterials: any[];
+  segmentMesh: any;
+  segmentMaterial: any;
+  segmentCount: number;
+  accentMesh: any;
+  accentMaterial: any;
   buildProgress: number;
   indexCount: number;
 }
@@ -138,15 +144,50 @@ const getDysonHaloGeometryDetail = (
 ) => {
   switch (preset) {
     case QualityPreset.LOW:
-      return { radialSegments: 4, tubularSegments: 44 };
+      return {
+        radialSegments: 5,
+        tubularSegments: 48,
+        segmentCount: 12,
+      };
     case QualityPreset.MEDIUM:
-      return { radialSegments: 5, tubularSegments: 56 };
+      return {
+        radialSegments: 6,
+        tubularSegments: 64,
+        segmentCount: 16,
+      };
     case QualityPreset.HIGH:
-      return { radialSegments: 6, tubularSegments: 72 };
+      return {
+        radialSegments: 7,
+        tubularSegments: 80,
+        segmentCount: 20,
+      };
     case QualityPreset.ULTRA:
     default:
-      return { radialSegments: 6, tubularSegments: 88 };
+      return {
+        radialSegments: 8,
+        tubularSegments: 96,
+        segmentCount: 24,
+      };
   }
+};
+
+const setRingInstanceTransform = (
+  target: any,
+  index: number,
+  count: number,
+  radius: number,
+  z = 0,
+) => {
+  const angle =
+    (index / count) * Math.PI * 2;
+  target.position.set(
+    Math.cos(angle) * radius,
+    Math.sin(angle) * radius,
+    z,
+  );
+  target.rotation.set(0, 0, angle + Math.PI / 2);
+  target.scale.set(1, 1, 1);
+  target.updateMatrix();
 };
 
 const createDysonHaloRing = (
@@ -164,9 +205,12 @@ const createDysonHaloRing = (
   const spinRoot = new THREE.Group();
   planeRoot.add(spinRoot);
 
+  // Continuous dark structural rail. On the first almost-face-on cyan orbit it
+  // also visually absorbs the legacy Golden Core circle below the WebGL frame,
+  // so the run reads as exactly one starting orbital ring.
   const geometry = new THREE.TorusGeometry(
     descriptor.radius,
-    descriptor.tubeRadius,
+    descriptor.railTubeRadius,
     detail.radialSegments,
     detail.tubularSegments,
   );
@@ -175,13 +219,14 @@ const createDysonHaloRing = (
     geometry.attributes.position.count;
   geometry.setDrawRange(0, 0);
 
-  const coreMaterial = new THREE.MeshBasicMaterial({
-    color: descriptor.color,
+  const coreMaterial = new THREE.MeshStandardMaterial({
+    color: 0x111827,
+    metalness: 0.92,
+    roughness: 0.24,
     transparent: true,
     opacity: 0,
     depthTest: true,
     depthWrite: false,
-    toneMapped: false,
   });
   const core = new THREE.Mesh(
     geometry,
@@ -189,6 +234,15 @@ const createDysonHaloRing = (
   );
   spinRoot.add(core);
 
+  // A single narrow energy conduit hugs the structural rail. Keeping it almost
+  // exactly on the rail avoids the old double-torus appearance.
+  const glowGeometry = new THREE.TorusGeometry(
+    descriptor.radius,
+    descriptor.energyTubeRadius,
+    Math.max(4, detail.radialSegments - 2),
+    detail.tubularSegments,
+  );
+  glowGeometry.setDrawRange(0, 0);
   const glowMaterial = new THREE.MeshBasicMaterial({
     color: descriptor.color,
     transparent: true,
@@ -199,19 +253,83 @@ const createDysonHaloRing = (
     toneMapped: false,
   });
   const glow = new THREE.Mesh(
-    geometry,
+    glowGeometry,
     glowMaterial,
   );
-  glow.scale.setScalar(1.035);
   spinRoot.add(glow);
 
-  const accentMaterials: any[] = [];
+  // Premium segmented light bars: one instanced draw call per ring, arranged
+  // tangentially around the rail. The dark rail stays visible between bars,
+  // creating the mechanical orbital language from the approved concept.
+  const circumference =
+    Math.PI * 2 * descriptor.radius;
+  const segmentLength =
+    (circumference / detail.segmentCount) *
+    descriptor.segmentArcFraction;
+  const segmentGeometry = new THREE.BoxGeometry(
+    segmentLength,
+    descriptor.railTubeRadius * 0.58,
+    descriptor.railTubeRadius * 0.72,
+  );
+  const segmentMaterial = new THREE.MeshBasicMaterial({
+    color: descriptor.color,
+    transparent: true,
+    opacity: 0,
+    depthTest: true,
+    depthWrite: false,
+    toneMapped: false,
+  });
+  const segmentMesh = new THREE.InstancedMesh(
+    segmentGeometry,
+    segmentMaterial,
+    detail.segmentCount,
+  );
+  segmentMesh.count = 0;
+  segmentMesh.frustumCulled = false;
+  const segmentTransform = new THREE.Object3D();
+  for (
+    let index = 0;
+    index < detail.segmentCount;
+    index += 1
+  ) {
+    setRingInstanceTransform(
+      segmentTransform,
+      index,
+      detail.segmentCount,
+      descriptor.radius,
+      descriptor.railTubeRadius * 0.42,
+    );
+    segmentMesh.setMatrixAt(
+      index,
+      segmentTransform.matrix,
+    );
+  }
+  segmentMesh.instanceMatrix.needsUpdate = true;
+  spinRoot.add(segmentMesh);
+
+  // Small red tactical nodes are intentionally sparse. They read as subsystem
+  // junctions rather than a fourth color band.
   const accentGeometry = new THREE.SphereGeometry(
-    descriptor.tubeRadius * 1.75,
-    preset === QualityPreset.LOW ? 5 : 7,
+    descriptor.railTubeRadius * 1.35,
+    preset === QualityPreset.LOW ? 6 : 8,
     preset === QualityPreset.LOW ? 4 : 6,
   );
-
+  const accentMaterial = new THREE.MeshBasicMaterial({
+    color: descriptor.accentColor,
+    transparent: true,
+    opacity: 0,
+    depthTest: true,
+    depthWrite: false,
+    toneMapped: false,
+  });
+  const accentMesh = new THREE.InstancedMesh(
+    accentGeometry,
+    accentMaterial,
+    descriptor.accentNodeCount,
+  );
+  accentMesh.count = 0;
+  accentMesh.frustumCulled = false;
+  const accentTransform = new THREE.Object3D();
   for (
     let index = 0;
     index < descriptor.accentNodeCount;
@@ -222,26 +340,20 @@ const createDysonHaloRing = (
       (index / descriptor.accentNodeCount) *
         Math.PI *
         2;
-    const material = new THREE.MeshBasicMaterial({
-      color: descriptor.accentColor,
-      transparent: true,
-      opacity: 0,
-      depthTest: true,
-      depthWrite: false,
-      toneMapped: false,
-    });
-    const node = new THREE.Mesh(
-      accentGeometry,
-      material,
-    );
-    node.position.set(
+    accentTransform.position.set(
       Math.cos(angle) * descriptor.radius,
       Math.sin(angle) * descriptor.radius,
-      0,
+      descriptor.railTubeRadius * 0.55,
     );
-    spinRoot.add(node);
-    accentMaterials.push(material);
+    accentTransform.rotation.set(0, 0, angle);
+    accentTransform.updateMatrix();
+    accentMesh.setMatrixAt(
+      index,
+      accentTransform.matrix,
+    );
   }
+  accentMesh.instanceMatrix.needsUpdate = true;
+  spinRoot.add(accentMesh);
 
   return {
     descriptor,
@@ -251,7 +363,11 @@ const createDysonHaloRing = (
     glow,
     coreMaterial,
     glowMaterial,
-    accentMaterials,
+    segmentMesh,
+    segmentMaterial,
+    segmentCount: detail.segmentCount,
+    accentMesh,
+    accentMaterial,
     buildProgress: 0,
     indexCount,
   };
@@ -279,7 +395,7 @@ const stepDysonHalo = (
   elapsedSeconds: number,
 ) => {
   const unlockedRingCount =
-    getUnlockedDysonHaloRingCount(
+    getUnlockedDysonHaloRingCountFromSwarmSize(
       active.orbiCount,
     );
   const shieldRatio = clamp01(active.shieldRatio);
@@ -322,24 +438,60 @@ const stepDysonHalo = (
       0,
       revealCount,
     );
+    ring.glow.geometry.setDrawRange(
+      0,
+      Math.min(
+        ring.glow.geometry.index?.count ?? revealCount,
+        revealCount,
+      ),
+    );
+
+    ring.segmentMesh.count =
+      progress <= 0
+        ? 0
+        : Math.max(
+            1,
+            Math.min(
+              ring.segmentCount,
+              Math.ceil(
+                ring.segmentCount * progress,
+              ),
+            ),
+          );
+    ring.accentMesh.count =
+      progress < 0.45
+        ? 0
+        : Math.min(
+            ring.descriptor.accentNodeCount,
+            Math.ceil(
+              ((progress - 0.45) / 0.55) *
+                ring.descriptor.accentNodeCount,
+            ),
+          );
 
     const shieldIntensity =
       0.48 + shieldRatio * 0.52;
     ring.coreMaterial.opacity =
+      progress * 0.95;
+    ring.segmentMaterial.opacity =
       progress *
-      (0.5 + shieldIntensity * 0.28);
+      (0.58 + shieldIntensity * 0.32);
     ring.glowMaterial.opacity =
       progress *
-      (0.06 + shieldIntensity * 0.13);
-
-    for (const material of ring.accentMaterials) {
-      material.opacity =
-        progress *
-        (0.38 + shieldIntensity * 0.34);
-    }
+      (0.08 +
+        shieldIntensity * 0.1 +
+        (Math.sin(
+          timeSeconds * 1.15 +
+            ring.descriptor.phase,
+        ) +
+          1) *
+          0.012);
+    ring.accentMaterial.opacity =
+      progress *
+      (0.42 + shieldIntensity * 0.28);
 
     const constructionScale =
-      0.88 + progress * 0.12;
+      0.91 + progress * 0.09;
     ring.spinRoot.scale.setScalar(
       constructionScale,
     );
@@ -348,22 +500,22 @@ const stepDysonHalo = (
       timeSeconds *
         ring.descriptor.angularVelocity;
 
-    // Subtle independent precession keeps the three detached orbits alive
-    // without turning them into fast propellers or distracting from Foton.
+    // Small precession gives each orbit a living 3D relationship while the
+    // independent spin remains deliberately slow and non-propeller-like.
     ring.planeRoot.rotation.x =
       ring.descriptor.tilt[0] +
       Math.sin(
-        timeSeconds * 0.18 +
+        timeSeconds * 0.12 +
           ring.descriptor.phase,
       ) *
-        0.025;
+        0.018;
     ring.planeRoot.rotation.y =
       ring.descriptor.tilt[1] +
       Math.cos(
-        timeSeconds * 0.15 +
+        timeSeconds * 0.1 +
           ring.descriptor.phase,
       ) *
-        0.022;
+        0.016;
     ring.planeRoot.rotation.z =
       ring.descriptor.tilt[2];
   });
@@ -390,8 +542,8 @@ const createRuntime = (
     0.1,
     100,
   );
-  // Pull the camera back just enough to preserve the 37.5px Foton body
-  // while leaving transparent room for detached Dyson halo orbits.
+  // Keep the 37.5px body target while leaving transparent room for the
+  // detached atomic/Dyson orbital structure.
   camera.position.set(0, 0.04, 4);
   camera.lookAt(0, 0.02, 0);
 
