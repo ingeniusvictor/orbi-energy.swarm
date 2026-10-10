@@ -55,7 +55,7 @@ export const FOTON_DYSON_HALO_RINGS: readonly FotonDysonHaloRingDescriptor[] = [
     unlockCollectedOrbi: 20,
     color: 0xfbbf24,
     accentColor: FOTON_DYSON_HALO_RED_ACCENT,
-    radius: 1.07,
+    radius: 1.068,
     railTubeRadius: 0.041,
     energyTubeRadius: 0.012,
     tilt: [-0.88, -0.44, 0.68],
