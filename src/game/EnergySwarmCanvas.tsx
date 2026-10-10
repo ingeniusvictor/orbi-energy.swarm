@@ -169,26 +169,6 @@ export function drawFoton(
 
   const { x, y } = playerPos;
 
-  if (hasGoldenCore) {
-    // Golden Core reward remains an external command halo around the new body.
-    ctx.save();
-    ctx.strokeStyle = "rgba(251, 191, 36, 0.88)";
-    ctx.lineWidth = 1.8;
-    ctx.shadowColor = "#f59e0b";
-    ctx.shadowBlur =
-      12 + Math.sin(time * 0.006) * 4;
-    ctx.beginPath();
-    ctx.arc(
-      x,
-      y,
-      23 + Math.sin(time * 0.005) * 1.2,
-      0,
-      Math.PI * 2,
-    );
-    ctx.stroke();
-    ctx.restore();
-  }
-
   const damageHighlightStrength =
     playerFlash > 0
       ? flashProfile.friendlyWhiteFlashStrength *
@@ -206,6 +186,7 @@ export function drawFoton(
     threatDirectionY: threatDirection.y,
     orbiCount,
     shieldRatio,
+    goldenCoreActive: hasGoldenCore,
   });
 
   if (glbFrame) {
@@ -241,7 +222,28 @@ export function drawFoton(
     return;
   }
 
-  // Loading/failure fallback only. The normal gameplay body is the real GLB.
+  // Loading/failure fallback only. Golden Core keeps its historical external
+  // ring here because the normal GLB path integrates the reward into the first
+  // cyan Dyson rail and must never render a second standalone gameplay orbit.
+  if (hasGoldenCore) {
+    ctx.save();
+    ctx.strokeStyle = "rgba(251, 191, 36, 0.88)";
+    ctx.lineWidth = 1.8;
+    ctx.shadowColor = "#f59e0b";
+    ctx.shadowBlur =
+      12 + Math.sin(time * 0.006) * 4;
+    ctx.beginPath();
+    ctx.arc(
+      x,
+      y,
+      23 + Math.sin(time * 0.005) * 1.2,
+      0,
+      Math.PI * 2,
+    );
+    ctx.stroke();
+    ctx.restore();
+  }
+
   drawFotonTacticalAvatar(ctx, {
     x,
     y,

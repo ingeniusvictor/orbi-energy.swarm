@@ -25,6 +25,7 @@ export interface FotonGameplay3DFrameRequest {
   // live swarm-member count, including the free initial companion.
   orbiCount?: number | null;
   shieldRatio?: number | null;
+  goldenCoreActive?: boolean | null;
 }
 
 type RuntimeStatus =
@@ -67,6 +68,7 @@ interface GameplayRuntime {
   threatDirectionY: number;
   orbiCount: number;
   shieldRatio: number;
+  goldenCoreActive: boolean;
 }
 
 export const FOTON_GAMEPLAY_DRAW_SIZE = 37.5;
@@ -205,9 +207,8 @@ const createDysonHaloRing = (
   const spinRoot = new THREE.Group();
   planeRoot.add(spinRoot);
 
-  // Continuous dark structural rail. On the first almost-face-on cyan orbit it
-  // also visually absorbs the legacy Golden Core circle below the WebGL frame,
-  // so the run reads as exactly one starting orbital ring.
+  // Continuous dark structural rail. Golden Core never adds a second orbit:
+  // its warm metallic state is folded into this first cyan rail at runtime.
   const geometry = new THREE.TorusGeometry(
     descriptor.radius,
     descriptor.railTubeRadius,
@@ -221,6 +222,8 @@ const createDysonHaloRing = (
 
   const coreMaterial = new THREE.MeshStandardMaterial({
     color: 0x111827,
+    emissive: 0x000000,
+    emissiveIntensity: 0,
     metalness: 0.92,
     roughness: 0.24,
     transparent: true,
@@ -473,6 +476,29 @@ const stepDysonHalo = (
       0.48 + shieldRatio * 0.52;
     ring.coreMaterial.opacity =
       progress * 0.95;
+
+    if (index === 0) {
+      const goldenPulse =
+        0.16 +
+        (Math.sin(timeSeconds * 1.35) + 1) * 0.03;
+      ring.coreMaterial.color.setHex(
+        active.goldenCoreActive
+          ? 0x3d2b0a
+          : 0x111827,
+      );
+      ring.coreMaterial.emissive.setHex(
+        active.goldenCoreActive
+          ? 0x5b3a05
+          : 0x000000,
+      );
+      ring.coreMaterial.emissiveIntensity =
+        active.goldenCoreActive ? goldenPulse : 0;
+      ring.coreMaterial.metalness =
+        active.goldenCoreActive ? 1 : 0.92;
+      ring.coreMaterial.roughness =
+        active.goldenCoreActive ? 0.18 : 0.24;
+    }
+
     ring.segmentMaterial.opacity =
       progress *
       (0.58 + shieldIntensity * 0.32);
@@ -634,6 +660,7 @@ const createRuntime = (
     threatDirectionY: 0,
     orbiCount: 0,
     shieldRatio: 1,
+    goldenCoreActive: false,
   };
 
   const loader = new GLTFLoader();
@@ -834,6 +861,8 @@ export const getFotonGameplay3DFrame = (
     request.orbiCount ?? 0;
   active.shieldRatio =
     request.shieldRatio ?? 1;
+  active.goldenCoreActive =
+    request.goldenCoreActive ?? false;
 
   if (
     !request.paused &&

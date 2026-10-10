@@ -51,8 +51,25 @@ test("historical FULL flash disappearance gate remains intact", () => {
   assert.match(foton, /return;/);
 });
 
-test("Golden Core reward halo remains around the tactical avatar", () => {
-  assert.match(foton, /if \(hasGoldenCore\)/);
+test("Golden Core standalone circle is fallback-only and not part of normal GLB gameplay", () => {
+  const glbRequestIndex = foton.indexOf(
+    "const glbFrame = getFotonGameplay3DFrame",
+  );
+  const glbReturnIndex = foton.indexOf(
+    "return;",
+    glbRequestIndex,
+  );
+  const goldenFallbackIndex = foton.indexOf(
+    "if (hasGoldenCore)",
+  );
+
+  assert.ok(glbRequestIndex >= 0);
+  assert.ok(glbReturnIndex > glbRequestIndex);
+  assert.ok(goldenFallbackIndex > glbReturnIndex);
+  assert.match(
+    foton,
+    /goldenCoreActive: hasGoldenCore/,
+  );
   assert.match(
     foton,
     /rgba\(251, 191, 36, 0\.88\)/,
