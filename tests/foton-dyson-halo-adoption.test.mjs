@@ -96,11 +96,46 @@ test("simple 2D integrity ring stays replaced by the transparent Dyson composite
   );
 });
 
-test("first cyan structural rail is tuned to visually absorb the legacy Golden Core circle", () => {
-  assert.match(halo, /id: "CYAN"[\s\S]*radius: 1\.04/);
-  assert.match(halo, /id: "CYAN"[\s\S]*railTubeRadius: 0\.046/);
-  assert.match(runtime, /ring\.coreMaterial\.opacity =[\s\S]*progress \* 0\.95/);
-  assert.match(runtime, /color: 0x111827/);
+test("Golden Core is folded into the first cyan structural rail without adding another orbit", () => {
+  assert.match(
+    canvas,
+    /goldenCoreActive: hasGoldenCore/,
+  );
+  assert.match(
+    runtime,
+    /goldenCoreActive\?: boolean \| null/,
+  );
+  assert.match(
+    runtime,
+    /request\.goldenCoreActive \?\? false/,
+  );
+  assert.match(
+    runtime,
+    /if \(index === 0\)[\s\S]*active\.goldenCoreActive[\s\S]*0x3d2b0a[\s\S]*0x5b3a05/,
+  );
+  assert.match(
+    runtime,
+    /emissiveIntensity =[\s\S]*active\.goldenCoreActive \? goldenPulse : 0/,
+  );
+  assert.doesNotMatch(
+    runtime,
+    /goldenCoreActive[\s\S]*new THREE\.TorusGeometry/,
+  );
+});
+
+test("standalone Golden Core circle occurs only after normal GLB gameplay returns", () => {
+  const fotonStart = canvas.indexOf("export function drawFoton(");
+  const fotonEnd = canvas.indexOf(
+    "/**\n * Draws active swarm members.",
+    fotonStart,
+  );
+  const foton = canvas.slice(fotonStart, fotonEnd);
+  const glbIndex = foton.indexOf(
+    "const glbFrame = getFotonGameplay3DFrame",
+  );
+  const glbReturnIndex = foton.indexOf("return;", glbIndex);
+  const goldenIndex = foton.indexOf("if (hasGoldenCore)");
+  assert.ok(goldenIndex > glbReturnIndex);
 });
 
 test("canonical palette stays cyan emerald gold with subtle red accents", () => {
