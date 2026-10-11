@@ -42,29 +42,7 @@ jobs:
         run: npm run test:gameplay
 
       - name: Platform tests
-        id: platform
-        continue-on-error: true
         run: npm run test:platform
-
-      - name: Capture platform contract diagnostic
-        if: steps.platform.outcome == 'failure'
-        run: |
-          {
-            echo "=== formation/movement contract matches ==="
-            grep -R -n -E 'formation switching|activeFormation|calculateSwarmOffset|movement physics' tests --include='*.test.ts' || true
-          } > /tmp/es12h2-platform-diagnostic.txt
-          cat /tmp/es12h2-platform-diagnostic.txt
-
-      - name: Upload platform contract diagnostic
-        if: steps.platform.outcome == 'failure'
-        uses: actions/upload-artifact@v4
-        with:
-          name: es12h2-platform-diagnostic
-          path: /tmp/es12h2-platform-diagnostic.txt
-
-      - name: Stop on platform failure
-        if: steps.platform.outcome == 'failure'
-        run: exit 1
 
       - name: Typecheck
         run: npm run typecheck
