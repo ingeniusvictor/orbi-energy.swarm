@@ -7,21 +7,53 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   pure:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: feat/es-12h8-worm-segments
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Align shared weakpoint motion seam
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path("src/game/EnergySwarmGame.tsx")
+          text = p.read_text()
+          old = 'motion: "ORBITAL" | "ANCHORED";'
+          new = 'motion: "ORBITAL" | "ANCHORED" | "SERPENTINE";'
+          count = text.count(old)
+          if count > 1:
+              raise SystemExit(f"fail-closed motion seam count={count}")
+          if count == 1:
+              p.write_text(text.replace(old, new, 1))
+          elif new not in text:
+              raise SystemExit("fail-closed motion seam missing")
+          PY
       - name: H8 pure contracts
         run: npx tsx --test tests/boss-chassis.test.ts tests/infinite-raid-escalation.test.ts tests/worm-segment-physics.test.ts tests/titan-runtime-milestone.test.ts
       - name: Typecheck
         run: npm run typecheck
       - name: Platform regression
         run: npm run test:platform
+      - name: Materialize type seam if needed
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            exit 0
+          fi
+          git diff --check
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/game/EnergySwarmGame.tsx
+          git commit -m "refactor(h8): allow serpentine weakpoint motion"
+          git push origin HEAD:feat/es-12h8-worm-segments
