@@ -71,24 +71,27 @@ export const removeWormSegment = (
     .filter((segment) => segment.id !== segmentId)
     .map((segment) => ({ ...segment }));
 
-export const stepWormSegmentChain = (
-  segments: readonly WormSegmentKinematicState[],
+export const stepWormSegmentChainInPlace = (
+  segments: WormSegmentKinematicState[],
   leader: WormSegmentLeader,
   deltaMs: number,
   config: WormSegmentPhysicsConfig = DEFAULT_WORM_SEGMENT_PHYSICS,
-): WormSegmentKinematicState[] => {
-  const next = segments
-    .slice(0, WORM_SEGMENT_CAP)
-    .map((segment) => ({
-      ...segment,
-      x: finiteOr(segment.x, leader.x),
-      y: finiteOr(segment.y, leader.y),
-      vx: finiteOr(segment.vx, 0),
-      vy: finiteOr(segment.vy, 0),
-    }));
+): void => {
+  if (segments.length > WORM_SEGMENT_CAP) {
+    segments.length = WORM_SEGMENT_CAP;
+  }
 
-  if (next.length === 0 || !Number.isFinite(deltaMs) || deltaMs <= 0) {
-    return next;
+  const leaderX = finiteOr(leader.x, 0);
+  const leaderY = finiteOr(leader.y, 0);
+  for (const segment of segments) {
+    segment.x = finiteOr(segment.x, leaderX);
+    segment.y = finiteOr(segment.y, leaderY);
+    segment.vx = finiteOr(segment.vx, 0);
+    segment.vy = finiteOr(segment.vy, 0);
+  }
+
+  if (segments.length === 0 || !Number.isFinite(deltaMs) || deltaMs <= 0) {
+    return;
   }
 
   const effectiveDelta = Math.min(config.maxDeltaMs, deltaMs);
@@ -100,14 +103,12 @@ export const stepWormSegmentChain = (
   const maxSpeed = config.maxSpeedPerFrame;
 
   for (let step = 0; step < steps; step += 1) {
-    let target: WormSegmentLeader = {
-      x: finiteOr(leader.x, 0),
-      y: finiteOr(leader.y, 0),
-    };
+    let targetX = leaderX;
+    let targetY = leaderY;
 
-    for (const segment of next) {
-      let dx = segment.x - target.x;
-      let dy = segment.y - target.y;
+    for (const segment of segments) {
+      let dx = segment.x - targetX;
+      let dy = segment.y - targetY;
       const distance = Math.hypot(dx, dy);
 
       if (distance <= 1e-6) {
@@ -118,8 +119,8 @@ export const stepWormSegmentChain = (
         dy /= distance;
       }
 
-      const desiredX = target.x + dx * config.spacing;
-      const desiredY = target.y + dy * config.spacing;
+      const desiredX = targetX + dx * config.spacing;
+      const desiredY = targetY + dy * config.spacing;
       const correction = clampMagnitude(
         desiredX - segment.x,
         desiredY - segment.y,
@@ -139,9 +140,21 @@ export const stepWormSegmentChain = (
       segment.x += segment.vx * frameScale;
       segment.y += segment.vy * frameScale;
 
-      target = segment;
+      targetX = segment.x;
+      targetY = segment.y;
     }
   }
+};
 
+export const stepWormSegmentChain = (
+  segments: readonly WormSegmentKinematicState[],
+  leader: WormSegmentLeader,
+  deltaMs: number,
+  config: WormSegmentPhysicsConfig = DEFAULT_WORM_SEGMENT_PHYSICS,
+): WormSegmentKinematicState[] => {
+  const next = segments
+    .slice(0, WORM_SEGMENT_CAP)
+    .map((segment) => ({ ...segment }));
+  stepWormSegmentChainInPlace(next, leader, deltaMs, config);
   return next;
 };
