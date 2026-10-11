@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 
-import { analyzePerformanceEvidenceBundle } from "../src/game/performanceEvidenceAnalysis.ts";
+import { analyzeCertifiedPerformanceEvidenceBundle } from "../src/game/performanceEvidenceCertification.ts";
 
 const [baselinePath, gaiaL1Path, gaiaL2PlusPath] = process.argv.slice(2);
 
@@ -14,7 +14,7 @@ if (!baselinePath || !gaiaL1Path || !gaiaL2PlusPath) {
     const readJson = (path: string): unknown =>
       JSON.parse(readFileSync(path, "utf8"));
 
-    const report = analyzePerformanceEvidenceBundle({
+    const report = analyzeCertifiedPerformanceEvidenceBundle({
       baseline: readJson(baselinePath),
       gaiaL1: readJson(gaiaL1Path),
       gaiaL2Plus: readJson(gaiaL2PlusPath),

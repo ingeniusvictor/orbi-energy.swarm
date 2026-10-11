@@ -1,3 +1,4 @@
+import { getEmbeddedBuildProvenance } from "./buildProvenance";
 import type { PerformanceDiagnosticsSnapshot } from "./performanceDiagnostics";
 
 export const PERFORMANCE_EVIDENCE_SAMPLE_INTERVAL_MS = 500;
@@ -21,6 +22,8 @@ export interface PerformanceEvidenceRuntimeMetadata {
   viewportWidth: number;
   viewportHeight: number;
   devicePixelRatio: number;
+  buildSha?: string;
+  productVersion?: string;
 }
 
 export interface PerformanceEvidenceCapture {
@@ -129,6 +132,7 @@ export const getBrowserPerformanceEvidenceMetadata =
       typeof window === "undefined" ? 0 : window.innerHeight,
     devicePixelRatio:
       typeof window === "undefined" ? 1 : window.devicePixelRatio || 1,
+    ...getEmbeddedBuildProvenance(),
   });
 
 export const serializePerformanceEvidence = (
