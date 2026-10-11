@@ -110,7 +110,10 @@ export const directInfiniteMutatorSelection = ({
   const selected: InfiniteMutator[] = [];
 
   if (tier !== "MASTERY") {
-    const preferred = firstBiomePreference(biome, candidates);
+    const preferred =
+      firstBiomePreference(biome, candidates) ??
+      candidates.find((mutator) => ENVIRONMENTAL_MUTATORS.has(mutator)) ??
+      null;
     if (preferred) selected.push(preferred);
   }
 
@@ -118,15 +121,6 @@ export const directInfiniteMutatorSelection = ({
     if (selected.length >= target) break;
     if (!canAddMutator(candidate, selected)) continue;
     selected.push(candidate);
-  }
-
-  if (tier !== "MASTERY" && !selected.some((mutator) => ENVIRONMENTAL_MUTATORS.has(mutator))) {
-    const fallbackEnvironmental = candidates.find((mutator) =>
-      ENVIRONMENTAL_MUTATORS.has(mutator),
-    );
-    if (fallbackEnvironmental) {
-      selected.splice(Math.max(0, selected.length - 1), 1, fallbackEnvironmental);
-    }
   }
 
   return selected.slice(0, target);

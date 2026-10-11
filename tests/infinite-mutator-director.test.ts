@@ -144,3 +144,23 @@ test("same directed inputs produce identical output", () => {
     directInfiniteMutatorSelection(input),
   );
 });
+
+test("Advanced+ environmental fallback is selected before conflict filtering", () => {
+  const selected = directInfiniteMutatorSelection({
+    tier: "ENDLESS_ENDGAME",
+    biome: BiomeType.DEEP_WATER,
+    recoverySector: false,
+    targetCount: 3,
+    orderedCandidates: [
+      "FRAGILE_SWARM",
+      "ELECTRICAL_STORM",
+      "DOUBLE_THREAT",
+      "ELITE_BURST",
+    ],
+  });
+
+  assert.equal(selected[0], "ELECTRICAL_STORM");
+  assert.equal(hasEnvironmentalMutator(selected), true);
+  assert.equal(selected.includes("FRAGILE_SWARM"), false);
+  assert.ok(countSevereEnvironmentalMutators(selected) <= 1);
+});
