@@ -75,6 +75,10 @@ import {
 } from "./runtimeElectricalStorm";
 import type { InfiniteMilestoneEncounterProfile } from "./runtimeMilestoneEncounter";
 import {
+  getInfiniteBossAttackWeight,
+  getInfiniteBossFamilyProfile,
+} from "./infiniteBossFamily";
+import {
   createRuntimeMinibossGateState,
   markRuntimeMinibossSpawned,
   requestRuntimeMinibossSpawn,
@@ -2138,19 +2142,22 @@ export const EnergySwarmGame: React.FC = () => {
           rematchRequest.state;
 
         if (rematchRequest.telegraphStarted) {
+          const familyProfile = getInfiniteBossFamilyProfile(
+            bossRematchProfile.bossIdentity,
+          );
           setWaveName(
-            "BOSS REMATCH INBOUND // BLACKOUT DEVOURER",
+            `BOSS MILESTONE INBOUND // ${familyProfile.displayName.toUpperCase()}`,
           );
           playBossChargeSound();
           postDialogue(
             "SYSTEM",
-            `MILESTONE REMATCH LOCKED: ${bossRematchProfile.milestoneId}. Devourer recurrence inbound.`,
+            `MILESTONE BOSS LOCKED: ${bossRematchProfile.milestoneId}. ${familyProfile.displayName} inbound.`,
           );
           addFloatingText(
-            "⚠ DEVOURER REMATCH INBOUND",
+            `⚠ ${familyProfile.displayName.toUpperCase()} INBOUND`,
             playerPosRef.current.x,
             playerPosRef.current.y - 60,
-            "#ec4899",
+            familyProfile.color,
           );
         }
 
@@ -2710,6 +2717,9 @@ export const EnergySwarmGame: React.FC = () => {
     hazardZonesRef.current = [];
 
     const isRematch = rematchProfile !== null;
+    const familyProfile = rematchProfile
+      ? getInfiniteBossFamilyProfile(rematchProfile.bossIdentity)
+      : null;
     bossActiveRef.current = true;
 
     if (!isRematch) {
@@ -2730,7 +2740,7 @@ export const EnergySwarmGame: React.FC = () => {
 
     const boss: Enemy = {
       id: isRematch
-        ? `blackout_devourer_rematch_${rematchProfile?.sector ?? "infinite"}`
+        ? `${rematchProfile?.bossIdentity.toLowerCase() ?? "infinite_boss"}_${rematchProfile?.sector ?? "infinite"}`
         : "blackout_devourer_boss",
       type: EnemyType.BOSS_DEVOURER,
       x: WORLD_WIDTH / 2,
@@ -2741,7 +2751,7 @@ export const EnergySwarmGame: React.FC = () => {
       maxHealth: health,
       speed: 0,
       size: 45,
-      color: "#ec4899", // Magenta/violet cyber boss
+      color: familyProfile?.color ?? "#ec4899", // Infinite variants preserve shared chassis with identity color.
       shootCooldown: 100,
       pulseCooldown: 180,
       contactDamageCooldown: 0,
@@ -2751,6 +2761,7 @@ export const EnergySwarmGame: React.FC = () => {
       flashTicks: 0,
       milestoneKind: isRematch ? "BOSS_REMATCH" : undefined,
       milestoneId: rematchProfile?.milestoneId,
+      infiniteBossIdentity: rematchProfile?.bossIdentity,
       milestoneContactDamageMultiplier:
         rematchProfile?.damageMultiplier,
       milestoneDamageMultiplier:
@@ -2807,7 +2818,7 @@ export const EnergySwarmGame: React.FC = () => {
           bossRematchGateRef.current,
         );
       setWaveName(
-        `DEVOURER REMATCH // SECTOR ${rematchProfile?.sector ?? currentWaveRef.current}`,
+        `${familyProfile?.displayName.toUpperCase() ?? "INFINITE BOSS"} // SECTOR ${rematchProfile?.sector ?? currentWaveRef.current}`,
       );
     }
 
@@ -2816,7 +2827,7 @@ export const EnergySwarmGame: React.FC = () => {
     postDialogue(
       "COMPANION",
       isRematch
-        ? "¡RESONANCIA HOSTIL RECURRENTE! El Blackout Devourer ha regresado como rematch infinito."
+        ? (familyProfile?.introDialogue ?? "¡RESONANCIA HOSTIL RECURRENTE!")
         : "¡ALERTA! Concentración de energía Blackout masiva en el sector central. ¡El Devorador está entrando!",
     );
   };
@@ -2863,6 +2874,9 @@ export const EnergySwarmGame: React.FC = () => {
     else if (type === EnemyType.DRONE) { hp = 25; speed = 0.8; size = 12; color = "#f97316"; }
     else if (type === EnemyType.PARASITE) { hp = 10; speed = 1.5; size = 8; color = "#fb7185"; }
     else if (type === EnemyType.DISRUPTOR) { hp = 40; speed = 0.7; size = 14; color = "#06b6d4"; }
+    else if (type === EnemyType.RIFT_HUNTER) { hp = 34; speed = 1.55; size = 10; color = "#fb923c"; }
+    else if (type === EnemyType.VOID_ANCHOR) { hp = 65; speed = 0.35; size = 16; color = "#22d3ee"; }
+    else if (type === EnemyType.SIEGE_PRISM) { hp = 52; speed = 0.42; size = 14; color = "#f472b6"; }
 
     enemiesRef.current.push({
       id: Math.random().toString(),
@@ -3142,6 +3156,42 @@ export const EnergySwarmGame: React.FC = () => {
       }
     }
 
+    // H5 boss-family specialist support reuses the existing summon timer map and hard enemy cap.
+    if (boss.infiniteBossIdentity) {
+      const family = getInfiniteBossFamilyProfile(boss.infiniteBossIdentity);
+      const timerKey = `H5_${family.identity}`;
+      const currentTimer = bossSummonTimersRef.current[timerKey];
+      if (currentTimer === undefined) {
+        bossSummonTimersRef.current[timerKey] = family.supportCooldownMs;
+      } else {
+        bossSummonTimersRef.current[timerKey] -= delta;
+        if (bossSummonTimersRef.current[timerKey] <= 0) {
+          bossSummonTimersRef.current[timerKey] = family.supportCooldownMs;
+          const activeSupport = countMinionsOfType(
+            enemiesRef.current,
+            family.supportEnemyType,
+          );
+          if (
+            activeSupport < family.supportMaxCount &&
+            enemiesRef.current.length < MAX_ENEMIES
+          ) {
+            const angle = Math.random() * Math.PI * 2;
+            spawnBossMinion(
+              family.supportEnemyType,
+              boss.x + Math.cos(angle) * 120,
+              boss.y + Math.sin(angle) * 120,
+            );
+            addFloatingText(
+              `${family.displayName.toUpperCase()} // SUPPORT VECTOR`,
+              boss.x,
+              boss.y - 58,
+              family.color,
+            );
+          }
+        }
+      }
+    }
+
     // 7. ACTIVE ATTACK COOLDOWNS / SELECTION
     if (bossCurrentAttackRef.current === null && bossHunterWaveTelegraphRef.current <= 0) {
       const bossAttackRateMultiplier =
@@ -3153,11 +3203,24 @@ export const EnergySwarmGame: React.FC = () => {
           (a) => a.minimumPhase <= (boss.bossPhase || 1) && !bossLastAttacksRef.current.includes(a.id)
         );
         if (possibleAttacks.length > 0) {
-          const totalWeight = possibleAttacks.reduce((sum, a) => sum + a.weight, 0);
+          const totalWeight = possibleAttacks.reduce(
+            (sum, a) =>
+              sum +
+              getInfiniteBossAttackWeight(
+                boss.infiniteBossIdentity,
+                a.id,
+                a.weight,
+              ),
+            0,
+          );
           let roll = Math.random() * totalWeight;
           let chosen = possibleAttacks[0];
           for (let i = 0; i < possibleAttacks.length; i++) {
-            roll -= possibleAttacks[i].weight;
+            roll -= getInfiniteBossAttackWeight(
+              boss.infiniteBossIdentity,
+              possibleAttacks[i].id,
+              possibleAttacks[i].weight,
+            );
             if (roll <= 0) {
               chosen = possibleAttacks[i];
               break;
@@ -3188,7 +3251,10 @@ export const EnergySwarmGame: React.FC = () => {
 
           if (!shownThreatIntelsRef.current.includes(chosen.id)) {
             shownThreatIntelsRef.current.push(chosen.id);
-            postDialogue("COMPANION", `¡CUIDADO! Devorador iniciando ${chosen.displayName.toUpperCase()}. ${chosen.description} Moverse de inmediato.`);
+            const activeBossName = boss.infiniteBossIdentity
+              ? getInfiniteBossFamilyProfile(boss.infiniteBossIdentity).displayName
+              : "Devorador";
+            postDialogue("COMPANION", `¡CUIDADO! ${activeBossName} iniciando ${chosen.displayName.toUpperCase()}. ${chosen.description} Moverse de inmediato.`);
             addFloatingText(`WARNING: ${chosen.displayName.toUpperCase()}`, boss.x, boss.y - 45, chosen.warningColor || "#f43f5e");
           } else {
             addFloatingText(`PREPARING ${chosen.displayName.toUpperCase()}`, boss.x, boss.y - 45, chosen.warningColor || "#f43f5e");
@@ -3762,11 +3828,17 @@ export const EnergySwarmGame: React.FC = () => {
         setBossShieldNodes(0);
         setIsCoreExposed(false);
         setBossHp(0);
-        setWaveName("DEVOURER REMATCH PURGED");
+        const defeatedFamily = boss.infiniteBossIdentity
+          ? getInfiniteBossFamilyProfile(boss.infiniteBossIdentity)
+          : null;
+        setWaveName(
+          defeatedFamily?.defeatLabel ?? "INFINITE BOSS PURGED",
+        );
         playVictorySound();
         postDialogue(
           "SYSTEM",
-          "RECURRENCIA DEVOURER SELLADA. Reanudando Infinite Swarm.",
+          defeatedFamily?.defeatDialogue ??
+            "AMENAZA MILESTONE SELLADA. Reanudando Infinite Swarm.",
         );
         startBgm("HIGH_INTENSITY");
         return;

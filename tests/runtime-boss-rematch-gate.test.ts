@@ -25,6 +25,7 @@ const rematch: Extract<
   spawnTrigger: "AFTER_REGULAR_BUDGET_CLEAR",
   completionMode: "BOSS_DEFEAT_AFTER_BUDGET",
   enemyType: EnemyType.BOSS_DEVOURER,
+  bossIdentity: "DEVOURER_ASCENDANT",
   healthMultiplier: 1.2,
   damageMultiplier: 1.1,
   attackRateMultiplier: 1.05,

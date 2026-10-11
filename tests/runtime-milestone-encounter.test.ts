@@ -129,6 +129,7 @@ test("Sector 25 final wave projects an isolated Devourer rematch phase", () => {
     profile.enemyType,
     EnemyType.BOSS_DEVOURER,
   );
+  assert.equal(profile.bossIdentity, "DEVOURER_ASCENDANT");
   assert.equal(
     profile.spawnTrigger,
     "AFTER_REGULAR_BUDGET_CLEAR",
