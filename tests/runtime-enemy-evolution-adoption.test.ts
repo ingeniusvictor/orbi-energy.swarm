@@ -186,7 +186,7 @@ test("enemy projectile speed adopts per-instance evolution without changing boss
 
   assert.match(
     shoot,
-    /const projectileSpeed =[\s\S]*2\.2 \*[\s\S]*enemy\.evolvedProjectileSpeedMultiplier \?\?[\s\S]*1/,
+    /const projectileSpeed =[\s\S]*:\s*2\.2\)\s*\*[\s\S]*\(enemy\.evolvedProjectileSpeedMultiplier \?\? 1\)/,
   );
   assert.match(
     shoot,
@@ -202,7 +202,7 @@ test("enemy projectile speed adopts per-instance evolution without changing boss
   );
   assert.match(
     shoot,
-    /enemy\.type === EnemyType\.DRONE \|\| enemy\.type === EnemyType\.BOSS_DEVOURER/,
+    /enemy\.type === EnemyType\.DRONE\s*\|\|\s*enemy\.type === EnemyType\.BOSS_DEVOURER/,
   );
 });
 

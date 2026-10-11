@@ -51,8 +51,16 @@ test("GAIA has one explicit physical creation path and subsequent cycles evolve 
   );
 });
 
-test("GAIA is outside regular follower capacity and consolidation candidates", () => {
+test("GAIA consumes H4 follower capacity while remaining outside consolidation candidates", () => {
   assert.match(
+    game,
+    /regularSwarmCount\s*=\s*swarmRef\.current\.length/,
+  );
+  assert.match(
+    game,
+    /getSwarmDoctrineCapacity\(swarmDoctrineRef\.current\)/,
+  );
+  assert.doesNotMatch(
     game,
     /regularSwarmCount\s*=\s*swarmRef\.current\.reduce\([\s\S]{0,220}?member\.energyId\s*===\s*"GAIA"\s*\?\s*0\s*:\s*1/,
   );

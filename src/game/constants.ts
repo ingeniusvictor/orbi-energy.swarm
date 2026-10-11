@@ -10,7 +10,7 @@ export const WORLD_BOUNDS = {
   maxY: WORLD_HEIGHT - 8,
 };
 
-export const MAX_SWARM_MEMBERS = 100;
+export const MAX_SWARM_MEMBERS = 30;
 export const MAX_ENEMIES = 80;
 export const MAX_PROJECTILES = 120;
 export const MAX_PARTICLES: Record<string, number> = {
@@ -26,7 +26,7 @@ export const SHIELD_MAX = 100;
 
 export const UPGRADES = [
   { id: "hydrogen_deflector", name: "Hydrogen Deflector", cost: 15, desc: "+15% Max Shield & +20% Shield Regen Rate", level: 0 },
-  { id: "quantum_core", name: "Quantum Core", cost: 25, desc: "Swarm capacity +12 per level (36/48/60 Max) & +10% follow speed", level: 0 },
+  { id: "quantum_core", name: "Quantum Core", cost: 25, desc: "Command propulsion +10% and improved follower response per level; swarm capacity is earned through veterancy (10→20→30)", level: 0 },
   { id: "fusion_resonator", name: "Fusion Resonator", cost: 40, desc: "Increases Fusion energy generation by +40%", level: 0 },
   { id: "nano_catalyst", name: "Nano Catalyst", cost: 20, desc: "Swarms harvest resources from +30% longer distance", level: 0 },
   { id: "mitosis_relic", name: "Mitosis Relic", cost: 60, desc: "Critical shoots have a 10% chance to duplicate bullet", level: 0 }
