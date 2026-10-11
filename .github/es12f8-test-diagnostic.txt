@@ -1,240 +1,105 @@
 exit_status=1
-=== FAILURE MATCHES ===
-202:# Subtest: tactical avatar remains only the loading or failure fallback
-203:ok 33 - tactical avatar remains only the loading or failure fallback
-2919:not ok 340 - live thermal splash uses indexed candidates in original enemy order without sqrt
-2924:  failureType: 'testCodeFailure'
-2925:  error: |-
-2930:  code: 'ERR_ASSERTION'
-2931:  name: 'AssertionError'
-3203:not ok 384 - gameplay probability rolls remain raw and semantically unchanged
-3208:  failureType: 'testCodeFailure'
-3209:  error: |-
-3214:  code: 'ERR_ASSERTION'
-3215:  name: 'AssertionError'
-4579:not ok 610 - live direct-hit pushback relocates the indexed target before later projectiles
-4584:  failureType: 'testCodeFailure'
-4585:  error: |-
-4590:  code: 'ERR_ASSERTION'
-4591:  name: 'AssertionError'
-=== LOG TAIL ===
-ok 606 - new Splitter minions can be inserted for later projectiles in the same sweep
-  ---
-  duration_ms: 0.214817
-  type: 'test'
-  ...
-# Subtest: dispersed max-density collision query checks only local candidates
-ok 607 - dispersed max-density collision query checks only local candidates
-  ---
-  duration_ms: 0.497137
-  type: 'test'
-  ...
-# Subtest: live collision sweep builds one index and removes the O(P×E) loop
-ok 608 - live collision sweep builds one index and removes the O(P×E) loop
-  ---
-  duration_ms: 1.628245
-  type: 'test'
-  ...
-# Subtest: shield nodes retain priority over spatial enemy collision
-ok 609 - shield nodes retain priority over spatial enemy collision
-  ---
-  duration_ms: 1.416714
-  type: 'test'
-  ...
-# Subtest: live direct-hit pushback relocates the indexed target before later projectiles
-not ok 610 - live direct-hit pushback relocates the indexed target before later projectiles
-  ---
-  duration_ms: 12.368295
-  type: 'test'
-  location: '/home/runner/work/orbi-energy.swarm/orbi-energy.swarm/tests/spatial-projectile-collisions.test.ts:1:5035'
-  failureType: 'testCodeFailure'
-  error: |-
-    The expression evaluated to a falsy value:
-    
-      assert.ok(hydro > relocate)
-    
-  code: 'ERR_ASSERTION'
-  name: 'AssertionError'
-  expected: true
-  actual: false
-  operator: '=='
-  stack: |-
-    TestContext.<anonymous> (/home/runner/work/orbi-energy.swarm/orbi-energy.swarm/tests/spatial-projectile-collisions.test.ts:332:10)
-    Test.runInAsyncScope (node:async_hooks:214:14)
-    Test.run (node:internal/test_runner/test:1047:25)
-    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
-    Test.postRun (node:internal/test_runner/test:1173:19)
-    Test.run (node:internal/test_runner/test:1101:12)
-    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
-  ...
-# Subtest: Splitter spawn inserts the new enemy into the active collision index
-ok 611 - Splitter spawn inserts the new enemy into the active collision index
-  ---
-  duration_ms: 1.371893
-  type: 'test'
-  ...
-# Subtest: spawn safety uses the exact squared radius without sqrt
-ok 612 - spawn safety uses the exact squared radius without sqrt
-  ---
-  duration_ms: 1.844423
-  type: 'test'
-  ...
-# Subtest: Devourer beam keeps the exact 25-unit hit radius as a squared comparison
-ok 613 - Devourer beam keeps the exact 25-unit hit radius as a squared comparison
-  ---
-  duration_ms: 0.305458
-  type: 'test'
-  ...
-# Subtest: electrical storm keeps its exact configured strike radius with distance squared
-ok 614 - electrical storm keeps its exact configured strike radius with distance squared
-  ---
-  duration_ms: 0.523655
-  type: 'test'
-  ...
-# Subtest: enemy shooter tests the exact 320-unit range without normalizing distance
-ok 615 - enemy shooter tests the exact 320-unit range without normalizing distance
-  ---
-  duration_ms: 0.313102
-  type: 'test'
-  ...
-# Subtest: resource attraction defers sqrt until the exact pull radius has passed
-ok 616 - resource attraction defers sqrt until the exact pull radius has passed
-  ---
-  duration_ms: 5.781207
-  type: 'test'
-  ...
-# Subtest: resource cleanup reuses the live array instead of allocating with filter
-ok 617 - resource cleanup reuses the live array instead of allocating with filter
-  ---
-  duration_ms: 0.640963
-  type: 'test'
-  ...
-# Subtest: compact tactical radar uses one squared radius for allies enemies and resources
-ok 618 - compact tactical radar uses one squared radius for allies enemies and resources
-  ---
-  duration_ms: 0.633519
-  type: 'test'
-  ...
-# Subtest: pointer drag and click thresholds keep their exact 8px and 10px boundaries
-ok 619 - pointer drag and click thresholds keep their exact 8px and 10px boundaries
-  ---
-  duration_ms: 0.390948
-  type: 'test'
-  ...
-# Subtest: resource label renderer avoids sqrt for far pickups but preserves exact proximity opacity
-ok 620 - resource label renderer avoids sqrt for far pickups but preserves exact proximity opacity
-  ---
-  duration_ms: 0.760426
-  type: 'test'
-  ...
-# Subtest: movement normalization square roots remain present in live simulation
-ok 621 - movement normalization square roots remain present in live simulation
-  ---
-  duration_ms: 0.788838
-  type: 'test'
-  ...
-# Subtest: touch direction state starts neutral
-ok 622 - touch direction state starts neutral
-  ---
-  duration_ms: 1.97193
-  type: 'test'
-  ...
-# Subtest: multi-touch directions compose into cardinal and diagonal vectors
-ok 623 - multi-touch directions compose into cardinal and diagonal vectors
-  ---
-  duration_ms: 0.269292
-  type: 'test'
-  ...
-# Subtest: opposite held directions cancel deterministically
-ok 624 - opposite held directions cancel deterministically
-  ---
-  duration_ms: 0.31172
-  type: 'test'
-  ...
-# Subtest: touch overlay uses pointer capture and explicit press/release signals
-ok 625 - touch overlay uses pointer capture and explicit press/release signals
-  ---
-  duration_ms: 0.559932
-  type: 'test'
-  ...
-# Subtest: touch movement is delta-driven inside the canonical movement pipeline
-ok 626 - touch movement is delta-driven inside the canonical movement pipeline
-  ---
-  duration_ms: 2.078749
-  type: 'test'
-  ...
-# Subtest: lifecycle cleanup releases all held touch directions
-ok 627 - lifecycle cleanup releases all held touch directions
-  ---
-  duration_ms: 1.648859
-  type: 'test'
-  ...
-# Subtest: 1920x1080 resolves as expanded desktop rails
-ok 628 - 1920x1080 resolves as expanded desktop rails
-  ---
-  duration_ms: 1.127629
-  type: 'test'
-  ...
-# Subtest: 1440x900 and 1366x768 resolve as laptop composition
-ok 629 - 1440x900 and 1366x768 resolve as laptop composition
-  ---
-  duration_ms: 0.254824
-  type: 'test'
-  ...
-# Subtest: 2560x1080 resolves as ultrawide and preserves expanded shell intent
-ok 630 - 2560x1080 resolves as ultrawide and preserves expanded shell intent
-  ---
-  duration_ms: 0.238474
-  type: 'test'
-  ...
-# Subtest: tablet landscape and portrait use split auxiliary decks
-ok 631 - tablet landscape and portrait use split auxiliary decks
-  ---
-  duration_ms: 0.161831
-  type: 'test'
-  ...
-# Subtest: Android landscape uses phone composition and touch controls
-ok 632 - Android landscape uses phone composition and touch controls
-  ---
-  duration_ms: 0.145391
-  type: 'test'
-  ...
-# Subtest: narrow Android portrait recommends landscape advisory
-ok 633 - narrow Android portrait recommends landscape advisory
-  ---
-  duration_ms: 0.152884
-  type: 'test'
-  ...
-# Subtest: compact Android landscape below 720px remains PHONE_LANDSCAPE
-ok 634 - compact Android landscape below 720px remains PHONE_LANDSCAPE
-  ---
-  duration_ms: 0.204591
-  type: 'test'
-  ...
-# Subtest: portrait advisory stays off for fine pointers and wider tablet portraits
-ok 635 - portrait advisory stays off for fine pointers and wider tablet portraits
-  ---
-  duration_ms: 0.200353
-  type: 'test'
-  ...
-# Subtest: invalid dimensions fail safe to the logical game viewport
-ok 636 - invalid dimensions fail safe to the logical game viewport
-  ---
-  duration_ms: 0.300689
-  type: 'test'
-  ...
-# Subtest: viewport thresholds align with certified CSS breakpoints
-ok 637 - viewport thresholds align with certified CSS breakpoints
-  ---
-  duration_ms: 0.439669
-  type: 'test'
-  ...
-1..637
-# tests 637
-# suites 0
-# pass 634
-# fail 3
-# cancelled 0
-# skipped 0
-# todo 0
-# duration_ms 12390.347738
+=== FAILING TEST SOURCE LOCATIONS ===
+tests/runtime-cadence-adoption.test.ts:133:test("gameplay probability rolls remain raw and semantically unchanged", () => {
+tests/spatial-projectile-collisions.test.ts:310:test("live direct-hit pushback relocates the indexed target before later projectiles", () => {
+=== FAILURE 340 CONTEXT ===
+=== FAILURE 384 CONTEXT ===
+3165-ok 381 - all frame-counted flash decay paths are delta-aware
+3166-  ---
+3167-  duration_ms: 0.498973
+3168-  type: 'test'
+3169-  ...
+3170-# Subtest: screen shake and swarm recoil damping are delta-normalized
+3171-ok 382 - screen shake and swarm recoil damping are delta-normalized
+3172-  ---
+3173-  duration_ms: 0.433851
+3174-  type: 'test'
+3175-  ...
+3176-# Subtest: only audited per-frame cosmetic probabilities use delta-aware projection
+3177-ok 383 - only audited per-frame cosmetic probabilities use delta-aware projection
+3178-  ---
+3179-  duration_ms: 0.554257
+3180-  type: 'test'
+3181-  ...
+3182-# Subtest: gameplay probability rolls remain raw and semantically unchanged
+3183:not ok 384 - gameplay probability rolls remain raw and semantically unchanged
+3184-  ---
+3185-  duration_ms: 11.215802
+3186-  type: 'test'
+3187-  location: '/home/runner/work/orbi-energy.swarm/orbi-energy.swarm/tests/runtime-cadence-adoption.test.ts:1:2276'
+3188-  failureType: 'testCodeFailure'
+3189-  error: |-
+3190-    The expression evaluated to a falsy value:
+3191-    
+3192-      assert.ok(
+3193-    
+3194-  code: 'ERR_ASSERTION'
+3195-  name: 'AssertionError'
+3196-  expected: true
+3197-  actual: false
+3198-  operator: '=='
+3199-  stack: |-
+3200-    TestContext.<anonymous> (/home/runner/work/orbi-energy.swarm/orbi-energy.swarm/tests/runtime-cadence-adoption.test.ts:139:10)
+3201-    Test.runInAsyncScope (node:async_hooks:214:14)
+3202-    Test.run (node:internal/test_runner/test:1047:25)
+3203-    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+3204-    Test.postRun (node:internal/test_runner/test:1173:19)
+3205-    Test.run (node:internal/test_runner/test:1101:12)
+3206-    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+3207-  ...
+3208-# Subtest: large-delta safety clamp remains intact
+3209-ok 385 - large-delta safety clamp remains intact
+3210-  ---
+3211-  duration_ms: 0.253033
+3212-  type: 'test'
+3213-  ...
+=== FAILURE 610 CONTEXT ===
+4541-ok 607 - dispersed max-density collision query checks only local candidates
+4542-  ---
+4543-  duration_ms: 0.485908
+4544-  type: 'test'
+4545-  ...
+4546-# Subtest: live collision sweep builds one index and removes the O(P×E) loop
+4547-ok 608 - live collision sweep builds one index and removes the O(P×E) loop
+4548-  ---
+4549-  duration_ms: 1.715408
+4550-  type: 'test'
+4551-  ...
+4552-# Subtest: shield nodes retain priority over spatial enemy collision
+4553-ok 609 - shield nodes retain priority over spatial enemy collision
+4554-  ---
+4555-  duration_ms: 1.414936
+4556-  type: 'test'
+4557-  ...
+4558-# Subtest: live direct-hit pushback relocates the indexed target before later projectiles
+4559:not ok 610 - live direct-hit pushback relocates the indexed target before later projectiles
+4560-  ---
+4561-  duration_ms: 16.585713
+4562-  type: 'test'
+4563-  location: '/home/runner/work/orbi-energy.swarm/orbi-energy.swarm/tests/spatial-projectile-collisions.test.ts:1:5035'
+4564-  failureType: 'testCodeFailure'
+4565-  error: |-
+4566-    The expression evaluated to a falsy value:
+4567-    
+4568-      assert.ok(hydro > relocate)
+4569-    
+4570-  code: 'ERR_ASSERTION'
+4571-  name: 'AssertionError'
+4572-  expected: true
+4573-  actual: false
+4574-  operator: '=='
+4575-  stack: |-
+4576-    TestContext.<anonymous> (/home/runner/work/orbi-energy.swarm/orbi-energy.swarm/tests/spatial-projectile-collisions.test.ts:332:10)
+4577-    Test.runInAsyncScope (node:async_hooks:214:14)
+4578-    Test.run (node:internal/test_runner/test:1047:25)
+4579-    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+4580-    Test.postRun (node:internal/test_runner/test:1173:19)
+4581-    Test.run (node:internal/test_runner/test:1101:12)
+4582-    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+4583-  ...
+4584-# Subtest: Splitter spawn inserts the new enemy into the active collision index
+4585-ok 611 - Splitter spawn inserts the new enemy into the active collision index
+4586-  ---
+4587-  duration_ms: 1.51898
+4588-  type: 'test'
+4589-  ...
