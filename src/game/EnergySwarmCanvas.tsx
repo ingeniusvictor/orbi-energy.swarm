@@ -530,13 +530,7 @@ export function drawResources(
       ctx.fill();
     } else if (res.type === "ORBI") {
       const affinity = res.orbiAffinity || "solar";
-      let coreColor = "#f59e0b";
-      if (affinity === "solar") coreColor = "#f59e0b";
-      else if (affinity === "hydro") coreColor = "#0ea5e9";
-      else if (affinity === "wind") coreColor = "#10b981";
-      else if (affinity === "thermal") coreColor = "#ef4444";
-      else if (affinity === "nuclear") coreColor = "#8b5cf6";
-      else if (affinity === "quantum") coreColor = "#ec4899";
+      const coreColor = res.color;
 
       // Wild Orbi elemental visual effects (Section 9)
       const pulseFactor = 1 + Math.sin(time * 0.01) * 0.18;
@@ -738,7 +732,11 @@ export function drawResources(
 
       if (drawLabelText && labelOpacity > 0.05) {
         const lang = getActiveLanguage();
-        const displayLabel = lang === "es" ? `${affinity.toUpperCase()} SALVAJE` : `WILD ${affinity.toUpperCase()}`;
+        const identity = res.orbiEnergyId ?? affinity.toUpperCase();
+        const displayLabel =
+          lang === "es"
+            ? identity + " SALVAJE"
+            : "WILD " + identity;
         ctx.fillStyle = `rgba(255, 255, 255, ${labelOpacity * 0.95})`;
         ctx.font = "bold 7px monospace";
         ctx.textAlign = "center";
@@ -1252,24 +1250,123 @@ export function drawProjectilesList(
   projectiles.forEach((proj) => {
     ctx.save();
     ctx.translate(proj.x, proj.y);
-
-    ctx.shadowBlur = proj.size * 1.5;
+    ctx.shadowBlur = proj.size * 2.2;
     ctx.shadowColor = proj.color;
     ctx.fillStyle = proj.color;
+    ctx.strokeStyle = proj.color;
 
-    if (proj.fromPlayer) {
-      // Elegant thin laser lines oriented in travel vector direction
-      const angle = Math.atan2(proj.vy, proj.vx);
-      ctx.rotate(angle);
-      ctx.fillRect(-8, -1, 16, proj.size);
-    } else {
-      // Enemy plasma sphere circles
+    if (!proj.fromPlayer) {
       ctx.beginPath();
       ctx.arc(0, 0, proj.size, 0, Math.PI * 2);
       ctx.fill();
+      ctx.restore();
+      return;
     }
 
+    ctx.rotate(Math.atan2(proj.vy, proj.vx));
+    switch (proj.attackShape ?? "LANCE") {
+      case "RIPPLE":
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        ctx.arc(0, 0, proj.size, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.globalAlpha = 0.5;
+        ctx.beginPath();
+        ctx.arc(-proj.size * 0.55, 0, proj.size * 0.58, 0, Math.PI * 2);
+        ctx.stroke();
+        break;
+      case "CRESCENT":
+        ctx.lineWidth = 2.2;
+        ctx.beginPath();
+        ctx.arc(0, 0, proj.size * 1.35, -0.95, 0.95);
+        ctx.stroke();
+        break;
+      case "PLASMA":
+        ctx.beginPath();
+        ctx.arc(0, 0, proj.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 0.55;
+        ctx.fillStyle = "#ffffff";
+        ctx.beginPath();
+        ctx.arc(proj.size * 0.18, -proj.size * 0.18, proj.size * 0.42, 0, Math.PI * 2);
+        ctx.fill();
+        break;
+      case "ARC":
+        ctx.lineWidth = 1.8;
+        ctx.beginPath();
+        ctx.moveTo(-7, 0);
+        ctx.lineTo(-3, -3);
+        ctx.lineTo(0, 2.5);
+        ctx.lineTo(3, -2.5);
+        ctx.lineTo(8, 0);
+        ctx.stroke();
+        break;
+      case "PARTICLE":
+        ctx.lineWidth = 1.1;
+        for (let i = 0; i < 3; i += 1) {
+          ctx.save();
+          ctx.rotate((i * Math.PI) / 3);
+          ctx.beginPath();
+          ctx.ellipse(0, 0, proj.size * 1.35, proj.size * 0.45, 0, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+        }
+        ctx.fillStyle = "#ffffff";
+        ctx.beginPath();
+        ctx.arc(0, 0, proj.size * 0.32, 0, Math.PI * 2);
+        ctx.fill();
+        break;
+      case "KINETIC":
+        ctx.beginPath();
+        ctx.moveTo(9, 0);
+        ctx.lineTo(-5, -proj.size);
+        ctx.lineTo(-2, 0);
+        ctx.lineTo(-5, proj.size);
+        ctx.closePath();
+        ctx.fill();
+        break;
+      case "CELL":
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        ctx.roundRect(-6, -proj.size * 0.65, 12, proj.size * 1.3, proj.size * 0.6);
+        ctx.stroke();
+        ctx.fillStyle = "rgba(255,255,255,0.8)";
+        ctx.fillRect(-1.5, -proj.size * 0.45, 3, proj.size * 0.9);
+        break;
+      case "PHASE":
+        ctx.rotate(Math.PI / 4);
+        ctx.fillRect(-proj.size * 0.65, -proj.size * 0.65, proj.size * 1.3, proj.size * 1.3);
+        ctx.globalAlpha = 0.35;
+        ctx.strokeStyle = "#ffffff";
+        ctx.strokeRect(-proj.size, -proj.size, proj.size * 2, proj.size * 2);
+        break;
+      case "SYNTHESIS":
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        for (let i = 0; i < 8; i += 1) {
+          const angle = (i * Math.PI) / 4;
+          const radius = i % 2 === 0 ? proj.size * 1.35 : proj.size * 0.62;
+          const px = Math.cos(angle) * radius;
+          const py = Math.sin(angle) * radius;
+          if (i === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.closePath();
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(0, 0, proj.size * 0.45, 0, Math.PI * 2);
+        ctx.fill();
+        break;
+      case "LANCE":
+      default:
+        ctx.fillRect(-9, -proj.size * 0.45, 18, proj.size * 0.9);
+        ctx.globalAlpha = 0.55;
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(1, -0.6, 8, 1.2);
+        break;
+    }
     ctx.restore();
   });
 }
+
 export default EnergySwarmCanvas;

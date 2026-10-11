@@ -322,14 +322,14 @@ test("live direct-hit pushback relocates the indexed target before later project
     "relocateSpatialIndexEntry(",
     push,
   );
-  const hydro = game.indexOf(
-    "// 1. Hydro Slow status effect",
+  const signatureControl = game.indexOf(
+    "// Signature-driven control effects.",
     push,
   );
 
   assert.ok(push >= 0);
   assert.ok(relocate > push);
-  assert.ok(hydro > relocate);
+  assert.ok(signatureControl > relocate);
 });
 
 test("Splitter spawn inserts the new enemy into the active collision index", () => {

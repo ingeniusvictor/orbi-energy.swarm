@@ -137,7 +137,9 @@ test("gameplay probability rolls remain raw and semantically unchanged", () => {
     ),
   );
   assert.ok(
-    game.includes("Math.random() < 0.22"),
+    game.includes(
+      "Math.random() < profile.criticalChance",
+    ),
   );
   assert.ok(
     game.includes(
@@ -149,7 +151,7 @@ test("gameplay probability rolls remain raw and semantically unchanged", () => {
     "Math.random() < effectiveEliteChance",
   );
   const critIndex = game.indexOf(
-    "Math.random() < 0.22",
+    "Math.random() < profile.criticalChance",
   );
   const mitosisIndex = game.indexOf(
     "Math.random() < mitosisChance",
@@ -160,6 +162,7 @@ test("gameplay probability rolls remain raw and semantically unchanged", () => {
     critIndex,
     mitosisIndex,
   ]) {
+    assert.ok(index >= 0);
     const around = game.slice(
       Math.max(0, index - 120),
       index + 180,

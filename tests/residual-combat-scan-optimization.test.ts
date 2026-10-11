@@ -257,7 +257,7 @@ test("shootFromEnemy no longer filters the projectile array per Drone and update
   );
 });
 
-test("live thermal splash uses indexed candidates in original enemy order without sqrt", () => {
+test("live profile-driven splash uses indexed candidates in original enemy order without sqrt", () => {
   const game = readFileSync(
     new URL(
       "../src/game/EnergySwarmGame.tsx",
@@ -266,32 +266,34 @@ test("live thermal splash uses indexed candidates in original enemy order withou
     "utf8",
   );
   const start = game.indexOf(
-    '// 2. Thermal Splash Area Damage application',
+    "// TERMO, ATON and future GAIA synthesis attacks share one bounded",
   );
   const end = game.indexOf(
-    '// Check destruction of the directly-hit enemy',
+    "// Check destruction of the directly-hit enemy",
     start,
   );
-  const thermal = game.slice(start, end);
+  const splash = game.slice(start, end);
 
+  assert.ok(start >= 0);
+  assert.ok(end > start);
   assert.match(
-    thermal,
+    splash,
     /findAllCollidingSpatialItems\([\s\S]*enemyCollisionIndex,[\s\S]*proj\.x,[\s\S]*proj\.y,[\s\S]*splashRadius/,
   );
   assert.match(
-    thermal,
+    splash,
     /otherEnemy !== enemy &&[\s\S]*!otherEnemy\.isDead/,
   );
   assert.doesNotMatch(
-    thermal,
+    splash,
     /querySpatialIndex|\.filter\(|\.sort\(/,
   );
   assert.doesNotMatch(
-    thermal,
+    splash,
     /enemiesRef\.current\.forEach/,
   );
   assert.doesNotMatch(
-    thermal,
+    splash,
     /Math\.sqrt/,
   );
 });

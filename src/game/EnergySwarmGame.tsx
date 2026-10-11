@@ -162,6 +162,10 @@ import {
   getCollectibleEnergyDefinition,
   getOrbiEnergyByAffinity,
 } from "./orbiEnergyCanon";
+import {
+  getFallbackAttackSignatureForAffinity,
+  getOrbiAttackProfile,
+} from "./orbiAttackProfiles";
 
 type InfiniteBossRematchProfile = Extract<
   InfiniteMilestoneEncounterProfile,
@@ -4394,9 +4398,7 @@ export const EnergySwarmGame: React.FC = () => {
 
     const maxRange =
       300 +
-      (activeFormation === FormationType.SHIELD
-        ? 100
-        : 0);
+      (activeFormation === FormationType.SHIELD ? 100 : 0);
     const nearest = findNearestSpatialItem(
       enemyIndex,
       member.x,
@@ -4404,102 +4406,125 @@ export const EnergySwarmGame: React.FC = () => {
       maxRange,
       (enemy) => !enemy.isDead,
     );
+    if (!nearest.item) return;
 
-    if (nearest.item) {
-      const target = nearest.item;
-      const dx = target.x - member.x;
-      const dy = target.y - member.y;
-      const dist = Math.sqrt(nearest.distanceSquared);
+    const target = nearest.item;
+    const dx = target.x - member.x;
+    const dy = target.y - member.y;
+    const dist = Math.max(0.001, Math.sqrt(nearest.distanceSquared));
+    const affinity = member.affinity || "solar";
+    const signature =
+      member.attackSignature ??
+      getFallbackAttackSignatureForAffinity(affinity);
+    const profile = getOrbiAttackProfile(signature);
+    const formationSpeed =
+      1 + FORMATIONS[activeFormation].projSpeedMod;
+    const baseSpeed =
+      4.5 * formationSpeed * profile.speedMultiplier;
+    const baseAngle = Math.atan2(dy, dx);
+    const critical =
+      profile.criticalChance > 0 &&
+      Math.random() < profile.criticalChance;
+    const baseDamage =
+      4 +
+      (activeFormation === FormationType.CIRCLE ? 1.5 : 0);
+    const primaryDamage =
+      baseDamage *
+      profile.damageMultiplier *
+      (critical ? profile.criticalDamageMultiplier : 1);
 
-      // Weapon vectors and elemental modifications (Section 14)
-      let speedFactor = 1.0;
-      let damageFactor = 1.0;
-      let size = 2.0;
-      let color = member.color;
+    const makeProjectile = (
+      angle: number,
+      damageMultiplier = 1,
+      speedMultiplier = 1,
+      sizeMultiplier = 1,
+      echo = false,
+    ): Projectile => ({
+      id: Math.random().toString(),
+      x: member.x,
+      y: member.y,
+      vx: Math.cos(angle) * baseSpeed * speedMultiplier,
+      vy: Math.sin(angle) * baseSpeed * speedMultiplier,
+      damage: primaryDamage * damageMultiplier,
+      color: member.color,
+      size: profile.projectileSize * sizeMultiplier,
+      fromPlayer: true,
+      life: profile.lifetimeMs,
+      maxLife: profile.lifetimeMs,
+      affinity,
+      energyId: member.energyId ?? profile.energyId,
+      attackSignature: signature,
+      attackShape: profile.shape,
+      rotation: angle,
+      pushMultiplier: profile.pushMultiplier,
+      slowDurationMs: profile.slowDurationMs,
+      splashRadius: profile.splashRadius,
+      splashDamageMultiplier: profile.splashDamageMultiplier,
+      magneticPullRadius: profile.magneticPullRadius,
+      magneticPullStrength: profile.magneticPullStrength,
+      supportShieldRestore: profile.supportShieldRestore,
+      isCriticalShot: echo ? false : critical,
+    });
 
-      const aff = member.affinity || "solar";
-      if (aff === "solar") {
-        speedFactor = 1.25; // Straight golden fast
-        size = 2.2;
-        color = "#f59e0b";
-      } else if (aff === "hydro") {
-        speedFactor = 0.85; // Slower blue pulse
-        size = 3.5;
-        color = "#0ea5e9";
-      } else if (aff === "wind") {
-        speedFactor = 1.6; // Very fast rapid green
-        size = 1.8;
-        color = "#10b981";
-      } else if (aff === "thermal") {
-        speedFactor = 1.0;
-        size = 3.0; // Red splash bullet
-        color = "#ef4444";
-      } else if (aff === "nuclear") {
-        speedFactor = 0.65; // Slow strong violet orb
-        damageFactor = 2.2; // High damage!
-        size = 4.0;
-        color = "#8b5cf6";
-      } else if (aff === "quantum") {
-        speedFactor = 1.1; // Magenta crit shot
-        size = 2.2;
-        color = "#ec4899";
-        // 22% chance of critical strike! (Section 14)
-        if (Math.random() < 0.22) {
-          damageFactor = 2.5;
-          size = 3.2; // Visual size bump for critical shot
-        }
+    projectilesRef.current.push(makeProjectile(baseAngle));
+
+    // QUANTUM phase echoes are bounded by the existing global projectile cap.
+    if (profile.echoAngleRadians > 0) {
+      for (const direction of [-1, 1]) {
+        if (projectilesRef.current.length >= MAX_PROJECTILES) break;
+        projectilesRef.current.push(
+          makeProjectile(
+            baseAngle + profile.echoAngleRadians * direction,
+            profile.echoDamageMultiplier,
+            0.96,
+            0.82,
+            true,
+          ),
+        );
       }
+    }
 
-      const baseSpeed = 4.5 * (1 + FORMATIONS[activeFormation].projSpeedMod) * speedFactor;
-      const vx = (dx / dist) * baseSpeed;
-      const vy = (dy / dist) * baseSpeed;
+    // H2NOVA turns a small portion of each firing cycle into shield support.
+    if (profile.supportShieldRestore > 0) {
+      const shieldMax =
+        SHIELD_MAX +
+        (upgradesLevel.hydrogen_deflector || 0) * 15 +
+        (activeRunUpgradesRef.current.foton_integrity || 0) * 30;
+      shieldRef.current = Math.min(
+        shieldMax,
+        shieldRef.current + profile.supportShieldRestore,
+      );
+    }
 
-      // Damage values based on relic levels
-      const baseDamage = 4 + (activeFormation === FormationType.CIRCLE ? 1.5 : 0); // arrow v damage boost
-      const damage = baseDamage * damageFactor;
+    member.shootCooldown =
+      profile.cooldownFrames *
+      (activeFormation === FormationType.CIRCLE ? 0.78 : 1);
+    playShootSound();
 
-      projectilesRef.current.push({
-        id: Math.random().toString(),
-        x: member.x,
-        y: member.y,
-        vx,
-        vy,
-        damage,
-        color,
-        size,
-        fromPlayer: true,
-        life: 1500,
-        maxLife: 1500,
-        affinity: aff
-      });
+    const recoilForce =
+      Math.min(2.3, 1 + profile.speedMultiplier * 0.35);
+    member.recoilX = -(dx / dist) * recoilForce;
+    member.recoilY = -(dy / dist) * recoilForce;
+    member.flashTicks = 3;
 
-      playShootSound();
-
-      // Apply physical recoil and flash to the firing Orbi member (Section 4.1)
-      const recoilForce = 1.35 * speedFactor;
-      member.recoilX = -(dx / dist) * recoilForce;
-      member.recoilY = -(dy / dist) * recoilForce;
-      member.flashTicks = 3;
-
-      // Mitigation relic 10% double shoot trigger chance per level (Section 15)
-      // + mitotic_mitosis 25% chance per stack to duplicate projectile attacks (no capacity violation)
-      const mitosisChance = 0.1 * (upgradesLevel.mitosis_relic || 0) + 0.25 * (activeRunUpgradesRef.current.mitotic_mitosis || 0);
-      if (mitosisChance > 0 && Math.random() < mitosisChance) {
-        projectilesRef.current.push({
-          id: Math.random().toString(),
-          x: member.x + 4,
-          y: member.y + 4,
-          vx: vx * 0.95,
-          vy: vy * 0.95,
-          damage,
-          color,
-          size,
-          fromPlayer: true,
-          life: 1500,
-          maxLife: 1500,
-          affinity: aff
-        });
-      }
+    const mitosisChance =
+      0.1 * (upgradesLevel.mitosis_relic || 0) +
+      0.25 * (activeRunUpgradesRef.current.mitotic_mitosis || 0);
+    if (
+      projectilesRef.current.length < MAX_PROJECTILES &&
+      mitosisChance > 0 &&
+      Math.random() < mitosisChance
+    ) {
+      const duplicate = makeProjectile(
+        baseAngle + 0.025,
+        0.92,
+        0.95,
+        0.92,
+        true,
+      );
+      duplicate.x += 4;
+      duplicate.y += 4;
+      projectilesRef.current.push(duplicate);
     }
   };
 
@@ -4713,7 +4738,7 @@ export const EnergySwarmGame: React.FC = () => {
 
             // Compute damage modifiers and status flags
             let damageToApply = proj.damage;
-            let isCrit = false;
+            let isCrit = Boolean(proj.isCriticalShot);
             let isShieldBlock = false;
 
             if (enemy.type === EnemyType.BOSS_DEVOURER) {
@@ -4821,7 +4846,8 @@ export const EnergySwarmGame: React.FC = () => {
               enemySignatureBehaviorCacheRef.current.get(enemy);
             const pushFactor =
               basePushFactor *
-              signatureBehavior.projectilePushbackMultiplier;
+              signatureBehavior.projectilePushbackMultiplier *
+              (proj.pushMultiplier ?? 1);
             enemy.x += Math.cos(projAngle) * pushFactor;
             enemy.y += Math.sin(projAngle) * pushFactor;
             relocateSpatialIndexEntry(
@@ -4832,15 +4858,51 @@ export const EnergySwarmGame: React.FC = () => {
               enemy.size,
             );
 
-            // 1. Hydro Slow status effect application (Section 14)
-            if (proj.affinity === "hydro") {
-              enemy.slowTimer = 2500; // Slow speed for 2.5 seconds
+            // Signature-driven control effects. These reuse the collision
+            // spatial index already built for this frame; no full enemy scan.
+            if ((proj.slowDurationMs ?? 0) > 0) {
+              enemy.slowTimer = Math.max(
+                enemy.slowTimer ?? 0,
+                proj.slowDurationMs ?? 0,
+              );
             }
 
-            // 2. Thermal Splash Area Damage application (Section 14)
-            if (proj.affinity === "thermal") {
-              const splashRadius = 55;
-              const splashDamage = damageToApply * 0.45; // 45% of primary bullet damage
+            if (
+              (proj.magneticPullRadius ?? 0) > 0 &&
+              (proj.magneticPullStrength ?? 0) > 0
+            ) {
+              const magneticEntries = findAllCollidingSpatialItems(
+                enemyCollisionIndex,
+                proj.x,
+                proj.y,
+                proj.magneticPullRadius ?? 0,
+                (otherEnemy) => !otherEnemy.isDead,
+              ).entries;
+              magneticEntries.forEach(({ item: otherEnemy, order }) => {
+                if (otherEnemy === enemy || otherEnemy.isBoss) return;
+                const pullX = proj.x - otherEnemy.x;
+                const pullY = proj.y - otherEnemy.y;
+                const pullDistance =
+                  Math.sqrt(pullX * pullX + pullY * pullY) || 1;
+                const pullStrength = proj.magneticPullStrength ?? 0;
+                otherEnemy.x += (pullX / pullDistance) * pullStrength;
+                otherEnemy.y += (pullY / pullDistance) * pullStrength;
+                relocateSpatialIndexEntry(
+                  enemyCollisionIndex,
+                  order,
+                  otherEnemy.x,
+                  otherEnemy.y,
+                  otherEnemy.size,
+                );
+              });
+            }
+
+            // TERMO, ATON and future GAIA synthesis attacks share one bounded
+            // spatial splash traversal but carry different profile radii/power.
+            if ((proj.splashRadius ?? 0) > 0) {
+              const splashRadius = proj.splashRadius ?? 0;
+              const splashDamage =
+                damageToApply * (proj.splashDamageMultiplier ?? 0);
               
               const splashCandidates =
                 findAllCollidingSpatialItems(
