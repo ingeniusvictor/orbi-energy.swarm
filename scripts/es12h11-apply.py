@@ -145,7 +145,7 @@ new_photo_helpers = '''  const cyclePhotoModeFilter = (direction: -1 | 1) => {
 
     const timeout = window.setTimeout(() => {
       setPhotoHintVisible(false);
-    }, 3200);
+    }, 2400);
 
     return () => window.clearTimeout(timeout);
   }, [isPhotoMode, photoHintVisible]);
@@ -177,10 +177,10 @@ text = path.read_text(encoding="utf-8")
 pattern = re.compile(
     r'''      \{isPhotoMode && photoHintVisible && \(\n        <div\n          className="orbi-photo-mode-hint[\s\S]*?        </div>\n      \)\}'''
 )
-replacement = '''      {isPhotoMode && (
+replacement = '''      {isPhotoMode && photoHintVisible && (
         <PhotoModeOverlay
           activeFilterId={photoFilterId}
-          visible={photoHintVisible}
+          visible={true}
           onPrevious={() => cyclePhotoModeFilter(-1)}
           onNext={() => cyclePhotoModeFilter(1)}
           onReset={resetPhotoModeFilter}
@@ -283,7 +283,7 @@ test("H11 photo controls are touch and keyboard accessible and can self-hide", (
   assert.match(photoModeOverlay, /photo-filter-reset/);
   assert.match(photoModeOverlay, /photo-mode-exit/);
   assert.match(game, /window\.addEventListener\("pointerdown", revealPhotoControls/);
-  assert.match(game, /window\.setTimeout\([\s\S]*setPhotoHintVisible\(false\)[\s\S]*3200/);
+  assert.match(game, /window\.setTimeout\([\s\S]*setPhotoHintVisible\(false\)[\s\S]*2400/);
 });
 '''
 append_once(
