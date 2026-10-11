@@ -130,9 +130,12 @@ export const analyzeCertifiedPerformanceEvidenceBundle = (input: {
   const provenance = analyzePerformanceEvidenceProvenance(input);
 
   let triage: PerformanceEvidenceTriage = performance.triage;
-  if (provenance.errors.length > 0) {
+  if (performance.triage === "INVALID" || provenance.errors.length > 0) {
     triage = "INVALID";
-  } else if (provenance.mismatches.length > 0) {
+  } else if (
+    performance.triage === "ENVIRONMENT_MISMATCH" ||
+    provenance.mismatches.length > 0
+  ) {
     triage = "ENVIRONMENT_MISMATCH";
   }
 
