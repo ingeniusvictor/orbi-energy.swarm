@@ -1,0 +1,4155 @@
+
+> orbi-energy-swarm@0.2.0-beta.1 test:platform
+> tsx --test tests/*.test.ts
+
+TAP version 13
+# Subtest: certification matrix covers eight representative device/orientation classes
+ok 1 - certification matrix covers eight representative device/orientation classes
+  ---
+  duration_ms: 1.493344
+  type: 'test'
+  ...
+# Subtest: certification matrix crosses every device with every quality preset
+ok 2 - certification matrix crosses every device with every quality preset
+  ---
+  duration_ms: 5.292394
+  type: 'test'
+  ...
+# Subtest: every representative viewport resolves to its expected composition contract
+ok 3 - every representative viewport resolves to its expected composition contract
+  ---
+  duration_ms: 0.194583
+  type: 'test'
+  ...
+# Subtest: UI DPR never exceeds the global 2x composition ceiling
+ok 4 - UI DPR never exceeds the global 2x composition ceiling
+  ---
+  duration_ms: 0.213341
+  type: 'test'
+  ...
+# Subtest: canvas DPR never exceeds either the selected preset cap or global 2x cap
+ok 5 - canvas DPR never exceeds either the selected preset cap or global 2x cap
+  ---
+  duration_ms: 0.164577
+  type: 'test'
+  ...
+# Subtest: backing store always derives from canonical 800x480 logical space
+ok 6 - backing store always derives from canonical 800x480 logical space
+  ---
+  duration_ms: 0.238899
+  type: 'test'
+  ...
+# Subtest: LOW remains one-DPR even on high-density Android displays
+ok 7 - LOW remains one-DPR even on high-density Android displays
+  ---
+  duration_ms: 0.140511
+  type: 'test'
+  ...
+# Subtest: MEDIUM caps high-DPR Android backing store at 1.5x
+ok 8 - MEDIUM caps high-DPR Android backing store at 1.5x
+  ---
+  duration_ms: 0.136755
+  type: 'test'
+  ...
+# Subtest: HIGH and ULTRA share the 2x DPR ceiling but retain distinct VFX budgets
+ok 9 - HIGH and ULTRA share the 2x DPR ceiling but retain distinct VFX budgets
+  ---
+  duration_ms: 0.216656
+  type: 'test'
+  ...
+# Subtest: projected quality flags exactly mirror canonical quality config
+ok 10 - projected quality flags exactly mirror canonical quality config
+  ---
+  duration_ms: 0.484378
+  type: 'test'
+  ...
+# Subtest: only narrow coarse-pointer phone portrait requests landscape advisory
+ok 11 - only narrow coarse-pointer phone portrait requests landscape advisory
+  ---
+  duration_ms: 0.140121
+  type: 'test'
+  ...
+# Subtest: live game imports stable in-place compaction helper
+ok 12 - live game imports stable in-place compaction helper
+  ---
+  duration_ms: 0.772621
+  type: 'test'
+  ...
+# Subtest: floating text cleanup avoids per-frame filter allocation
+ok 13 - floating text cleanup avoids per-frame filter allocation
+  ---
+  duration_ms: 0.817659
+  type: 'test'
+  ...
+# Subtest: normal enemy cleanup compacts in place with the same dead and world-bound predicates
+ok 14 - normal enemy cleanup compacts in place with the same dead and world-bound predicates
+  ---
+  duration_ms: 2.361779
+  type: 'test'
+  ...
+# Subtest: projectile cleanup compacts in place with identical life and bounds semantics
+ok 15 - projectile cleanup compacts in place with identical life and bounds semantics
+  ---
+  duration_ms: 4.358871
+  type: 'test'
+  ...
+# Subtest: particle cleanup is allocation-free in both normal and cinematic paths
+ok 16 - particle cleanup is allocation-free in both normal and cinematic paths
+  ---
+  duration_ms: 0.501875
+  type: 'test'
+  ...
+# Subtest: boss defeat enemy cleanup also preserves the live array identity
+ok 17 - boss defeat enemy cleanup also preserves the live array identity
+  ---
+  duration_ms: 0.629356
+  type: 'test'
+  ...
+# Subtest: compaction preserves array identity and stable order
+ok 18 - compaction preserves array identity and stable order
+  ---
+  duration_ms: 1.087214
+  type: 'test'
+  ...
+# Subtest: compaction preserves surviving object identities
+ok 19 - compaction preserves surviving object identities
+  ---
+  duration_ms: 0.120761
+  type: 'test'
+  ...
+# Subtest: compaction can retain all entries without reallocating
+ok 20 - compaction can retain all entries without reallocating
+  ---
+  duration_ms: 0.087521
+  type: 'test'
+  ...
+# Subtest: compaction can clear an array in place
+ok 21 - compaction can clear an array in place
+  ---
+  duration_ms: 0.064086
+  type: 'test'
+  ...
+# Subtest: predicate receives original stable read indexes
+ok 22 - predicate receives original stable read indexes
+  ---
+  duration_ms: 0.147111
+  type: 'test'
+  ...
+# Subtest: idle audio mix preserves historical gain on every lane
+ok 23 - idle audio mix preserves historical gain on every lane
+  ---
+  duration_ms: 6.446218
+  type: 'test'
+  ...
+# Subtest: tactical mix ducks only BGM and standard SFX
+ok 24 - tactical mix ducks only BGM and standard SFX
+  ---
+  duration_ms: 0.151097
+  type: 'test'
+  ...
+# Subtest: audio mix contract never boosts a lane above historical gain
+ok 25 - audio mix contract never boosts a lane above historical gain
+  ---
+  duration_ms: 2.173648
+  type: 'test'
+  ...
+# Subtest: overlapping tactical windows extend but never shorten priority
+ok 26 - overlapping tactical windows extend but never shorten priority
+  ---
+  duration_ms: 0.184668
+  type: 'test'
+  ...
+# Subtest: priority window projection sanitizes malformed timing inputs
+ok 27 - priority window projection sanitizes malformed timing inputs
+  ---
+  duration_ms: 0.083376
+  type: 'test'
+  ...
+# Subtest: audio engine owns an extend-only tactical priority window
+ok 28 - audio engine owns an extend-only tactical priority window
+  ---
+  duration_ms: 0.812451
+  type: 'test'
+  ...
+# Subtest: shared createGain applies lane-aware mix without changing decay timing
+ok 29 - shared createGain applies lane-aware mix without changing decay timing
+  ---
+  duration_ms: 0.12609
+  type: 'test'
+  ...
+# Subtest: BGM computes historical base volume then applies BGM lane mix
+ok 30 - BGM computes historical base volume then applies BGM lane mix
+  ---
+  duration_ms: 0.093019
+  type: 'test'
+  ...
+# Subtest: all dedicated boss cues open tactical priority before emitting audio
+ok 31 - all dedicated boss cues open tactical priority before emitting audio
+  ---
+  duration_ms: 0.157637
+  type: 'test'
+  ...
+# Subtest: boss helper gains stay on the TACTICAL lane
+ok 32 - boss helper gains stay on the TACTICAL lane
+  ---
+  duration_ms: 0.187011
+  type: 'test'
+  ...
+# Subtest: shared disruptor cues support tactical priority without changing ordinary default
+ok 33 - shared disruptor cues support tactical priority without changing ordinary default
+  ---
+  duration_ms: 0.096215
+  type: 'test'
+  ...
+# Subtest: boss dispatch explicitly promotes shared disruptor cues while ordinary calls remain standard
+ok 34 - boss dispatch explicitly promotes shared disruptor cues while ordinary calls remain standard
+  ---
+  duration_ms: 0.251929
+  type: 'test'
+  ...
+# Subtest: audio priority adoption does not alter boss timing constants or attack state
+ok 35 - audio priority adoption does not alter boss timing constants or attack state
+  ---
+  duration_ms: 0.115073
+  type: 'test'
+  ...
+# Subtest: all canonical Devourer attacks resolve localized counterplay hints
+ok 36 - all canonical Devourer attacks resolve localized counterplay hints
+  ---
+  duration_ms: 0.765481
+  type: 'test'
+  ...
+# Subtest: attack resolution supports canonical IDs and rejects unknown labels
+ok 37 - attack resolution supports canonical IDs and rejects unknown labels
+  ---
+  duration_ms: 0.236576
+  type: 'test'
+  ...
+# Subtest: boss HUD keeps counter hints behind existing label visibility
+ok 38 - boss HUD keeps counter hints behind existing label visibility
+  ---
+  duration_ms: 0.296495
+  type: 'test'
+  ...
+# Subtest: Devourer pursuit pressure increases by phase while radial standoff shrinks
+ok 39 - Devourer pursuit pressure increases by phase while radial standoff shrinks
+  ---
+  duration_ms: 0.696467
+  type: 'test'
+  ...
+# Subtest: all phases pursue the player in both axes from long range
+ok 40 - all phases pursue the player in both axes from long range
+  ---
+  duration_ms: 2.395178
+  type: 'test'
+  ...
+# Subtest: long-range catch-up visibly exceeds the base phase step
+ok 41 - long-range catch-up visibly exceeds the base phase step
+  ---
+  duration_ms: 0.135984
+  type: 'test'
+  ...
+# Subtest: pursuit is frame-delta bounded and cannot teleport
+ok 42 - pursuit is frame-delta bounded and cannot teleport
+  ---
+  duration_ms: 0.086811
+  type: 'test'
+  ...
+# Subtest: pursuit respects world margin at every phase
+ok 43 - pursuit respects world margin at every phase
+  ---
+  duration_ms: 0.210766
+  type: 'test'
+  ...
+# Subtest: pursuit holds position once the phase radial standoff is reached
+ok 44 - pursuit holds position once the phase radial standoff is reached
+  ---
+  duration_ms: 0.107812
+  type: 'test'
+  ...
+# Subtest: campaign handoff checkpoints victory but leaves final telemetry uncommitted
+ok 45 - campaign handoff checkpoints victory but leaves final telemetry uncommitted
+  ---
+  duration_ms: 6.996409
+  type: 'test'
+  ...
+# Subtest: campaign handoff creates an active Sector 11 Wave 1 infinite session
+ok 46 - campaign handoff creates an active Sector 11 Wave 1 infinite session
+  ---
+  duration_ms: 0.506341
+  type: 'test'
+  ...
+# Subtest: campaign handoff exposes a matching infinite runtime descriptor
+ok 47 - campaign handoff exposes a matching infinite runtime descriptor
+  ---
+  duration_ms: 3.557406
+  type: 'test'
+  ...
+# Subtest: handoff is deterministic for the same seed and context
+ok 48 - handoff is deterministic for the same seed and context
+  ---
+  duration_ms: 1.411712
+  type: 'test'
+  ...
+# Subtest: reusing the returned ledger never double-counts campaign victory
+ok 49 - reusing the returned ledger never double-counts campaign victory
+  ---
+  duration_ms: 0.595285
+  type: 'test'
+  ...
+# Subtest: campaign guide preserves the six-stage learning arc through Sector 10
+ok 50 - campaign guide preserves the six-stage learning arc through Sector 10
+  ---
+  duration_ms: 1.088836
+  type: 'test'
+  ...
+# Subtest: campaign guide exposes bilingual contextual objectives
+ok 51 - campaign guide exposes bilingual contextual objectives
+  ---
+  duration_ms: 0.262564
+  type: 'test'
+  ...
+# Subtest: start screen surfaces the campaign arc without changing launch semantics
+ok 52 - start screen surfaces the campaign arc without changing launch semantics
+  ---
+  duration_ms: 0.307973
+  type: 'test'
+  ...
+# Subtest: HUD reads objectives from the canonical campaign guide
+ok 53 - HUD reads objectives from the canonical campaign guide
+  ---
+  duration_ms: 0.202485
+  type: 'test'
+  ...
+# Subtest: campaign guide remains presentation-only
+ok 54 - campaign guide remains presentation-only
+  ---
+  duration_ms: 0.211347
+  type: 'test'
+  ...
+# Subtest: player-facing campaign arc does not promise unimplemented endless mode
+ok 55 - player-facing campaign arc does not promise unimplemented endless mode
+  ---
+  duration_ms: 0.242605
+  type: 'test'
+  ...
+# Subtest: campaign runtime reaches the unified certified descriptor router through the projection cache
+ok 56 - campaign runtime reaches the unified certified descriptor router through the projection cache
+  ---
+  duration_ms: 1.060844
+  type: 'test'
+  ...
+# Subtest: regular enemy spawning no longer reads WaveConfig directly
+ok 57 - regular enemy spawning no longer reads WaveConfig directly
+  ---
+  duration_ms: 0.218138
+  type: 'test'
+  ...
+# Subtest: wave spawn cadence and budget are descriptor-backed
+ok 58 - wave spawn cadence and budget are descriptor-backed
+  ---
+  duration_ms: 0.161282
+  type: 'test'
+  ...
+# Subtest: campaign wave activation uses descriptor metadata and boss policy
+ok 59 - campaign wave activation uses descriptor metadata and boss policy
+  ---
+  duration_ms: 0.15363
+  type: 'test'
+  ...
+# Subtest: CORE_DROP_BOOST reads the runtime descriptor in both kill paths
+ok 60 - CORE_DROP_BOOST reads the runtime descriptor in both kill paths
+  ---
+  duration_ms: 0.154583
+  type: 'test'
+  ...
+# Subtest: game imports the bounded single-particle VFX helper
+ok 61 - game imports the bounded single-particle VFX helper
+  ---
+  duration_ms: 0.701464
+  type: 'test'
+  ...
+# Subtest: live VFX helper uses the current quality preset particle cap
+ok 62 - live VFX helper uses the current quality preset particle cap
+  ---
+  duration_ms: 0.154282
+  type: 'test'
+  ...
+# Subtest: no direct gameplay particle push remains outside the shared particle system
+ok 63 - no direct gameplay particle push remains outside the shared particle system
+  ---
+  duration_ms: 0.17277
+  type: 'test'
+  ...
+# Subtest: all six historical direct boss/cinematic VFX sites now use the bounded helper
+ok 64 - all six historical direct boss/cinematic VFX sites now use the bounded helper
+  ---
+  duration_ms: 0.183105
+  type: 'test'
+  ...
+# Subtest: VFX budget adoption preserves historical baseline probabilities after cadence normalization
+ok 65 - VFX budget adoption preserves historical baseline probabilities after cadence normalization
+  ---
+  duration_ms: 0.274432
+  type: 'test'
+  ...
+# Subtest: existing bounded triggerExplosion paths remain in use
+ok 66 - existing bounded triggerExplosion paths remain in use
+  ---
+  duration_ms: 0.097807
+  type: 'test'
+  ...
+# Subtest: living standard count preserves !dead && !boss semantics
+ok 67 - living standard count preserves !dead && !boss semantics
+  ---
+  duration_ms: 0.703797
+  type: 'test'
+  ...
+# Subtest: active evolved count preserves living non-boss evolved semantics
+ok 68 - active evolved count preserves living non-boss evolved semantics
+  ---
+  duration_ms: 0.144437
+  type: 'test'
+  ...
+# Subtest: minion count preserves enemy type and isMinion predicate
+ok 69 - minion count preserves enemy type and isMinion predicate
+  ---
+  duration_ms: 0.117607
+  type: 'test'
+  ...
+# Subtest: living count preserves !dead semantics including bosses
+ok 70 - living count preserves !dead semantics including bosses
+  ---
+  duration_ms: 0.159029
+  type: 'test'
+  ...
+# Subtest: count helpers do not mutate source arrays or enemies
+ok 71 - count helpers do not mutate source arrays or enemies
+  ---
+  duration_ms: 0.637017
+  type: 'test'
+  ...
+# Subtest: same enemy identity projects signature behavior only once
+ok 72 - same enemy identity projects signature behavior only once
+  ---
+  duration_ms: 1.705163
+  type: 'test'
+  ...
+# Subtest: different enemy identities remain independently cached
+ok 73 - different enemy identities remain independently cached
+  ---
+  duration_ms: 0.214683
+  type: 'test'
+  ...
+# Subtest: neutral enemies retain the exact certified neutral projection
+ok 74 - neutral enemies retain the exact certified neutral projection
+  ---
+  duration_ms: 0.177228
+  type: 'test'
+  ...
+# Subtest: all evolved signatures retain certified behavior through the cache
+ok 75 - all evolved signatures retain certified behavior through the cache
+  ---
+  duration_ms: 0.239816
+  type: 'test'
+  ...
+# Subtest: live runtime has no direct signature projector calls in hot gameplay paths
+ok 76 - live runtime has no direct signature projector calls in hot gameplay paths
+  ---
+  duration_ms: 1.039186
+  type: 'test'
+  ...
+# Subtest: evolved signature and intensity are assigned at spawn and never mutated later
+ok 77 - evolved signature and intensity are assigned at spawn and never mutated later
+  ---
+  duration_ms: 1.199445
+  type: 'test'
+  ...
+# Subtest: Dyson normals form a real symmetric three-plane triad
+ok 78 - Dyson normals form a real symmetric three-plane triad
+  ---
+  duration_ms: 1.367517
+  type: 'test'
+  ...
+# Subtest: Star Matrix and X-Guard remain bounded for large swarms
+ok 79 - Star Matrix and X-Guard remain bounded for large swarms
+  ---
+  duration_ms: 0.743842
+  type: 'test'
+  ...
+# Subtest: Infinite challenge begins evolving enemies from Sector 11
+ok 80 - Infinite challenge begins evolving enemies from Sector 11
+  ---
+  duration_ms: 2.015653
+  type: 'test'
+  ...
+# Subtest: Sector 11 pressure is higher but remains bounded
+ok 81 - Sector 11 pressure is higher but remains bounded
+  ---
+  duration_ms: 0.168243
+  type: 'test'
+  ...
+# Subtest: storage normalizes persisted flashIntensity through the accessibility contract
+ok 82 - storage normalizes persisted flashIntensity through the accessibility contract
+  ---
+  duration_ms: 0.678529
+  type: 'test'
+  ...
+# Subtest: Canvas wrapper projects flash mode and removes repeated overlay flicker in REDUCED
+ok 83 - Canvas wrapper projects flash mode and removes repeated overlay flicker in REDUCED
+  ---
+  duration_ms: 0.142207
+  type: 'test'
+  ...
+# Subtest: FOTON disappearance flicker remains exclusive to the projected FULL behavior
+ok 84 - FOTON disappearance flicker remains exclusive to the projected FULL behavior
+  ---
+  duration_ms: 0.116722
+  type: 'test'
+  ...
+# Subtest: friendly shoot flash preserves FULL white fill and REDUCED member color
+ok 85 - friendly shoot flash preserves FULL white fill and REDUCED member color
+  ---
+  duration_ms: 0.104622
+  type: 'test'
+  ...
+# Subtest: enemy FULL flash retains historical white replacement and early return
+ok 86 - enemy FULL flash retains historical white replacement and early return
+  ---
+  duration_ms: 0.094664
+  type: 'test'
+  ...
+# Subtest: enemy REDUCED flash is a bounded highlight and does not early-return
+ok 87 - enemy REDUCED flash is a bounded highlight and does not early-return
+  ---
+  duration_ms: 0.088053
+  type: 'test'
+  ...
+# Subtest: game render loop projects one flash profile and passes it to enemies, swarm and FOTON
+ok 88 - game render loop projects one flash profile and passes it to enemies, swarm and FOTON
+  ---
+  duration_ms: 0.214402
+  type: 'test'
+  ...
+# Subtest: React Canvas receives the persisted flash setting
+ok 89 - React Canvas receives the persisted flash setting
+  ---
+  duration_ms: 0.123083
+  type: 'test'
+  ...
+# Subtest: flash accessibility adoption never conditions gameplay telegraphs
+ok 90 - flash accessibility adoption never conditions gameplay telegraphs
+  ---
+  duration_ms: 0.211437
+  type: 'test'
+  ...
+# Subtest: FULL preserves the historical flash profile
+ok 91 - FULL preserves the historical flash profile
+  ---
+  duration_ms: 1.115899
+  type: 'test'
+  ...
+# Subtest: REDUCED bounds all high-intensity flash axes
+ok 92 - REDUCED bounds all high-intensity flash axes
+  ---
+  duration_ms: 0.174494
+  type: 'test'
+  ...
+# Subtest: malformed flash settings fail safe to REDUCED
+ok 93 - malformed flash settings fail safe to REDUCED
+  ---
+  duration_ms: 0.150742
+  type: 'test'
+  ...
+# Subtest: touch carousel preserves all six canonical formation identities
+ok 94 - touch carousel preserves all six canonical formation identities
+  ---
+  duration_ms: 1.100082
+  type: 'test'
+  ...
+# Subtest: formation cycling wraps in both directions
+ok 95 - formation cycling wraps in both directions
+  ---
+  duration_ms: 0.133392
+  type: 'test'
+  ...
+# Subtest: mobile formation controls reuse the canonical formation-change path
+ok 96 - mobile formation controls reuse the canonical formation-change path
+  ---
+  duration_ms: 1.091597
+  type: 'test'
+  ...
+# Subtest: right-thumb carousel is safe-area aware and coarse-pointer scoped
+ok 97 - right-thumb carousel is safe-area aware and coarse-pointer scoped
+  ---
+  duration_ms: 0.367098
+  type: 'test'
+  ...
+# Subtest: portrait orientation guidance clears the formation control footprint
+ok 98 - portrait orientation guidance clears the formation control footprint
+  ---
+  duration_ms: 0.275639
+  type: 'test'
+  ...
+# Subtest: LOW keeps the CSS-only command core and avoids a WebGL runtime
+ok 99 - LOW keeps the CSS-only command core and avoids a WebGL runtime
+  ---
+  duration_ms: 0.812833
+  type: 'test'
+  ...
+# Subtest: menu 3D cadence and DPR remain bounded by quality tier
+ok 100 - menu 3D cadence and DPR remain bounded by quality tier
+  ---
+  duration_ms: 0.597839
+  type: 'test'
+  ...
+# Subtest: Foton renderer is lazy-mounted only through the MAIN start tab
+ok 101 - Foton renderer is lazy-mounted only through the MAIN start tab
+  ---
+  duration_ms: 0.217949
+  type: 'test'
+  ...
+# Subtest: Foton GLB is a real binary glTF asset with expected audit scale
+ok 102 - Foton GLB is a real binary glTF asset with expected audit scale
+  ---
+  duration_ms: 1.367286
+  type: 'test'
+  ...
+# Subtest: Three.js dependency is reproducibly locked
+ok 103 - Three.js dependency is reproducibly locked
+  ---
+  duration_ms: 0.121141
+  type: 'test'
+  ...
+# Subtest: GLB URL respects the active Vite hosting base path
+ok 104 - GLB URL respects the active Vite hosting base path
+  ---
+  duration_ms: 0.066115
+  type: 'test'
+  ...
+# Subtest: menu renderer pauses useful work while hidden and honors reduced motion
+ok 105 - menu renderer pauses useful work while hidden and honors reduced motion
+  ---
+  duration_ms: 0.21245
+  type: 'test'
+  ...
+# Subtest: renderer resources are disposed when the MAIN hero unmounts
+ok 106 - renderer resources are disposed when the MAIN hero unmounts
+  ---
+  duration_ms: 0.095777
+  type: 'test'
+  ...
+# Subtest: pointer parallax remains bounded and cosmetic
+ok 107 - pointer parallax remains bounded and cosmetic
+  ---
+  duration_ms: 0.262105
+  type: 'test'
+  ...
+# Subtest: EnergySwarmGame stays decoupled from Three.js and the menu hero
+ok 108 - EnergySwarmGame stays decoupled from Three.js and the menu hero
+  ---
+  duration_ms: 0.519723
+  type: 'test'
+  ...
+# Subtest: CSS command core remains a complete fallback beneath READY WebGL
+ok 109 - CSS command core remains a complete fallback beneath READY WebGL
+  ---
+  duration_ms: 0.109801
+  type: 'test'
+  ...
+# Subtest: true collected-Orbi progression unlocks one ring for 0-9
+ok 110 - true collected-Orbi progression unlocks one ring for 0-9
+  ---
+  duration_ms: 0.847132
+  type: 'test'
+  ...
+# Subtest: true collected-Orbi progression unlocks cyan plus emerald for 10-19
+ok 111 - true collected-Orbi progression unlocks cyan plus emerald for 10-19
+  ---
+  duration_ms: 0.208242
+  type: 'test'
+  ...
+# Subtest: true collected-Orbi progression caps at three rings from 20 onward
+ok 112 - true collected-Orbi progression caps at three rings from 20 onward
+  ---
+  duration_ms: 0.10382
+  type: 'test'
+  ...
+# Subtest: swarm-size helper never subtracts a phantom starting companion
+ok 113 - swarm-size helper never subtracts a phantom starting companion
+  ---
+  duration_ms: 0.109129
+  type: 'test'
+  ...
+# Subtest: invalid or negative counts fail safe to the base cyan ring
+ok 114 - invalid or negative counts fail safe to the base cyan ring
+  ---
+  duration_ms: 0.079859
+  type: 'test'
+  ...
+# Subtest: ring palette is bright neon cyan emerald and gold with red tactical accents
+ok 115 - ring palette is bright neon cyan emerald and gold with red tactical accents
+  ---
+  duration_ms: 0.641365
+  type: 'test'
+  ...
+# Subtest: rings share one exact Dyson-sphere radius and form a symmetric atomic triad
+not ok 116 - rings share one exact Dyson-sphere radius and form a symmetric atomic triad
+  ---
+  duration_ms: 2.240022
+  type: 'test'
+  location: '/home/runner/work/orbi-energy.swarm/orbi-energy.swarm/tests/foton-dyson-halo.test.ts:1:2019'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+    
+    + undefined
+    - [
+    -   1.08,
+    -   0,
+    -   0
+    - ]
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0: 1.08
+    1: 0
+    2: 0
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (/home/runner/work/orbi-energy.swarm/orbi-energy.swarm/tests/foton-dyson-halo.test.ts:69:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: rings keep distinct slow orbital velocities
+ok 117 - rings keep distinct slow orbital velocities
+  ---
+  duration_ms: 0.222256
+  type: 'test'
+  ...
+# Subtest: every ring owns a mechanical rail, brighter energy conduit and segmented language
+ok 118 - every ring owns a mechanical rail, brighter energy conduit and segmented language
+  ---
+  duration_ms: 0.338228
+  type: 'test'
+  ...
+# Subtest: unlocked ring helper returns no more than the canonical three descriptors
+ok 119 - unlocked ring helper returns no more than the canonical three descriptors
+  ---
+  duration_ms: 0.465769
+  type: 'test'
+  ...
+# Subtest: gameplay GLB keeps bounded quality-tier cadence
+ok 120 - gameplay GLB keeps bounded quality-tier cadence
+  ---
+  duration_ms: 1.136926
+  type: 'test'
+  ...
+# Subtest: gameplay GLB body target stays exactly 25 percent smaller while halo composite adds transparent orbital room
+ok 121 - gameplay GLB body target stays exactly 25 percent smaller while halo composite adds transparent orbital room
+  ---
+  duration_ms: 0.144992
+  type: 'test'
+  ...
+# Subtest: all quality tiers keep GLB enabled
+ok 122 - all quality tiers keep GLB enabled
+  ---
+  duration_ms: 0.131148
+  type: 'test'
+  ...
+# Subtest: integrity state maps high shield to HEALTHY cyan
+ok 123 - integrity state maps high shield to HEALTHY cyan
+  ---
+  duration_ms: 1.982455
+  type: 'test'
+  ...
+# Subtest: integrity state maps medium shield to PRESSURED amber
+ok 124 - integrity state maps medium shield to PRESSURED amber
+  ---
+  duration_ms: 0.120489
+  type: 'test'
+  ...
+# Subtest: integrity state maps low shield to CRITICAL rose
+ok 125 - integrity state maps low shield to CRITICAL rose
+  ---
+  duration_ms: 0.087232
+  type: 'test'
+  ...
+# Subtest: non-finite shield input fails closed as critical zero integrity
+ok 126 - non-finite shield input fails closed as critical zero integrity
+  ---
+  duration_ms: 0.068419
+  type: 'test'
+  ...
+# Subtest: tactical Foton lens points toward cursor without moving the avatar body
+ok 127 - tactical Foton lens points toward cursor without moving the avatar body
+  ---
+  duration_ms: 0.810529
+  type: 'test'
+  ...
+# Subtest: tactical Foton shell pulse stays visually subtle
+ok 128 - tactical Foton shell pulse stays visually subtle
+  ---
+  duration_ms: 0.222958
+  type: 'test'
+  ...
+# Subtest: scan angle advances deterministically from elapsed gameplay time
+ok 129 - scan angle advances deterministically from elapsed gameplay time
+  ---
+  duration_ms: 1.706596
+  type: 'test'
+  ...
+# Subtest: threat tracking cadence stays low frequency
+ok 130 - threat tracking cadence stays low frequency
+  ---
+  duration_ms: 0.856679
+  type: 'test'
+  ...
+# Subtest: active boss ref has visual gaze priority over nearer regular enemies
+ok 131 - active boss ref has visual gaze priority over nearer regular enemies
+  ---
+  duration_ms: 0.412657
+  type: 'test'
+  ...
+# Subtest: nearest living enemy is selected from the spatial index inside bounded range
+ok 132 - nearest living enemy is selected from the spatial index inside bounded range
+  ---
+  duration_ms: 0.36868
+  type: 'test'
+  ...
+# Subtest: current target object is retained across small distance changes
+ok 133 - current target object is retained across small distance changes
+  ---
+  duration_ms: 0.183639
+  type: 'test'
+  ...
+# Subtest: current target is replaced when another indexed threat is clearly closer
+ok 134 - current target is replaced when another indexed threat is clearly closer
+  ---
+  duration_ms: 0.248692
+  type: 'test'
+  ...
+# Subtest: threats outside range do not control Foton gaze
+ok 135 - threats outside range do not control Foton gaze
+  ---
+  duration_ms: 0.13842
+  type: 'test'
+  ...
+# Subtest: projected gaze direction is normalized
+ok 136 - projected gaze direction is normalized
+  ---
+  duration_ms: 0.197544
+  type: 'test'
+  ...
+# Subtest: no threat produces a neutral gaze request
+ok 137 - no threat produces a neutral gaze request
+  ---
+  duration_ms: 0.062929
+  type: 'test'
+  ...
+# Subtest: live game imports frame health monitor primitives
+ok 138 - live game imports frame health monitor primitives
+  ---
+  duration_ms: 0.776777
+  type: 'test'
+  ...
+# Subtest: every new run starts with fresh frame health state
+ok 139 - every new run starts with fresh frame health state
+  ---
+  duration_ms: 0.198699
+  type: 'test'
+  ...
+# Subtest: pause and upgrade modal gaps do not contaminate sustained samples
+ok 140 - pause and upgrade modal gaps do not contaminate sustained samples
+  ---
+  duration_ms: 0.181252
+  type: 'test'
+  ...
+# Subtest: monitor observes the same post-clamp active delta used by the frame
+ok 141 - monitor observes the same post-clamp active delta used by the frame
+  ---
+  duration_ms: 0.188783
+  type: 'test'
+  ...
+# Subtest: monitor uses the authoritative current quality preset
+ok 142 - monitor uses the authoritative current quality preset
+  ---
+  duration_ms: 0.155894
+  type: 'test'
+  ...
+# Subtest: sustained recommendation is advisory and deduplicated
+ok 143 - sustained recommendation is advisory and deduplicated
+  ---
+  duration_ms: 0.228964
+  type: 'test'
+  ...
+# Subtest: live monitor never changes or persists the user's quality preset
+ok 144 - live monitor never changes or persists the user's quality preset
+  ---
+  duration_ms: 0.201393
+  type: 'test'
+  ...
+# Subtest: lifecycle clock discontinuities clear in-progress samples
+ok 145 - lifecycle clock discontinuities clear in-progress samples
+  ---
+  duration_ms: 0.091237
+  type: 'test'
+  ...
+# Subtest: monitor does not claim device temperature or thermal state
+ok 146 - monitor does not claim device temperature or thermal state
+  ---
+  duration_ms: 0.501824
+  type: 'test'
+  ...
+# Subtest: 60 Hz-like cadence is healthy
+ok 147 - 60 Hz-like cadence is healthy
+  ---
+  duration_ms: 2.856272
+  type: 'test'
+  ...
+# Subtest: 90 and 120 Hz cadences remain healthy
+ok 148 - 90 and 120 Hz cadences remain healthy
+  ---
+  duration_ms: 2.369912
+  type: 'test'
+  ...
+# Subtest: moderate sustained slow frames classify as pressured
+ok 149 - moderate sustained slow frames classify as pressured
+  ---
+  duration_ms: 0.204667
+  type: 'test'
+  ...
+# Subtest: heavy frame loss classifies as critical
+ok 150 - heavy frame loss classifies as critical
+  ---
+  duration_ms: 0.154913
+  type: 'test'
+  ...
+# Subtest: one degraded window does not recommend a downgrade
+ok 151 - one degraded window does not recommend a downgrade
+  ---
+  duration_ms: 0.239329
+  type: 'test'
+  ...
+# Subtest: two consecutive degraded windows recommend exactly one lower tier
+ok 152 - two consecutive degraded windows recommend exactly one lower tier
+  ---
+  duration_ms: 0.433381
+  type: 'test'
+  ...
+# Subtest: healthy recovery resets the consecutive pressure counter
+ok 153 - healthy recovery resets the consecutive pressure counter
+  ---
+  duration_ms: 1.034315
+  type: 'test'
+  ...
+# Subtest: quality recommendation steps down one tier and never below LOW
+ok 154 - quality recommendation steps down one tier and never below LOW
+  ---
+  duration_ms: 0.097607
+  type: 'test'
+  ...
+# Subtest: LOW pressure remains advisory without a lower preset
+ok 155 - LOW pressure remains advisory without a lower preset
+  ---
+  duration_ms: 0.385299
+  type: 'test'
+  ...
+# Subtest: invalid deltas fail closed without mutating state
+ok 156 - invalid deltas fail closed without mutating state
+  ---
+  duration_ms: 0.729716
+  type: 'test'
+  ...
+# Subtest: monitor clamps pathological active deltas to its safe sample ceiling
+ok 157 - monitor clamps pathological active deltas to its safe sample ceiling
+  ---
+  duration_ms: 0.127792
+  type: 'test'
+  ...
+# Subtest: reset clears sampling and sustained-pressure continuity
+ok 158 - reset clears sampling and sustained-pressure continuity
+  ---
+  duration_ms: 0.346892
+  type: 'test'
+  ...
+# Subtest: GAIA synthesis requires the eight followers around permanent FOTON
+ok 159 - GAIA synthesis requires the eight followers around permanent FOTON
+  ---
+  duration_ms: 1.309188
+  type: 'test'
+  ...
+# Subtest: duplicate energy does not advance distinct GAIA progress
+ok 160 - duplicate energy does not advance distinct GAIA progress
+  ---
+  duration_ms: 0.268333
+  type: 'test'
+  ...
+# Subtest: one complete prerequisite set creates one GAIA level and resets cycle mask
+ok 161 - one complete prerequisite set creates one GAIA level and resets cycle mask
+  ---
+  duration_ms: 0.2065
+  type: 'test'
+  ...
+# Subtest: each later full set levels the same GAIA progression again
+ok 162 - each later full set levels the same GAIA progression again
+  ---
+  duration_ms: 0.193921
+  type: 'test'
+  ...
+# Subtest: FOTON and GAIA themselves are not follower prerequisites
+ok 163 - FOTON and GAIA themselves are not follower prerequisites
+  ---
+  duration_ms: 0.151708
+  type: 'test'
+  ...
+# Subtest: GAIA combat evolution is meaningful but hard bounded
+ok 164 - GAIA combat evolution is meaningful but hard bounded
+  ---
+  duration_ms: 0.236335
+  type: 'test'
+  ...
+# Subtest: out-of-order acquisition with duplicates completes exactly once per eight unique energies
+ok 165 - out-of-order acquisition with duplicates completes exactly once per eight unique energies
+  ---
+  duration_ms: 0.176335
+  type: 'test'
+  ...
+# Subtest: partial second cycle preserves GAIA level until all distinct energies return
+ok 166 - partial second cycle preserves GAIA level until all distinct energies return
+  ---
+  duration_ms: 0.096024
+  type: 'test'
+  ...
+# Subtest: GAIA synthesis is independent of swarm occupancy and does not mutate previous state
+ok 167 - GAIA synthesis is independent of swarm occupancy and does not mutate previous state
+  ---
+  duration_ms: 0.223636
+  type: 'test'
+  ...
+# Subtest: GAIA progression resets cleanly for a new run
+ok 168 - GAIA progression resets cleanly for a new run
+  ---
+  duration_ms: 0.394102
+  type: 'test'
+  ...
+# Subtest: GAIA combat caps hold across a long progression sequence
+ok 169 - GAIA combat caps hold across a long progression sequence
+  ---
+  duration_ms: 4.15265
+  type: 'test'
+  ...
+# Subtest: GAIA progress helper reports unique energy bits in bounded state
+ok 170 - GAIA progress helper reports unique energy bits in bounded state
+  ---
+  duration_ms: 0.110046
+  type: 'test'
+  ...
+# Subtest: canvas DPR normalization preserves quality without unbounded pixel cost
+ok 171 - canvas DPR normalization preserves quality without unbounded pixel cost
+  ---
+  duration_ms: 0.586231
+  type: 'test'
+  ...
+# Subtest: backing store scales independently from the logical 800x480 game space
+ok 172 - backing store scales independently from the logical 800x480 game space
+  ---
+  duration_ms: 0.569536
+  type: 'test'
+  ...
+# Subtest: render loop resets context transform from physical pixels to logical coordinates
+ok 173 - render loop resets context transform from physical pixels to logical coordinates
+  ---
+  duration_ms: 1.101626
+  type: 'test'
+  ...
+# Subtest: canvas component synchronizes backing store on viewport changes
+ok 174 - canvas component synchronizes backing store on viewport changes
+  ---
+  duration_ms: 0.155243
+  type: 'test'
+  ...
+# Subtest: portrait guidance is advisory, dismissible and coarse-pointer scoped
+ok 175 - portrait guidance is advisory, dismissible and coarse-pointer scoped
+  ---
+  duration_ms: 1.148075
+  type: 'test'
+  ...
+# Subtest: neutral context produces zero pressure delta
+ok 176 - neutral context produces zero pressure delta
+  ---
+  duration_ms: 0.857418
+  type: 'test'
+  ...
+# Subtest: context modulation is bounded to plus or minus eight percent
+ok 177 - context modulation is bounded to plus or minus eight percent
+  ---
+  duration_ms: 0.149605
+  type: 'test'
+  ...
+# Subtest: signals are normalized and non-finite values are rejected
+ok 178 - signals are normalized and non-finite values are rejected
+  ---
+  duration_ms: 0.729547
+  type: 'test'
+  ...
+# Subtest: same baseline and context produce identical contextual recipes
+ok 179 - same baseline and context produce identical contextual recipes
+  ---
+  duration_ms: 0.936166
+  type: 'test'
+  ...
+# Subtest: context transformation does not mutate the baseline recipe
+ok 180 - context transformation does not mutate the baseline recipe
+  ---
+  duration_ms: 0.303897
+  type: 'test'
+  ...
+# Subtest: strong context increases selected pressure while struggling context reduces it
+ok 181 - strong context increases selected pressure while struggling context reduces it
+  ---
+  duration_ms: 0.289625
+  type: 'test'
+  ...
+# Subtest: fairness, composition, mutators and milestones are never altered by context
+ok 182 - fairness, composition, mutators and milestones are never altered by context
+  ---
+  duration_ms: 0.247902
+  type: 'test'
+  ...
+# Subtest: representative contexts remain valid through Sector 1000
+ok 183 - representative contexts remain valid through Sector 1000
+  ---
+  duration_ms: 43.750492
+  type: 'test'
+  ...
+# Subtest: execution plan preserves source identity and deterministic traceability
+ok 184 - execution plan preserves source identity and deterministic traceability
+  ---
+  duration_ms: 5.918464
+  type: 'test'
+  ...
+# Subtest: execution plan does not alias mutable source arrays
+ok 185 - execution plan does not alias mutable source arrays
+  ---
+  duration_ms: 1.606013
+  type: 'test'
+  ...
+# Subtest: execution plans remain traceable and valid for Sectors 11–1000
+ok 186 - execution plans remain traceable and valid for Sectors 11–1000
+  ---
+  duration_ms: 74.942228
+  type: 'test'
+  ...
+# Subtest: execution adapter rejects a wave from another sector
+ok 187 - execution adapter rejects a wave from another sector
+  ---
+  duration_ms: 0.433081
+  type: 'test'
+  ...
+# Subtest: validator catches broken traceability and spawn mapping
+ok 188 - validator catches broken traceability and spawn mapping
+  ---
+  duration_ms: 0.212109
+  type: 'test'
+  ...
+# Subtest: builder returns one fully certified inspectable sector plan
+ok 189 - builder returns one fully certified inspectable sector plan
+  ---
+  duration_ms: 8.613373
+  type: 'test'
+  ...
+# Subtest: same sector, seed and context produce identical certified plans
+ok 190 - same sector, seed and context produce identical certified plans
+  ---
+  duration_ms: 4.092359
+  type: 'test'
+  ...
+# Subtest: context changes effective plan identity without changing baseline identity
+ok 191 - context changes effective plan identity without changing baseline identity
+  ---
+  duration_ms: 0.455404
+  type: 'test'
+  ...
+# Subtest: execution plans remain traceable to effective wave and sector recipes
+ok 192 - execution plans remain traceable to effective wave and sector recipes
+  ---
+  duration_ms: 0.37245
+  type: 'test'
+  ...
+# Subtest: builder rejects invalid sector and context input
+ok 193 - builder rejects invalid sector and context input
+  ---
+  duration_ms: 0.410156
+  type: 'test'
+  ...
+# Subtest: full certified pipeline succeeds for Sectors 11–1000 under representative contexts
+ok 194 - full certified pipeline succeeds for Sectors 11–1000 under representative contexts
+  ---
+  duration_ms: 149.450172
+  type: 'test'
+  ...
+# Subtest: default profile exposes neutral Infinite Swarm records
+ok 195 - default profile exposes neutral Infinite Swarm records
+  ---
+  duration_ms: 0.899732
+  type: 'test'
+  ...
+# Subtest: infinite reach rejects campaign, zero, negative and non-finite coordinates
+ok 196 - infinite reach rejects campaign, zero, negative and non-finite coordinates
+  ---
+  duration_ms: 0.901775
+  type: 'test'
+  ...
+# Subtest: infinite reach advances lexicographically by sector then wave
+ok 197 - infinite reach advances lexicographically by sector then wave
+  ---
+  duration_ms: 0.154051
+  type: 'test'
+  ...
+# Subtest: final run commit records Infinite reach without changing campaign victory counters
+ok 198 - final run commit records Infinite reach without changing campaign victory counters
+  ---
+  duration_ms: 0.423637
+  type: 'test'
+  ...
+# Subtest: campaign checkpoint never invents Infinite reach
+ok 199 - campaign checkpoint never invents Infinite reach
+  ---
+  duration_ms: 0.274483
+  type: 'test'
+  ...
+# Subtest: milestone records increment the correct counter exactly once per event id
+ok 200 - milestone records increment the correct counter exactly once per event id
+  ---
+  duration_ms: 0.157727
+  type: 'test'
+  ...
+# Subtest: blank milestone ids fail closed without counting
+ok 201 - blank milestone ids fail closed without counting
+  ---
+  duration_ms: 0.091598
+  type: 'test'
+  ...
+# Subtest: storage defaults include all explicit Infinite Swarm records
+ok 202 - storage defaults include all explicit Infinite Swarm records
+  ---
+  duration_ms: 0.681043
+  type: 'test'
+  ...
+# Subtest: loaded Infinite records are normalized through safeRecordInteger
+ok 203 - loaded Infinite records are normalized through safeRecordInteger
+  ---
+  duration_ms: 0.16632
+  type: 'test'
+  ...
+# Subtest: start screen preserves legacy campaign bestWave while adding a distinct Infinite archive
+ok 204 - start screen preserves legacy campaign bestWave while adding a distinct Infinite archive
+  ---
+  duration_ms: 0.706081
+  type: 'test'
+  ...
+# Subtest: Infinite archive stays visibly locked before Sector 11
+ok 205 - Infinite archive stays visibly locked before Sector 11
+  ---
+  duration_ms: 0.121873
+  type: 'test'
+  ...
+# Subtest: start screen exposes persistent Warden and Devourer-rematch counters
+ok 206 - start screen exposes persistent Warden and Devourer-rematch counters
+  ---
+  duration_ms: 0.085739
+  type: 'test'
+  ...
+# Subtest: ResultScreen accepts explicit Infinite persistent record props
+ok 207 - ResultScreen accepts explicit Infinite persistent record props
+  ---
+  duration_ms: 0.067181
+  type: 'test'
+  ...
+# Subtest: ResultScreen only renders Infinite archive after Infinite Swarm has been reached
+ok 208 - ResultScreen only renders Infinite archive after Infinite Swarm has been reached
+  ---
+  duration_ms: 0.081913
+  type: 'test'
+  ...
+# Subtest: EnergySwarmGame passes current persistent record state into ResultScreen
+ok 209 - EnergySwarmGame passes current persistent record state into ResultScreen
+  ---
+  duration_ms: 0.15329
+  type: 'test'
+  ...
+# Subtest: infinite progression tiers begin at Sector 11
+ok 210 - infinite progression tiers begin at Sector 11
+  ---
+  duration_ms: 0.873102
+  type: 'test'
+  ...
+# Subtest: same sector and seed produce an identical recipe
+ok 211 - same sector and seed produce an identical recipe
+  ---
+  duration_ms: 1.086532
+  type: 'test'
+  ...
+# Subtest: recipe identity changes when the seed changes
+ok 212 - recipe identity changes when the seed changes
+  ---
+  duration_ms: 0.194232
+  type: 'test'
+  ...
+# Subtest: milestone and recovery sectors follow the canonical cadence
+ok 213 - milestone and recovery sectors follow the canonical cadence
+  ---
+  duration_ms: 0.362104
+  type: 'test'
+  ...
+# Subtest: Sectors 11–1000 always stay inside certified recipe bounds
+ok 214 - Sectors 11–1000 always stay inside certified recipe bounds
+  ---
+  duration_ms: 17.569872
+  type: 'test'
+  ...
+# Subtest: recovery sectors reduce pressure after 25-sector milestones
+ok 215 - recovery sectors reduce pressure after 25-sector milestones
+  ---
+  duration_ms: 0.162313
+  type: 'test'
+  ...
+# Subtest: validator reports illegal recipes without mutating them
+ok 216 - validator reports illegal recipes without mutating them
+  ---
+  duration_ms: 0.195644
+  type: 'test'
+  ...
+# Subtest: infinite session starts at Sector 11 wave 1 with a certified plan
+ok 217 - infinite session starts at Sector 11 wave 1 with a certified plan
+  ---
+  duration_ms: 2.652916
+  type: 'test'
+  ...
+# Subtest: advancing within a sector preserves the current certified plan
+ok 218 - advancing within a sector preserves the current certified plan
+  ---
+  duration_ms: 0.41237
+  type: 'test'
+  ...
+# Subtest: clearing the final wave advances exactly one sector and rebuilds from new context
+ok 219 - clearing the final wave advances exactly one sector and rebuilds from new context
+  ---
+  duration_ms: 0.792871
+  type: 'test'
+  ...
+# Subtest: same seed and context produce the same session sequence
+ok 220 - same seed and context produce the same session sequence
+  ---
+  duration_ms: 7.703818
+  type: 'test'
+  ...
+# Subtest: ended sessions cannot advance
+ok 221 - ended sessions cannot advance
+  ---
+  duration_ms: 0.551178
+  type: 'test'
+  ...
+# Subtest: session progression remains valid from Sector 11 through Sector 1000
+ok 222 - session progression remains valid from Sector 11 through Sector 1000
+  ---
+  duration_ms: 104.526644
+  type: 'test'
+  ...
+# Subtest: validation rejects a corrupted wave cursor
+ok 223 - validation rejects a corrupted wave cursor
+  ---
+  duration_ms: 0.335044
+  type: 'test'
+  ...
+# Subtest: wave expansion is deterministic for a certified sector recipe
+ok 224 - wave expansion is deterministic for a certified sector recipe
+  ---
+  duration_ms: 2.579607
+  type: 'test'
+  ...
+# Subtest: wave budgets conserve the exact sector enemy budget
+ok 225 - wave budgets conserve the exact sector enemy budget
+  ---
+  duration_ms: 0.775044
+  type: 'test'
+  ...
+# Subtest: pressure ramps through a sector and final wave reaches sector pressure
+ok 226 - pressure ramps through a sector and final wave reaches sector pressure
+  ---
+  duration_ms: 0.289675
+  type: 'test'
+  ...
+# Subtest: milestones appear only on the final wave
+ok 227 - milestones appear only on the final wave
+  ---
+  duration_ms: 0.413562
+  type: 'test'
+  ...
+# Subtest: ordinary wave composition never injects the canonical boss enemy
+ok 228 - ordinary wave composition never injects the canonical boss enemy
+  ---
+  duration_ms: 35.188061
+  type: 'test'
+  ...
+# Subtest: complete wave plans remain valid from Sector 11 through 1000
+ok 229 - complete wave plans remain valid from Sector 11 through 1000
+  ---
+  duration_ms: 26.652584
+  type: 'test'
+  ...
+# Subtest: validator rejects budget leakage and premature milestones
+ok 230 - validator rejects budget leakage and premature milestones
+  ---
+  duration_ms: 0.260691
+  type: 'test'
+  ...
+# Subtest: generic keyboard focus contract covers premium entry and live game shell
+ok 231 - generic keyboard focus contract covers premium entry and live game shell
+  ---
+  duration_ms: 0.664999
+  type: 'test'
+  ...
+# Subtest: focus ring uses visible outline plus dark separation ring
+ok 232 - focus ring uses visible outline plus dark separation ring
+  ---
+  duration_ms: 0.140561
+  type: 'test'
+  ...
+# Subtest: higher contrast preference strengthens the focus indicator
+ok 233 - higher contrast preference strengthens the focus indicator
+  ---
+  duration_ms: 0.108644
+  type: 'test'
+  ...
+# Subtest: ES-10B never suppresses focus outlines
+ok 234 - ES-10B never suppresses focus outlines
+  ---
+  duration_ms: 0.172069
+  type: 'test'
+  ...
+# Subtest: generic focus contract precedes component-specific touch and orientation rules
+ok 235 - generic focus contract precedes component-specific touch and orientation rules
+  ---
+  duration_ms: 0.118027
+  type: 'test'
+  ...
+# Subtest: primary shell surfaces contain native keyboard-focusable controls
+ok 236 - primary shell surfaces contain native keyboard-focusable controls
+  ---
+  duration_ms: 0.214853
+  type: 'test'
+  ...
+# Subtest: focus styling is presentation-only
+ok 237 - focus styling is presentation-only
+  ---
+  duration_ms: 0.247031
+  type: 'test'
+  ...
+# Subtest: EnergySwarmGame adopts the certified run persistence transitions
+ok 238 - EnergySwarmGame adopts the certified run persistence transitions
+  ---
+  duration_ms: 0.642666
+  type: 'test'
+  ...
+# Subtest: new runs reset the in-memory persistence ledger
+ok 239 - new runs reset the in-memory persistence ledger
+  ---
+  duration_ms: 0.107171
+  type: 'test'
+  ...
+# Subtest: legacy commitStats no longer directly increments persistent counters
+ok 240 - legacy commitStats no longer directly increments persistent counters
+  ---
+  duration_ms: 0.230857
+  type: 'test'
+  ...
+# Subtest: campaign checkpoint and final run commit remain separate transitions
+ok 241 - campaign checkpoint and final run commit remain separate transitions
+  ---
+  duration_ms: 0.191878
+  type: 'test'
+  ...
+# Subtest: final run termination still commits telemetry exactly once
+ok 242 - final run termination still commits telemetry exactly once
+  ---
+  duration_ms: 0.089605
+  type: 'test'
+  ...
+# Subtest: campaign victory handoff does not execute the final run commit
+ok 243 - campaign victory handoff does not execute the final run commit
+  ---
+  duration_ms: 0.077617
+  type: 'test'
+  ...
+# Subtest: active runs auto-pause only on focus-loss/background signals
+ok 244 - active runs auto-pause only on focus-loss/background signals
+  ---
+  duration_ms: 0.663347
+  type: 'test'
+  ...
+# Subtest: lifecycle never stacks pause over already suspended states
+ok 245 - lifecycle never stacks pause over already suspended states
+  ---
+  duration_ms: 0.114362
+  type: 'test'
+  ...
+# Subtest: every lifecycle boundary resets the frame clock
+ok 246 - every lifecycle boundary resets the frame clock
+  ---
+  duration_ms: 0.097787
+  type: 'test'
+  ...
+# Subtest: runtime uses synchronous pause state inside requestAnimationFrame
+ok 247 - runtime uses synchronous pause state inside requestAnimationFrame
+  ---
+  duration_ms: 1.075126
+  type: 'test'
+  ...
+# Subtest: focus, visibility and orientation lifecycle listeners are explicit
+ok 248 - focus, visibility and orientation lifecycle listeners are explicit
+  ---
+  duration_ms: 0.844108
+  type: 'test'
+  ...
+# Subtest: Devourer cinematic continues into Infinite Swarm instead of ResultScreen
+ok 249 - Devourer cinematic continues into Infinite Swarm instead of ResultScreen
+  ---
+  duration_ms: 0.695755
+  type: 'test'
+  ...
+# Subtest: live handoff checkpoints campaign victory without final telemetry commit
+ok 250 - live handoff checkpoints campaign victory without final telemetry commit
+  ---
+  duration_ms: 0.112809
+  type: 'test'
+  ...
+# Subtest: live handoff enters certified Sector 11 runtime while preserving the active run
+ok 251 - live handoff enters certified Sector 11 runtime while preserving the active run
+  ---
+  duration_ms: 0.139931
+  type: 'test'
+  ...
+# Subtest: infinite wave completion advances the infinite session, not campaign sector math
+ok 252 - infinite wave completion advances the infinite session, not campaign sector math
+  ---
+  duration_ms: 0.137296
+  type: 'test'
+  ...
+# Subtest: handcrafted campaign advancement remains isolated in the campaign branch
+ok 253 - handcrafted campaign advancement remains isolated in the campaign branch
+  ---
+  duration_ms: 0.175274
+  type: 'test'
+  ...
+# Subtest: Threat Intel is descriptor-backed for Sector 11+ and campaign WaveConfig is not rendered directly
+ok 254 - Threat Intel is descriptor-backed for Sector 11+ and campaign WaveConfig is not rendered directly
+  ---
+  duration_ms: 0.517748
+  type: 'test'
+  ...
+# Subtest: later infinite defeat still reports the Devourer as defeated
+ok 255 - later infinite defeat still reports the Devourer as defeated
+  ---
+  duration_ms: 0.204428
+  type: 'test'
+  ...
+# Subtest: new runs still reset both persistence and runtime back to campaign Sector 1
+ok 256 - new runs still reset both persistence and runtime back to campaign Sector 1
+  ---
+  duration_ms: 0.096916
+  type: 'test'
+  ...
+# Subtest: EnergySwarmGame imports both Infinite persistence transitions
+ok 257 - EnergySwarmGame imports both Infinite persistence transitions
+  ---
+  duration_ms: 5.265012
+  type: 'test'
+  ...
+# Subtest: live reach persistence reads the freshest save and updates React plus local storage
+ok 258 - live reach persistence reads the freshest save and updates React plus local storage
+  ---
+  duration_ms: 0.26669
+  type: 'test'
+  ...
+# Subtest: milestone persistence reuses RunCommitLedger for idempotent event counting
+ok 259 - milestone persistence reuses RunCommitLedger for idempotent event counting
+  ---
+  duration_ms: 0.231508
+  type: 'test'
+  ...
+# Subtest: campaign-to-infinite handoff persists Sector 11 Wave 1 immediately
+ok 260 - campaign-to-infinite handoff persists Sector 11 Wave 1 immediately
+  ---
+  duration_ms: 0.131157
+  type: 'test'
+  ...
+# Subtest: every Infinite runtime advancement persists the new sector and wave
+ok 261 - every Infinite runtime advancement persists the new sector and wave
+  ---
+  duration_ms: 0.133941
+  type: 'test'
+  ...
+# Subtest: final run commit includes Infinite reach only when runtime mode is INFINITE
+ok 262 - final run commit includes Infinite reach only when runtime mode is INFINITE
+  ---
+  duration_ms: 0.19288
+  type: 'test'
+  ...
+# Subtest: Blackout Warden death records milestone in both direct and splash kill paths
+ok 263 - Blackout Warden death records milestone in both direct and splash kill paths
+  ---
+  duration_ms: 0.222274
+  type: 'test'
+  ...
+# Subtest: Devourer rematch persists after the rematch gate reaches DEFEATED and before boss cleanup
+ok 264 - Devourer rematch persists after the rematch gate reaches DEFEATED and before boss cleanup
+  ---
+  duration_ms: 0.11952
+  type: 'test'
+  ...
+# Subtest: campaign boss defeat does not call milestone persistence
+ok 265 - campaign boss defeat does not call milestone persistence
+  ---
+  duration_ms: 0.218468
+  type: 'test'
+  ...
+# Subtest: all ten canonical energy signatures have one bounded attack profile
+ok 266 - all ten canonical energy signatures have one bounded attack profile
+  ---
+  duration_ms: 0.730147
+  type: 'test'
+  ...
+# Subtest: signature behaviors are genuinely distinct rather than recolored lasers
+ok 267 - signature behaviors are genuinely distinct rather than recolored lasers
+  ---
+  duration_ms: 0.158238
+  type: 'test'
+  ...
+# Subtest: legacy affinity fallbacks map into canonical signatures
+ok 268 - legacy affinity fallbacks map into canonical signatures
+  ---
+  duration_ms: 0.131858
+  type: 'test'
+  ...
+# Subtest: ORBI canon contains nine base energies plus fusion-only GAIA
+ok 269 - ORBI canon contains nine base energies plus fusion-only GAIA
+  ---
+  duration_ms: 1.066723
+  type: 'test'
+  ...
+# Subtest: FOTON is player-core only and the eight other base energies are collectible followers
+ok 270 - FOTON is player-core only and the eight other base energies are collectible followers
+  ---
+  duration_ms: 0.155664
+  type: 'test'
+  ...
+# Subtest: every canonical energy owns unique identity metadata and attack signature
+ok 271 - every canonical energy owns unique identity metadata and attack signature
+  ---
+  duration_ms: 0.181753
+  type: 'test'
+  ...
+# Subtest: one shuffled recruitment cycle contains every collectible energy exactly once
+ok 272 - one shuffled recruitment cycle contains every collectible energy exactly once
+  ---
+  duration_ms: 0.198348
+  type: 'test'
+  ...
+# Subtest: single-particle budget accepts payload unchanged below capacity
+ok 273 - single-particle budget accepts payload unchanged below capacity
+  ---
+  duration_ms: 0.76515
+  type: 'test'
+  ...
+# Subtest: single-particle budget drops cosmetic payload exactly at capacity
+ok 274 - single-particle budget drops cosmetic payload exactly at capacity
+  ---
+  duration_ms: 0.224647
+  type: 'test'
+  ...
+# Subtest: single-particle budget sanitizes malformed or fractional caps fail-safe
+ok 275 - single-particle budget sanitizes malformed or fractional caps fail-safe
+  ---
+  duration_ms: 0.233832
+  type: 'test'
+  ...
+# Subtest: diagnostics window remains silent before 500ms
+ok 276 - diagnostics window remains silent before 500ms
+  ---
+  duration_ms: 0.941405
+  type: 'test'
+  ...
+# Subtest: diagnostics emits a bounded 0.5s aggregate snapshot
+ok 277 - diagnostics emits a bounded 0.5s aggregate snapshot
+  ---
+  duration_ms: 0.361944
+  type: 'test'
+  ...
+# Subtest: snapshot resets its aggregation window after emission
+ok 278 - snapshot resets its aggregation window after emission
+  ---
+  duration_ms: 0.634583
+  type: 'test'
+  ...
+# Subtest: CPU phase timing is clamped to total loop work
+ok 279 - CPU phase timing is clamped to total loop work
+  ---
+  duration_ms: 0.283026
+  type: 'test'
+  ...
+# Subtest: latest entity counts and health status win within a window
+ok 280 - latest entity counts and health status win within a window
+  ---
+  duration_ms: 0.279159
+  type: 'test'
+  ...
+# Subtest: invalid zero frame samples fail closed
+ok 281 - invalid zero frame samples fail closed
+  ---
+  duration_ms: 0.112939
+  type: 'test'
+  ...
+# Subtest: latest GAIA telemetry wins within the diagnostics window
+ok 282 - latest GAIA telemetry wins within the diagnostics window
+  ---
+  duration_ms: 0.27313
+  type: 'test'
+  ...
+# Subtest: analyzer validates complete comparable baseline, L1 and L2+ captures
+ok 283 - analyzer validates complete comparable baseline, L1 and L2+ captures
+  ---
+  duration_ms: 2.002009
+  type: 'test'
+  ...
+# Subtest: analyzer flags environment mismatch without pretending captures are comparable
+ok 284 - analyzer flags environment mismatch without pretending captures are comparable
+  ---
+  duration_ms: 0.924389
+  type: 'test'
+  ...
+# Subtest: new GAIA critical health observations route evidence to INVESTIGATE
+ok 285 - new GAIA critical health observations route evidence to INVESTIGATE
+  ---
+  duration_ms: 2.046585
+  type: 'test'
+  ...
+# Subtest: partial or short captures are invalid for certification analysis
+ok 286 - partial or short captures are invalid for certification analysis
+  ---
+  duration_ms: 3.704658
+  type: 'test'
+  ...
+# Subtest: scenario identity rejects GAIA telemetry in baseline evidence
+ok 287 - scenario identity rejects GAIA telemetry in baseline evidence
+  ---
+  duration_ms: 0.470937
+  type: 'test'
+  ...
+# Subtest: parser rejects malformed evidence before metric analysis
+ok 288 - parser rejects malformed evidence before metric analysis
+  ---
+  duration_ms: 0.152599
+  type: 'test'
+  ...
+# Subtest: canonical build provenance accepts Git SHA and non-local product version
+ok 289 - canonical build provenance accepts Git SHA and non-local product version
+  ---
+  duration_ms: 3.568773
+  type: 'test'
+  ...
+# Subtest: Node/test fallback is explicitly local and cannot masquerade as canonical
+ok 290 - Node/test fallback is explicitly local and cannot masquerade as canonical
+  ---
+  duration_ms: 0.181483
+  type: 'test'
+  ...
+# Subtest: three captures from the same deployed build are provenance-comparable
+ok 291 - three captures from the same deployed build are provenance-comparable
+  ---
+  duration_ms: 0.729667
+  type: 'test'
+  ...
+# Subtest: build SHA mismatch prevents certification comparability
+ok 292 - build SHA mismatch prevents certification comparability
+  ---
+  duration_ms: 0.27997
+  type: 'test'
+  ...
+# Subtest: product version mismatch prevents certification comparability
+ok 293 - product version mismatch prevents certification comparability
+  ---
+  duration_ms: 0.168152
+  type: 'test'
+  ...
+# Subtest: missing or local provenance is invalid certification evidence
+ok 294 - missing or local provenance is invalid certification evidence
+  ---
+  duration_ms: 0.177757
+  type: 'test'
+  ...
+# Subtest: structurally invalid evidence outranks a simultaneous provenance mismatch
+ok 295 - structurally invalid evidence outranks a simultaneous provenance mismatch
+  ---
+  duration_ms: 0.436937
+  type: 'test'
+  ...
+# Subtest: evidence recorder starts empty and only records while active
+ok 296 - evidence recorder starts empty and only records while active
+  ---
+  duration_ms: 0.657017
+  type: 'test'
+  ...
+# Subtest: first post-F4 diagnostics snapshot is discarded to align the 15 s evidence interval
+ok 297 - first post-F4 diagnostics snapshot is discarded to align the 15 s evidence interval
+  ---
+  duration_ms: 0.15298
+  type: 'test'
+  ...
+# Subtest: evidence recorder becomes READY at exactly 30 retained snapshots and never grows beyond the cap
+ok 298 - evidence recorder becomes READY at exactly 30 retained snapshots and never grows beyond the cap
+  ---
+  duration_ms: 1.496459
+  type: 'test'
+  ...
+# Subtest: partial and complete captures are labeled without fabricating duration
+ok 299 - partial and complete captures are labeled without fabricating duration
+  ---
+  duration_ms: 0.536166
+  type: 'test'
+  ...
+# Subtest: evidence serialization retains GAIA and entity-pressure fields
+ok 300 - evidence serialization retains GAIA and entity-pressure fields
+  ---
+  duration_ms: 0.378739
+  type: 'test'
+  ...
+# Subtest: quality presets enforce declared DPR ceilings
+ok 301 - quality presets enforce declared DPR ceilings
+  ---
+  duration_ms: 0.682596
+  type: 'test'
+  ...
+# Subtest: backing store obeys both preset and global DPR caps
+ok 302 - backing store obeys both preset and global DPR caps
+  ---
+  duration_ms: 0.6523
+  type: 'test'
+  ...
+# Subtest: all four renderer budgets remain explicit and ordered
+ok 303 - all four renderer budgets remain explicit and ordered
+  ---
+  duration_ms: 0.146911
+  type: 'test'
+  ...
+# Subtest: runtime wires preset budgets to canvas and starfield
+ok 304 - runtime wires preset budgets to canvas and starfield
+  ---
+  duration_ms: 1.255677
+  type: 'test'
+  ...
+# Subtest: PauseMenu exposes an explicit Photo Mode action
+ok 305 - PauseMenu exposes an explicit Photo Mode action
+  ---
+  duration_ms: 0.831459
+  type: 'test'
+  ...
+# Subtest: Photo Mode is independent state layered on top of pause
+ok 306 - Photo Mode is independent state layered on top of pause
+  ---
+  duration_ms: 1.960306
+  type: 'test'
+  ...
+# Subtest: F10 enters Photo Mode and F10/Escape returns to pause without resuming
+ok 307 - F10 enters Photo Mode and F10/Escape returns to pause without resuming
+  ---
+  duration_ms: 2.667018
+  type: 'test'
+  ...
+# Subtest: normal pause menu is hidden while clean Photo Mode is active
+ok 308 - normal pause menu is hidden while clean Photo Mode is active
+  ---
+  duration_ms: 0.169815
+  type: 'test'
+  ...
+# Subtest: Photo Mode hint self-hides and leaves the frame clean
+ok 309 - Photo Mode hint self-hides and leaves the frame clean
+  ---
+  duration_ms: 1.178541
+  type: 'test'
+  ...
+# Subtest: clean Photo Mode hides DOM chrome but not the battlefield canvas
+ok 310 - clean Photo Mode hides DOM chrome but not the battlefield canvas
+  ---
+  duration_ms: 0.37263
+  type: 'test'
+  ...
+# Subtest: root exposes photo mode state to presentation CSS
+ok 311 - root exposes photo mode state to presentation CSS
+  ---
+  duration_ms: 0.180581
+  type: 'test'
+  ...
+# Subtest: new runs and game-over clear stale Photo Mode state
+ok 312 - new runs and game-over clear stale Photo Mode state
+  ---
+  duration_ms: 0.144247
+  type: 'test'
+  ...
+# Subtest: lifecycle policy never resumes an already paused/photo state on focus changes
+ok 313 - lifecycle policy never resumes an already paused/photo state on focus changes
+  ---
+  duration_ms: 0.277056
+  type: 'test'
+  ...
+# Subtest: clean Photo Mode does not change gameplay or persistence data
+ok 314 - clean Photo Mode does not change gameplay or persistence data
+  ---
+  duration_ms: 0.395234
+  type: 'test'
+  ...
+# Subtest: ordered spatial contact set matches legacy full scan across dense queries
+ok 315 - ordered spatial contact set matches legacy full scan across dense queries
+  ---
+  duration_ms: 4.141354
+  type: 'test'
+  ...
+# Subtest: multi-collision query preserves strict edge semantics
+ok 316 - multi-collision query preserves strict edge semantics
+  ---
+  duration_ms: 0.187392
+  type: 'test'
+  ...
+# Subtest: multi-collision query returns original array order, not bucket traversal order
+ok 317 - multi-collision query returns original array order, not bucket traversal order
+  ---
+  duration_ms: 0.188934
+  type: 'test'
+  ...
+# Subtest: spatial contact candidate checks remain local in a large spread battlefield
+ok 318 - spatial contact candidate checks remain local in a large spread battlefield
+  ---
+  duration_ms: 0.738851
+  type: 'test'
+  ...
+# Subtest: invalid multi-collision queries fail closed
+ok 319 - invalid multi-collision queries fail closed
+  ---
+  duration_ms: 0.227141
+  type: 'test'
+  ...
+# Subtest: live player contact uses the spatial index rather than a full enemy sweep
+ok 320 - live player contact uses the spatial index rather than a full enemy sweep
+  ---
+  duration_ms: 2.147207
+  type: 'test'
+  ...
+# Subtest: hostile projectile to player collision uses squared distance
+ok 321 - hostile projectile to player collision uses squared distance
+  ---
+  duration_ms: 0.892671
+  type: 'test'
+  ...
+# Subtest: boss shield-node projectile collision uses squared distance
+ok 322 - boss shield-node projectile collision uses squared distance
+  ---
+  duration_ms: 0.856647
+  type: 'test'
+  ...
+# Subtest: start shell uses wide premium launch composition
+ok 323 - start shell uses wide premium launch composition
+  ---
+  duration_ms: 0.835195
+  type: 'test'
+  ...
+# Subtest: launch control renders before dense record/hero content on narrow viewports
+ok 324 - launch control renders before dense record/hero content on narrow viewports
+  ---
+  duration_ms: 0.199119
+  type: 'test'
+  ...
+# Subtest: primary start CTA is explicit and placed inside launch control
+ok 325 - primary start CTA is explicit and placed inside launch control
+  ---
+  duration_ms: 0.127782
+  type: 'test'
+  ...
+# Subtest: Enter remains a documented keyboard fallback rather than primary-only launch path
+ok 326 - Enter remains a documented keyboard fallback rather than primary-only launch path
+  ---
+  duration_ms: 0.739592
+  type: 'test'
+  ...
+# Subtest: launch deck has a visible scroll affordance for genuinely short viewports
+ok 327 - launch deck has a visible scroll affordance for genuinely short viewports
+  ---
+  duration_ms: 0.333772
+  type: 'test'
+  ...
+# Subtest: new launch hero reserves a stable stage for future 3D Foton integration
+ok 328 - new launch hero reserves a stable stage for future 3D Foton integration
+  ---
+  duration_ms: 0.120071
+  type: 'test'
+  ...
+# Subtest: persistent progression surfaces remain available
+ok 329 - persistent progression surfaces remain available
+  ---
+  duration_ms: 0.165449
+  type: 'test'
+  ...
+# Subtest: visible product version matches canonical beta metadata
+ok 330 - visible product version matches canonical beta metadata
+  ---
+  duration_ms: 0.494353
+  type: 'test'
+  ...
+# Subtest: live game imports the persisted run archive entry contract
+ok 331 - live game imports the persisted run archive entry contract
+  ---
+  duration_ms: 0.754014
+  type: 'test'
+  ...
+# Subtest: run peak swarm telemetry is explicit and reset for every new run
+ok 332 - run peak swarm telemetry is explicit and reset for every new run
+  ---
+  duration_ms: 0.222604
+  type: 'test'
+  ...
+# Subtest: peak swarm helper is non-recursive and samples Foton plus followers
+ok 333 - peak swarm helper is non-recursive and samples Foton plus followers
+  ---
+  duration_ms: 0.088153
+  type: 'test'
+  ...
+# Subtest: ordinary recruits and both fusion paths update the peak immediately
+ok 334 - ordinary recruits and both fusion paths update the peak immediately
+  ---
+  duration_ms: 0.187361
+  type: 'test'
+  ...
+# Subtest: normal simulation accumulates actual dwell time for the active runtime formation
+ok 335 - normal simulation accumulates actual dwell time for the active runtime formation
+  ---
+  duration_ms: 0.371789
+  type: 'test'
+  ...
+# Subtest: most-used formation reads the accumulated duration ledger
+ok 336 - most-used formation reads the accumulated duration ledger
+  ---
+  duration_ms: 0.157457
+  type: 'test'
+  ...
+# Subtest: dominant affinity telemetry covers all six playable affinities
+ok 337 - dominant affinity telemetry covers all six playable affinities
+  ---
+  duration_ms: 0.171628
+  type: 'test'
+  ...
+# Subtest: campaign checkpoint and final persistence both use the true run peak
+ok 338 - campaign checkpoint and final persistence both use the true run peak
+  ---
+  duration_ms: 0.154633
+  type: 'test'
+  ...
+# Subtest: final archive uses the same stable run identity as campaign-to-Infinite handoff
+ok 339 - final archive uses the same stable run identity as campaign-to-Infinite handoff
+  ---
+  duration_ms: 0.197877
+  type: 'test'
+  ...
+# Subtest: final archive completion timestamp and duration come from the run end boundary
+ok 340 - final archive completion timestamp and duration come from the run end boundary
+  ---
+  duration_ms: 0.424578
+  type: 'test'
+  ...
+# Subtest: a run that cleared campaign remains CAMPAIGN_CLEARED even if it later ends in Infinite
+ok 341 - a run that cleared campaign remains CAMPAIGN_CLEARED even if it later ends in Infinite
+  ---
+  duration_ms: 0.170597
+  type: 'test'
+  ...
+# Subtest: archive campaign reach stays bounded to the handcrafted campaign
+ok 342 - archive campaign reach stays bounded to the handcrafted campaign
+  ---
+  duration_ms: 0.109715
+  type: 'test'
+  ...
+# Subtest: Infinite coordinates are attached only from an active Infinite runtime
+ok 343 - Infinite coordinates are attached only from an active Infinite runtime
+  ---
+  duration_ms: 0.150516
+  type: 'test'
+  ...
+# Subtest: final archive captures build, affinity, formation and corrected peak telemetry
+ok 344 - final archive captures build, affinity, formation and corrected peak telemetry
+  ---
+  duration_ms: 0.123936
+  type: 'test'
+  ...
+# Subtest: campaign-to-Infinite handoff remains checkpoint-only and archive-neutral
+ok 345 - campaign-to-Infinite handoff remains checkpoint-only and archive-neutral
+  ---
+  duration_ms: 0.114672
+  type: 'test'
+  ...
+# Subtest: ResultScreen now reports the true run peak instead of the last sampled swarm state
+ok 346 - ResultScreen now reports the true run peak instead of the last sampled swarm state
+  ---
+  duration_ms: 0.158438
+  type: 'test'
+  ...
+# Subtest: Flight Recorder consumes the persisted RunArchiveEntry contract read-only
+ok 347 - Flight Recorder consumes the persisted RunArchiveEntry contract read-only
+  ---
+  duration_ms: 0.953943
+  type: 'test'
+  ...
+# Subtest: Flight Recorder renders only a bounded recent subset
+ok 348 - Flight Recorder renders only a bounded recent subset
+  ---
+  duration_ms: 0.1597
+  type: 'test'
+  ...
+# Subtest: Flight Recorder exposes a non-blocking bilingual empty state
+ok 349 - Flight Recorder exposes a non-blocking bilingual empty state
+  ---
+  duration_ms: 0.150215
+  type: 'test'
+  ...
+# Subtest: Flight Recorder distinguishes campaign clear from defeat
+ok 350 - Flight Recorder distinguishes campaign clear from defeat
+  ---
+  duration_ms: 0.091528
+  type: 'test'
+  ...
+# Subtest: Flight Recorder prefers Infinite reach when the archived run reached Infinite
+ok 351 - Flight Recorder prefers Infinite reach when the archived run reached Infinite
+  ---
+  duration_ms: 0.097316
+  type: 'test'
+  ...
+# Subtest: Flight Recorder exposes score duration peak affinity formation and build
+ok 352 - Flight Recorder exposes score duration peak affinity formation and build
+  ---
+  duration_ms: 0.162665
+  type: 'test'
+  ...
+# Subtest: temporary build preview is limited to three chips with overflow count
+ok 353 - temporary build preview is limited to three chips with overflow count
+  ---
+  duration_ms: 0.140321
+  type: 'test'
+  ...
+# Subtest: archive rows retain stable run identity in the DOM
+ok 354 - archive rows retain stable run identity in the DOM
+  ---
+  duration_ms: 0.081903
+  type: 'test'
+  ...
+# Subtest: StartScreen MAIN surfaces the three newest persisted runs
+ok 355 - StartScreen MAIN surfaces the three newest persisted runs
+  ---
+  duration_ms: 1.724752
+  type: 'test'
+  ...
+# Subtest: ResultScreen accepts the archive as an optional compatibility prop
+ok 356 - ResultScreen accepts the archive as an optional compatibility prop
+  ---
+  duration_ms: 0.423436
+  type: 'test'
+  ...
+# Subtest: EnergySwarmGame passes the canonical persisted archive into ResultScreen
+ok 357 - EnergySwarmGame passes the canonical persisted archive into ResultScreen
+  ---
+  duration_ms: 0.121944
+  type: 'test'
+  ...
+# Subtest: Flight Recorder is presentation-only and does not mutate gameplay or archive data
+ok 358 - Flight Recorder is presentation-only and does not mutate gameplay or archive data
+  ---
+  duration_ms: 0.129364
+  type: 'test'
+  ...
+# Subtest: default profile exposes an empty recent run archive
+ok 359 - default profile exposes an empty recent run archive
+  ---
+  duration_ms: 1.16432
+  type: 'test'
+  ...
+# Subtest: final run commit archives one normalized completed run
+ok 360 - final run commit archives one normalized completed run
+  ---
+  duration_ms: 0.733122
+  type: 'test'
+  ...
+# Subtest: campaign checkpoint never archives a still-running session
+ok 361 - campaign checkpoint never archives a still-running session
+  ---
+  duration_ms: 0.213821
+  type: 'test'
+  ...
+# Subtest: same ledger cannot append the same run twice
+ok 362 - same ledger cannot append the same run twice
+  ---
+  duration_ms: 0.15947
+  type: 'test'
+  ...
+# Subtest: duplicate runId stays idempotent even with a fresh ledger
+ok 363 - duplicate runId stays idempotent even with a fresh ledger
+  ---
+  duration_ms: 0.340652
+  type: 'test'
+  ...
+# Subtest: archive stays bounded to the eight most recent unique runs
+ok 364 - archive stays bounded to the eight most recent unique runs
+  ---
+  duration_ms: 0.644428
+  type: 'test'
+  ...
+# Subtest: storage sanitizer drops invalid entries and normalizes unsafe fields
+ok 365 - storage sanitizer drops invalid entries and normalizes unsafe fields
+  ---
+  duration_ms: 0.280592
+  type: 'test'
+  ...
+# Subtest: storage sanitizer deduplicates by newest persisted occurrence
+ok 366 - storage sanitizer deduplicates by newest persisted occurrence
+  ---
+  duration_ms: 0.205248
+  type: 'test'
+  ...
+# Subtest: malformed final archive payload fails closed without consuming archive gate
+ok 367 - malformed final archive payload fails closed without consuming archive gate
+  ---
+  duration_ms: 0.211979
+  type: 'test'
+  ...
+# Subtest: archive write leaves existing campaign and Infinite counters semantically intact
+ok 368 - archive write leaves existing campaign and Infinite counters semantically intact
+  ---
+  duration_ms: 0.378729
+  type: 'test'
+  ...
+# Subtest: existing premium and boss reduced-motion foundations remain present
+ok 369 - existing premium and boss reduced-motion foundations remain present
+  ---
+  duration_ms: 1.239473
+  type: 'test'
+  ...
+# Subtest: shell utility animations become static under reduced motion
+ok 370 - shell utility animations become static under reduced motion
+  ---
+  duration_ms: 0.130886
+  type: 'test'
+  ...
+# Subtest: the covered UI actually uses Tailwind animation utilities
+ok 371 - the covered UI actually uses Tailwind animation utilities
+  ---
+  duration_ms: 0.563377
+  type: 'test'
+  ...
+# Subtest: utility and custom UI transitions become effectively immediate
+ok 372 - utility and custom UI transitions become effectively immediate
+  ---
+  duration_ms: 0.124958
+  type: 'test'
+  ...
+# Subtest: reduced-motion contract keeps state visibility rather than hiding controls
+ok 373 - reduced-motion contract keeps state visibility rather than hiding controls
+  ---
+  duration_ms: 0.154913
+  type: 'test'
+  ...
+# Subtest: ES-10A does not target Canvas or alter game-world simulation
+ok 374 - ES-10A does not target Canvas or alter game-world simulation
+  ---
+  duration_ms: 0.108543
+  type: 'test'
+  ...
+# Subtest: reduced motion also disables smooth scrolling for focus navigation
+ok 375 - reduced motion also disables smooth scrolling for focus navigation
+  ---
+  duration_ms: 0.196015
+  type: 'test'
+  ...
+# Subtest: spatial thermal splash target set and order match legacy full scan
+ok 376 - spatial thermal splash target set and order match legacy full scan
+  ---
+  duration_ms: 12.042548
+  type: 'test'
+  ...
+# Subtest: thermal splash keeps strict radius semantics
+ok 377 - thermal splash keeps strict radius semantics
+  ---
+  duration_ms: 0.22584
+  type: 'test'
+  ...
+# Subtest: a minion inserted after splash query is not retroactively part of that same snapshot
+ok 378 - a minion inserted after splash query is not retroactively part of that same snapshot
+  ---
+  duration_ms: 0.282835
+  type: 'test'
+  ...
+# Subtest: live enemy firing counts hostile projectiles once before the enemy pass
+ok 379 - live enemy firing counts hostile projectiles once before the enemy pass
+  ---
+  duration_ms: 1.050218
+  type: 'test'
+  ...
+# Subtest: shootFromEnemy no longer filters the projectile array per Drone and updates local count after emission
+ok 380 - shootFromEnemy no longer filters the projectile array per Drone and updates local count after emission
+  ---
+  duration_ms: 0.860834
+  type: 'test'
+  ...
+# Subtest: live profile-driven splash uses indexed candidates in original enemy order without sqrt
+ok 381 - live profile-driven splash uses indexed candidates in original enemy order without sqrt
+  ---
+  duration_ms: 0.869627
+  type: 'test'
+  ...
+# Subtest: result screen distinguishes persistent progression from run-only build state
+ok 382 - result screen distinguishes persistent progression from run-only build state
+  ---
+  duration_ms: 0.662205
+  type: 'test'
+  ...
+# Subtest: persistence summary names saved credits, records and boss data
+ok 383 - persistence summary names saved credits, records and boss data
+  ---
+  duration_ms: 0.116795
+  type: 'test'
+  ...
+# Subtest: run-only summary makes tactical upgrade reset explicit
+ok 384 - run-only summary makes tactical upgrade reset explicit
+  ---
+  duration_ms: 0.087601
+  type: 'test'
+  ...
+# Subtest: run Nano Credits use a dedicated earned counter
+ok 385 - run Nano Credits use a dedicated earned counter
+  ---
+  duration_ms: 0.727574
+  type: 'test'
+  ...
+# Subtest: actual NANO awards increment both balance and earned telemetry
+ok 386 - actual NANO awards increment both balance and earned telemetry
+  ---
+  duration_ms: 0.430397
+  type: 'test'
+  ...
+# Subtest: result screen receives the real earned amount instead of score-derived fiction
+ok 387 - result screen receives the real earned amount instead of score-derived fiction
+  ---
+  duration_ms: 0.246651
+  type: 'test'
+  ...
+# Subtest: campaign victory checkpoint counts the run and victory exactly once
+ok 388 - campaign victory checkpoint counts the run and victory exactly once
+  ---
+  duration_ms: 0.99781
+  type: 'test'
+  ...
+# Subtest: campaign checkpoint persists boss records and current permanent balance
+ok 389 - campaign checkpoint persists boss records and current permanent balance
+  ---
+  duration_ms: 0.661174
+  type: 'test'
+  ...
+# Subtest: campaign checkpoint deliberately does not accumulate run telemetry
+ok 390 - campaign checkpoint deliberately does not accumulate run telemetry
+  ---
+  duration_ms: 0.145619
+  type: 'test'
+  ...
+# Subtest: reapplying a campaign checkpoint with its ledger is count-idempotent
+ok 391 - reapplying a campaign checkpoint with its ledger is count-idempotent
+  ---
+  duration_ms: 0.22668
+  type: 'test'
+  ...
+# Subtest: final run commit after campaign checkpoint adds telemetry once without recounting run or victory
+ok 392 - final run commit after campaign checkpoint adds telemetry once without recounting run or victory
+  ---
+  duration_ms: 0.356446
+  type: 'test'
+  ...
+# Subtest: reapplying final commit with its ledger never duplicates telemetry
+ok 393 - reapplying final commit with its ledger never duplicates telemetry
+  ---
+  duration_ms: 0.150816
+  type: 'test'
+  ...
+# Subtest: pre-boss defeat still counts one run and one telemetry commit without victory
+ok 394 - pre-boss defeat still counts one run and one telemetry commit without victory
+  ---
+  duration_ms: 0.18618
+  type: 'test'
+  ...
+# Subtest: untouched profile preferences and discovery fields survive both transitions
+ok 395 - untouched profile preferences and discovery fields survive both transitions
+  ---
+  duration_ms: 0.221212
+  type: 'test'
+  ...
+# Subtest: run counters use dedicated refs instead of mutating persistent stats
+ok 396 - run counters use dedicated refs instead of mutating persistent stats
+  ---
+  duration_ms: 0.934925
+  type: 'test'
+  ...
+# Subtest: new runs reset telemetry refs explicitly
+ok 397 - new runs reset telemetry refs explicitly
+  ---
+  duration_ms: 0.134432
+  type: 'test'
+  ...
+# Subtest: persistent totals accumulate from run-local counters exactly once
+ok 398 - persistent totals accumulate from run-local counters exactly once
+  ---
+  duration_ms: 3.351817
+  type: 'test'
+  ...
+# Subtest: result screen reads the completed run counter
+ok 399 - result screen reads the completed run counter
+  ---
+  duration_ms: 0.121843
+  type: 'test'
+  ...
+# Subtest: live runtime imports and owns the Devourer rematch gate
+ok 400 - live runtime imports and owns the Devourer rematch gate
+  ---
+  duration_ms: 0.855685
+  type: 'test'
+  ...
+# Subtest: new runs and campaign handoff reset rematch gate state
+ok 401 - new runs and campaign handoff reset rematch gate state
+  ---
+  duration_ms: 0.316996
+  type: 'test'
+  ...
+# Subtest: wave completion is blocked until a BOSS_REMATCH gate is resolved
+ok 402 - wave completion is blocked until a BOSS_REMATCH gate is resolved
+  ---
+  duration_ms: 0.281363
+  type: 'test'
+  ...
+# Subtest: eligible rematch gets an explicit warning then spawns through the existing boss engine
+ok 403 - eligible rematch gets an explicit warning then spawns through the existing boss engine
+  ---
+  duration_ms: 0.115343
+  type: 'test'
+  ...
+# Subtest: campaign boss activation still calls the unscaled spawn path
+ok 404 - campaign boss activation still calls the unscaled spawn path
+  ---
+  duration_ms: 0.203025
+  type: 'test'
+  ...
+# Subtest: rematch boss owns isolated scaled metadata while campaign attempts stay behind !isRematch
+ok 405 - rematch boss owns isolated scaled metadata while campaign attempts stay behind !isRematch
+  ---
+  duration_ms: 0.243425
+  type: 'test'
+  ...
+# Subtest: rematch attack-rate scaling changes cooldown frequency without shortening telegraphs
+ok 406 - rematch attack-rate scaling changes cooldown frequency without shortening telegraphs
+  ---
+  duration_ms: 0.288584
+  type: 'test'
+  ...
+# Subtest: rematch boss damage scales through the shared boss-damage path but campaign hit telemetry is isolated
+ok 407 - rematch boss damage scales through the shared boss-damage path but campaign hit telemetry is isolated
+  ---
+  duration_ms: 0.222725
+  type: 'test'
+  ...
+# Subtest: campaign boss damage/phase telemetry ignores rematch instances
+ok 408 - campaign boss damage/phase telemetry ignores rematch instances
+  ---
+  duration_ms: 3.785389
+  type: 'test'
+  ...
+# Subtest: rematch defeat resolves the gate and resumes Infinite Swarm without campaign checkpoint handoff
+ok 409 - rematch defeat resolves the gate and resumes Infinite Swarm without campaign checkpoint handoff
+  ---
+  duration_ms: 0.5188
+  type: 'test'
+  ...
+# Subtest: campaign boss defeat still owns the original campaign-to-infinite handoff
+ok 410 - campaign boss defeat still owns the original campaign-to-infinite handoff
+  ---
+  duration_ms: 0.169795
+  type: 'test'
+  ...
+# Subtest: rematch enemy metadata is explicitly represented in Enemy
+ok 411 - rematch enemy metadata is explicitly represented in Enemy
+  ---
+  duration_ms: 0.109775
+  type: 'test'
+  ...
+# Subtest: non-rematch profiles fail closed to IDLE
+ok 412 - non-rematch profiles fail closed to IDLE
+  ---
+  duration_ms: 1.314546
+  type: 'test'
+  ...
+# Subtest: descriptor changes reset the rematch lifecycle
+ok 413 - descriptor changes reset the rematch lifecycle
+  ---
+  duration_ms: 0.154412
+  type: 'test'
+  ...
+# Subtest: rematch eligibility requires full budget and a clean regular field
+ok 414 - rematch eligibility requires full budget and a clean regular field
+  ---
+  duration_ms: 0.098668
+  type: 'test'
+  ...
+# Subtest: eligible rematch starts exactly one telegraph
+ok 415 - eligible rematch starts exactly one telegraph
+  ---
+  duration_ms: 3.285968
+  type: 'test'
+  ...
+# Subtest: telegraph advances deterministically to READY
+ok 416 - telegraph advances deterministically to READY
+  ---
+  duration_ms: 0.189805
+  type: 'test'
+  ...
+# Subtest: READY may spawn exactly once and SPAWNED never re-requests
+ok 417 - READY may spawn exactly once and SPAWNED never re-requests
+  ---
+  duration_ms: 0.116104
+  type: 'test'
+  ...
+# Subtest: defeat is explicit, idempotent and resolves the milestone
+ok 418 - defeat is explicit, idempotent and resolves the milestone
+  ---
+  duration_ms: 0.165609
+  type: 'test'
+  ...
+# Subtest: ordinary waves are always resolved from the rematch perspective
+ok 419 - ordinary waves are always resolved from the rematch perspective
+  ---
+  duration_ms: 0.081142
+  type: 'test'
+  ...
+# Subtest: game imports the refresh-rate cadence contract
+ok 420 - game imports the refresh-rate cadence contract
+  ---
+  duration_ms: 0.661554
+  type: 'test'
+  ...
+# Subtest: React HUD sync is elapsed-time based instead of every ten rendered frames
+ok 421 - React HUD sync is elapsed-time based instead of every ten rendered frames
+  ---
+  duration_ms: 0.335324
+  type: 'test'
+  ...
+# Subtest: all frame-counted flash decay paths are delta-aware
+ok 422 - all frame-counted flash decay paths are delta-aware
+  ---
+  duration_ms: 0.334142
+  type: 'test'
+  ...
+# Subtest: screen shake and swarm recoil damping are delta-normalized
+ok 423 - screen shake and swarm recoil damping are delta-normalized
+  ---
+  duration_ms: 0.36624
+  type: 'test'
+  ...
+# Subtest: only audited per-frame cosmetic probabilities use delta-aware projection
+ok 424 - only audited per-frame cosmetic probabilities use delta-aware projection
+  ---
+  duration_ms: 0.321743
+  type: 'test'
+  ...
+# Subtest: gameplay probability rolls remain raw and semantically unchanged
+ok 425 - gameplay probability rolls remain raw and semantically unchanged
+  ---
+  duration_ms: 0.237557
+  type: 'test'
+  ...
+# Subtest: large-delta safety clamp remains intact
+ok 426 - large-delta safety clamp remains intact
+  ---
+  duration_ms: 0.07976
+  type: 'test'
+  ...
+# Subtest: historical 60 Hz baseline maps to exactly one frame unit
+ok 427 - historical 60 Hz baseline maps to exactly one frame unit
+  ---
+  duration_ms: 0.723647
+  type: 'test'
+  ...
+# Subtest: 90 and 120 Hz frame units scale by elapsed time
+ok 428 - 90 and 120 Hz frame units scale by elapsed time
+  ---
+  duration_ms: 0.193451
+  type: 'test'
+  ...
+# Subtest: frame tick decay preserves real-time duration across 60/90/120 Hz
+ok 429 - frame tick decay preserves real-time duration across 60/90/120 Hz
+  ---
+  duration_ms: 0.105889
+  type: 'test'
+  ...
+# Subtest: delta-aware damping preserves the 60 Hz multiplier over equal real time
+ok 430 - delta-aware damping preserves the 60 Hz multiplier over equal real time
+  ---
+  duration_ms: 0.098498
+  type: 'test'
+  ...
+# Subtest: delta-aware probability preserves the historical event probability over equal real time
+ok 431 - delta-aware probability preserves the historical event probability over equal real time
+  ---
+  duration_ms: 0.088723
+  type: 'test'
+  ...
+# Subtest: HUD cadence flushes at the same real-time interval at 60/90/120 Hz
+ok 432 - HUD cadence flushes at the same real-time interval at 60/90/120 Hz
+  ---
+  duration_ms: 0.213982
+  type: 'test'
+  ...
+# Subtest: cadence helpers fail safe for malformed inputs
+ok 433 - cadence helpers fail safe for malformed inputs
+  ---
+  duration_ms: 0.142774
+  type: 'test'
+  ...
+# Subtest: EnergySwarmGame consumes certified mutator projection and effective budget through the runtime bundle
+ok 434 - EnergySwarmGame consumes certified mutator projection and effective budget through the runtime bundle
+  ---
+  duration_ms: 0.866282
+  type: 'test'
+  ...
+# Subtest: DOUBLE_THREAT completion and spawning share one effective enemy budget
+ok 435 - DOUBLE_THREAT completion and spawning share one effective enemy budget
+  ---
+  duration_ms: 0.516547
+  type: 'test'
+  ...
+# Subtest: ACCELERATED_ENEMIES multiplies regular spawn speed and elite dash speed
+ok 436 - ACCELERATED_ENEMIES multiplies regular spawn speed and elite dash speed
+  ---
+  duration_ms: 0.341353
+  type: 'test'
+  ...
+# Subtest: REGENERATIVE_ENEMIES heals only living non-boss enemies and caps at maxHealth
+ok 437 - REGENERATIVE_ENEMIES heals only living non-boss enemies and caps at maxHealth
+  ---
+  duration_ms: 0.333231
+  type: 'test'
+  ...
+# Subtest: FRAGILE_SWARM amplifies regular projectile/contact damage but not the Devourer path
+ok 438 - FRAGILE_SWARM amplifies regular projectile/contact damage but not the Devourer path
+  ---
+  duration_ms: 0.237537
+  type: 'test'
+  ...
+# Subtest: FORMATION_DISRUPTION only reduces cohesion while a wave is active
+ok 439 - FORMATION_DISRUPTION only reduces cohesion while a wave is active
+  ---
+  duration_ms: 0.402444
+  type: 'test'
+  ...
+# Subtest: ELITE_BURST adds a bounded elite chance bonus
+ok 440 - ELITE_BURST adds a bounded elite chance bonus
+  ---
+  duration_ms: 0.183045
+  type: 'test'
+  ...
+# Subtest: split minions inherit accelerated movement only in Infinite Swarm
+ok 441 - split minions inherit accelerated movement only in Infinite Swarm
+  ---
+  duration_ms: 0.186019
+  type: 'test'
+  ...
+# Subtest: campaign boss spawn remains outside mutator scaling
+ok 442 - campaign boss spawn remains outside mutator scaling
+  ---
+  duration_ms: 0.336025
+  type: 'test'
+  ...
+# Subtest: live runtime consumes the certified combat-pressure projection through the runtime bundle
+ok 443 - live runtime consumes the certified combat-pressure projection through the runtime bundle
+  ---
+  duration_ms: 0.752871
+  type: 'test'
+  ...
+# Subtest: regular enemy spawn adopts projected health and movement without direct pressure math
+ok 444 - regular enemy spawn adopts projected health and movement without direct pressure math
+  ---
+  duration_ms: 0.294933
+  type: 'test'
+  ...
+# Subtest: spawn safety adopts fairness without weakening the legacy 150-unit floor
+ok 445 - spawn safety adopts fairness without weakening the legacy 150-unit floor
+  ---
+  duration_ms: 0.26
+  type: 'test'
+  ...
+# Subtest: hostile projectile creation obeys the projected fairness budget
+ok 446 - hostile projectile creation obeys the projected fairness budget
+  ---
+  duration_ms: 0.16667
+  type: 'test'
+  ...
+# Subtest: non-boss contact damage uses projected pressure while Devourer damage remains untouched
+ok 447 - non-boss contact damage uses projected pressure while Devourer damage remains untouched
+  ---
+  duration_ms: 0.204597
+  type: 'test'
+  ...
+# Subtest: split minions scale only after the runtime enters Infinite Swarm
+ok 448 - split minions scale only after the runtime enters Infinite Swarm
+  ---
+  duration_ms: 0.168293
+  type: 'test'
+  ...
+# Subtest: enemy attack timer consumes projected attack-rate pressure
+ok 449 - enemy attack timer consumes projected attack-rate pressure
+  ---
+  duration_ms: 0.176755
+  type: 'test'
+  ...
+# Subtest: Nano pickup value adopts infinite reward pressure while retaining the existing biome multiplier
+ok 450 - Nano pickup value adopts infinite reward pressure while retaining the existing biome multiplier
+  ---
+  duration_ms: 0.131508
+  type: 'test'
+  ...
+# Subtest: boss runtime is excluded from the new pressure-scaling paths
+ok 451 - boss runtime is excluded from the new pressure-scaling paths
+  ---
+  duration_ms: 0.250566
+  type: 'test'
+  ...
+# Subtest: campaign projection preserves the legacy health curve and leaves all new combat axes neutral
+ok 452 - campaign projection preserves the legacy health curve and leaves all new combat axes neutral
+  ---
+  duration_ms: 1.054304
+  type: 'test'
+  ...
+# Subtest: infinite projection maps certified pressure and reward axes directly
+ok 453 - infinite projection maps certified pressure and reward axes directly
+  ---
+  duration_ms: 2.058043
+  type: 'test'
+  ...
+# Subtest: infinite pressure projection remains finite and bounded through Sector 1000
+ok 454 - infinite pressure projection remains finite and bounded through Sector 1000
+  ---
+  duration_ms: 81.623434
+  type: 'test'
+  ...
+# Subtest: EnergySwarmGame imports the certified runtime completion evaluator
+ok 455 - EnergySwarmGame imports the certified runtime completion evaluator
+  ---
+  duration_ms: 0.746873
+  type: 'test'
+  ...
+# Subtest: wave transitions tick time only through the completion policy contract
+ok 456 - wave transitions tick time only through the completion policy contract
+  ---
+  duration_ms: 0.352349
+  type: 'test'
+  ...
+# Subtest: runtime completion snapshot excludes dead enemies and the campaign boss
+ok 457 - runtime completion snapshot excludes dead enemies and the campaign boss
+  ---
+  duration_ms: 0.162975
+  type: 'test'
+  ...
+# Subtest: WaveConfig presentation lookup is guarded to campaign mode
+ok 458 - WaveConfig presentation lookup is guarded to campaign mode
+  ---
+  duration_ms: 0.231708
+  type: 'test'
+  ...
+# Subtest: Devourer victory now hands off after the existing cinematic
+ok 459 - Devourer victory now hands off after the existing cinematic
+  ---
+  duration_ms: 0.149575
+  type: 'test'
+  ...
+# Subtest: campaign TIMEBOX completion preserves timer semantics
+ok 460 - campaign TIMEBOX completion preserves timer semantics
+  ---
+  duration_ms: 1.002767
+  type: 'test'
+  ...
+# Subtest: campaign boss completion depends only on boss defeat
+ok 461 - campaign boss completion depends only on boss defeat
+  ---
+  duration_ms: 0.191268
+  type: 'test'
+  ...
+# Subtest: infinite BUDGET_AND_CLEAR waits for full budget and a cleared arena
+ok 462 - infinite BUDGET_AND_CLEAR waits for full budget and a cleared arena
+  ---
+  duration_ms: 2.000927
+  type: 'test'
+  ...
+# Subtest: budget completion normalizes malformed negative and non-finite counters safely
+ok 463 - budget completion normalizes malformed negative and non-finite counters safely
+  ---
+  duration_ms: 0.447533
+  type: 'test'
+  ...
+# Subtest: game root exposes auxiliary deck mode from the certified runtime profile
+ok 464 - game root exposes auxiliary deck mode from the certified runtime profile
+  ---
+  duration_ms: 0.700984
+  type: 'test'
+  ...
+# Subtest: STACKED profile keeps battlefield primary and decks full-width below it
+ok 465 - STACKED profile keeps battlefield primary and decks full-width below it
+  ---
+  duration_ms: 0.83882
+  type: 'test'
+  ...
+# Subtest: SPLIT profile reserves a full-width battlefield row with two secondary decks
+ok 466 - SPLIT profile reserves a full-width battlefield row with two secondary decks
+  ---
+  duration_ms: 0.379881
+  type: 'test'
+  ...
+# Subtest: RAILS profile preserves left-battlefield-right desktop composition and collapsed rails
+ok 467 - RAILS profile preserves left-battlefield-right desktop composition and collapsed rails
+  ---
+  duration_ms: 1.318712
+  type: 'test'
+  ...
+# Subtest: short-landscape profile bounds auxiliary content independently of deck mode
+ok 468 - short-landscape profile bounds auxiliary content independently of deck mode
+  ---
+  duration_ms: 0.291238
+  type: 'test'
+  ...
+# Subtest: media-query fallbacks remain present for no-JS progressive enhancement
+ok 469 - media-query fallbacks remain present for no-JS progressive enhancement
+  ---
+  duration_ms: 0.363667
+  type: 'test'
+  ...
+# Subtest: EnergySwarmGame adopts the certified electrical-storm scheduler
+ok 470 - EnergySwarmGame adopts the certified electrical-storm scheduler
+  ---
+  duration_ms: 0.902025
+  type: 'test'
+  ...
+# Subtest: new runs reset electrical storm state
+ok 471 - new runs reset electrical storm state
+  ---
+  duration_ms: 0.223076
+  type: 'test'
+  ...
+# Subtest: storm scheduler is enabled only for active non-boss Infinite waves
+ok 472 - storm scheduler is enabled only for active non-boss Infinite waves
+  ---
+  duration_ms: 0.31249
+  type: 'test'
+  ...
+# Subtest: telegraph captures target feedback before any strike
+ok 473 - telegraph captures target feedback before any strike
+  ---
+  duration_ms: 0.188534
+  type: 'test'
+  ...
+# Subtest: storm damage requires player to remain inside the locked visible radius
+ok 474 - storm damage requires player to remain inside the locked visible radius
+  ---
+  duration_ms: 0.376095
+  type: 'test'
+  ...
+# Subtest: storm strike reuses existing visual/audio feedback instead of bypassing the engine
+ok 475 - storm strike reuses existing visual/audio feedback instead of bypassing the engine
+  ---
+  duration_ms: 0.133901
+  type: 'test'
+  ...
+# Subtest: electrical telegraph renders above reduced-visibility fog and before tactical radar
+ok 476 - electrical telegraph renders above reduced-visibility fog and before tactical radar
+  ---
+  duration_ms: 1.559433
+  type: 'test'
+  ...
+# Subtest: campaign Devourer spawn remains outside storm scheduling
+ok 477 - campaign Devourer spawn remains outside storm scheduling
+  ---
+  duration_ms: 0.148924
+  type: 'test'
+  ...
+# Subtest: storm config is absent for neutral effects
+ok 478 - storm config is absent for neutral effects
+  ---
+  duration_ms: 0.607573
+  type: 'test'
+  ...
+# Subtest: storm config honors fairness telegraph floor and bounded damage cadence
+ok 479 - storm config honors fairness telegraph floor and bounded damage cadence
+  ---
+  duration_ms: 0.161723
+  type: 'test'
+  ...
+# Subtest: storm begins with grace cooldown instead of instant telegraph or damage
+ok 480 - storm begins with grace cooldown instead of instant telegraph or damage
+  ---
+  duration_ms: 0.147292
+  type: 'test'
+  ...
+# Subtest: telegraph locks target before impact
+ok 481 - telegraph locks target before impact
+  ---
+  duration_ms: 0.616386
+  type: 'test'
+  ...
+# Subtest: strike returns to cooldown and increments serial once
+ok 482 - strike returns to cooldown and increments serial once
+  ---
+  duration_ms: 0.105629
+  type: 'test'
+  ...
+# Subtest: removing storm config resets scheduler immediately
+ok 483 - removing storm config resets scheduler immediately
+  ---
+  duration_ms: 0.080271
+  type: 'test'
+  ...
+# Subtest: live runtime imports the certified evolved-enemy resolver
+ok 484 - live runtime imports the certified evolved-enemy resolver
+  ---
+  duration_ms: 0.79246
+  type: 'test'
+  ...
+# Subtest: spawn resolves evolution from descriptor type wave ordinal and living evolved count
+ok 485 - spawn resolves evolution from descriptor type wave ordinal and living evolved count
+  ---
+  duration_ms: 0.394012
+  type: 'test'
+  ...
+# Subtest: milestone minibosses fail closed before evolved selection
+ok 486 - milestone minibosses fail closed before evolved selection
+  ---
+  duration_ms: 0.258318
+  type: 'test'
+  ...
+# Subtest: existing pressure and mutator scaling are established before evolved stat multipliers
+ok 487 - existing pressure and mutator scaling are established before evolved stat multipliers
+  ---
+  duration_ms: 0.130426
+  type: 'test'
+  ...
+# Subtest: evolved enemies cannot stack the random elite multiplier
+ok 488 - evolved enemies cannot stack the random elite multiplier
+  ---
+  duration_ms: 0.165679
+  type: 'test'
+  ...
+# Subtest: evolved instance metadata carries only bounded profile outputs
+ok 489 - evolved instance metadata carries only bounded profile outputs
+  ---
+  duration_ms: 0.207752
+  type: 'test'
+  ...
+# Subtest: per-enemy evolved attack rate multiplies the existing runtime pressure timer
+ok 490 - per-enemy evolved attack rate multiplies the existing runtime pressure timer
+  ---
+  duration_ms: 0.233811
+  type: 'test'
+  ...
+# Subtest: enemy projectile speed adopts per-instance evolution without changing boss defaults
+ok 491 - enemy projectile speed adopts per-instance evolution without changing boss defaults
+  ---
+  duration_ms: 0.224448
+  type: 'test'
+  ...
+# Subtest: contact damage combines pressure mutator milestone and evolved instance multipliers
+ok 492 - contact damage combines pressure mutator milestone and evolved instance multipliers
+  ---
+  duration_ms: 0.313671
+  type: 'test'
+  ...
+# Subtest: score reward composes milestone and evolved multipliers in one helper
+ok 493 - score reward composes milestone and evolved multipliers in one helper
+  ---
+  duration_ms: 3.351476
+  type: 'test'
+  ...
+# Subtest: split minions remain ordinary and never resolve evolved variants
+ok 494 - split minions remain ordinary and never resolve evolved variants
+  ---
+  duration_ms: 0.198338
+  type: 'test'
+  ...
+# Subtest: campaign and Devourer spawn paths contain no direct evolved override
+ok 495 - campaign and Devourer spawn paths contain no direct evolved override
+  ---
+  duration_ms: 0.177657
+  type: 'test'
+  ...
+# Subtest: Canvas renders a bounded identity marker only for evolved instances
+ok 496 - Canvas renders a bounded identity marker only for evolved instances
+  ---
+  duration_ms: 0.078258
+  type: 'test'
+  ...
+# Subtest: live signature adoption remains contract-driven without duplicated signature IDs
+ok 497 - live signature adoption remains contract-driven without duplicated signature IDs
+  ---
+  duration_ms: 0.129945
+  type: 'test'
+  ...
+# Subtest: campaign descriptors never enable evolved enemies
+ok 498 - campaign descriptors never enable evolved enemies
+  ---
+  duration_ms: 1.63021
+  type: 'test'
+  ...
+# Subtest: Infinite Mastery Sectors 11-25 introduce one bounded evolved threat
+ok 499 - Infinite Mastery Sectors 11-25 introduce one bounded evolved threat
+  ---
+  duration_ms: 3.005467
+  type: 'test'
+  ...
+# Subtest: tier policy escalates bounded evolution after Mastery
+ok 500 - tier policy escalates bounded evolution after Mastery
+  ---
+  duration_ms: 0.693101
+  type: 'test'
+  ...
+# Subtest: variant identities are explicit and exclude milestone/boss enemy classes
+ok 501 - variant identities are explicit and exclude milestone/boss enemy classes
+  ---
+  duration_ms: 1.573124
+  type: 'test'
+  ...
+# Subtest: selection is deterministic from descriptor seed identity enemy type and spawn ordinal
+ok 502 - selection is deterministic from descriptor seed identity enemy type and spawn ordinal
+  ---
+  duration_ms: 4.486422
+  type: 'test'
+  ...
+# Subtest: malformed spawn ordinals and active-evolved counts fail closed
+ok 503 - malformed spawn ordinals and active-evolved counts fail closed
+  ---
+  duration_ms: 0.394733
+  type: 'test'
+  ...
+# Subtest: concurrency budget blocks otherwise eligible evolved spawns
+not ok 504 - concurrency budget blocks otherwise eligible evolved spawns
+  ---
+  duration_ms: 2.639187
+  type: 'test'
+  location: '/home/runner/work/orbi-energy.swarm/orbi-energy.swarm/tests/runtime-enemy-evolution.test.ts:1:4936'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + {
+    +   attackRateMultiplier: 1,
+    +   baseEnemyType: 'CRAWLER',
+    +   contactDamageMultiplier: 1.2,
+    +   displayName: 'Bulwark Crawler',
+    +   healthMultiplier: 1.45,
+    +   id: 'BULWARK_CRAWLER',
+    +   movementSpeedMultiplier: 0.86,
+    +   projectileSpeedMultiplier: 1,
+    +   rewardMultiplier: 1.35,
+    +   signature: 'ARMORED_MOMENTUM',
+    +   specialIntensity: 0.35
+    + }
+    - null
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: ~
+  actual:
+    id: 'BULWARK_CRAWLER'
+    baseEnemyType: 'CRAWLER'
+    displayName: 'Bulwark Crawler'
+    signature: 'ARMORED_MOMENTUM'
+    healthMultiplier: 1.45
+    movementSpeedMultiplier: 0.86
+    contactDamageMultiplier: 1.2
+    attackRateMultiplier: 1
+    projectileSpeedMultiplier: 1
+    specialIntensity: 0.35
+    rewardMultiplier: 1.35
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/home/runner/work/orbi-energy.swarm/orbi-energy.swarm/tests/runtime-enemy-evolution.test.ts:284:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: evolved profiles remain finite and conservatively bounded
+ok 505 - evolved profiles remain finite and conservatively bounded
+  ---
+  duration_ms: 0.284538
+  type: 'test'
+  ...
+# Subtest: evolution policy stays finite bounded and tier-correct through Sector 1000
+ok 506 - evolution policy stays finite bounded and tier-correct through Sector 1000
+  ---
+  duration_ms: 74.652199
+  type: 'test'
+  ...
+# Subtest: live runtime consumes the certified signature behavior cache
+ok 507 - live runtime consumes the certified signature behavior cache
+  ---
+  duration_ms: 0.955677
+  type: 'test'
+  ...
+# Subtest: enemy simulation resolves cached signature behavior from enemy identity
+ok 508 - enemy simulation resolves cached signature behavior from enemy identity
+  ---
+  duration_ms: 0.351688
+  type: 'test'
+  ...
+# Subtest: PHASE_LUNGE scales only the existing parasite oscillation axes
+ok 509 - PHASE_LUNGE scales only the existing parasite oscillation axes
+  ---
+  duration_ms: 0.217457
+  type: 'test'
+  ...
+# Subtest: NULL_PULSE extends only the existing disruption duration
+ok 510 - NULL_PULSE extends only the existing disruption duration
+  ---
+  duration_ms: 0.249305
+  type: 'test'
+  ...
+# Subtest: LANCE_VOLLEY is constrained by both global and hostile projectile budgets
+ok 511 - LANCE_VOLLEY is constrained by both global and hostile projectile budgets
+  ---
+  duration_ms: 0.273671
+  type: 'test'
+  ...
+# Subtest: LANCE_VOLLEY uses bounded spread without increasing per-projectile damage
+ok 512 - LANCE_VOLLEY uses bounded spread without increasing per-projectile damage
+  ---
+  duration_ms: 0.268093
+  type: 'test'
+  ...
+# Subtest: Devourer still shares the shooter helper but receives neutral signature behavior
+ok 513 - Devourer still shares the shooter helper but receives neutral signature behavior
+  ---
+  duration_ms: 0.267713
+  type: 'test'
+  ...
+# Subtest: ARMORED_MOMENTUM only scales projectile pushback after damage is applied
+ok 514 - ARMORED_MOMENTUM only scales projectile pushback after damage is applied
+  ---
+  duration_ms: 0.238188
+  type: 'test'
+  ...
+# Subtest: both direct and thermal-splash Splitter deaths use one signature-aware spawn helper
+ok 515 - both direct and thermal-splash Splitter deaths use one signature-aware spawn helper
+  ---
+  duration_ms: 0.294323
+  type: 'test'
+  ...
+# Subtest: BROOD_RELEASE extra minion is gated by descriptor and global enemy concurrency
+ok 516 - BROOD_RELEASE extra minion is gated by descriptor and global enemy concurrency
+  ---
+  duration_ms: 0.532871
+  type: 'test'
+  ...
+# Subtest: split minions remain ordinary crawlers without inherited evolved metadata
+ok 517 - split minions remain ordinary crawlers without inherited evolved metadata
+  ---
+  duration_ms: 0.570498
+  type: 'test'
+  ...
+# Subtest: live signatures add no new persistent state or campaign branch
+ok 518 - live signatures add no new persistent state or campaign branch
+  ---
+  duration_ms: 0.352089
+  type: 'test'
+  ...
+# Subtest: null unknown and malformed signature inputs fail neutral
+ok 519 - null unknown and malformed signature inputs fail neutral
+  ---
+  duration_ms: 1.322357
+  type: 'test'
+  ...
+# Subtest: ARMORED_MOMENTUM only reduces projectile pushback
+ok 520 - ARMORED_MOMENTUM only reduces projectile pushback
+  ---
+  duration_ms: 0.208303
+  type: 'test'
+  ...
+# Subtest: PHASE_LUNGE boosts only bounded parasite lunge axes
+ok 521 - PHASE_LUNGE boosts only bounded parasite lunge axes
+  ---
+  duration_ms: 0.190216
+  type: 'test'
+  ...
+# Subtest: LANCE_VOLLEY permits one extra projectile with narrow bounded spread
+ok 522 - LANCE_VOLLEY permits one extra projectile with narrow bounded spread
+  ---
+  duration_ms: 0.11949
+  type: 'test'
+  ...
+# Subtest: BROOD_RELEASE permits at most one extra split minion
+ok 523 - BROOD_RELEASE permits at most one extra split minion
+  ---
+  duration_ms: 0.098898
+  type: 'test'
+  ...
+# Subtest: NULL_PULSE extends disruption duration without exposing damage scaling
+ok 524 - NULL_PULSE extends disruption duration without exposing damage scaling
+  ---
+  duration_ms: 0.123525
+  type: 'test'
+  ...
+# Subtest: all signature axes remain bounded across malformed and oversized intensities
+ok 525 - all signature axes remain bounded across malformed and oversized intensities
+  ---
+  duration_ms: 0.407262
+  type: 'test'
+  ...
+# Subtest: zero intensity always neutralizes a recognized signature
+ok 526 - zero intensity always neutralizes a recognized signature
+  ---
+  duration_ms: 0.182725
+  type: 'test'
+  ...
+# Subtest: neutral visibility emits no battlefield overlay
+ok 527 - neutral visibility emits no battlefield overlay
+  ---
+  duration_ms: 0.649096
+  type: 'test'
+  ...
+# Subtest: reduced visibility preserves a bounded safe center
+ok 528 - reduced visibility preserves a bounded safe center
+  ---
+  duration_ms: 0.182174
+  type: 'test'
+  ...
+# Subtest: neutral resource field preserves legacy attraction and zero drift
+ok 529 - neutral resource field preserves legacy attraction and zero drift
+  ---
+  duration_ms: 0.163987
+  type: 'test'
+  ...
+# Subtest: resource field behavior is deterministic for the same time and resource
+ok 530 - resource field behavior is deterministic for the same time and resource
+  ---
+  duration_ms: 0.61227
+  type: 'test'
+  ...
+# Subtest: unstable attraction remains collectible and magnetic drift remains bounded
+ok 531 - unstable attraction remains collectible and magnetic drift remains bounded
+  ---
+  duration_ms: 2.015188
+  type: 'test'
+  ...
+# Subtest: different resource ids dephase field motion without randomness
+ok 532 - different resource ids dephase field motion without randomness
+  ---
+  duration_ms: 0.154803
+  type: 'test'
+  ...
+# Subtest: EnergySwarmGame imports certified environmental-field helpers
+ok 533 - EnergySwarmGame imports certified environmental-field helpers
+  ---
+  duration_ms: 0.631018
+  type: 'test'
+  ...
+# Subtest: MAGNETIC_DRIFT moves only active Infinite Swarm resources and clamps them to world bounds
+ok 534 - MAGNETIC_DRIFT moves only active Infinite Swarm resources and clamps them to world bounds
+  ---
+  duration_ms: 0.261824
+  type: 'test'
+  ...
+# Subtest: UNSTABLE_RESOURCE_FIELDS modulates attraction but never reward value or pickup distance
+ok 535 - UNSTABLE_RESOURCE_FIELDS modulates attraction but never reward value or pickup distance
+  ---
+  duration_ms: 0.163025
+  type: 'test'
+  ...
+# Subtest: resource attraction avoids divide-by-zero under environmental fields
+ok 536 - resource attraction avoids divide-by-zero under environmental fields
+  ---
+  duration_ms: 0.12618
+  type: 'test'
+  ...
+# Subtest: REDUCED_VISIBILITY overlays only the battlefield during an active Infinite wave
+ok 537 - REDUCED_VISIBILITY overlays only the battlefield during an active Infinite wave
+  ---
+  duration_ms: 0.178789
+  type: 'test'
+  ...
+# Subtest: tactical minimap is rendered after reduced-visibility overlay and stays readable
+ok 538 - tactical minimap is rendered after reduced-visibility overlay and stays readable
+  ---
+  duration_ms: 0.133371
+  type: 'test'
+  ...
+# Subtest: campaign and Devourer rendering paths do not get explicit environmental overrides
+ok 539 - campaign and Devourer rendering paths do not get explicit environmental overrides
+  ---
+  duration_ms: 0.143565
+  type: 'test'
+  ...
+# Subtest: runtime viewport class remains exposed as the HUD composition authority
+ok 540 - runtime viewport class remains exposed as the HUD composition authority
+  ---
+  duration_ms: 0.713222
+  type: 'test'
+  ...
+# Subtest: campaign objective has an explicit named HUD region
+ok 541 - campaign objective has an explicit named HUD region
+  ---
+  duration_ms: 0.215053
+  type: 'test'
+  ...
+# Subtest: phone runtime profiles use a compact four-row HUD with explicit objective placement
+ok 542 - phone runtime profiles use a compact four-row HUD with explicit objective placement
+  ---
+  duration_ms: 0.273111
+  type: 'test'
+  ...
+# Subtest: tablet runtime profiles reserve an objective row without displacing action controls
+ok 543 - tablet runtime profiles reserve an objective row without displacing action controls
+  ---
+  duration_ms: 0.227843
+  type: 'test'
+  ...
+# Subtest: laptop desktop and ultrawide runtime profiles preserve the five-column primary HUD row
+ok 544 - laptop desktop and ultrawide runtime profiles preserve the five-column primary HUD row
+  ---
+  duration_ms: 0.224357
+  type: 'test'
+  ...
+# Subtest: HUD layouts collapse the objective track when no campaign objective is rendered
+ok 545 - HUD layouts collapse the objective track when no campaign objective is rendered
+  ---
+  duration_ms: 0.263486
+  type: 'test'
+  ...
+# Subtest: media-query HUD fallbacks remain available for progressive enhancement
+ok 546 - media-query HUD fallbacks remain available for progressive enhancement
+  ---
+  duration_ms: 0.224828
+  type: 'test'
+  ...
+# Subtest: campaign and ordinary infinite waves project no milestone encounter
+ok 547 - campaign and ordinary infinite waves project no milestone encounter
+  ---
+  duration_ms: 3.679034
+  type: 'test'
+  ...
+# Subtest: milestone metadata fails closed when attached to a non-final wave
+ok 548 - milestone metadata fails closed when attached to a non-final wave
+  ---
+  duration_ms: 0.469646
+  type: 'test'
+  ...
+# Subtest: Sector 15 final wave projects a budget-compatible Blackout Elite miniboss
+ok 549 - Sector 15 final wave projects a budget-compatible Blackout Elite miniboss
+  ---
+  duration_ms: 1.421867
+  type: 'test'
+  ...
+# Subtest: Sector 25 final wave projects an isolated Devourer rematch phase
+ok 550 - Sector 25 final wave projects an isolated Devourer rematch phase
+  ---
+  duration_ms: 2.79494
+  type: 'test'
+  ...
+# Subtest: milestone encounter scaling remains finite and bounded through Sector 1000
+ok 551 - milestone encounter scaling remains finite and bounded through Sector 1000
+  ---
+  duration_ms: 117.293885
+  type: 'test'
+  ...
+# Subtest: live runtime consumes cached milestone projection and deterministic miniboss gate
+ok 552 - live runtime consumes cached milestone projection and deterministic miniboss gate
+  ---
+  duration_ms: 0.868185
+  type: 'test'
+  ...
+# Subtest: new runs reset the miniboss gate
+ok 553 - new runs reset the miniboss gate
+  ---
+  duration_ms: 0.304768
+  type: 'test'
+  ...
+# Subtest: only MINIBOSS milestone profiles reserve the final effective budget slot
+ok 554 - only MINIBOSS milestone profiles reserve the final effective budget slot
+  ---
+  duration_ms: 0.271658
+  type: 'test'
+  ...
+# Subtest: final slot starts one telegraph and cannot increment budget before champion readiness
+ok 555 - final slot starts one telegraph and cannot increment budget before champion readiness
+  ---
+  duration_ms: 0.217627
+  type: 'test'
+  ...
+# Subtest: champion owns the final slot as a BLACKOUT_ELITE non-boss
+ok 556 - champion owns the final slot as a BLACKOUT_ELITE non-boss
+  ---
+  duration_ms: 0.284888
+  type: 'test'
+  ...
+# Subtest: existing pressure and mutators apply before bounded milestone stat multipliers
+ok 557 - existing pressure and mutators apply before bounded milestone stat multipliers
+  ---
+  duration_ms: 0.216676
+  type: 'test'
+  ...
+# Subtest: milestone champion never stacks random elite or ELITE_SUPPORT spawning
+ok 558 - milestone champion never stacks random elite or ELITE_SUPPORT spawning
+  ---
+  duration_ms: 0.282504
+  type: 'test'
+  ...
+# Subtest: miniboss movement multiplier also applies to Blackout Elite dash
+ok 559 - miniboss movement multiplier also applies to Blackout Elite dash
+  ---
+  duration_ms: 0.272599
+  type: 'test'
+  ...
+# Subtest: miniboss contact damage and reward multipliers are isolated enemy metadata
+ok 560 - miniboss contact damage and reward multipliers are isolated enemy metadata
+  ---
+  duration_ms: 0.493852
+  type: 'test'
+  ...
+# Subtest: BUDGET_AND_CLEAR still sees the champion because milestone enemies remain non-boss
+ok 561 - BUDGET_AND_CLEAR still sees the champion because milestone enemies remain non-boss
+  ---
+  duration_ms: 0.48542
+  type: 'test'
+  ...
+# Subtest: miniboss gate synchronizes and advances from the active runtime descriptor each frame
+ok 562 - miniboss gate synchronizes and advances from the active runtime descriptor each frame
+  ---
+  duration_ms: 0.334683
+  type: 'test'
+  ...
+# Subtest: Blackout Warden receives a persistent Canvas aura and label
+ok 563 - Blackout Warden receives a persistent Canvas aura and label
+  ---
+  duration_ms: 0.115914
+  type: 'test'
+  ...
+# Subtest: pre-spawn milestone warning renders above battlefield effects before radar
+ok 564 - pre-spawn milestone warning renders above battlefield effects before radar
+  ---
+  duration_ms: 0.476756
+  type: 'test'
+  ...
+# Subtest: campaign Devourer runtime remains isolated from miniboss metadata
+ok 565 - campaign Devourer runtime remains isolated from miniboss metadata
+  ---
+  duration_ms: 0.196555
+  type: 'test'
+  ...
+# Subtest: non-miniboss synchronization resets the gate
+ok 566 - non-miniboss synchronization resets the gate
+  ---
+  duration_ms: 0.967063
+  type: 'test'
+  ...
+# Subtest: new miniboss descriptor starts in IDLE state
+ok 567 - new miniboss descriptor starts in IDLE state
+  ---
+  duration_ms: 0.105348
+  type: 'test'
+  ...
+# Subtest: first spawn request starts exactly one telegraph
+ok 568 - first spawn request starts exactly one telegraph
+  ---
+  duration_ms: 0.125528
+  type: 'test'
+  ...
+# Subtest: telegraph becomes ready only after its certified duration
+ok 569 - telegraph becomes ready only after its certified duration
+  ---
+  duration_ms: 0.153861
+  type: 'test'
+  ...
+# Subtest: spawned gate cannot emit a second miniboss
+ok 570 - spawned gate cannot emit a second miniboss
+  ---
+  duration_ms: 0.091157
+  type: 'test'
+  ...
+# Subtest: changing descriptor resets a previously spawned gate
+ok 571 - changing descriptor resets a previously spawned gate
+  ---
+  duration_ms: 0.061953
+  type: 'test'
+  ...
+# Subtest: campaign descriptors always project a neutral mutator profile
+ok 572 - campaign descriptors always project a neutral mutator profile
+  ---
+  duration_ms: 1.628207
+  type: 'test'
+  ...
+# Subtest: each combat mutator maps to one explicit bounded effect
+ok 573 - each combat mutator maps to one explicit bounded effect
+  ---
+  duration_ms: 3.221982
+  type: 'test'
+  ...
+# Subtest: environmental mutators have explicit deferred effect parameters
+ok 574 - environmental mutators have explicit deferred effect parameters
+  ---
+  duration_ms: 0.99786
+  type: 'test'
+  ...
+# Subtest: combined mutators remain finite and within certified caps
+ok 575 - combined mutators remain finite and within certified caps
+  ---
+  duration_ms: 0.493902
+  type: 'test'
+  ...
+# Subtest: unknown modifier strings fail neutral instead of becoming implicit mutators
+ok 576 - unknown modifier strings fail neutral instead of becoming implicit mutators
+  ---
+  duration_ms: 0.286861
+  type: 'test'
+  ...
+# Subtest: generated Infinite Swarm profiles remain bounded through Sector 1000
+ok 577 - generated Infinite Swarm profiles remain bounded through Sector 1000
+  ---
+  duration_ms: 119.317091
+  type: 'test'
+  ...
+# Subtest: mutator-adjusted enemy budget preserves campaign and scales DOUBLE_THREAT consistently
+ok 578 - mutator-adjusted enemy budget preserves campaign and scales DOUBLE_THREAT consistently
+  ---
+  duration_ms: 0.337216
+  type: 'test'
+  ...
+# Subtest: DOUBLE_THREAT effective enemy budget is hard-capped for runtime safety
+ok 579 - DOUBLE_THREAT effective enemy budget is hard-capped for runtime safety
+  ---
+  duration_ms: 0.162364
+  type: 'test'
+  ...
+# Subtest: campaign runtime router preserves handcrafted descriptor contracts
+ok 580 - campaign runtime router preserves handcrafted descriptor contracts
+  ---
+  duration_ms: 1.918974
+  type: 'test'
+  ...
+# Subtest: campaign runtime router rejects Sector 11 and invalid sectors
+ok 581 - campaign runtime router rejects Sector 11 and invalid sectors
+  ---
+  duration_ms: 0.381173
+  type: 'test'
+  ...
+# Subtest: infinite runtime router resolves Sector 11 without campaign fallback
+ok 582 - infinite runtime router resolves Sector 11 without campaign fallback
+  ---
+  duration_ms: 2.151924
+  type: 'test'
+  ...
+# Subtest: infinite runtime advancement crosses waves and sectors deterministically
+ok 583 - infinite runtime advancement crosses waves and sectors deterministically
+  ---
+  duration_ms: 0.959882
+  type: 'test'
+  ...
+# Subtest: campaign state cannot use infinite advancement
+ok 584 - campaign state cannot use infinite advancement
+  ---
+  duration_ms: 0.123276
+  type: 'test'
+  ...
+# Subtest: ended infinite sessions fail closed at router adoption
+ok 585 - ended infinite sessions fail closed at router adoption
+  ---
+  duration_ms: 0.328234
+  type: 'test'
+  ...
+# Subtest: live runtime imports and owns one runtime projection bundle cache
+ok 586 - live runtime imports and owns one runtime projection bundle cache
+  ---
+  duration_ms: 1.595968
+  type: 'test'
+  ...
+# Subtest: current descriptor pressure and mutator helpers all route through one cached bundle
+ok 587 - current descriptor pressure and mutator helpers all route through one cached bundle
+  ---
+  duration_ms: 0.263065
+  type: 'test'
+  ...
+# Subtest: new run eagerly replaces the projection cache
+ok 588 - new run eagerly replaces the projection cache
+  ---
+  duration_ms: 0.175393
+  type: 'test'
+  ...
+# Subtest: wave transitions reuse cached enemy budget and milestone projection
+ok 589 - wave transitions reuse cached enemy budget and milestone projection
+  ---
+  duration_ms: 0.22608
+  type: 'test'
+  ...
+# Subtest: spawn path consumes one projection bundle instead of recomputing derived objects
+ok 590 - spawn path consumes one projection bundle instead of recomputing derived objects
+  ---
+  duration_ms: 0.195143
+  type: 'test'
+  ...
+# Subtest: simulation refetches projection after wave transitions may replace runtime state
+ok 591 - simulation refetches projection after wave transitions may replace runtime state
+  ---
+  duration_ms: 0.3399
+  type: 'test'
+  ...
+# Subtest: render visibility and storm paths reuse cached projections
+ok 592 - render visibility and storm paths reuse cached projections
+  ---
+  duration_ms: 0.31885
+  type: 'test'
+  ...
+# Subtest: live game contains no direct derived projection calls after cache adoption
+ok 593 - live game contains no direct derived projection calls after cache adoption
+  ---
+  duration_ms: 0.360853
+  type: 'test'
+  ...
+# Subtest: first cache access exactly matches all canonical projection authorities
+ok 594 - first cache access exactly matches all canonical projection authorities
+  ---
+  duration_ms: 3.504306
+  type: 'test'
+  ...
+# Subtest: repeated access for one runtime state returns the same bundle identity
+ok 595 - repeated access for one runtime state returns the same bundle identity
+  ---
+  duration_ms: 0.360793
+  type: 'test'
+  ...
+# Subtest: new runtime state identity creates a fresh bundle even for equivalent sector data
+ok 596 - new runtime state identity creates a fresh bundle even for equivalent sector data
+  ---
+  duration_ms: 0.242475
+  type: 'test'
+  ...
+# Subtest: different campaign sectors never alias cached projections
+ok 597 - different campaign sectors never alias cached projections
+  ---
+  duration_ms: 0.126279
+  type: 'test'
+  ...
+# Subtest: fresh cache recomputes equivalent bundle from the same immutable runtime state
+ok 598 - fresh cache recomputes equivalent bundle from the same immutable runtime state
+  ---
+  duration_ms: 0.262855
+  type: 'test'
+  ...
+# Subtest: campaign bundle preserves null Infinite milestone semantics
+ok 599 - campaign bundle preserves null Infinite milestone semantics
+  ---
+  duration_ms: 0.115464
+  type: 'test'
+  ...
+# Subtest: EnergySwarmGame resolves runtime descriptors through the cached unified router
+ok 600 - EnergySwarmGame resolves runtime descriptors through the cached unified router
+  ---
+  duration_ms: 0.807964
+  type: 'test'
+  ...
+# Subtest: new runs reset runtime progression to campaign Sector 1
+ok 601 - new runs reset runtime progression to campaign Sector 1
+  ---
+  duration_ms: 0.134933
+  type: 'test'
+  ...
+# Subtest: campaign wave advancement keeps the runtime router synchronized
+ok 602 - campaign wave advancement keeps the runtime router synchronized
+  ---
+  duration_ms: 0.694284
+  type: 'test'
+  ...
+# Subtest: Devourer victory switches the live router into infinite runtime
+ok 603 - Devourer victory switches the live router into infinite runtime
+  ---
+  duration_ms: 0.248093
+  type: 'test'
+  ...
+# Subtest: campaign-only WaveConfig presentation lookup remains inside the campaign loop
+ok 604 - campaign-only WaveConfig presentation lookup remains inside the campaign loop
+  ---
+  duration_ms: 0.101612
+  type: 'test'
+  ...
+# Subtest: viewport hook resolves exclusively through the certified composition classifier
+ok 605 - viewport hook resolves exclusively through the certified composition classifier
+  ---
+  duration_ms: 0.856728
+  type: 'test'
+  ...
+# Subtest: viewport hook reacts to browser, visual viewport, orientation and pointer changes
+ok 606 - viewport hook reacts to browser, visual viewport, orientation and pointer changes
+  ---
+  duration_ms: 0.23346
+  type: 'test'
+  ...
+# Subtest: game root exposes the runtime composition as semantic data attributes
+ok 607 - game root exposes the runtime composition as semantic data attributes
+  ---
+  duration_ms: 0.982357
+  type: 'test'
+  ...
+# Subtest: portrait advisory is explicitly gated by the runtime profile
+ok 608 - portrait advisory is explicitly gated by the runtime profile
+  ---
+  duration_ms: 0.898781
+  type: 'test'
+  ...
+# Subtest: runtime touch intent augments rather than replaces CSS fallbacks
+ok 609 - runtime touch intent augments rather than replaces CSS fallbacks
+  ---
+  duration_ms: 0.454503
+  type: 'test'
+  ...
+# Subtest: runtime profile adoption does not alter logical canvas or movement physics
+ok 610 - runtime profile adoption does not alter logical canvas or movement physics
+  ---
+  duration_ms: 0.939512
+  type: 'test'
+  ...
+# Subtest: campaign descriptors reproduce handcrafted WaveConfig values for Sectors 1–10
+ok 611 - campaign descriptors reproduce handcrafted WaveConfig values for Sectors 1–10
+  ---
+  duration_ms: 1.141535
+  type: 'test'
+  ...
+# Subtest: campaign completion policies preserve timebox vs boss-defeat semantics
+ok 612 - campaign completion policies preserve timebox vs boss-defeat semantics
+  ---
+  duration_ms: 0.195804
+  type: 'test'
+  ...
+# Subtest: campaign descriptor rejects values outside the handcrafted 1–10 range
+ok 613 - campaign descriptor rejects values outside the handcrafted 1–10 range
+  ---
+  duration_ms: 0.339501
+  type: 'test'
+  ...
+# Subtest: infinite descriptor maps the current session execution plan exactly
+ok 614 - infinite descriptor maps the current session execution plan exactly
+  ---
+  duration_ms: 2.720748
+  type: 'test'
+  ...
+# Subtest: infinite descriptors remain equivalent while session advances through Sector 1000
+ok 615 - infinite descriptors remain equivalent while session advances through Sector 1000
+  ---
+  duration_ms: 115.447366
+  type: 'test'
+  ...
+# Subtest: campaign and infinite descriptors remain source-distinct
+ok 616 - campaign and infinite descriptors remain source-distinct
+  ---
+  duration_ms: 0.269155
+  type: 'test'
+  ...
+# Subtest: HUD exposes shield integrity as progress without turning the whole HUD into a live region
+ok 617 - HUD exposes shield integrity as progress without turning the whole HUD into a live region
+  ---
+  duration_ms: 0.764729
+  type: 'test'
+  ...
+# Subtest: HUD pause and mute controls expose action labels plus pressed state
+ok 618 - HUD pause and mute controls expose action labels plus pressed state
+  ---
+  duration_ms: 0.184337
+  type: 'test'
+  ...
+# Subtest: boss HUD uses a named region and a dedicated integrity progressbar
+ok 619 - boss HUD uses a named region and a dedicated integrity progressbar
+  ---
+  duration_ms: 0.104507
+  type: 'test'
+  ...
+# Subtest: boss tactical announcements are isolated from continuously changing HP
+ok 620 - boss tactical announcements are isolated from continuously changing HP
+  ---
+  duration_ms: 0.120501
+  type: 'test'
+  ...
+# Subtest: LUX-8 communication history is a polite append-oriented log
+ok 621 - LUX-8 communication history is a polite append-oriented log
+  ---
+  duration_ms: 0.076555
+  type: 'test'
+  ...
+# Subtest: pause overlay is a labelled modal dialog with deterministic focus targets
+ok 622 - pause overlay is a labelled modal dialog with deterministic focus targets
+  ---
+  duration_ms: 0.159921
+  type: 'test'
+  ...
+# Subtest: intermission selector is a labelled modal dialog with fail-safe focus initialization
+ok 623 - intermission selector is a labelled modal dialog with fail-safe focus initialization
+  ---
+  duration_ms: 0.078528
+  type: 'test'
+  ...
+# Subtest: result overlay is a labelled modal dialog and starts keyboard focus on play-again
+ok 624 - result overlay is a labelled modal dialog and starts keyboard focus on play-again
+  ---
+  duration_ms: 0.087732
+  type: 'test'
+  ...
+# Subtest: Threat Intel is a labelled modal dialog with description and resume focus
+ok 625 - Threat Intel is a labelled modal dialog with description and resume focus
+  ---
+  duration_ms: 0.202744
+  type: 'test'
+  ...
+# Subtest: semantic accessibility slice does not add gameplay-loop hooks to presentation components
+ok 626 - semantic accessibility slice does not add gameplay-loop hooks to presentation components
+  ---
+  duration_ms: 0.391628
+  type: 'test'
+  ...
+# Subtest: public querySpatialIndex remains compatible and ordered by bucket traversal
+ok 627 - public querySpatialIndex remains compatible and ordered by bucket traversal
+  ---
+  duration_ms: 1.216117
+  type: 'test'
+  ...
+# Subtest: nearest direct traversal preserves distance and original-order tie-break
+ok 628 - nearest direct traversal preserves distance and original-order tie-break
+  ---
+  duration_ms: 0.276886
+  type: 'test'
+  ...
+# Subtest: first collision direct traversal preserves lowest original order
+ok 629 - first collision direct traversal preserves lowest original order
+  ---
+  duration_ms: 0.207231
+  type: 'test'
+  ...
+# Subtest: multi collision direct traversal sorts final matches by original order
+ok 630 - multi collision direct traversal sorts final matches by original order
+  ---
+  duration_ms: 0.254983
+  type: 'test'
+  ...
+# Subtest: include predicates do not change candidateChecks semantics
+ok 631 - include predicates do not change candidateChecks semantics
+  ---
+  duration_ms: 0.139429
+  type: 'test'
+  ...
+# Subtest: hot nearest and collision helpers no longer allocate through querySpatialIndex
+ok 632 - hot nearest and collision helpers no longer allocate through querySpatialIndex
+  ---
+  duration_ms: 0.346371
+  type: 'test'
+  ...
+# Subtest: public querySpatialIndex implementation remains present
+ok 633 - public querySpatialIndex implementation remains present
+  ---
+  duration_ms: 0.156875
+  type: 'test'
+  ...
+# Subtest: spatial nearest target matches legacy full scan across deterministic layouts
+ok 634 - spatial nearest target matches legacy full scan across deterministic layouts
+  ---
+  duration_ms: 4.941486
+  type: 'test'
+  ...
+# Subtest: equal-distance ties preserve original enemy-array order
+ok 635 - equal-distance ties preserve original enemy-array order
+  ---
+  duration_ms: 0.214172
+  type: 'test'
+  ...
+# Subtest: dead enemies remain ineligible
+ok 636 - dead enemies remain ineligible
+  ---
+  duration_ms: 0.10701
+  type: 'test'
+  ...
+# Subtest: legacy strict weapon range excludes a target exactly on the boundary
+ok 637 - legacy strict weapon range excludes a target exactly on the boundary
+  ---
+  duration_ms: 0.07972
+  type: 'test'
+  ...
+# Subtest: cell boundaries do not lose valid targets
+ok 638 - cell boundaries do not lose valid targets
+  ---
+  duration_ms: 0.087281
+  type: 'test'
+  ...
+# Subtest: spatial query reduces candidate checks on dispersed max-density populations
+ok 639 - spatial query reduces candidate checks on dispersed max-density populations
+  ---
+  duration_ms: 3.816987
+  type: 'test'
+  ...
+# Subtest: invalid range fails closed
+ok 640 - invalid range fails closed
+  ---
+  duration_ms: 0.13301
+  type: 'test'
+  ...
+# Subtest: live swarm targeting uses one lazy spatial index and no full enemy scan
+ok 641 - live swarm targeting uses one lazy spatial index and no full enemy scan
+  ---
+  duration_ms: 1.278292
+  type: 'test'
+  ...
+# Subtest: spatial first-hit lookup matches legacy array-order collision semantics
+ok 642 - spatial first-hit lookup matches legacy array-order collision semantics
+  ---
+  duration_ms: 3.151696
+  type: 'test'
+  ...
+# Subtest: first colliding array entry wins even when a later target is closer
+ok 643 - first colliding array entry wins even when a later target is closer
+  ---
+  duration_ms: 0.145668
+  type: 'test'
+  ...
+# Subtest: collision radius stays strict at the exact boundary
+ok 644 - collision radius stays strict at the exact boundary
+  ---
+  duration_ms: 0.171938
+  type: 'test'
+  ...
+# Subtest: dead targets remain ineligible
+ok 645 - dead targets remain ineligible
+  ---
+  duration_ms: 0.097496
+  type: 'test'
+  ...
+# Subtest: relocation moves an indexed enemy immediately after pushback
+ok 646 - relocation moves an indexed enemy immediately after pushback
+  ---
+  duration_ms: 0.156325
+  type: 'test'
+  ...
+# Subtest: new Splitter minions can be inserted for later projectiles in the same sweep
+ok 647 - new Splitter minions can be inserted for later projectiles in the same sweep
+  ---
+  duration_ms: 0.088903
+  type: 'test'
+  ...
+# Subtest: dispersed max-density collision query checks only local candidates
+ok 648 - dispersed max-density collision query checks only local candidates
+  ---
+  duration_ms: 0.272309
+  type: 'test'
+  ...
+# Subtest: live collision sweep builds one index and removes the O(P×E) loop
+ok 649 - live collision sweep builds one index and removes the O(P×E) loop
+  ---
+  duration_ms: 3.804707
+  type: 'test'
+  ...
+# Subtest: shield nodes retain priority over spatial enemy collision
+ok 650 - shield nodes retain priority over spatial enemy collision
+  ---
+  duration_ms: 0.872401
+  type: 'test'
+  ...
+# Subtest: live direct-hit pushback relocates the indexed target before later projectiles
+ok 651 - live direct-hit pushback relocates the indexed target before later projectiles
+  ---
+  duration_ms: 0.952912
+  type: 'test'
+  ...
+# Subtest: Splitter spawn inserts the new enemy into the active collision index
+ok 652 - Splitter spawn inserts the new enemy into the active collision index
+  ---
+  duration_ms: 0.709566
+  type: 'test'
+  ...
+# Subtest: spawn safety uses the exact squared radius without sqrt
+ok 653 - spawn safety uses the exact squared radius without sqrt
+  ---
+  duration_ms: 0.894495
+  type: 'test'
+  ...
+# Subtest: Devourer beam keeps the exact 25-unit hit radius as a squared comparison
+ok 654 - Devourer beam keeps the exact 25-unit hit radius as a squared comparison
+  ---
+  duration_ms: 0.204427
+  type: 'test'
+  ...
+# Subtest: electrical storm keeps its exact configured strike radius with distance squared
+ok 655 - electrical storm keeps its exact configured strike radius with distance squared
+  ---
+  duration_ms: 0.257847
+  type: 'test'
+  ...
+# Subtest: enemy shooter tests the exact 320-unit range without normalizing distance
+ok 656 - enemy shooter tests the exact 320-unit range without normalizing distance
+  ---
+  duration_ms: 0.196014
+  type: 'test'
+  ...
+# Subtest: resource attraction defers sqrt until the exact pull radius has passed
+ok 657 - resource attraction defers sqrt until the exact pull radius has passed
+  ---
+  duration_ms: 0.296556
+  type: 'test'
+  ...
+# Subtest: resource cleanup reuses the live array instead of allocating with filter
+ok 658 - resource cleanup reuses the live array instead of allocating with filter
+  ---
+  duration_ms: 0.340592
+  type: 'test'
+  ...
+# Subtest: compact tactical radar uses one squared radius for allies enemies and resources
+ok 659 - compact tactical radar uses one squared radius for allies enemies and resources
+  ---
+  duration_ms: 0.328915
+  type: 'test'
+  ...
+# Subtest: pointer drag and click thresholds keep their exact 8px and 10px boundaries
+ok 660 - pointer drag and click thresholds keep their exact 8px and 10px boundaries
+  ---
+  duration_ms: 0.155334
+  type: 'test'
+  ...
+# Subtest: resource label renderer avoids sqrt for far pickups but preserves exact proximity opacity
+ok 661 - resource label renderer avoids sqrt for far pickups but preserves exact proximity opacity
+  ---
+  duration_ms: 0.347953
+  type: 'test'
+  ...
+# Subtest: movement normalization square roots remain present in live simulation
+ok 662 - movement normalization square roots remain present in live simulation
+  ---
+  duration_ms: 0.348323
+  type: 'test'
+  ...
+# Subtest: touch direction state starts neutral
+ok 663 - touch direction state starts neutral
+  ---
+  duration_ms: 1.192382
+  type: 'test'
+  ...
+# Subtest: multi-touch directions compose into cardinal and diagonal vectors
+ok 664 - multi-touch directions compose into cardinal and diagonal vectors
+  ---
+  duration_ms: 0.141673
+  type: 'test'
+  ...
+# Subtest: opposite held directions cancel deterministically
+ok 665 - opposite held directions cancel deterministically
+  ---
+  duration_ms: 0.137927
+  type: 'test'
+  ...
+# Subtest: touch overlay uses pointer capture and explicit press/release signals
+ok 666 - touch overlay uses pointer capture and explicit press/release signals
+  ---
+  duration_ms: 0.288293
+  type: 'test'
+  ...
+# Subtest: touch movement is delta-driven inside the canonical movement pipeline
+ok 667 - touch movement is delta-driven inside the canonical movement pipeline
+  ---
+  duration_ms: 1.068155
+  type: 'test'
+  ...
+# Subtest: lifecycle cleanup releases all held touch directions
+ok 668 - lifecycle cleanup releases all held touch directions
+  ---
+  duration_ms: 0.799952
+  type: 'test'
+  ...
+# Subtest: 1920x1080 resolves as expanded desktop rails
+ok 669 - 1920x1080 resolves as expanded desktop rails
+  ---
+  duration_ms: 0.633843
+  type: 'test'
+  ...
+# Subtest: 1440x900 and 1366x768 resolve as laptop composition
+ok 670 - 1440x900 and 1366x768 resolve as laptop composition
+  ---
+  duration_ms: 0.163566
+  type: 'test'
+  ...
+# Subtest: 2560x1080 resolves as ultrawide and preserves expanded shell intent
+ok 671 - 2560x1080 resolves as ultrawide and preserves expanded shell intent
+  ---
+  duration_ms: 0.10665
+  type: 'test'
+  ...
+# Subtest: tablet landscape and portrait use split auxiliary decks
+ok 672 - tablet landscape and portrait use split auxiliary decks
+  ---
+  duration_ms: 0.075434
+  type: 'test'
+  ...
+# Subtest: Android landscape uses phone composition and touch controls
+ok 673 - Android landscape uses phone composition and touch controls
+  ---
+  duration_ms: 0.075573
+  type: 'test'
+  ...
+# Subtest: narrow Android portrait recommends landscape advisory
+ok 674 - narrow Android portrait recommends landscape advisory
+  ---
+  duration_ms: 0.071808
+  type: 'test'
+  ...
+# Subtest: compact Android landscape below 720px remains PHONE_LANDSCAPE
+ok 675 - compact Android landscape below 720px remains PHONE_LANDSCAPE
+  ---
+  duration_ms: 0.089835
+  type: 'test'
+  ...
+# Subtest: portrait advisory stays off for fine pointers and wider tablet portraits
+ok 676 - portrait advisory stays off for fine pointers and wider tablet portraits
+  ---
+  duration_ms: 0.105328
+  type: 'test'
+  ...
+# Subtest: invalid dimensions fail safe to the logical game viewport
+ok 677 - invalid dimensions fail safe to the logical game viewport
+  ---
+  duration_ms: 0.162905
+  type: 'test'
+  ...
+# Subtest: viewport thresholds align with certified CSS breakpoints
+ok 678 - viewport thresholds align with certified CSS breakpoints
+  ---
+  duration_ms: 0.269095
+  type: 'test'
+  ...
+1..678
+# tests 678
+# suites 0
+# pass 676
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 8295.046177
