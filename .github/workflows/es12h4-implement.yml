@@ -1,0 +1,66 @@
+name: ES-12H4 Guarded Implementation
+
+on:
+  push:
+    branches:
+      - feat/es-12h4-survival-doctrine
+    paths-ignore:
+      - es12h4-*.log
+
+permissions:
+  contents: write
+
+concurrency:
+  group: es12h4-survival-doctrine
+  cancel-in-progress: true
+
+jobs:
+  implement:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout H4 branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/es-12h4-survival-doctrine
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Apply H4 runtime patch
+        run: node scripts/es12h4-apply-v2.mjs
+
+      - name: Repository smoke tests
+        run: npm run test:repo
+
+      - name: Gameplay tests
+        run: npm run test:gameplay
+
+      - name: Platform tests
+        run: npm run test:platform
+
+      - name: Retire one-shot patchers before product typecheck
+        run: rm -f scripts/es12h4-apply.mjs scripts/es12h4-apply-v2.mjs
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Production build
+        run: npm run build
+
+      - name: Commit validated H4 implementation
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          rm -f .github/workflows/es12h4-implement.yml scripts/es12h4-apply.mjs scripts/es12h4-apply-v2.mjs es12h4-*.log
+          git add -A
+          git commit -m "feat(h4): apply survival doctrine and adaptive invasion"
+          git push origin HEAD:feat/es-12h4-survival-doctrine
