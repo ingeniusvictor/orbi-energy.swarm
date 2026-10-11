@@ -33,14 +33,25 @@ jobs:
       - name: Apply ES-12G3 evidence recorder patch
         run: node scripts/es12g3-apply-v2.mjs
 
+      - name: Typecheck diagnostic gate
+        shell: bash
+        run: |
+          set +e
+          npm run typecheck > /tmp/es12g3-typecheck.log 2>&1
+          status=$?
+          if [ "$status" -ne 0 ]; then
+            echo "=== ES-12G3 TYPESCRIPT ERRORS ==="
+            grep -nE "error TS[0-9]+:" /tmp/es12g3-typecheck.log || tail -120 /tmp/es12g3-typecheck.log
+            echo "=== END TYPESCRIPT ERRORS ==="
+            exit "$status"
+          fi
+          echo "ES-12G3 typecheck: PASS"
+
       - name: Repository smoke tests
         run: npm run test:repo
 
       - name: Platform tests
         run: npm run test:platform
-
-      - name: Typecheck
-        run: npm run typecheck
 
       - name: Production build
         run: npm run build
