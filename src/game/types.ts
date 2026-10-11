@@ -96,6 +96,18 @@ export type OrbiAttackSignature =
   | "QUANTUM_PHASE"
   | "GAIA_SYNTHESIS";
 
+export type OrbiAttackShape =
+  | "LANCE"
+  | "RIPPLE"
+  | "CRESCENT"
+  | "PLASMA"
+  | "ARC"
+  | "PARTICLE"
+  | "KINETIC"
+  | "CELL"
+  | "PHASE"
+  | "SYNTHESIS";
+
 export interface OrbiMember {
   id: string;
   type: OrbiType;
@@ -198,6 +210,16 @@ export interface Projectile {
   affinity?: OrbiAffinity;
   energyId?: OrbiEnergyId;
   attackSignature?: OrbiAttackSignature;
+  attackShape?: OrbiAttackShape;
+  rotation?: number;
+  pushMultiplier?: number;
+  slowDurationMs?: number;
+  splashRadius?: number;
+  splashDamageMultiplier?: number;
+  magneticPullRadius?: number;
+  magneticPullStrength?: number;
+  supportShieldRestore?: number;
+  isCriticalShot?: boolean;
 }
 
 export interface Resource {
