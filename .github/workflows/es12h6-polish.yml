@@ -27,38 +27,33 @@ jobs:
           from pathlib import Path
           path = Path('src/game/infiniteMutatorDirector.ts')
           text = path.read_text()
-          old_preference = '''  if (tier !== "MASTERY") {
-            const preferred = firstBiomePreference(biome, candidates);
-            if (preferred) selected.push(preferred);
-          }
-          '''
-          new_preference = '''  if (tier !== "MASTERY") {
-            const preferred =
-              firstBiomePreference(biome, candidates) ??
-              candidates.find((mutator) => ENVIRONMENTAL_MUTATORS.has(mutator)) ??
-              null;
-            if (preferred) selected.push(preferred);
-          }
-          '''
-          old_fallback = '''  if (tier !== "MASTERY" && !selected.some((mutator) => ENVIRONMENTAL_MUTATORS.has(mutator))) {
-            const fallbackEnvironmental = candidates.find((mutator) =>
-              ENVIRONMENTAL_MUTATORS.has(mutator),
-            );
-            if (fallbackEnvironmental) {
-              selected.splice(Math.max(0, selected.length - 1), 1, fallbackEnvironmental);
-            }
-          }
 
-          '''
-          if text.count(old_preference) != 1:
-              raise SystemExit(f'fail-closed: expected one preference block, found {text.count(old_preference)}')
-          if text.count(old_fallback) != 1:
-              raise SystemExit(f'fail-closed: expected one legacy fallback block, found {text.count(old_fallback)}')
-          text = text.replace(old_preference, new_preference).replace(old_fallback, '')
+          old_line = '    const preferred = firstBiomePreference(biome, candidates);'
+          new_line = '''    const preferred =
+                firstBiomePreference(biome, candidates) ??
+                candidates.find((mutator) => ENVIRONMENTAL_MUTATORS.has(mutator)) ??
+                null;'''
+          if text.count(old_line) != 1:
+              raise SystemExit(f'fail-closed: expected one legacy preference line, found {text.count(old_line)}')
+          text = text.replace(old_line, new_line)
+
+          start = '  if (tier !== "MASTERY" && !selected.some((mutator) => ENVIRONMENTAL_MUTATORS.has(mutator))) {'
+          end = '  return selected.slice(0, target);'
+          if text.count(start) != 1:
+              raise SystemExit(f'fail-closed: expected one legacy fallback start, found {text.count(start)}')
+          if text.count(end) != 1:
+              raise SystemExit(f'fail-closed: expected one return marker, found {text.count(end)}')
+          start_index = text.index(start)
+          end_index = text.index(end, start_index)
+          text = text[:start_index] + text[end_index:]
           path.write_text(text)
           PY
       - name: Add fallback conflict regression
         run: |
+          if grep -Fq 'Advanced+ environmental fallback is selected before conflict filtering' tests/infinite-mutator-director.test.ts; then
+            echo 'fail-closed: regression test already exists unexpectedly'
+            exit 1
+          fi
           cat >> tests/infinite-mutator-director.test.ts <<'EOF'
 
           test("Advanced+ environmental fallback is selected before conflict filtering", () => {
