@@ -1,0 +1,27 @@
+name: ES-12H8 Pure Worm Gate
+
+on:
+  push:
+    branches:
+      - feat/es-12h8-worm-segments
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pure:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: H8 pure contracts
+        run: npx tsx --test tests/boss-chassis.test.ts tests/infinite-raid-escalation.test.ts tests/worm-segment-physics.test.ts tests/titan-runtime-milestone.test.ts
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Platform regression
+        run: npm run test:platform
