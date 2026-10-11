@@ -92,7 +92,7 @@ export const projectCosmicWhaleEvent = ({
     bodyHeight * 0.7,
     height - bodyHeight * 0.7,
   );
-  const alpha = 0.08 + fadeEnvelope(progress) * 0.28;
+  const alpha = fadeEnvelope(progress) * 0.36;
   const tilt =
     (motionSeed - 0.5) * 0.1 +
     Math.sin(progress * Math.PI * 2) * 0.025;
