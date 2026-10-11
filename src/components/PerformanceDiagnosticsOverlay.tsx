@@ -1,9 +1,13 @@
 import React from "react";
 
 import type { PerformanceDiagnosticsSnapshot } from "../game/performanceDiagnostics";
+import type { PerformanceEvidenceRecorderStatus } from "../game/performanceEvidenceRecorder";
 
 interface PerformanceDiagnosticsOverlayProps {
   snapshot: PerformanceDiagnosticsSnapshot | null;
+  evidenceStatus?: PerformanceEvidenceRecorderStatus;
+  evidenceSamples?: number;
+  evidenceTargetSamples?: number;
 }
 
 const metric = (value: number, digits = 1) =>
@@ -11,7 +15,12 @@ const metric = (value: number, digits = 1) =>
 
 export const PerformanceDiagnosticsOverlay: React.FC<
   PerformanceDiagnosticsOverlayProps
-> = ({ snapshot }) => {
+> = ({
+  snapshot,
+  evidenceStatus = "IDLE",
+  evidenceSamples = 0,
+  evidenceTargetSamples = 30,
+}) => {
   return (
     <aside
       className="pointer-events-none absolute right-2 top-2 z-[80] w-[190px] rounded-lg border border-cyan-400/30 bg-slate-950/90 p-2.5 font-mono shadow-[0_0_28px_rgba(34,211,238,0.12)] backdrop-blur"
@@ -124,6 +133,28 @@ export const PerformanceDiagnosticsOverlay: React.FC<
               <span className="text-slate-500">CYCLES</span>
               <span className="text-slate-300">{snapshot.gaiaCompletedCycles}</span>
             </div>
+          </div>
+
+          <div
+            className="mt-1.5 flex items-center justify-between rounded border border-cyan-400/15 bg-cyan-400/5 px-1.5 py-1 text-[7px] uppercase"
+            data-performance-evidence="true"
+          >
+            <span className="text-slate-500">EVIDENCE</span>
+            <span
+              className={
+                evidenceStatus === "READY"
+                  ? "text-emerald-300"
+                  : evidenceStatus === "RECORDING"
+                    ? "text-amber-300"
+                    : "text-cyan-300"
+              }
+            >
+              {evidenceStatus === "READY"
+                ? `READY ${evidenceSamples}/${evidenceTargetSamples} · F4 EXPORT`
+                : evidenceStatus === "RECORDING"
+                  ? `REC ${evidenceSamples}/${evidenceTargetSamples} · F4 STOP`
+                  : "F4 START"}
+            </span>
           </div>
 
           <div className="mt-2 flex items-center justify-between border-t border-slate-800 pt-1.5 text-[7px] uppercase">
