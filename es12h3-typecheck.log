@@ -2,12 +2,5 @@
 > orbi-energy-swarm@0.2.0-beta.1 typecheck
 > tsc --noEmit
 
-scripts/es12h3-apply.mjs(251,1958): error TS1005: ',' expected.
-scripts/es12h3-apply.mjs(251,1959): error TS1005: ',' expected.
-scripts/es12h3-apply.mjs(251,1971): error TS1005: ',' expected.
-scripts/es12h3-apply.mjs(251,1978): error TS1005: ',' expected.
-scripts/es12h3-apply.mjs(251,1986): error TS1005: ',' expected.
-scripts/es12h3-apply.mjs(251,1994): error TS1005: ',' expected.
-scripts/es12h3-apply.mjs(251,2212): error TS1005: ',' expected.
-scripts/es12h3-apply.mjs(251,2214): error TS1005: ',' expected.
-scripts/es12h3-apply.mjs(251,2216): error TS1005: ',' expected.
+src/game/EnergySwarmGame.tsx(3121,43): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string'.
+  Type 'null' is not assignable to type 'string'.
