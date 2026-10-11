@@ -85,7 +85,7 @@ export const BossHudOverlay: React.FC<BossHudOverlayProps> = ({
     >
       <div className="orbi-boss-heading">
         <span className="orbi-boss-kicker">
-          {bossChassis === "TITAN_CORE" ? "⚠ RAID ESCALATION DETECTED" : "⚠ MAJOR COLLAPSE DETECTED"}
+          {bossChassis === "DEVOURER" ? "⚠ MAJOR COLLAPSE DETECTED" : "⚠ RAID ESCALATION DETECTED"}
         </span>
         <div className="orbi-boss-title-row">
           <h2 id="orbi-boss-title" className="orbi-boss-title">{displayName}</h2>
