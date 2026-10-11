@@ -7,7 +7,7 @@ import {
 import type { RuntimeWaveDescriptor } from "./runtimeWaveDescriptor";
 import { selectInfiniteBossIdentity } from "./infiniteBossFamily";
 import {
-  projectTitanRaidEscalation,
+  projectInfiniteRaidEscalation,
   type InfiniteRaidEscalationProfile,
 } from "./infiniteRaidEscalation";
 
@@ -124,7 +124,7 @@ export const projectInfiniteMilestoneEncounter = (
       bossIdentity: selectInfiniteBossIdentity(descriptor.sector),
       bossChassis: "DEVOURER",
       bossEncounterStage: "PRIMARY",
-      raidEscalation: projectTitanRaidEscalation(
+      raidEscalation: projectInfiniteRaidEscalation(
         descriptor.sector,
         fairnessTelegraphMs,
       ),

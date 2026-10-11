@@ -1,7 +1,17 @@
 import { EnemyType, type BossChassisId } from "./types";
+import {
+  DEFAULT_WORM_SEGMENT_PHYSICS,
+  WORM_SEGMENT_CAP,
+  type WormSegmentPhysicsConfig,
+} from "./wormSegmentPhysics";
 import { BLACKOUT_DEVOURER_CANON } from "./waveDirector";
 
-export type BossWeakpointMotion = "ORBITAL" | "ANCHORED";
+export type BossWeakpointMotion = "ORBITAL" | "ANCHORED" | "SERPENTINE";
+
+export interface BossWeakpointDestructionReward {
+  score: number;
+  nanoCredits: number;
+}
 
 export interface BossWeakpointProfile {
   count: number;
@@ -15,6 +25,8 @@ export interface BossWeakpointProfile {
   exposedDamageMultiplier: number;
   exposureDurationMs: number;
   hudLabel: string;
+  chainPhysics?: Readonly<WormSegmentPhysicsConfig>;
+  destructionReward?: Readonly<BossWeakpointDestructionReward>;
 }
 
 export interface BossChassisProfile {
@@ -85,6 +97,43 @@ const PROFILES: Readonly<Record<BossChassisId, BossChassisProfile>> = {
       singularity_pulse: 1.8,
       rotating_eclipse_lanes: 1.55,
       devourer_charge: 0.25,
+    },
+  },
+  WORM_SEGMENTS: {
+    id: "WORM_SEGMENTS",
+    enemyType: EnemyType.BOSS_WORM,
+    displayName: "Rift Worm",
+    subtitle: "Serpentine Raid // Break the Chain",
+    color: "#c084fc",
+    size: 44,
+    baseHealth: 2100,
+    introDurationMs: 3900,
+    weakpoints: {
+      count: WORM_SEGMENT_CAP,
+      health: 145,
+      collisionRadius: 15,
+      motion: "SERPENTINE",
+      radiusX: DEFAULT_WORM_SEGMENT_PHYSICS.spacing,
+      radiusY: 0,
+      angularVelocityPerFrame: 0,
+      protectedDamageMultiplier: 0.18,
+      exposedDamageMultiplier: 2.1,
+      exposureDurationMs: 5200,
+      hudLabel: "WORM SEGMENTS",
+      chainPhysics: DEFAULT_WORM_SEGMENT_PHYSICS,
+      destructionReward: {
+        score: 250,
+        nanoCredits: 1,
+      },
+    },
+    attackWeights: {
+      devourer_beam: 0.8,
+      gravity_well: 1.15,
+      orbital_shards: 1.25,
+      blackout_sweep: 1.7,
+      singularity_pulse: 1.35,
+      rotating_eclipse_lanes: 1.85,
+      devourer_charge: 1.9,
     },
   },
 };

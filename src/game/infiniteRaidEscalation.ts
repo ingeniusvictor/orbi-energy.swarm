@@ -2,17 +2,31 @@ import { EnemyType, type BossChassisId, type BossEncounterStage } from "./types"
 
 export const TITAN_RAID_INTERVAL = 200;
 export const TITAN_RAID_FIRST_SECTOR = 200;
+export const WORM_RAID_INTERVAL = 200;
+export const WORM_RAID_FIRST_SECTOR = 300;
 
-export interface InfiniteRaidEscalationProfile {
-  chassis: Extract<BossChassisId, "TITAN_CORE">;
+interface InfiniteRaidEscalationBase {
   stage: Extract<BossEncounterStage, "RAID_ESCALATION">;
-  enemyType: EnemyType.BOSS_TITAN;
   healthMultiplier: number;
   damageMultiplier: number;
   attackRateMultiplier: number;
   rewardMultiplier: number;
   telegraphMs: number;
 }
+
+export interface TitanRaidEscalationProfile extends InfiniteRaidEscalationBase {
+  chassis: Extract<BossChassisId, "TITAN_CORE">;
+  enemyType: EnemyType.BOSS_TITAN;
+}
+
+export interface WormRaidEscalationProfile extends InfiniteRaidEscalationBase {
+  chassis: Extract<BossChassisId, "WORM_SEGMENTS">;
+  enemyType: EnemyType.BOSS_WORM;
+}
+
+export type InfiniteRaidEscalationProfile =
+  | TitanRaidEscalationProfile
+  | WormRaidEscalationProfile;
 
 const clamp = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value));
@@ -27,10 +41,15 @@ export const hasTitanRaidEscalation = (sector: number) =>
   sector >= TITAN_RAID_FIRST_SECTOR &&
   sector % TITAN_RAID_INTERVAL === 0;
 
+export const hasWormRaidEscalation = (sector: number) =>
+  Number.isInteger(sector) &&
+  sector >= WORM_RAID_FIRST_SECTOR &&
+  (sector - WORM_RAID_FIRST_SECTOR) % WORM_RAID_INTERVAL === 0;
+
 export const projectTitanRaidEscalation = (
   sector: number,
   fairnessTelegraphMs = 0,
-): InfiniteRaidEscalationProfile | null => {
+): TitanRaidEscalationProfile | null => {
   if (!hasTitanRaidEscalation(sector)) return null;
 
   const progression = Math.log2(Math.max(1, sector / TITAN_RAID_FIRST_SECTOR));
@@ -46,6 +65,33 @@ export const projectTitanRaidEscalation = (
     telegraphMs: Math.max(2600, fairnessTelegraphMs),
   };
 };
+
+export const projectWormRaidEscalation = (
+  sector: number,
+  fairnessTelegraphMs = 0,
+): WormRaidEscalationProfile | null => {
+  if (!hasWormRaidEscalation(sector)) return null;
+
+  const progression = Math.log2(Math.max(1, sector / WORM_RAID_FIRST_SECTOR));
+
+  return {
+    chassis: "WORM_SEGMENTS",
+    stage: "RAID_ESCALATION",
+    enemyType: EnemyType.BOSS_WORM,
+    healthMultiplier: round(clamp(1 + progression * 0.1, 1, 1.5)),
+    damageMultiplier: round(clamp(1.08 + progression * 0.065, 1.08, 1.48)),
+    attackRateMultiplier: round(clamp(1.08 + progression * 0.045, 1.08, 1.34)),
+    rewardMultiplier: round(clamp(1.85 + progression * 0.18, 1.85, 2.8)),
+    telegraphMs: Math.max(2500, fairnessTelegraphMs),
+  };
+};
+
+export const projectInfiniteRaidEscalation = (
+  sector: number,
+  fairnessTelegraphMs = 0,
+): InfiniteRaidEscalationProfile | null =>
+  projectTitanRaidEscalation(sector, fairnessTelegraphMs) ??
+  projectWormRaidEscalation(sector, fairnessTelegraphMs);
 
 export type BossRematchDefeatAction =
   | "SPAWN_RAID_ESCALATION"

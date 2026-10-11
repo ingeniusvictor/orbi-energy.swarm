@@ -147,7 +147,8 @@ export enum EnemyType {
   MINE_WEAVER = "MINE_WEAVER",
   MIRROR_WARDEN = "MIRROR_WARDEN",
   BOSS_DEVOURER = "BOSS_DEVOURER",
-  BOSS_TITAN = "BOSS_TITAN"
+  BOSS_TITAN = "BOSS_TITAN",
+  BOSS_WORM = "BOSS_WORM"
 }
 
 export type EvolvedEnemyVariantId =
@@ -172,7 +173,7 @@ export type InfiniteBossIdentity =
   | "RIFT_MATRIARCH"
   | "SIEGE_CATHEDRAL";
 
-export type BossChassisId = "DEVOURER" | "TITAN_CORE";
+export type BossChassisId = "DEVOURER" | "TITAN_CORE" | "WORM_SEGMENTS";
 export type BossEncounterStage = "PRIMARY" | "RAID_ESCALATION";
 
 export interface Enemy {
