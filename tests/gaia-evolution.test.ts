@@ -5,6 +5,7 @@ import {
   GAIA_REQUIRED_ENERGY_COUNT,
   createGaiaEvolutionState,
   getGaiaCombatScale,
+  getGaiaProgressCount,
   registerGaiaEnergy,
 } from "../src/game/gaiaEvolution.ts";
 import {
@@ -181,4 +182,13 @@ test("GAIA combat caps hold across a long progression sequence", () => {
     assert.ok(scale.incomingDamageMultiplier >= 0.75 && scale.incomingDamageMultiplier <= 0.92);
     assert.ok(scale.size >= 7.2 && scale.size <= 10.5);
   }
+});
+
+test("GAIA progress helper reports unique energy bits in bounded state", () => {
+  let state = createGaiaEvolutionState();
+  assert.equal(getGaiaProgressCount(state), 0);
+  state = registerGaiaEnergy(state, "HYDRO").state;
+  state = registerGaiaEnergy(state, "AERO").state;
+  state = registerGaiaEnergy(state, "HYDRO").state;
+  assert.equal(getGaiaProgressCount(state), 2);
 });

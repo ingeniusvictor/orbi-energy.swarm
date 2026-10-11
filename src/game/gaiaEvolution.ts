@@ -48,6 +48,10 @@ const countBits = (value: number) => {
   return count;
 };
 
+export const getGaiaProgressCount = (
+  state: GaiaEvolutionState,
+) => countBits(state.cycleMask);
+
 export const createGaiaEvolutionState = (): GaiaEvolutionState => ({
   cycleMask: 0,
   gaiaLevel: 0,
