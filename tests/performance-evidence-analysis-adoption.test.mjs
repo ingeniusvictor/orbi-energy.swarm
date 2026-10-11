@@ -39,7 +39,8 @@ test("analyzer never fabricates an automatic runtime PASS", () => {
   assert.match(analyzer, /READY_FOR_MANUAL_REVIEW/);
   assert.match(analyzer, /manualWindowReviewRequired: true/);
   assert.doesNotMatch(analyzer, /AUTO_PASS|CERTIFIED_PASS/);
-  assert.match(docs, /not an automatic PASS/i);
+  assert.match(docs, /automatic PASS/i);
+  assert.match(docs, /This is \*\*not\*\* an automatic PASS/i);
   assert.match(docs, /must not reconstruct or claim exact health windows/i);
 });
 
