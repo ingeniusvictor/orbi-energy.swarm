@@ -108,19 +108,23 @@ test("normal simulation accumulates actual dwell time for the active runtime for
   const cinematicReturn = physics.indexOf(
     "// Return early to freeze rest of physical ticks!",
   );
+  const runtimeFormationRead = physics.indexOf(
+    "const runtimeFormation = activeFormationRef.current;",
+  );
   const formationUsage = physics.indexOf(
-    "formationUseCountsRef.current[activeFormationRef.current]",
+    "formationUseCountsRef.current[runtimeFormation]",
   );
   const runtimeProjection = physics.indexOf(
     "const frameRuntimeProjection =",
   );
 
   assert.ok(cinematicReturn >= 0);
-  assert.ok(formationUsage > cinematicReturn);
+  assert.ok(runtimeFormationRead > cinematicReturn);
+  assert.ok(formationUsage > runtimeFormationRead);
   assert.ok(runtimeProjection > formationUsage);
   assert.match(
     physics,
-    /formationUseCountsRef\.current\[activeFormationRef\.current\] =[\s\S]*formationUseCountsRef\.current\[activeFormationRef\.current\] \?\? 0\)[\s\S]*\+\s*delta/,
+    /const runtimeFormation = activeFormationRef\.current;[\s\S]*formationUseCountsRef\.current\[runtimeFormation\] =[\s\S]*formationUseCountsRef\.current\[runtimeFormation\] \?\? 0\)[\s\S]*\+\s*delta/,
   );
   assert.match(
     physics,
