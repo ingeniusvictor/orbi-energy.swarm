@@ -22,13 +22,13 @@ export interface BossPursuitProjection {
   targetX: number;
   targetY: number;
   speedPerFrame: number;
-  standoffY: number;
+  standoffDistance: number;
 }
 
 export const BOSS_PURSUIT_PROFILES = {
-  1: { speedPerFrame: 0.9, standoffY: 250, deadZone: 26 },
-  2: { speedPerFrame: 1.2, standoffY: 195, deadZone: 24 },
-  3: { speedPerFrame: 1.5, standoffY: 140, deadZone: 20 },
+  1: { speedPerFrame: 1.8, standoffDistance: 160, deadZone: 16, catchupDistance: 420, catchupMultiplier: 1.25 },
+  2: { speedPerFrame: 2.5, standoffDistance: 115, deadZone: 14, catchupDistance: 360, catchupMultiplier: 1.3 },
+  3: { speedPerFrame: 3.3, standoffDistance: 75, deadZone: 12, catchupDistance: 300, catchupMultiplier: 1.35 },
 } as const;
 
 const clamp = (value: number, min: number, max: number) =>
@@ -41,12 +41,10 @@ const getProfile = (phase: number) => {
 };
 
 /**
- * Constant-time idle pursuit for the Blackout Devourer.
- *
- * The boss follows the player's live position while preserving a vertical
- * standoff that shrinks by phase. Active attack movement/telegraphs remain
- * owned by the existing boss AI; callers use this projection only for the
- * non-charge movement branch.
+ * Constant-time pursuit for the Blackout Devourer.
+ * Outside dedicated charge movement, the boss closes toward Foton from any
+ * direction until it reaches a phase-scaled radial standoff. Long-range
+ * catch-up prevents stationary firing while bounded delta preserves telegraphs.
  */
 export const projectBossPursuit = (
   input: BossPursuitInput,
@@ -61,27 +59,44 @@ export const projectBossPursuit = (
   const minY = input.bounds.minY + margin;
   const maxY = input.bounds.maxY - margin;
 
-  const targetX = clamp(input.playerX, minX, maxX);
-  const targetY = clamp(input.playerY - profile.standoffY, minY, maxY);
+  const playerX = clamp(input.playerX, minX, maxX);
+  const playerY = clamp(input.playerY, minY, maxY);
+  const toPlayerX = playerX - input.bossX;
+  const toPlayerY = playerY - input.bossY;
+  const playerDistance = Math.hypot(toPlayerX, toPlayerY);
+
+  if (playerDistance === 0 || playerDistance <= profile.standoffDistance || safeDelta === 0) {
+    const x = clamp(input.bossX, minX, maxX);
+    const y = clamp(input.bossY, minY, maxY);
+    return { x, y, targetX: x, targetY: y, speedPerFrame: profile.speedPerFrame, standoffDistance: profile.standoffDistance };
+  }
+
+  const inversePlayerDistance = 1 / playerDistance;
+  const directionX = toPlayerX * inversePlayerDistance;
+  const directionY = toPlayerY * inversePlayerDistance;
+  const closeDistance = playerDistance - profile.standoffDistance;
+  const targetX = clamp(input.bossX + directionX * closeDistance, minX, maxX);
+  const targetY = clamp(input.bossY + directionY * closeDistance, minY, maxY);
   const dx = targetX - input.bossX;
   const dy = targetY - input.bossY;
   const distance = Math.hypot(dx, dy);
 
-  if (distance <= profile.deadZone || distance === 0 || safeDelta === 0) {
+  if (distance <= profile.deadZone || distance === 0) {
     return {
       x: clamp(input.bossX, minX, maxX),
       y: clamp(input.bossY, minY, maxY),
       targetX,
       targetY,
       speedPerFrame: profile.speedPerFrame,
-      standoffY: profile.standoffY,
+      standoffDistance: profile.standoffDistance,
     };
   }
 
   const frameScale = safeDelta / 16.6;
+  const catchupMultiplier = playerDistance >= profile.catchupDistance ? profile.catchupMultiplier : 1;
   const travel = Math.min(
     Math.max(0, distance - profile.deadZone),
-    profile.speedPerFrame * frameScale,
+    profile.speedPerFrame * catchupMultiplier * frameScale,
   );
   const inverseDistance = 1 / distance;
 
@@ -91,6 +106,6 @@ export const projectBossPursuit = (
     targetX,
     targetY,
     speedPerFrame: profile.speedPerFrame,
-    standoffY: profile.standoffY,
+    standoffDistance: profile.standoffDistance,
   };
 };

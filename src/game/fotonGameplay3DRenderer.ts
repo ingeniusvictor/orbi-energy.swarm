@@ -3,7 +3,7 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 import {
   FOTON_DYSON_HALO_RINGS,
-  getUnlockedDysonHaloRingCountFromSwarmSize,
+  getUnlockedDysonHaloRingCount,
   type FotonDysonHaloRingDescriptor,
 } from "./fotonDysonHalo";
 import { QualityPreset } from "./types";
@@ -21,8 +21,8 @@ export interface FotonGameplay3DFrameRequest {
   paused: boolean;
   threatDirectionX?: number | null;
   threatDirectionY?: number | null;
-  // Legacy name kept at the Canvas boundary. The current caller supplies the
-  // live swarm-member count, including the free initial companion.
+  // Legacy field name kept at the Canvas boundary. The current caller supplies
+  // the monotonic per-run count of acquired Orbis, not the live follower count.
   orbiCount?: number | null;
   shieldRatio?: number | null;
   goldenCoreActive?: boolean | null;
@@ -398,7 +398,7 @@ const stepDysonHalo = (
   elapsedSeconds: number,
 ) => {
   const unlockedRingCount =
-    getUnlockedDysonHaloRingCountFromSwarmSize(
+    getUnlockedDysonHaloRingCount(
       active.orbiCount,
     );
   const shieldRatio = clamp01(active.shieldRatio);

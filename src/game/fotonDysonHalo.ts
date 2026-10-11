@@ -74,14 +74,14 @@ const normalizeCount = (value: number) => {
 };
 
 /**
- * Gameplay currently supplies the live swarm member count. The first member
- * is granted automatically at run start and is not a collected Orbi, so halo
- * progression must subtract that initial companion before applying 10-Orbi
- * construction thresholds.
+ * swarmRef stores recruited followers only; Foton itself is not an element in
+ * that array. Therefore no phantom starting companion may be subtracted.
+ * Runtime Dyson progression now uses a separate monotonic acquired-Orbi count,
+ * while this helper remains as a truthful follower-count conversion.
  */
 export const getCollectedOrbiCountFromSwarmSize = (
   swarmMemberCount: number,
-): number => Math.max(0, normalizeCount(swarmMemberCount) - 1);
+): number => normalizeCount(swarmMemberCount);
 
 export const getUnlockedDysonHaloRingCountFromSwarmSize = (
   swarmMemberCount: number,

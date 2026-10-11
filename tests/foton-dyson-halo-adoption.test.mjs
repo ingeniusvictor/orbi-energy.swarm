@@ -61,21 +61,14 @@ test("ring construction remains progressive instead of hard-popping", () => {
   );
 });
 
-test("live swarm size is corrected to true collected Orbi before unlocking extra rings", () => {
-  assert.match(
-    game,
-    /drawFoton\([\s\S]*fotonThreatDirectionRef\.current,[\s\S]*swarmRef\.current\.length/,
-  );
+test("cumulative acquired Orbis drive monotonic ring progression", () => {
+  assert.match(game, /const runOrbiAcquiredRef = useRef<number>\(0\)/);
+  assert.equal((game.match(/runOrbiAcquiredRef\.current \+= 1/g) ?? []).length, 4);
+  assert.match(game, /drawFoton\([\s\S]*fotonThreatDirectionRef\.current,[\s\S]*runOrbiAcquiredRef\.current/);
   assert.match(canvas, /orbiCount,/);
   assert.match(runtime, /request\.orbiCount \?\? 0/);
-  assert.match(
-    runtime,
-    /getUnlockedDysonHaloRingCountFromSwarmSize\([\s\S]*active\.orbiCount/,
-  );
-  assert.match(
-    halo,
-    /Math\.max\(0, normalizeCount\(swarmMemberCount\) - 1\)/,
-  );
+  assert.match(runtime, /getUnlockedDysonHaloRingCount\([\s\S]*active\.orbiCount/);
+  assert.doesNotMatch(halo, /normalizeCount\(swarmMemberCount\) - 1/);
 });
 
 test("simple 2D integrity ring stays replaced by the transparent Dyson composite", () => {
