@@ -44,7 +44,7 @@ test("desktop formation controls explicitly advertise and expose interactivity",
 });
 
 test("swarm roster uses one scroll surface and a taller responsive cockpit panel", () => {
-  assert.match(companion, /lg:h-\[min\(72dvh,720px\)\]/);
+  assert.match(companion, /lg:h-\[min\(82dvh,820px\)\]/);
   assert.match(companion, /data-swarm-roster-list/);
   assert.doesNotMatch(
     companion,
