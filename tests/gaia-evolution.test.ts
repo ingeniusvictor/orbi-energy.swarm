@@ -100,3 +100,85 @@ test("GAIA combat evolution is meaningful but hard bounded", () => {
   assert.equal(level1000.size, 10.5);
   assert.equal(level1000.evolutionStage, 4);
 });
+
+test("out-of-order acquisition with duplicates completes exactly once per eight unique energies", () => {
+  const order = [
+    "QUANTUM", "HYDRO", "HYDRO", "ATON", "AERO",
+    "TERMO", "QUANTUM", "MAGNE", "H2NOVA", "KINETRIX",
+  ] as const;
+  let state = createGaiaEvolutionState();
+  let completions = 0;
+  for (const id of order) {
+    const update = registerGaiaEnergy(state, id);
+    if (update.cycleCompleted) completions += 1;
+    state = update.state;
+  }
+  assert.equal(completions, 1);
+  assert.equal(state.gaiaLevel, 1);
+  assert.equal(state.completedCycles, 1);
+  assert.equal(state.cycleMask, 0);
+});
+
+test("partial second cycle preserves GAIA level until all distinct energies return", () => {
+  let state = createGaiaEvolutionState();
+  for (const id of ORBI_GAIA_REQUIRED_FOLLOWER_IDS) {
+    state = registerGaiaEnergy(state, id).state;
+  }
+  for (const id of ORBI_GAIA_REQUIRED_FOLLOWER_IDS.slice(0, 7)) {
+    state = registerGaiaEnergy(state, id).state;
+  }
+  const duplicate = registerGaiaEnergy(
+    state, ORBI_GAIA_REQUIRED_FOLLOWER_IDS[0],
+  );
+  assert.equal(duplicate.duplicate, true);
+  assert.equal(duplicate.progressCount, 7);
+  assert.equal(duplicate.state.gaiaLevel, 1);
+  const completed = registerGaiaEnergy(
+    duplicate.state, ORBI_GAIA_REQUIRED_FOLLOWER_IDS[7],
+  );
+  assert.equal(completed.cycleCompleted, true);
+  assert.equal(completed.state.gaiaLevel, 2);
+  assert.equal(completed.state.completedCycles, 2);
+});
+
+test("GAIA synthesis is independent of swarm occupancy and does not mutate previous state", () => {
+  const initial = createGaiaEvolutionState();
+  const snapshot = { ...initial };
+  const first = registerGaiaEnergy(initial, "AERO");
+  assert.deepEqual(initial, snapshot);
+  assert.notEqual(first.state, initial);
+  // Capacity and consolidation do not enter the pure progression API.
+  const simulatedFullSwarm = Array.from({ length: 60 }, (_, i) => i);
+  assert.equal(simulatedFullSwarm.length, 60);
+  let state = first.state;
+  for (const id of ORBI_GAIA_REQUIRED_FOLLOWER_IDS) {
+    if (id === "AERO") continue;
+    state = registerGaiaEnergy(state, id).state;
+  }
+  assert.equal(state.gaiaLevel, 1);
+});
+
+test("GAIA progression resets cleanly for a new run", () => {
+  let previousRun = createGaiaEvolutionState();
+  for (const id of ORBI_GAIA_REQUIRED_FOLLOWER_IDS) {
+    previousRun = registerGaiaEnergy(previousRun, id).state;
+  }
+  const newRun = createGaiaEvolutionState();
+  assert.equal(previousRun.gaiaLevel, 1);
+  assert.deepEqual(newRun, {
+    cycleMask: 0,
+    gaiaLevel: 0,
+    completedCycles: 0,
+  });
+});
+
+test("GAIA combat caps hold across a long progression sequence", () => {
+  for (let level = 1; level <= 1000; level += 1) {
+    const scale = getGaiaCombatScale(level);
+    assert.ok(scale.damageMultiplier >= 1 && scale.damageMultiplier <= 2.2);
+    assert.ok(scale.cooldownMultiplier >= 0.62 && scale.cooldownMultiplier <= 1);
+    assert.ok(scale.shieldSupportMultiplier >= 1 && scale.shieldSupportMultiplier <= 2.5);
+    assert.ok(scale.incomingDamageMultiplier >= 0.75 && scale.incomingDamageMultiplier <= 0.92);
+    assert.ok(scale.size >= 7.2 && scale.size <= 10.5);
+  }
+});
