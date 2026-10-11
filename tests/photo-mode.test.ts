@@ -140,3 +140,56 @@ test("clean Photo Mode does not change gameplay or persistence data", () => {
     /saveGameStats|scoreRef|shieldRef|enemiesRef|projectilesRef|runtimeProgressionRef/,
   );
 });
+
+const photoModeModule = read("src/game/photoMode.ts");
+const photoModeOverlay = read("src/components/PhotoModeOverlay.tsx");
+
+test("H11 exposes deterministic cinematic filter state only to presentation", () => {
+  assert.match(game, /const \[photoFilterId, setPhotoFilterId\] = useState<PhotoFilterId>/);
+  assert.match(game, /data-photo-filter=\{photoFilterId\}/);
+  assert.match(game, /cyclePhotoFilter\(current, direction\)/);
+  assert.match(game, /setPhotoFilterId\(DEFAULT_PHOTO_FILTER_ID\)/);
+  assert.doesNotMatch(
+    photoModeModule,
+    /enemiesRef|projectilesRef|swarmRef|scoreRef|shieldRef|runtimeProgressionRef|saveGameStats/,
+  );
+});
+
+test("H11 keyboard controls cycle or reset filters without resuming gameplay", () => {
+  assert.match(
+    game,
+    /if \(isPhotoMode\)[\s\S]*ARROWLEFT[\s\S]*cyclePhotoModeFilter\(-1\)[\s\S]*ARROWRIGHT[\s\S]*cyclePhotoModeFilter\(1\)[\s\S]*key === "0"[\s\S]*resetPhotoModeFilter\(\)/,
+  );
+  assert.match(
+    game,
+    /const exitPhotoMode = \(\) =>[\s\S]*setPausedState\(true\)/,
+  );
+});
+
+test("H11 removes only the paused presentation veil while Photo Mode remains paused", () => {
+  assert.match(game, /isPaused=\{isPaused && !isPhotoMode\}/);
+  assert.match(
+    game,
+    /const enterPhotoMode = \(\) =>[\s\S]*setPausedState\(true\)[\s\S]*setIsPhotoMode\(true\)/,
+  );
+});
+
+test("H11 filter CSS targets only the existing game stage", () => {
+  for (const id of ["ORIGINAL", "NEON_NOIR", "SOLAR_FILM", "CYANOTYPE", "MONOCHROME"]) {
+    assert.ok(
+      css.includes(`data-photo-filter="${id}"] .orbi-game-stage`),
+      `missing Photo Mode stage selector for ${id}`,
+    );
+  }
+  assert.doesNotMatch(css, /data-photo-filter=.*(?:enemy|projectile|swarm)/i);
+});
+
+test("H11 photo controls are touch and keyboard accessible and can self-hide", () => {
+  assert.match(photoModeOverlay, /role="toolbar"/);
+  assert.match(photoModeOverlay, /photo-filter-prev/);
+  assert.match(photoModeOverlay, /photo-filter-next/);
+  assert.match(photoModeOverlay, /photo-filter-reset/);
+  assert.match(photoModeOverlay, /photo-mode-exit/);
+  assert.match(game, /window\.addEventListener\("pointerdown", revealPhotoControls/);
+  assert.match(game, /window\.setTimeout\([\s\S]*setPhotoHintVisible\(false\)[\s\S]*2400/);
+});

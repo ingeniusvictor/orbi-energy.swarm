@@ -144,6 +144,11 @@ import {
 import { projectFlashAccessibility } from "./flashAccessibility";
 import { projectBossPursuit } from "./bossPursuit";
 import {
+  DEFAULT_PHOTO_FILTER_ID,
+  cyclePhotoFilter,
+  type PhotoFilterId,
+} from "./photoMode";
+import {
   decayFrameTicks,
   projectFrameDamping,
   projectFrameProbability,
@@ -161,6 +166,7 @@ import { MobileFormationCarousel } from "../components/MobileFormationCarousel";
 import { OrientationHint } from "../components/OrientationHint";
 import { useViewportComposition } from "../components/useViewportComposition";
 import { BossHudOverlay } from "../components/BossHudOverlay";
+import { PhotoModeOverlay } from "../components/PhotoModeOverlay";
 import { shouldPauseForLifecycle, shouldResetFrameClock, type LifecycleSignal } from "./lifecyclePolicy";
 import {
   createPerformanceDiagnosticsState,
@@ -222,6 +228,9 @@ export const EnergySwarmGame: React.FC = () => {
   const [isPaused, setIsPaused] = useState(false);
   const [isPhotoMode, setIsPhotoMode] = useState(false);
   const [photoHintVisible, setPhotoHintVisible] = useState(false);
+  const [photoFilterId, setPhotoFilterId] = useState<PhotoFilterId>(
+    DEFAULT_PHOTO_FILTER_ID,
+  );
   const [performanceDiagnosticsEnabled, setPerformanceDiagnosticsEnabled] =
     useState(false);
   const [
@@ -945,6 +954,22 @@ export const EnergySwarmGame: React.FC = () => {
         if (key === "F10" || e.key === "Escape") {
           e.preventDefault();
           exitPhotoMode();
+          return;
+        }
+        if (key === "ARROWLEFT") {
+          e.preventDefault();
+          cyclePhotoModeFilter(-1);
+          return;
+        }
+        if (key === "ARROWRIGHT") {
+          e.preventDefault();
+          cyclePhotoModeFilter(1);
+          return;
+        }
+        if (key === "0") {
+          e.preventDefault();
+          resetPhotoModeFilter();
+          return;
         }
         return;
       }
@@ -1382,6 +1407,16 @@ export const EnergySwarmGame: React.FC = () => {
     }
   };
 
+  const cyclePhotoModeFilter = (direction: -1 | 1) => {
+    setPhotoFilterId((current) => cyclePhotoFilter(current, direction));
+    setPhotoHintVisible(true);
+  };
+
+  const resetPhotoModeFilter = () => {
+    setPhotoFilterId(DEFAULT_PHOTO_FILTER_ID);
+    setPhotoHintVisible(true);
+  };
+
   const enterPhotoMode = () => {
     if (!isPlaying || isGameOver || isUpgradeSelectionOpenRef.current) return;
 
@@ -1391,6 +1426,7 @@ export const EnergySwarmGame: React.FC = () => {
       stopBgm();
     }
 
+    setPhotoFilterId(DEFAULT_PHOTO_FILTER_ID);
     setIsPhotoMode(true);
     setPhotoHintVisible(true);
   };
@@ -1403,17 +1439,21 @@ export const EnergySwarmGame: React.FC = () => {
   };
 
   useEffect(() => {
-    if (!isPhotoMode) {
-      setPhotoHintVisible(false);
-      return;
-    }
+    if (!isPhotoMode || !photoHintVisible) return;
 
-    setPhotoHintVisible(true);
     const timeout = window.setTimeout(() => {
       setPhotoHintVisible(false);
     }, 2400);
 
     return () => window.clearTimeout(timeout);
+  }, [isPhotoMode, photoHintVisible]);
+
+  useEffect(() => {
+    if (!isPhotoMode) return;
+
+    const revealPhotoControls = () => setPhotoHintVisible(true);
+    window.addEventListener("pointerdown", revealPhotoControls, { passive: true });
+    return () => window.removeEventListener("pointerdown", revealPhotoControls);
   }, [isPhotoMode]);
 
   // --- TOGGLE MUTE ---
@@ -6779,6 +6819,7 @@ export const EnergySwarmGame: React.FC = () => {
           : "false"
       }
       data-photo-mode={isPhotoMode ? "true" : "false"}
+      data-photo-filter={photoFilterId}
     >
       
       {/* INITIAL START SCREEN MENUS */}
@@ -6850,13 +6891,14 @@ export const EnergySwarmGame: React.FC = () => {
       )}
 
       {isPhotoMode && photoHintVisible && (
-        <div
-          className="orbi-photo-mode-hint fixed right-4 top-4 z-[70] rounded-lg border border-cyan-400/20 bg-slate-950/75 px-3 py-2 text-[10px] font-mono uppercase tracking-[0.12em] text-cyan-200 shadow-xl backdrop-blur-md pointer-events-none"
-          role="status"
-          aria-live="polite"
-        >
-          PHOTO MODE · ESC / F10 → PAUSE
-        </div>
+        <PhotoModeOverlay
+          activeFilterId={photoFilterId}
+          visible={true}
+          onPrevious={() => cyclePhotoModeFilter(-1)}
+          onNext={() => cyclePhotoModeFilter(1)}
+          onReset={resetPhotoModeFilter}
+          onExit={exitPhotoMode}
+        />
       )}
 
       {/* GAMEOVER / VICTORY SUMMARY BOARDS */}
@@ -7188,7 +7230,7 @@ export const EnergySwarmGame: React.FC = () => {
               <div className="w-full flex flex-col items-center justify-center relative bg-slate-950 border border-slate-900 rounded-lg overflow-hidden p-1">
                 <EnergySwarmCanvas
                   canvasRef={canvasRef}
-                  isPaused={isPaused}
+                  isPaused={isPaused && !isPhotoMode}
                   activeBiome={activeBiome}
                   activeFormation={activeFormation}
                   playerPos={playerPosRef.current}

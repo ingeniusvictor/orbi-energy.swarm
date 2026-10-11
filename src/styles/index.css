@@ -1988,3 +1988,36 @@ body {
     transition: none !important;
   }
 }
+
+/* ES-12H11 — Cinematic Photo Mode filters.
+   Presentation-only: the existing game stage is filtered while simulation stays paused. */
+.orbi-game-root[data-photo-mode="true"] .orbi-game-stage {
+  transition: filter 160ms ease;
+}
+
+.orbi-game-root[data-photo-mode="true"][data-photo-filter="ORIGINAL"] .orbi-game-stage {
+  filter: none;
+}
+
+.orbi-game-root[data-photo-mode="true"][data-photo-filter="NEON_NOIR"] .orbi-game-stage {
+  filter: brightness(0.86) contrast(1.2) saturate(1.28) hue-rotate(-8deg);
+}
+
+.orbi-game-root[data-photo-mode="true"][data-photo-filter="SOLAR_FILM"] .orbi-game-stage {
+  filter: brightness(1.03) contrast(1.08) saturate(1.2) sepia(0.2) hue-rotate(-7deg);
+}
+
+.orbi-game-root[data-photo-mode="true"][data-photo-filter="CYANOTYPE"] .orbi-game-stage {
+  filter: brightness(0.94) contrast(1.12) saturate(1.34) sepia(0.12) hue-rotate(132deg);
+}
+
+.orbi-game-root[data-photo-mode="true"][data-photo-filter="MONOCHROME"] .orbi-game-stage {
+  filter: grayscale(1) brightness(0.96) contrast(1.18);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .orbi-game-root[data-photo-mode="true"] .orbi-game-stage,
+  .orbi-photo-mode-controls {
+    transition: none !important;
+  }
+}
