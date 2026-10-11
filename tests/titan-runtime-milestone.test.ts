@@ -10,7 +10,7 @@ import { createInfiniteRuntimeWaveDescriptor } from "../src/game/runtimeWaveDesc
 import { EnemyType } from "../src/game/types.ts";
 
 const moveToFinalWave = (targetSector: number) => {
-  let session = createInfiniteSession(`titan-milestone-${targetSector}`);
+  let session = createInfiniteSession(`raid-milestone-${targetSector}`);
 
   while (session.currentSector < targetSector) {
     session = advanceInfiniteSession(session);
@@ -22,7 +22,7 @@ const moveToFinalWave = (targetSector: number) => {
   return createInfiniteRuntimeWaveDescriptor(session);
 };
 
-test("ordinary H5 boss milestones remain Devourer-only", () => {
+test("ordinary H5 boss milestones remain Devourer-only before deep raids", () => {
   for (const sector of [25, 50, 75, 100, 125, 150]) {
     const profile = projectInfiniteMilestoneEncounter(moveToFinalWave(sector));
     assert.ok(profile);
@@ -51,12 +51,35 @@ test("Sector 200 preserves the H5 primary and appends a Titan raid escalation", 
   assert.equal(profile.raidEscalation.stage, "RAID_ESCALATION");
 });
 
-test("Titan escalation cadence stays deterministic through Sector 1000", () => {
+test("Sector 300 preserves the H5 primary and appends a Worm raid escalation", () => {
+  const profile = projectInfiniteMilestoneEncounter(moveToFinalWave(300));
+  assert.ok(profile);
+  assert.equal(profile.kind, "BOSS_REMATCH");
+  if (profile.kind !== "BOSS_REMATCH") assert.fail("Expected BOSS_REMATCH");
+
+  assert.equal(profile.enemyType, EnemyType.BOSS_DEVOURER);
+  assert.equal(profile.bossChassis, "DEVOURER");
+  assert.equal(profile.bossEncounterStage, "PRIMARY");
+  assert.ok(profile.raidEscalation);
+  assert.equal(profile.raidEscalation.enemyType, EnemyType.BOSS_WORM);
+  assert.equal(profile.raidEscalation.chassis, "WORM_SEGMENTS");
+  assert.equal(profile.raidEscalation.stage, "RAID_ESCALATION");
+});
+
+test("deep raid cadence alternates deterministically through Sector 1000", () => {
   for (let sector = 25; sector <= 1000; sector += 25) {
     const profile = projectInfiniteMilestoneEncounter(moveToFinalWave(sector));
     assert.ok(profile);
     assert.equal(profile.kind, "BOSS_REMATCH");
     if (profile.kind !== "BOSS_REMATCH") assert.fail("Expected BOSS_REMATCH");
-    assert.equal(Boolean(profile.raidEscalation), sector % 200 === 0);
+
+    const expectedChassis =
+      sector % 200 === 0
+        ? "TITAN_CORE"
+        : sector >= 300 && (sector - 300) % 200 === 0
+          ? "WORM_SEGMENTS"
+          : null;
+
+    assert.equal(profile.raidEscalation?.chassis ?? null, expectedChassis);
   }
 });

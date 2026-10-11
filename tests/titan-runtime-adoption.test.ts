@@ -15,14 +15,14 @@ const hud = readFileSync(
   "utf8",
 );
 
-test("Titan shares the certified boss engine instead of creating a second loop", () => {
-  assert.match(
-    game,
-    /EnemyType\.BOSS_DEVOURER \|\| enemy\.type === EnemyType\.BOSS_TITAN/,
-  );
+test("all raid chassis share the certified boss engine instead of creating parallel loops", () => {
+  assert.match(game, /enemy\.type === EnemyType\.BOSS_DEVOURER/);
+  assert.match(game, /enemy\.type === EnemyType\.BOSS_TITAN/);
+  assert.match(game, /enemy\.type === EnemyType\.BOSS_WORM/);
   assert.match(game, /spawnBoss\(rematchProfile, "RAID_ESCALATION"\)/);
   assert.match(game, /activeBossRematchProfileRef/);
   assert.doesNotMatch(game, /updateTitanAI/);
+  assert.doesNotMatch(game, /updateWormAI/);
 });
 
 test("Titan uses fixed weakpoints and existing projectile collision budget", () => {
