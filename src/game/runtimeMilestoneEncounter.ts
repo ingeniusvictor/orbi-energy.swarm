@@ -1,7 +1,15 @@
-import { EnemyType } from "./types";
+import {
+  EnemyType,
+  type BossChassisId,
+  type BossEncounterStage,
+  type InfiniteBossIdentity,
+} from "./types";
 import type { RuntimeWaveDescriptor } from "./runtimeWaveDescriptor";
 import { selectInfiniteBossIdentity } from "./infiniteBossFamily";
-import type { InfiniteBossIdentity } from "./types";
+import {
+  projectTitanRaidEscalation,
+  type InfiniteRaidEscalationProfile,
+} from "./infiniteRaidEscalation";
 
 export type InfiniteMilestoneEncounterProfile =
   | {
@@ -29,6 +37,9 @@ export type InfiniteMilestoneEncounterProfile =
       completionMode: "BOSS_DEFEAT_AFTER_BUDGET";
       enemyType: EnemyType.BOSS_DEVOURER;
       bossIdentity: InfiniteBossIdentity;
+      bossChassis: Extract<BossChassisId, "DEVOURER">;
+      bossEncounterStage: Extract<BossEncounterStage, "PRIMARY">;
+      raidEscalation: InfiniteRaidEscalationProfile | null;
       healthMultiplier: number;
       damageMultiplier: number;
       attackRateMultiplier: number;
@@ -111,6 +122,12 @@ export const projectInfiniteMilestoneEncounter = (
       completionMode: "BOSS_DEFEAT_AFTER_BUDGET",
       enemyType: EnemyType.BOSS_DEVOURER,
       bossIdentity: selectInfiniteBossIdentity(descriptor.sector),
+      bossChassis: "DEVOURER",
+      bossEncounterStage: "PRIMARY",
+      raidEscalation: projectTitanRaidEscalation(
+        descriptor.sector,
+        fairnessTelegraphMs,
+      ),
       healthMultiplier: round(
         clamp(1.2 + progression * 0.16, 1.2, 2.25),
       ),
