@@ -61,14 +61,23 @@ jobs:
           grep -Eq 'MAX_PROJECTILES[^0-9]*120' src/game/constants.ts
           git diff --exit-code bc770f97478874f3c65d8e0d6cdf68c9dc9547db -- src/game/constants.ts src/game/waveDirector.ts
 
-      - name: Materialize clean H8 candidate
+      - name: Remove H8 temporary tooling
         shell: bash
         run: |
           rm -f .github/workflows/es12h8-certify.yml
           rm -f scripts/es12h8-apply.py
+          test ! -e .github/workflows/es12h8-pure.yml
+          test ! -e .github/workflows/es12h8-certify.yml
+          test ! -e scripts/es12h8-apply.py
           git add -A
-          git diff --cached --check
 
+      - name: Verify H8 diff hygiene
+        shell: bash
+        run: git diff --cached --check
+
+      - name: Verify exact H8 net file set
+        shell: bash
+        run: |
           cat > /tmp/h8-allowed.txt <<'EOF'
           src/components/BossHudOverlay.tsx
           src/game/EnergySwarmCanvas.tsx
@@ -86,16 +95,14 @@ jobs:
           tests/worm-segment-physics.test.ts
           EOF
           sort -u /tmp/h8-allowed.txt -o /tmp/h8-allowed.txt
-
           git diff --name-only bc770f97478874f3c65d8e0d6cdf68c9dc9547db -- | sort -u > /tmp/h8-actual.txt
           echo '=== H8 NET FILES ==='
           cat /tmp/h8-actual.txt
           diff -u /tmp/h8-allowed.txt /tmp/h8-actual.txt
 
-          test ! -e .github/workflows/es12h8-pure.yml
-          test ! -e .github/workflows/es12h8-certify.yml
-          test ! -e scripts/es12h8-apply.py
-
+      - name: Materialize certified H8 candidate
+        shell: bash
+        run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "feat(h8): integrate Worm segments raid chassis"
