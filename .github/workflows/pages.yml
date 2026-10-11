@@ -44,6 +44,7 @@ jobs:
       - name: Build GitHub Pages beta
         env:
           ORBI_PUBLIC_BASE: /orbi-energy.swarm/
+          ORBI_BUILD_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
         run: npm run build
 
       - name: Upload Pages artifact
