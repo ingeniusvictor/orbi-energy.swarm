@@ -1,0 +1,7 @@
+
+> orbi-energy-swarm@0.2.0-beta.1 typecheck
+> tsc --noEmit
+
+tests/runtime-boss-rematch-gate.test.ts(17,7): error TS2741: Property 'bossIdentity' is missing in type '{ kind: "BOSS_REMATCH"; milestoneId: string; sector: number; waveNumber: number; spawnTrigger: "AFTER_REGULAR_BUDGET_CLEAR"; completionMode: "BOSS_DEFEAT_AFTER_BUDGET"; enemyType: EnemyType.BOSS_DEVOURER; ... 6 more ...; campaignVictoryCheckpoint: false; }' but required in type '{ kind: "BOSS_REMATCH"; milestoneId: string; sector: number; waveNumber: number; spawnTrigger: "AFTER_REGULAR_BUDGET_CLEAR"; completionMode: "BOSS_DEFEAT_AFTER_BUDGET"; enemyType: EnemyType.BOSS_DEVOURER; ... 7 more ...; campaignVictoryCheckpoint: false; }'.
+
+TYPECHECK_EXIT_STATUS=2
