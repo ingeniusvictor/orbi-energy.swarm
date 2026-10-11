@@ -245,16 +245,11 @@ jobs:
 
           game = replace_once(
               game,
-              '''      // From these candidates, find the lowest level and XP
-              let minLevel = Infinity;''',
-              '''      // GAIA is immune to the legacy fallback consolidation path.
-              candidates = candidates.filter(
+              '      candidates = swarmRef.current;',
+              '''      candidates = swarmRef.current.filter(
                 (m) => m.energyId !== "GAIA",
-              );
-
-              // From these candidates, find the lowest level and XP
-              let minLevel = Infinity;''',
-              'gaia consolidation guard',
+              );''',
+              'gaia consolidation fallback',
           )
 
           game = replace_once(
