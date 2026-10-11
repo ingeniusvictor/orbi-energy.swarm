@@ -30,7 +30,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Apply ES-12G3 evidence recorder patch
+      - name: Apply ES-12G3 parser-safe evidence recorder patch
         run: node scripts/es12g3-apply-v2.mjs
 
       - name: Typecheck diagnostic gate
