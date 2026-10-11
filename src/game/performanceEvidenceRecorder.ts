@@ -11,6 +11,7 @@ export type PerformanceEvidenceRecorderStatus =
 export interface PerformanceEvidenceRecorderState {
   status: PerformanceEvidenceRecorderStatus;
   startedAtMs: number | null;
+  skipNextSnapshot: boolean;
   samples: PerformanceDiagnosticsSnapshot[];
 }
 
@@ -39,6 +40,7 @@ export const createPerformanceEvidenceRecorderState =
   (): PerformanceEvidenceRecorderState => ({
     status: "IDLE",
     startedAtMs: null,
+    skipNextSnapshot: false,
     samples: [],
   });
 
@@ -47,6 +49,7 @@ export const startPerformanceEvidenceRecording = (
 ): PerformanceEvidenceRecorderState => ({
   status: "RECORDING",
   startedAtMs,
+  skipNextSnapshot: true,
   samples: [],
 });
 
@@ -55,6 +58,18 @@ export const appendPerformanceEvidenceSample = (
   snapshot: PerformanceDiagnosticsSnapshot,
 ): PerformanceEvidenceRecorderState => {
   if (state.status !== "RECORDING") return state;
+
+  // F4 can begin between two existing 500 ms diagnostics windows. The first
+  // snapshot after the hotkey may therefore contain a small pre-start slice.
+  // Discard it once; stepPerformanceDiagnostics resets its own accumulator
+  // after producing that snapshot, so every retained sample is post-start.
+  if (state.skipNextSnapshot) {
+    return {
+      ...state,
+      skipNextSnapshot: false,
+    };
+  }
+
   if (state.samples.length >= PERFORMANCE_EVIDENCE_TARGET_SAMPLES) {
     return {
       ...state,
