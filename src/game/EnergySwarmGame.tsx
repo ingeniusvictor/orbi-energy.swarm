@@ -176,6 +176,12 @@ import {
   registerGaiaEnergy,
 } from "./gaiaEvolution";
 import {
+  createSwarmDoctrineState,
+  getSwarmDoctrineCapacity,
+  registerSwarmDoctrineLevel,
+  registerSwarmDoctrineMember,
+} from "./swarmDoctrine";
+import {
   PERFORMANCE_EVIDENCE_TARGET_SAMPLES,
   appendPerformanceEvidenceSample,
   buildPerformanceEvidenceCapture,
@@ -477,6 +483,7 @@ export const EnergySwarmGame: React.FC = () => {
     getCachedRuntimeProjectionBundle(
       runtimeProjectionBundleCacheRef.current,
       runtimeProgressionRef.current,
+      swarmRef.current.length,
     );
 
   const getCurrentRuntimeDescriptor = () =>
@@ -1245,6 +1252,8 @@ export const EnergySwarmGame: React.FC = () => {
     recruitBagRef.current = [];
     gaiaEvolutionRef.current = createGaiaEvolutionState();
     gaiaMemberRef.current = null;
+    swarmDoctrineRef.current = createSwarmDoctrineState();
+    swarmDoctrineRef.current = createSwarmDoctrineState();
 
     currentWaveRef.current = 1;
     runtimeProgressionRef.current = createCampaignRuntimeState(1);
@@ -1403,6 +1412,7 @@ export const EnergySwarmGame: React.FC = () => {
   const recruitBagRef = useRef<OrbiEnergyId[]>([]);
   const gaiaEvolutionRef = useRef(createGaiaEvolutionState());
   const gaiaMemberRef = useRef<OrbiMember | null>(null);
+  const swarmDoctrineRef = useRef(createSwarmDoctrineState());
   const personalities = ["Curious", "Bold", "Cynical", "Joyful", "Silent", "Anxious", "Enthusiastic", "Calm", "Fiery", "Stoic"];
 
   const getNextEnergyIdFromBag = (): OrbiEnergyId => {
@@ -1442,6 +1452,16 @@ export const EnergySwarmGame: React.FC = () => {
       !existingGaia ||
       !swarmRef.current.includes(existingGaia)
     ) {
+      if (
+        swarmRef.current.length >=
+        getSwarmDoctrineCapacity(swarmDoctrineRef.current)
+      ) {
+        postDialogue(
+          "SYSTEM",
+          "GAIA LISTA, PERO SIN SLOT: eleva un Orbi veterano para completar la síntesis física.",
+        );
+        return;
+      }
       isNewGaia = true;
       gaiaMember = {
         id: "gaia_synthesis_" + Math.random().toString(),
@@ -1465,11 +1485,21 @@ export const EnergySwarmGame: React.FC = () => {
       };
       gaiaMemberRef.current = gaiaMember;
       swarmRef.current.push(gaiaMember);
+      swarmDoctrineRef.current = registerSwarmDoctrineMember(
+        swarmDoctrineRef.current,
+        gaiaMember.id,
+        gaiaMember.level,
+      );
       runOrbiAcquiredRef.current += 1;
       updateRunMaxSwarmSize();
     } else {
       gaiaMember = existingGaia;
       gaiaMember.level = update.state.gaiaLevel;
+      swarmDoctrineRef.current = registerSwarmDoctrineLevel(
+        swarmDoctrineRef.current,
+        gaiaMember.id,
+        gaiaMember.level,
+      );
       gaiaMember.evolutionStage = gaiaScale.evolutionStage;
       gaiaMember.size = gaiaScale.size;
       gaiaMember.shootCooldown = Math.min(
@@ -1526,17 +1556,18 @@ export const EnergySwarmGame: React.FC = () => {
     // consolidates the newly acquired energy into an existing follower.
     trackGaiaEnergyAcquisition(energyDefinition.id);
 
-    const coreLevel = upgradesLevel.quantum_core || 0;
-    const capacityLimit = coreLevel >= 3 ? 60 : (coreLevel === 2 ? 48 : (coreLevel === 1 ? 36 : 24));
-
-    // GAIA is unique and does not consume a normal follower slot.
-    const regularSwarmCount = swarmRef.current.reduce(
-      (count, member) =>
-        count + (member.energyId === "GAIA" ? 0 : 1),
+    // H4 doctrine: every autonomous follower consumes a slot. Until GAIA
+    // awakens, one slot remains reserved so synthesis can never create an
+    // eleventh follower behind the capacity gate.
+    const doctrineCapacity = getSwarmDoctrineCapacity(swarmDoctrineRef.current);
+    const capacityLimit = Math.max(
       0,
+      doctrineCapacity - (gaiaMemberRef.current ? 0 : 1),
     );
+    const regularSwarmCount = swarmRef.current.length;
 
-    // Check capacity limit: evolve/consolidate an existing Orbi of the same affinity if full! (Section 1)
+    // Capacity lock converts additional cores into veteran progression rather
+    // than raw bodies. This is the main H4 anti-snowball rule.
     if (regularSwarmCount >= capacityLimit) {
       // Find candidates with same affinity. GAIA can never be consolidated.
       let candidates = swarmRef.current.filter(
@@ -1605,6 +1636,23 @@ export const EnergySwarmGame: React.FC = () => {
         // Level up calculation: every 4 XP gives a level
         const newLevel = Math.floor(newXp / 4) + 1;
         targetOrbi.level = newLevel;
+        const doctrineCapacityBefore = getSwarmDoctrineCapacity(
+          swarmDoctrineRef.current,
+        );
+        swarmDoctrineRef.current = registerSwarmDoctrineLevel(
+          swarmDoctrineRef.current,
+          targetOrbi.id,
+          newLevel,
+        );
+        const doctrineCapacityAfter = getSwarmDoctrineCapacity(
+          swarmDoctrineRef.current,
+        );
+        if (doctrineCapacityAfter > doctrineCapacityBefore) {
+          postDialogue(
+            "SYSTEM",
+            "DOCTRINA DE ENJAMBRE: veterano L" + newLevel + " habilita slot " + doctrineCapacityAfter + "/30.",
+          );
+        }
 
         // Scale statistics per level & stage
         targetOrbi.size = 5 + (newStage - 1) * 1.5 + (newLevel - 1) * 0.15;
@@ -1669,6 +1717,11 @@ export const EnergySwarmGame: React.FC = () => {
     };
 
     swarmRef.current.push(member);
+    swarmDoctrineRef.current = registerSwarmDoctrineMember(
+      swarmDoctrineRef.current,
+      member.id,
+      member.level,
+    );
     runOrbiAcquiredRef.current += 1;
     updateRunMaxSwarmSize();
     playRecruitSound();
@@ -1932,7 +1985,20 @@ export const EnergySwarmGame: React.FC = () => {
 
   // --- TRIGGER FUSION SUMMONS ---
   const triggerFusion = (fusionType: "SOLAR" | "HYDRO") => {
-    // Requires exact energy consumption
+    const fusionCapacity = Math.max(
+      0,
+      getSwarmDoctrineCapacity(swarmDoctrineRef.current) -
+        (gaiaMemberRef.current ? 0 : 1),
+    );
+    if (swarmRef.current.length >= fusionCapacity) {
+      postDialogue(
+        "SYSTEM",
+        "FUSIÓN RETENIDA: no hay slot de enjambre. Promueve veteranos para ampliar la formación.",
+      );
+      return;
+    }
+
+    // Requires exact energy consumption only after capacity admission.
     fusionEnergyRef.current = 0;
 
     triggerExplosion(
@@ -1967,6 +2033,11 @@ export const EnergySwarmGame: React.FC = () => {
         xp: 0
       };
       swarmRef.current.push(g);
+      swarmDoctrineRef.current = registerSwarmDoctrineMember(
+        swarmDoctrineRef.current,
+        g.id,
+        g.level,
+      );
       runOrbiAcquiredRef.current += 1;
       updateRunMaxSwarmSize();
       postDialogue("COMPANION", "¡FUSIÓN SOLAR DETECTADA! Guardián Solar Prime convocado.");
@@ -1991,6 +2062,11 @@ export const EnergySwarmGame: React.FC = () => {
         xp: 0
       };
       swarmRef.current.push(l);
+      swarmDoctrineRef.current = registerSwarmDoctrineMember(
+        swarmDoctrineRef.current,
+        l.id,
+        l.level,
+      );
       runOrbiAcquiredRef.current += 1;
       updateRunMaxSwarmSize();
       postDialogue("COMPANION", "¡FUSIÓN HÍDRICA DETECTADA! Hidro-Leviatán estabilizado en órbita.");
@@ -2133,6 +2209,7 @@ export const EnergySwarmGame: React.FC = () => {
             getCachedRuntimeProjectionBundle(
               runtimeProjectionBundleCacheRef.current,
               nextRuntime,
+              swarmRef.current.length,
             ).descriptor;
           const nextSector = getRuntimeSector(nextRuntime);
           const nextWave = getRuntimeWaveNumber(nextRuntime);
@@ -2445,6 +2522,36 @@ export const EnergySwarmGame: React.FC = () => {
       speed = 0.7 * biomeCfg.enemySpeedMultiplier * movementSpeedMultiplier;
       size = 11;
       color = "#a855f7"; // purple drone
+    } else if (type === EnemyType.RIFT_HUNTER) {
+      health = 34 * healthMultiplier;
+      speed = 1.55 * biomeCfg.enemySpeedMultiplier * movementSpeedMultiplier;
+      size = 10;
+      color = "#fb923c";
+    } else if (type === EnemyType.SIEGE_PRISM) {
+      health = 52 * healthMultiplier;
+      speed = 0.42 * biomeCfg.enemySpeedMultiplier * movementSpeedMultiplier;
+      size = 14;
+      color = "#f472b6";
+    } else if (type === EnemyType.SWARM_REAVER) {
+      health = 38 * healthMultiplier;
+      speed = 1.45 * biomeCfg.enemySpeedMultiplier * movementSpeedMultiplier;
+      size = 11;
+      color = "#f97316";
+    } else if (type === EnemyType.VOID_ANCHOR) {
+      health = 65 * healthMultiplier;
+      speed = 0.35 * biomeCfg.enemySpeedMultiplier * movementSpeedMultiplier;
+      size = 16;
+      color = "#22d3ee";
+    } else if (type === EnemyType.MINE_WEAVER) {
+      health = 42 * healthMultiplier;
+      speed = 0.65 * biomeCfg.enemySpeedMultiplier * movementSpeedMultiplier;
+      size = 12;
+      color = "#eab308";
+    } else if (type === EnemyType.MIRROR_WARDEN) {
+      health = 58 * healthMultiplier;
+      speed = 0.75 * biomeCfg.enemySpeedMultiplier * movementSpeedMultiplier;
+      size = 15;
+      color = "#e0f2fe";
     } else if (type === EnemyType.SPLITTER) {
       health = 18 * healthMultiplier;
       speed = 0.9 * biomeCfg.enemySpeedMultiplier * movementSpeedMultiplier;
@@ -4399,7 +4506,59 @@ export const EnergySwarmGame: React.FC = () => {
         const dy = ty - enemy.y;
         const dist = Math.sqrt(dx * dx + dy * dy) || 1;
 
-        if (enemy.type === EnemyType.DRONE) {
+        if (enemy.type === EnemyType.RIFT_HUNTER) {
+          enemy.pulseCooldown -= delta / 16.6;
+          if ((enemy.chargeTimer ?? 0) > 0) {
+            enemy.chargeTimer = Math.max(0, (enemy.chargeTimer ?? 0) - delta);
+            enemy.x += enemy.vx * (delta / 16.6);
+            enemy.y += enemy.vy * (delta / 16.6);
+          } else if (enemy.pulseCooldown <= 0) {
+            const dashScale = enemy.speed * 4.8;
+            enemy.vx = (dx / dist) * dashScale;
+            enemy.vy = (dy / dist) * dashScale;
+            enemy.chargeTimer = 420;
+            enemy.pulseCooldown = 150 + Math.random() * 70;
+            addFloatingText("RIFT LOCK", enemy.x, enemy.y - 20, "#fb923c");
+          } else {
+            enemy.x += (dx / dist) * enemy.speed * 1.15 * (delta / 16.6);
+            enemy.y += (dy / dist) * enemy.speed * 1.15 * (delta / 16.6);
+          }
+        } else if (enemy.type === EnemyType.SIEGE_PRISM) {
+          if (dist > 330) {
+            enemy.x += (dx / dist) * enemy.speed * (delta / 16.6);
+            enemy.y += (dy / dist) * enemy.speed * (delta / 16.6);
+          } else if (dist < 250) {
+            enemy.x -= (dx / dist) * enemy.speed * (delta / 16.6);
+            enemy.y -= (dy / dist) * enemy.speed * (delta / 16.6);
+          }
+          enemy.x += Math.cos(timeElapsedRef.current * 0.0018 + enemy.y) * 0.35;
+        } else if (enemy.type === EnemyType.SWARM_REAVER) {
+          enemy.x += (dx / dist) * enemy.speed * 1.65 * (delta / 16.6);
+          enemy.y += (dy / dist) * enemy.speed * 1.65 * (delta / 16.6);
+          if (dist < 105) {
+            disruptTimerRef.current = Math.max(disruptTimerRef.current, 520);
+          }
+        } else if (enemy.type === EnemyType.VOID_ANCHOR) {
+          if (dist > 190) {
+            enemy.x += (dx / dist) * enemy.speed * (delta / 16.6);
+            enemy.y += (dy / dist) * enemy.speed * (delta / 16.6);
+          }
+          if (dist < 175) {
+            disruptTimerRef.current = Math.max(disruptTimerRef.current, 280);
+          }
+        } else if (enemy.type === EnemyType.MINE_WEAVER) {
+          const tangentX = -dy / dist;
+          const tangentY = dx / dist;
+          const radial = dist > 220 ? 0.55 : dist < 160 ? -0.55 : 0;
+          enemy.x += ((dx / dist) * radial + tangentX * 0.8) * enemy.speed * (delta / 16.6);
+          enemy.y += ((dy / dist) * radial + tangentY * 0.8) * enemy.speed * (delta / 16.6);
+        } else if (enemy.type === EnemyType.MIRROR_WARDEN) {
+          const tangentX = -dy / dist;
+          const tangentY = dx / dist;
+          const radial = dist > 210 ? 0.7 : dist < 135 ? -0.7 : 0;
+          enemy.x += ((dx / dist) * radial + tangentX * 0.65) * enemy.speed * (delta / 16.6);
+          enemy.y += ((dy / dist) * radial + tangentY * 0.65) * enemy.speed * (delta / 16.6);
+        } else if (enemy.type === EnemyType.DRONE) {
           // Maintain high distance, strafing left and right
           if (dist > 180) {
             enemy.x += (dx / dist) * enemy.speed * (delta / 16.6);
@@ -4455,8 +4614,18 @@ export const EnergySwarmGame: React.FC = () => {
         simulationCombatPressure.enemyAttackRateMultiplier *
         (enemy.evolvedAttackRateMultiplier ?? 1);
       if (enemy.shootCooldown <= 0) {
-        if (enemy.type === EnemyType.DRONE) {
-          enemy.shootCooldown = 110 + Math.random() * 80;
+        if (
+          enemy.type === EnemyType.DRONE ||
+          enemy.type === EnemyType.SIEGE_PRISM ||
+          enemy.type === EnemyType.MINE_WEAVER ||
+          enemy.type === EnemyType.MIRROR_WARDEN ||
+          enemy.type === EnemyType.VOID_ANCHOR
+        ) {
+          enemy.shootCooldown =
+            enemy.type === EnemyType.SIEGE_PRISM ? 150 + Math.random() * 70 :
+            enemy.type === EnemyType.MINE_WEAVER ? 120 + Math.random() * 60 :
+            enemy.type === EnemyType.VOID_ANCHOR ? 160 + Math.random() * 80 :
+            100 + Math.random() * 70;
           shootFromEnemy(
             enemy,
             hostileProjectileBudgetState,
@@ -4860,7 +5029,14 @@ export const EnergySwarmGame: React.FC = () => {
 
     if (availableProjectileSlots <= 0) return;
 
-    if (enemy.type === EnemyType.DRONE || enemy.type === EnemyType.BOSS_DEVOURER) {
+    if (
+      enemy.type === EnemyType.DRONE ||
+      enemy.type === EnemyType.BOSS_DEVOURER ||
+      enemy.type === EnemyType.SIEGE_PRISM ||
+      enemy.type === EnemyType.MINE_WEAVER ||
+      enemy.type === EnemyType.MIRROR_WARDEN ||
+      enemy.type === EnemyType.VOID_ANCHOR
+    ) {
       const dx = playerPosRef.current.x - enemy.x;
       const dy = playerPosRef.current.y - enemy.y;
       const distanceSquared = dx * dx + dy * dy;
@@ -4870,15 +5046,24 @@ export const EnergySwarmGame: React.FC = () => {
         distanceSquared < 320 * 320
       ) {
         const projectileSpeed =
-          2.2 *
-          (enemy.evolvedProjectileSpeedMultiplier ??
-            1);
+          (enemy.type === EnemyType.SIEGE_PRISM ? 4.0 :
+            enemy.type === EnemyType.MINE_WEAVER ? 1.35 :
+            enemy.type === EnemyType.VOID_ANCHOR ? 1.8 :
+            enemy.type === EnemyType.MIRROR_WARDEN ? 2.7 : 2.2) *
+          (enemy.evolvedProjectileSpeedMultiplier ?? 1);
+        const requestedProjectileCount =
+          enemy.type === EnemyType.SIEGE_PRISM ? 3 :
+          enemy.type === EnemyType.MINE_WEAVER ? 2 :
+          signatureBehavior.droneVolleyProjectileCount;
         const projectileCount = Math.min(
-          signatureBehavior.droneVolleyProjectileCount,
+          requestedProjectileCount,
           availableProjectileSlots,
         );
         const baseAngle = Math.atan2(dy, dx);
         const spread =
+          enemy.type === EnemyType.SIEGE_PRISM ? 0.12 :
+          enemy.type === EnemyType.MINE_WEAVER ? 0.38 :
+          enemy.type === EnemyType.MIRROR_WARDEN ? 0.18 :
           signatureBehavior.droneVolleySpreadRadians;
 
         for (

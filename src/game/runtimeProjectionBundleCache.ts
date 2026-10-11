@@ -16,6 +16,7 @@ import {
   type InfiniteMilestoneEncounterProfile,
 } from "./runtimeMilestoneEncounter";
 import type { RuntimeWaveDescriptor } from "./runtimeWaveDescriptor";
+import { applyAdaptiveInvasionToDescriptor } from "./adaptiveInvasionRuntime";
 
 export interface RuntimeProjectionBundle {
   descriptor: RuntimeWaveDescriptor;
@@ -37,13 +38,18 @@ export const createRuntimeProjectionBundleCache =
 export const getCachedRuntimeProjectionBundle = (
   cache: RuntimeProjectionBundleCache,
   state: RuntimeProgressionState,
+  liveFollowerCount?: number,
 ): RuntimeProjectionBundle => {
   const cached = cache.get(state);
   if (cached) {
     return cached;
   }
 
-  const descriptor = resolveRuntimeWaveDescriptor(state);
+  const baseDescriptor = resolveRuntimeWaveDescriptor(state);
+  const descriptor =
+    typeof liveFollowerCount === "number"
+      ? applyAdaptiveInvasionToDescriptor(baseDescriptor, liveFollowerCount)
+      : baseDescriptor;
   const bundle: RuntimeProjectionBundle = {
     descriptor,
     combatPressure:
