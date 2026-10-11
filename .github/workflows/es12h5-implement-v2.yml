@@ -1,0 +1,63 @@
+name: ES-12H5 Guarded Implementation V2
+
+on:
+  push:
+    branches:
+      - feat/es-12h5-infinite-boss-family
+    paths:
+      - .github/workflows/es12h5-implement-v2.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  implement:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout H5 branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/es-12h5-infinite-boss-family
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Align guarded source marker
+        run: |
+          sed -i 's#// 7\. ATTACK SELECTION#// 7. ACTIVE ATTACK COOLDOWNS / SELECTION#' scripts/es12h5-apply.mjs
+
+      - name: Apply guarded H5 patch
+        run: node scripts/es12h5-apply.mjs
+
+      - name: Repository Smoke
+        run: npm run test:repo
+
+      - name: Gameplay
+        run: npm run test:gameplay
+
+      - name: Platform
+        run: npm run test:platform
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Production Build
+        run: npm run build
+
+      - name: Commit clean H5 implementation
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm scripts/es12h5-apply.mjs .github/workflows/es12h5-implement.yml .github/workflows/es12h5-implement-v2.yml
+          git add src/game/infiniteBossFamily.ts src/game/types.ts src/game/runtimeMilestoneEncounter.ts src/game/EnergySwarmGame.tsx tests/infinite-boss-family.test.ts tests/infinite-boss-family-runtime.test.ts tests/runtime-milestone-encounter.test.ts tests/runtime-boss-rematch-adoption.test.ts
+          git commit -m "feat(h5): add Infinite boss family and milestone encounters"
+          git push origin HEAD:feat/es-12h5-infinite-boss-family
