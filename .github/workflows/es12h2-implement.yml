@@ -42,23 +42,7 @@ jobs:
         run: npm run test:gameplay
 
       - name: Platform tests
-        id: platform
-        continue-on-error: true
-        shell: bash
-        run: |
-          set -o pipefail
-          npm run test:platform 2>&1 | tee /tmp/es12h2-platform.log
-
-      - name: Upload full platform output
-        if: steps.platform.outcome == 'failure'
-        uses: actions/upload-artifact@v4
-        with:
-          name: es12h2-platform-log
-          path: /tmp/es12h2-platform.log
-
-      - name: Stop on platform failure
-        if: steps.platform.outcome == 'failure'
-        run: exit 1
+        run: npm run test:platform
 
       - name: Typecheck
         run: npm run typecheck
