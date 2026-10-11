@@ -1,0 +1,486 @@
+name: ES-12F9 Apply GAIA
+
+on:
+  push:
+    branches:
+      - feat/es-12f9-gaia-fusion-evolution
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: ${{ !contains(github.event.head_commit.message, '[es12f9-applied]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/es-12f9-gaia-fusion-evolution
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Apply GAIA runtime integration
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_once(source, old, new, label):
+              count = source.count(old)
+              if count != 1:
+                  raise SystemExit(f'{label}: expected exactly 1 match, got {count}')
+              return source.replace(old, new, 1)
+
+          game_path = Path('src/game/EnergySwarmGame.tsx')
+          game = game_path.read_text()
+
+          game = replace_once(
+              game,
+              '''import {
+            createShuffledCollectibleEnergyCycle,
+            getCollectibleEnergyDefinition,
+            getOrbiEnergyByAffinity,
+          } from "./orbiEnergyCanon";''',
+              '''import {
+            createShuffledCollectibleEnergyCycle,
+            getCollectibleEnergyDefinition,
+            getOrbiEnergyByAffinity,
+            getOrbiEnergyDefinition,
+          } from "./orbiEnergyCanon";''',
+              'orbi canon import',
+          )
+
+          game = replace_once(
+              game,
+              '''import {
+            getFallbackAttackSignatureForAffinity,
+            getOrbiAttackProfile,
+          } from "./orbiAttackProfiles";''',
+              '''import {
+            getFallbackAttackSignatureForAffinity,
+            getOrbiAttackProfile,
+          } from "./orbiAttackProfiles";
+          import {
+            createGaiaEvolutionState,
+            getGaiaCombatScale,
+            registerGaiaEnergy,
+          } from "./gaiaEvolution";''',
+              'gaia evolution import',
+          )
+
+          game = replace_once(
+              game,
+              '''    swarmRef.current = [];
+              enemiesRef.current = [];
+              projectilesRef.current = [];
+              resourcesRef.current = [];
+              particlesRef.current = [];''',
+              '''    swarmRef.current = [];
+              enemiesRef.current = [];
+              projectilesRef.current = [];
+              resourcesRef.current = [];
+              particlesRef.current = [];
+              recruitBagRef.current = [];
+              gaiaEvolutionRef.current = createGaiaEvolutionState();
+              gaiaMemberRef.current = null;''',
+              'start run GAIA reset',
+          )
+
+          game = replace_once(
+              game,
+              '''  const recruitBagRef = useRef<OrbiEnergyId[]>([]);
+            const personalities = ["Curious", "Bold", "Cynical", "Joyful", "Silent", "Anxious", "Enthusiastic", "Calm", "Fiery", "Stoic"];''',
+              '''  const recruitBagRef = useRef<OrbiEnergyId[]>([]);
+            const gaiaEvolutionRef = useRef(createGaiaEvolutionState());
+            const gaiaMemberRef = useRef<OrbiMember | null>(null);
+            const personalities = ["Curious", "Bold", "Cynical", "Joyful", "Silent", "Anxious", "Enthusiastic", "Calm", "Fiery", "Stoic"];''',
+              'gaia refs',
+          )
+
+          marker = '  // --- ADD ORBI FOLLOWER TO ACTIVE SWARM ---\n'
+          if game.count(marker) != 1:
+              raise SystemExit('add swarm marker not unique')
+
+          helper = '''  // --- GAIA NINE-ENERGY SYNTHESIS PROGRESSION ---
+            const trackGaiaEnergyAcquisition = (energyId: OrbiEnergyId) => {
+              const update = registerGaiaEnergy(
+                gaiaEvolutionRef.current,
+                energyId,
+              );
+              gaiaEvolutionRef.current = update.state;
+
+              if (!update.accepted || update.duplicate) return;
+
+              if (!update.cycleCompleted) {
+                addFloatingText(
+                  `GAIA SYNC ${update.progressCount}/${update.requiredCount}`,
+                  playerPosRef.current.x,
+                  playerPosRef.current.y - 42,
+                  "#bef264",
+                );
+                return;
+              }
+
+              const gaiaDefinition = getOrbiEnergyDefinition("GAIA");
+              const gaiaScale = getGaiaCombatScale(update.state.gaiaLevel);
+              const existingGaia = gaiaMemberRef.current;
+              let gaiaMember: OrbiMember;
+              let isNewGaia = false;
+
+              if (
+                !existingGaia ||
+                !swarmRef.current.includes(existingGaia)
+              ) {
+                isNewGaia = true;
+                gaiaMember = {
+                  id: "gaia_synthesis_" + Math.random().toString(),
+                  type: OrbiType.SHIELD,
+                  name: "GAIA",
+                  x: playerPosRef.current.x,
+                  y: playerPosRef.current.y - 24,
+                  targetX: playerPosRef.current.x,
+                  targetY: playerPosRef.current.y,
+                  color: gaiaDefinition.color,
+                  size: gaiaScale.size,
+                  shootCooldown: 54 * gaiaScale.cooldownMultiplier,
+                  affinity: gaiaDefinition.affinity,
+                  combatRole: gaiaDefinition.combatRole,
+                  energyId: gaiaDefinition.id,
+                  attackSignature: gaiaDefinition.attackSignature,
+                  personality: "SYNTHESIS",
+                  evolutionStage: gaiaScale.evolutionStage,
+                  level: update.state.gaiaLevel,
+                  xp: update.state.completedCycles * update.requiredCount,
+                };
+                gaiaMemberRef.current = gaiaMember;
+                swarmRef.current.push(gaiaMember);
+                updateRunMaxSwarmSize();
+              } else {
+                gaiaMember = existingGaia;
+                gaiaMember.level = update.state.gaiaLevel;
+                gaiaMember.evolutionStage = gaiaScale.evolutionStage;
+                gaiaMember.size = gaiaScale.size;
+                gaiaMember.shootCooldown = Math.min(
+                  gaiaMember.shootCooldown,
+                  54 * gaiaScale.cooldownMultiplier,
+                );
+                gaiaMember.xp =
+                  update.state.completedCycles * update.requiredCount;
+              }
+
+              playRecruitSound();
+              screenShakeRef.current = isNewGaia ? 18 : 12;
+              triggerExplosion(
+                particlesRef.current,
+                getQualityConfig(stats.qualityPreset).maxParticles,
+                ParticleType.FUSION,
+                gaiaMember.x,
+                gaiaMember.y,
+                gaiaDefinition.color,
+                isNewGaia ? 32 : 22,
+                isNewGaia ? 4.2 : 3.2,
+              );
+              addFloatingText(
+                isNewGaia
+                  ? "GAIA SYNTHESIS COMPLETE"
+                  : `GAIA ASCENSION · L${update.state.gaiaLevel}`,
+                playerPosRef.current.x,
+                playerPosRef.current.y - 52,
+                gaiaDefinition.color,
+              );
+              postDialogue(
+                "SYSTEM",
+                isNewGaia
+                  ? "GAIA DESPERTADA: las nueve energías han entrado en síntesis. Unidad atacante/defensora enlazada."
+                  : `GAIA EVOLUCIONA A NIVEL ${update.state.gaiaLevel}: nueva síntesis completa de las nueve energías.`,
+              );
+            };
+
+          '''
+          game = game.replace(marker, helper + marker, 1)
+
+          game = replace_once(
+              game,
+              '''    const affinity = energyDefinition.affinity;
+              const combatRole = predefinedCombatRole || energyDefinition.combatRole;
+
+              const coreLevel = upgradesLevel.quantum_core || 0;''',
+              '''    const affinity = energyDefinition.affinity;
+              const combatRole = predefinedCombatRole || energyDefinition.combatRole;
+
+              // Acquisition drives GAIA progress even when normal capacity later
+              // consolidates the newly acquired energy into an existing follower.
+              trackGaiaEnergyAcquisition(energyDefinition.id);
+
+              const coreLevel = upgradesLevel.quantum_core || 0;''',
+              'gaia acquisition hook',
+          )
+
+          game = replace_once(
+              game,
+              '''    // Check capacity limit: evolve/consolidate an existing Orbi of the same affinity if full! (Section 1)
+              if (swarmRef.current.length >= capacityLimit) {
+                // Find candidates with same affinity
+                let candidates = swarmRef.current.filter((m) => m.affinity === affinity);''',
+              '''    // GAIA is unique and does not consume a normal follower slot.
+              const regularSwarmCount = swarmRef.current.reduce(
+                (count, member) =>
+                  count + (member.energyId === "GAIA" ? 0 : 1),
+                0,
+              );
+
+              // Check capacity limit: evolve/consolidate an existing Orbi of the same affinity if full! (Section 1)
+              if (regularSwarmCount >= capacityLimit) {
+                // Find candidates with same affinity. GAIA can never be consolidated.
+                let candidates = swarmRef.current.filter(
+                  (m) =>
+                    m.energyId !== "GAIA" &&
+                    m.affinity === affinity,
+                );''',
+              'gaia capacity exclusion',
+          )
+
+          game = replace_once(
+              game,
+              '''      // From these candidates, find the lowest level and XP
+              let minLevel = Infinity;''',
+              '''      // GAIA is immune to the legacy fallback consolidation path.
+              candidates = candidates.filter(
+                (m) => m.energyId !== "GAIA",
+              );
+
+              // From these candidates, find the lowest level and XP
+              let minLevel = Infinity;''',
+              'gaia consolidation guard',
+          )
+
+          game = replace_once(
+              game,
+              '''    const multiplier = Math.max(0.4, 1.0 - defenseMod);
+              const finalDamage = dmg * multiplier;''',
+              '''    const multiplier = Math.max(0.4, 1.0 - defenseMod);
+              const gaiaDefenseMultiplier = gaiaMemberRef.current
+                ? getGaiaCombatScale(
+                    gaiaMemberRef.current.level,
+                  ).incomingDamageMultiplier
+                : 1;
+              const finalDamage =
+                dmg * multiplier * gaiaDefenseMultiplier;''',
+              'gaia defense',
+          )
+
+          game = replace_once(
+              game,
+              '''    const profile = getOrbiAttackProfile(signature);
+              const formationSpeed =''',
+              '''    const profile = getOrbiAttackProfile(signature);
+              const gaiaScale =
+                member.energyId === "GAIA"
+                  ? getGaiaCombatScale(member.level)
+                  : null;
+              const supportShieldRestore =
+                profile.supportShieldRestore *
+                (gaiaScale?.shieldSupportMultiplier ?? 1);
+              const formationSpeed =''',
+              'gaia attack scale',
+          )
+
+          game = replace_once(
+              game,
+              '''    const primaryDamage =
+              baseDamage *
+              profile.damageMultiplier *
+              (critical ? profile.criticalDamageMultiplier : 1);''',
+              '''    const primaryDamage =
+              baseDamage *
+              profile.damageMultiplier *
+              (gaiaScale?.damageMultiplier ?? 1) *
+              (critical ? profile.criticalDamageMultiplier : 1);''',
+              'gaia damage scaling',
+          )
+
+          game = replace_once(
+              game,
+              '      supportShieldRestore: profile.supportShieldRestore,',
+              '      supportShieldRestore,',
+              'projectile support scaling',
+          )
+
+          game = replace_once(
+              game,
+              '''    if (profile.supportShieldRestore > 0) {
+              const shieldMax =''',
+              '''    if (supportShieldRestore > 0) {
+              const shieldMax =''',
+              'support check scaling',
+          )
+
+          game = replace_once(
+              game,
+              '        shieldRef.current + profile.supportShieldRestore,',
+              '        shieldRef.current + supportShieldRestore,',
+              'support restore scaling',
+          )
+
+          game = replace_once(
+              game,
+              '''    member.shootCooldown =
+              profile.cooldownFrames *
+              (activeFormation === FormationType.CIRCLE ? 0.78 : 1);''',
+              '''    member.shootCooldown =
+              profile.cooldownFrames *
+              (gaiaScale?.cooldownMultiplier ?? 1) *
+              (activeFormation === FormationType.CIRCLE ? 0.78 : 1);''',
+              'gaia cooldown scaling',
+          )
+
+          game_path.write_text(game)
+
+          canvas_path = Path('src/game/EnergySwarmCanvas.tsx')
+          canvas = canvas_path.read_text()
+
+          canvas = replace_once(
+              canvas,
+              '''    const isNear = idx < 12;
+              const isMid = idx >= 12 && idx < 36;
+              const isFar = idx >= 36;
+
+              ctx.save();''',
+              '''    const isNear = idx < 12;
+              const isMid = idx >= 12 && idx < 36;
+              const isFar = idx >= 36;
+              const isGaia = member.energyId === "GAIA";
+
+              ctx.save();''',
+              'gaia canvas identity',
+          )
+
+          canvas = replace_once(
+              canvas,
+              '''      ctx.arc(member.x, member.y, member.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+                return;''',
+              '''      ctx.arc(member.x, member.y, member.size, 0, Math.PI * 2);
+                ctx.fill();
+                if (isGaia) {
+                  ctx.strokeStyle = "rgba(190, 242, 100, 0.85)";
+                  ctx.lineWidth = 1;
+                  ctx.beginPath();
+                  ctx.arc(
+                    member.x,
+                    member.y,
+                    member.size * 1.65,
+                    0,
+                    Math.PI * 2,
+                  );
+                  ctx.stroke();
+                }
+                ctx.restore();
+                return;''',
+              'gaia far lod',
+          )
+
+          canvas = replace_once(
+              canvas,
+              '''    ctx.beginPath();
+              ctx.arc(0, 0, r, 0, Math.PI * 2);
+              ctx.fill();
+
+              // 2. LOD MID:''',
+              '''    ctx.beginPath();
+              ctx.arc(0, 0, r, 0, Math.PI * 2);
+              ctx.fill();
+
+              // GAIA synthesis identity: three cheap Canvas2D orbital planes.
+              if (isGaia) {
+                const gaiaRotation = time * 0.0018;
+                const gaiaAlpha =
+                  0.6 + Math.sin(time * 0.004) * 0.12;
+                ctx.save();
+                ctx.globalAlpha = gaiaAlpha;
+                ctx.shadowBlur = isNear ? 8 : 4;
+                ctx.shadowColor = member.color;
+                for (let plane = 0; plane < 3; plane += 1) {
+                  ctx.save();
+                  ctx.rotate(
+                    gaiaRotation + (plane * Math.PI) / 3,
+                  );
+                  ctx.strokeStyle =
+                    plane === 1 ? "#ffffff" : member.color;
+                  ctx.lineWidth = isNear ? 1.15 : 0.75;
+                  ctx.beginPath();
+                  ctx.ellipse(
+                    0,
+                    0,
+                    r * 1.9,
+                    r * 0.72,
+                    plane * 0.42,
+                    0,
+                    Math.PI * 2,
+                  );
+                  ctx.stroke();
+                  ctx.restore();
+                }
+                ctx.restore();
+              }
+
+              // 2. LOD MID:''',
+              'gaia orbital visual',
+          )
+
+          canvas = replace_once(
+              canvas,
+              '''  // Double-sweep layout rendering for perfect layer stack
+            // 1. Draw normal followers first
+            swarm.forEach((member, idx) => {
+              if (member.type === OrbiType.SOLAR_GUARDIAN || member.type === OrbiType.HYDRO_LEVIATHAN) return;
+              drawSingleMember(member, idx);
+            });
+
+            // 2. Draw Advanced Fusion Units (Solar Guardian / Hydro Leviathan) on top of normal followers
+            swarm.forEach((member, idx) => {
+              if (member.type !== OrbiType.SOLAR_GUARDIAN && member.type !== OrbiType.HYDRO_LEVIATHAN) return;
+              drawSingleMember(member, idx);
+            });''',
+              '''  // Double-sweep layout rendering for perfect layer stack
+            // 1. Draw normal followers first.
+            swarm.forEach((member, idx) => {
+              const isPriorityUnit =
+                member.type === OrbiType.SOLAR_GUARDIAN ||
+                member.type === OrbiType.HYDRO_LEVIATHAN ||
+                member.energyId === "GAIA";
+              if (isPriorityUnit) return;
+              drawSingleMember(member, idx);
+            });
+
+            // 2. Draw advanced fusion units and unique GAIA on top.
+            swarm.forEach((member, idx) => {
+              const isPriorityUnit =
+                member.type === OrbiType.SOLAR_GUARDIAN ||
+                member.type === OrbiType.HYDRO_LEVIATHAN ||
+                member.energyId === "GAIA";
+              if (!isPriorityUnit) return;
+              drawSingleMember(member, idx);
+            });''',
+              'gaia priority draw pass',
+          )
+
+          canvas_path.write_text(canvas)
+          PY
+      - name: Run certification
+        run: |
+          npm test
+          npm run typecheck
+          npm run release:verify
+          npm run build
+      - name: Commit implementation
+        run: |
+          git config user.name "ingeniusvictor"
+          git config user.email "ingenius.victor@gmail.com"
+          git add src/game/EnergySwarmGame.tsx src/game/EnergySwarmCanvas.tsx
+          git commit -m "feat(gaia): integrate fusion evolution runtime ES-12F9 [es12f9-applied]"
+          git push origin HEAD:feat/es-12f9-gaia-fusion-evolution
