@@ -1,5 +1,6 @@
 export const WORM_SEGMENT_CAP = 6;
 export const WORM_PHYSICS_BASE_FRAME_MS = 1000 / 60;
+export const WORM_PHYSICS_SUBSTEP_MS = 1000 / 120;
 
 export interface WormSegmentKinematicState {
   id: string;
@@ -30,7 +31,7 @@ export const DEFAULT_WORM_SEGMENT_PHYSICS: Readonly<WormSegmentPhysicsConfig> = 
   dampingPerFrame: 0.82,
   maxSpeedPerFrame: 16,
   maxCorrectionPerFrame: 12,
-  maxSubstepMs: WORM_PHYSICS_BASE_FRAME_MS,
+  maxSubstepMs: WORM_PHYSICS_SUBSTEP_MS,
   maxDeltaMs: 100,
 };
 
