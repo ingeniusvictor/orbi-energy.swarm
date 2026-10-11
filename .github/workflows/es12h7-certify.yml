@@ -71,11 +71,24 @@ jobs:
               "profile-driven weakpoint collision assertion",
           )
 
+          rematch_test = "tests/runtime-boss-rematch-adoption.test.ts"
           replace_once(
-              "tests/runtime-boss-rematch-adoption.test.ts",
+              rematch_test,
               r'/milestoneDamageMultiplier:[\s\S]*rematchProfile\?\.damageMultiplier/',
               r'/const damageMultiplier =[\s\S]*rematchProfile\?\.damageMultiplier[\s\S]*milestoneDamageMultiplier: damageMultiplier/',
               "profile-driven rematch damage assertion",
+          )
+          replace_once(
+              rematch_test,
+              r'/milestoneAttackRateMultiplier:[\s\S]*rematchProfile\?\.attackRateMultiplier/',
+              r'/const attackRateMultiplier =[\s\S]*rematchProfile\?\.attackRateMultiplier[\s\S]*milestoneAttackRateMultiplier: attackRateMultiplier/',
+              "profile-driven rematch attack-rate assertion",
+          )
+          replace_once(
+              rematch_test,
+              r'/milestoneRewardMultiplier:[\s\S]*rematchProfile\?\.rewardMultiplier/',
+              r'/const rewardMultiplier =[\s\S]*rematchProfile\?\.rewardMultiplier[\s\S]*milestoneRewardMultiplier: rewardMultiplier/',
+              "profile-driven rematch reward assertion",
           )
 
           old_health = r'/BLACKOUT_DEVOURER_CANON\.maxHealth \*[\s\S]*\(rematchProfile\?\.healthMultiplier \?\? 1\)/'
