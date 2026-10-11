@@ -69,6 +69,10 @@ import {
   getResourceFieldProfile,
 } from "./runtimeEnvironmentalFields";
 import {
+  getEclipseEnemyMovementMultiplier,
+  getEclipseSolarCooldownRecoveryMultiplier,
+} from "./runtimeEclipse";
+import {
   createElectricalStormRuntimeState,
   getElectricalStormConfig,
   stepElectricalStormRuntime,
@@ -4377,7 +4381,12 @@ export const EnergySwarmGame: React.FC = () => {
       member.y = Math.max(WORLD_BOUNDS.minY, Math.min(WORLD_BOUNDS.maxY, member.y));
 
       // Shooting logic
-      member.shootCooldown -= delta / 16.6;
+      member.shootCooldown -=
+        (delta / 16.6) *
+        getEclipseSolarCooldownRecoveryMultiplier(
+          simulationMutatorEffects,
+          member.affinity,
+        );
       if (member.shootCooldown <= 0) {
         member.shootCooldown =
           65 -
@@ -4824,6 +4833,11 @@ export const EnergySwarmGame: React.FC = () => {
             playDisruptorChargeSound();
           }
         } else if (enemy.type === EnemyType.PARASITE) {
+          const eclipseParasiteSpeedMultiplier =
+            getEclipseEnemyMovementMultiplier(
+              simulationMutatorEffects,
+              enemy.type,
+            );
           // Twitchy lunging behavior. Evolved signature scaling only adjusts
           // the existing oscillation through the certified behavior contract.
           const lungePhase =
@@ -4835,8 +4849,17 @@ export const EnergySwarmGame: React.FC = () => {
             Math.sin(lungePhase) *
             1.5 *
             signatureBehavior.parasiteLungeAmplitudeMultiplier;
-          enemy.x += ((dx / dist) * enemy.speed + lunge) * (delta / 16.6);
-          enemy.y += (dy / dist) * enemy.speed * (delta / 16.6);
+          enemy.x +=
+            ((dx / dist) *
+              enemy.speed *
+              eclipseParasiteSpeedMultiplier +
+              lunge) *
+            (delta / 16.6);
+          enemy.y +=
+            (dy / dist) *
+            enemy.speed *
+            eclipseParasiteSpeedMultiplier *
+            (delta / 16.6);
         } else {
           // Direct slither for Crawler, Splitter, and minion parts
           enemy.x += (dx / dist) * enemy.speed * (delta / 16.6);
