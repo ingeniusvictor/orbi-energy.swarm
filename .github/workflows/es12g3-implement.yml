@@ -1,0 +1,55 @@
+name: ES-12G3 One-Shot Implementation
+
+on:
+  push:
+    branches:
+      - feat/es-12g3-f3-evidence-recorder
+    paths:
+      - .github/workflows/es12g3-implement.yml
+
+permissions:
+  contents: write
+
+jobs:
+  implement:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/es-12g3-f3-evidence-recorder
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Apply ES-12G3 evidence recorder patch
+        run: node scripts/es12g3-apply.mjs
+
+      - name: Repository smoke tests
+        run: npm run test:repo
+
+      - name: Platform tests
+        run: npm run test:platform
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Production build
+        run: npm run build
+
+      - name: Commit implementation and remove one-shot helpers
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/es12g3-implement.yml scripts/es12g3-apply.mjs
+          git add src tests
+          git commit -m "feat(diagnostics): add bounded F3 evidence recorder ES-12G3"
+          git push origin HEAD:feat/es-12g3-f3-evidence-recorder
