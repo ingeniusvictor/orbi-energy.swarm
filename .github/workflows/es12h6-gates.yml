@@ -1,4 +1,4 @@
-name: ES-12H6 Platform Trace
+name: ES-12H6 Repair and Certify
 
 on:
   push:
@@ -7,26 +7,89 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  trace-platform-source:
+  repair-certify:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: feat/es-12h6-environmental-mutators
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Trace exact source
+      - name: Repair recovery wave validator
         run: |
-          echo '=== INFINITE FILES ==='
-          find tests -maxdepth 2 -type f -iname '*infinite*' -print | sort
-          echo '=== ASSERTION ==='
-          grep -R -n -F 'recipe.mutators.length >= 1' tests || true
-          echo '=== TITLE ==='
-          grep -R -n -F 'sector recipes are deterministic, bounded, and milestone-aware' tests || true
-          echo '=== ALL MUTATOR LENGTH ASSERTIONS ==='
-          grep -R -n -F 'mutators.length' tests | head -80 || true
-      - run: npm run test:platform
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('src/game/infiniteWaveDirector.ts')
+          text = path.read_text()
+          old = '      wave.activeMutators.length < 1 ||'
+          new = '''      (!sectorRecipe.recoverySector && wave.activeMutators.length < 1) ||
+                (sectorRecipe.recoverySector && wave.activeMutators.length !== 0) ||'''
+          if text.count(old) != 1:
+              raise SystemExit(f'fail-closed: expected one legacy mutator minimum check, found {text.count(old)}')
+          path.write_text(text.replace(old, new))
+          PY
+      - name: Add recovery projection regression test
+        run: |
+          cat > tests/infinite-recovery-projection.test.ts <<'EOF'
+          import assert from "node:assert/strict";
+          import test from "node:test";
+
+          import { buildCertifiedInfiniteSectorPlan } from "../src/game/infinitePlanBuilder.ts";
+          import { validateInfiniteWavePlan } from "../src/game/infiniteWaveDirector.ts";
+
+          test("recovery sectors preserve zero environmental mutators through waves and execution", () => {
+            const plan = buildCertifiedInfiniteSectorPlan(26, "h6-recovery-projection");
+
+            assert.equal(plan.baselineRecipe.recoverySector, true);
+            assert.deepEqual(plan.baselineRecipe.mutators, []);
+            assert.deepEqual(plan.effectiveRecipe.mutators, []);
+            assert.ok(plan.waves.length > 0);
+            assert.equal(plan.executionPlans.length, plan.waves.length);
+
+            for (const wave of plan.waves) {
+              assert.deepEqual(wave.activeMutators, []);
+            }
+            for (const execution of plan.executionPlans) {
+              assert.deepEqual(execution.mutators, []);
+            }
+
+            assert.deepEqual(
+              validateInfiniteWavePlan(plan.effectiveRecipe, plan.waves),
+              { valid: true, errors: [] },
+            );
+          });
+          EOF
+      - name: Repository Smoke
+        run: npm run test:repo
+      - name: Gameplay
+        run: npm run test:gameplay
+      - name: Platform
+        run: npm run test:platform
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Production Build
+        run: npm run build
+      - name: Materialize certified product tree
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/es12h6-gates.yml
+          git add src/game/infiniteWaveDirector.ts tests/infinite-recovery-projection.test.ts
+          ACTUAL="$(git diff --cached --name-only | sort)"
+          EXPECTED="$(printf '%s\n' '.github/workflows/es12h6-gates.yml' 'src/game/infiniteWaveDirector.ts' 'tests/infinite-recovery-projection.test.ts' | sort)"
+          if [ "$ACTUAL" != "$EXPECTED" ]; then
+            echo 'fail-closed: unexpected staged paths'
+            echo '--- actual ---'
+            printf '%s\n' "$ACTUAL"
+            echo '--- expected ---'
+            printf '%s\n' "$EXPECTED"
+            exit 1
+          fi
+          git commit -m "fix(h6): preserve clear recovery wave projection"
+          git push origin HEAD:feat/es-12h6-environmental-mutators
