@@ -31,7 +31,7 @@ jobs:
         run: npm ci
 
       - name: Apply ES-12G3 evidence recorder patch
-        run: node scripts/es12g3-apply.mjs
+        run: node scripts/es12g3-apply-v2.mjs
 
       - name: Repository smoke tests
         run: npm run test:repo
@@ -49,7 +49,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git rm .github/workflows/es12g3-implement.yml scripts/es12g3-apply.mjs
+          git rm .github/workflows/es12g3-implement.yml scripts/es12g3-apply.mjs scripts/es12g3-apply-v2.mjs
           git add src tests
           git commit -m "feat(diagnostics): add bounded F3 evidence recorder ES-12G3"
           git push origin HEAD:feat/es-12g3-f3-evidence-recorder
