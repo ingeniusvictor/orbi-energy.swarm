@@ -1,0 +1,78 @@
+name: ES-12H7 Literal Patcher Certification
+
+on:
+  push:
+    branches:
+      - feat/es-12h7-titan-core-chassis
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/es-12h7-titan-core-chassis
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Apply literal H7 patcher
+        run: python scripts/es12h7-apply.py
+      - name: Repository Smoke
+        run: npm run test:repo
+      - name: Gameplay
+        run: npm run test:gameplay
+      - name: Platform
+        run: npm run test:platform
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Production Build
+        run: npm run build
+      - name: Materialize certified H7 product tree
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm -f --ignore-unmatch \
+            .github/workflows/es12h7-implement.yml \
+            .github/workflows/es12h7-implement-v2.yml \
+            .github/workflows/es12h7-implement-v3.yml \
+            .github/workflows/es12h7-certify.yml \
+            scripts/es12h7-apply.py
+          git add \
+            src/game/types.ts \
+            src/game/EnergySwarmCanvas.tsx \
+            src/game/EnergySwarmGame.tsx \
+            tests/runtime-boss-rematch-gate.test.ts \
+            tests/infinite-boss-family-runtime.test.ts \
+            tests/runtime-boss-rematch-adoption.test.ts \
+            tests/titan-runtime-adoption.test.ts
+          git diff --cached --check
+          ACTUAL="$(git diff --cached --name-only | sort)"
+          EXPECTED="$(printf '%s\n' \
+            '.github/workflows/es12h7-certify.yml' \
+            '.github/workflows/es12h7-implement-v2.yml' \
+            '.github/workflows/es12h7-implement-v3.yml' \
+            '.github/workflows/es12h7-implement.yml' \
+            'scripts/es12h7-apply.py' \
+            'src/game/EnergySwarmCanvas.tsx' \
+            'src/game/EnergySwarmGame.tsx' \
+            'src/game/types.ts' \
+            'tests/infinite-boss-family-runtime.test.ts' \
+            'tests/runtime-boss-rematch-adoption.test.ts' \
+            'tests/runtime-boss-rematch-gate.test.ts' \
+            'tests/titan-runtime-adoption.test.ts' | sort)"
+          if [ "$ACTUAL" != "$EXPECTED" ]; then
+            echo 'fail-closed: unexpected staged paths'
+            echo '--- actual ---'
+            printf '%s\n' "$ACTUAL"
+            echo '--- expected ---'
+            printf '%s\n' "$EXPECTED"
+            exit 1
+          fi
+          git commit -m "feat(h7): integrate Titan Core raid chassis"
+          git push origin HEAD:feat/es-12h7-titan-core-chassis
