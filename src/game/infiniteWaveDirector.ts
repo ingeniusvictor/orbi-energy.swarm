@@ -259,7 +259,8 @@ export const validateInfiniteWavePlan = (
     }
 
     if (
-      wave.activeMutators.length < 1 ||
+      (!sectorRecipe.recoverySector && wave.activeMutators.length < 1) ||
+      (sectorRecipe.recoverySector && wave.activeMutators.length !== 0) ||
       wave.activeMutators.some((mutator) => !allowedMutators.has(mutator)) ||
       new Set(wave.activeMutators).size !==
         wave.activeMutators.length

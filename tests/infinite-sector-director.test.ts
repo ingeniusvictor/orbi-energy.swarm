@@ -6,6 +6,10 @@ import {
   getInfiniteProgressionTier,
   validateInfiniteSectorRecipe,
 } from "../src/game/infiniteSectorDirector.ts";
+import {
+  countSevereEnvironmentalMutators,
+  hasEnvironmentalMutator,
+} from "../src/game/infiniteMutatorDirector.ts";
 import { EnemyType } from "../src/game/types.ts";
 
 test("infinite progression tiers begin at Sector 11", () => {
@@ -72,8 +76,18 @@ test("Sectors 11–1000 always stay inside certified recipe bounds", () => {
     );
     assert.ok(!recipe.enemyComposition.includes(EnemyType.BOSS_DEVOURER));
     assert.ok(recipe.eliteChance >= 0.08 && recipe.eliteChance <= 0.55);
-    assert.ok(recipe.mutators.length >= 1 && recipe.mutators.length <= 4);
-    assert.equal(new Set(recipe.mutators).size, recipe.mutators.length);
+
+    if (recipe.recoverySector) {
+      assert.deepEqual(recipe.mutators, []);
+    } else {
+      assert.ok(recipe.mutators.length >= 1 && recipe.mutators.length <= 4);
+      assert.equal(new Set(recipe.mutators).size, recipe.mutators.length);
+      assert.ok(countSevereEnvironmentalMutators(recipe.mutators) <= 1);
+      if (recipe.tier !== "MASTERY") {
+        assert.equal(hasEnvironmentalMutator(recipe.mutators), true);
+      }
+    }
+
     assert.ok(
       recipe.aggressionMultiplier >= 1 &&
         recipe.aggressionMultiplier <= 2,
@@ -105,18 +119,18 @@ test("Sectors 11–1000 always stay inside certified recipe bounds", () => {
   }
 });
 
-test("recovery sectors reduce pressure after 25-sector milestones", () => {
+test("recovery sectors reduce pressure and clear mutators after 25-sector milestones", () => {
   const milestone = generateInfiniteSectorRecipe(25, "recovery-check");
   const recovery = generateInfiniteSectorRecipe(26, "recovery-check");
   const next = generateInfiniteSectorRecipe(27, "recovery-check");
 
   assert.equal(milestone.milestone?.kind, "BOSS_REMATCH");
   assert.equal(recovery.recoverySector, true);
+  assert.deepEqual(recovery.mutators, []);
   assert.ok(recovery.enemyBudget <= next.enemyBudget);
   assert.ok(recovery.maxConcurrentEnemies <= next.maxConcurrentEnemies);
   assert.ok(recovery.spawnIntervalFrames >= next.spawnIntervalFrames);
 });
-
 
 test("validator reports illegal recipes without mutating them", () => {
   const recipe = generateInfiniteSectorRecipe(101, "invalid-check");
@@ -135,4 +149,16 @@ test("validator reports illegal recipes without mutating them", () => {
   assert.ok(validation.errors.includes("enemyBudget"));
   assert.ok(validation.errors.includes("enemyComposition"));
   assert.ok(validation.errors.includes("minTelegraphMs"));
+});
+
+test("validator rejects mutators on a recovery sector", () => {
+  const recovery = generateInfiniteSectorRecipe(26, "invalid-recovery");
+  const invalid = {
+    ...recovery,
+    mutators: ["ELECTRICAL_STORM" as const],
+  };
+
+  const validation = validateInfiniteSectorRecipe(invalid);
+  assert.equal(validation.valid, false);
+  assert.ok(validation.errors.includes("mutators"));
 });

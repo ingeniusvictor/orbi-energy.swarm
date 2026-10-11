@@ -1,4 +1,5 @@
 import { BiomeType, EnemyType } from "./types";
+import { directInfiniteMutatorSelection } from "./infiniteMutatorDirector";
 
 export type InfiniteProgressionTier =
   | "MASTERY"
@@ -212,7 +213,7 @@ export const generateInfiniteSectorRecipe = (
   );
 
   const mutatorTargetCount = recoverySector
-    ? 1
+    ? 0
     : clamp(tierIndex + 1, 1, 4);
 
   const biome =
@@ -225,11 +226,18 @@ export const generateInfiniteSectorRecipe = (
     random,
   );
 
-  const mutators = pickUnique(
+  const orderedMutatorCandidates = pickUnique(
     MUTATOR_POOL,
-    mutatorTargetCount,
+    MUTATOR_POOL.length,
     random,
   );
+  const mutators = directInfiniteMutatorSelection({
+    tier,
+    biome,
+    recoverySector,
+    targetCount: mutatorTargetCount,
+    orderedCandidates: orderedMutatorCandidates,
+  });
 
   const eliteChance = round(
     clamp(0.08 + progress * 0.0015 + tierIndex * 0.035, 0.08, 0.55),
@@ -325,7 +333,6 @@ export const generateInfiniteSectorRecipe = (
   };
 };
 
-
 export interface InfiniteRecipeValidation {
   valid: boolean;
   errors: string[];
@@ -368,10 +375,12 @@ export const validateInfiniteSectorRecipe = (
   if (recipe.eliteChance < 0.08 || recipe.eliteChance > 0.55) {
     errors.push("eliteChance");
   }
+  const minimumMutatorCount = recipe.recoverySector ? 0 : 1;
   if (
-    recipe.mutators.length < 1 ||
+    recipe.mutators.length < minimumMutatorCount ||
     recipe.mutators.length > 4 ||
-    new Set(recipe.mutators).size !== recipe.mutators.length
+    new Set(recipe.mutators).size !== recipe.mutators.length ||
+    (recipe.recoverySector && recipe.mutators.length !== 0)
   ) {
     errors.push("mutators");
   }
