@@ -42,7 +42,7 @@ export const CompanionPanel: React.FC<CompanionPanelProps> = ({
   }, [dialogueLog, activeTab]);
 
   return (
-    <div className="w-full lg:w-[330px] shrink-0 bg-slate-950/70 border border-slate-900 rounded-xl p-3 md:p-4 shadow-xl backdrop-blur-md text-white select-none flex flex-col h-[460px] lg:h-[min(72dvh,720px)] min-h-0">
+    <div className="w-full lg:w-[330px] shrink-0 bg-slate-950/70 border border-slate-900 rounded-xl p-3 md:p-4 shadow-xl backdrop-blur-md text-white select-none flex flex-col h-[460px] lg:h-[min(82dvh,820px)] min-h-0">
       
       {/* TABS SELECTOR */}
       <div className="flex bg-slate-900/60 p-1 rounded-lg gap-1 border border-slate-850 mb-3 text-xs uppercase">

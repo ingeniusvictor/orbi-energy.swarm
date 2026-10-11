@@ -296,6 +296,7 @@ export const EnergySwarmGame: React.FC = () => {
   const fusionEnergyRef = useRef(0);
 
   const keysPressedRef = useRef<Record<string, boolean>>({});
+  const activeFormationRef = useRef<FormationType>(FormationType.LINE);
 
   // Entity Lists
   const swarmRef = useRef<OrbiMember[]>([]);
@@ -365,6 +366,7 @@ export const EnergySwarmGame: React.FC = () => {
   const runResourcesCollectedRef = useRef<number>(0);
   const runNanoCreditsEarnedRef = useRef<number>(0);
   const runMaxSwarmSizeRef = useRef<number>(1);
+  const runOrbiAcquiredRef = useRef<number>(0);
   const runCommitLedgerRef = useRef<RunCommitLedger>(createRunCommitLedger());
   const frameHealthRef = useRef<FrameHealthState>(createFrameHealthState());
   const frameHealthRecommendationShownRef = useRef<QualityPreset | null>(null);
@@ -1073,6 +1075,7 @@ export const EnergySwarmGame: React.FC = () => {
       return;
     }
 
+    activeFormationRef.current = nextForm;
     setActiveFormation(nextForm);
     playClickSound();
     
@@ -1200,6 +1203,7 @@ export const EnergySwarmGame: React.FC = () => {
     runtimeProjectionBundleCacheRef.current =
       createRuntimeProjectionBundleCache();
     runMaxSwarmSizeRef.current = 1;
+    runOrbiAcquiredRef.current = 0;
     reactUpdateAccumulatorMsRef.current = 0;
     bossDamageDealtRef.current = 0;
     bossShieldNodesDestroyedRef.current = 0;
@@ -1306,6 +1310,7 @@ export const EnergySwarmGame: React.FC = () => {
     setWaveName("PREPARATION PROTOCOL");
 
     setActiveBiome(BiomeType.SOLAR_PLAINS);
+    activeFormationRef.current = FormationType.LINE;
     setActiveFormation(FormationType.LINE);
 
     postDialogue("COMPANION", "Sincronización activada. Núcleo Foton operando a resonancia base.");
@@ -1456,6 +1461,7 @@ export const EnergySwarmGame: React.FC = () => {
       };
       gaiaMemberRef.current = gaiaMember;
       swarmRef.current.push(gaiaMember);
+      runOrbiAcquiredRef.current += 1;
       updateRunMaxSwarmSize();
     } else {
       gaiaMember = existingGaia;
@@ -1659,6 +1665,7 @@ export const EnergySwarmGame: React.FC = () => {
     };
 
     swarmRef.current.push(member);
+    runOrbiAcquiredRef.current += 1;
     updateRunMaxSwarmSize();
     playRecruitSound();
 
@@ -1956,6 +1963,7 @@ export const EnergySwarmGame: React.FC = () => {
         xp: 0
       };
       swarmRef.current.push(g);
+      runOrbiAcquiredRef.current += 1;
       updateRunMaxSwarmSize();
       postDialogue("COMPANION", "¡FUSIÓN SOLAR DETECTADA! Guardián Solar Prime convocado.");
     } else {
@@ -1979,6 +1987,7 @@ export const EnergySwarmGame: React.FC = () => {
         xp: 0
       };
       swarmRef.current.push(l);
+      runOrbiAcquiredRef.current += 1;
       updateRunMaxSwarmSize();
       postDialogue("COMPANION", "¡FUSIÓN HÍDRICA DETECTADA! Hidro-Leviatán estabilizado en órbita.");
     }
@@ -3645,8 +3654,9 @@ export const EnergySwarmGame: React.FC = () => {
       return;
     }
 
-    formationUseCountsRef.current[activeFormation] =
-      (formationUseCountsRef.current[activeFormation] ?? 0) +
+    const runtimeFormation = activeFormationRef.current;
+    formationUseCountsRef.current[runtimeFormation] =
+      (formationUseCountsRef.current[runtimeFormation] ?? 0) +
       delta;
     updateRunMaxSwarmSize();
 
@@ -3807,7 +3817,7 @@ export const EnergySwarmGame: React.FC = () => {
       moveY = touchMoveVector.y;
     }
 
-    const pSpeedBase = PLAYER_BASE_SPEED * FORMATIONS[activeFormation].speedMod * (1.0 + (upgradesLevel.quantum_core || 0) * 0.1);
+    const pSpeedBase = PLAYER_BASE_SPEED * FORMATIONS[activeFormationRef.current].speedMod * (1.0 + (upgradesLevel.quantum_core || 0) * 0.1);
     const speedUpgradeMultiplier = 1.0 + (activeRunUpgradesRef.current.quantum_stabilization || 0) * 0.15;
     const pSpeed = pSpeedBase * speedUpgradeMultiplier * disruptRecoveryRef.current;
 
@@ -3901,7 +3911,7 @@ export const EnergySwarmGame: React.FC = () => {
       );
 
       const offsets = calculateSwarmOffset(
-        activeFormation,
+        activeFormationRef.current,
         idx,
         swarmRef.current.length,
         timeElapsedRef.current,
@@ -3983,7 +3993,7 @@ export const EnergySwarmGame: React.FC = () => {
       if (member.shootCooldown <= 0) {
         member.shootCooldown =
           65 -
-          (activeFormation === FormationType.CIRCLE
+          (activeFormationRef.current === FormationType.CIRCLE
             ? 15
             : 0);
 
@@ -4639,7 +4649,7 @@ export const EnergySwarmGame: React.FC = () => {
 
     const maxRange =
       300 +
-      (activeFormation === FormationType.SHIELD ? 100 : 0);
+      (activeFormationRef.current === FormationType.SHIELD ? 100 : 0);
     const nearest = findNearestSpatialItem(
       enemyIndex,
       member.x,
@@ -4666,7 +4676,7 @@ export const EnergySwarmGame: React.FC = () => {
       profile.supportShieldRestore *
       (gaiaScale?.shieldSupportMultiplier ?? 1);
     const formationSpeed =
-      1 + FORMATIONS[activeFormation].projSpeedMod;
+      1 + FORMATIONS[activeFormationRef.current].projSpeedMod;
     const baseSpeed =
       4.5 * formationSpeed * profile.speedMultiplier;
     const baseAngle = Math.atan2(dy, dx);
@@ -4675,7 +4685,7 @@ export const EnergySwarmGame: React.FC = () => {
       Math.random() < profile.criticalChance;
     const baseDamage =
       4 +
-      (activeFormation === FormationType.CIRCLE ? 1.5 : 0);
+      (activeFormationRef.current === FormationType.CIRCLE ? 1.5 : 0);
     const primaryDamage =
       baseDamage *
       profile.damageMultiplier *
@@ -4748,7 +4758,7 @@ export const EnergySwarmGame: React.FC = () => {
     member.shootCooldown =
       profile.cooldownFrames *
       (gaiaScale?.cooldownMultiplier ?? 1) *
-      (activeFormation === FormationType.CIRCLE ? 0.78 : 1);
+      (activeFormationRef.current === FormationType.CIRCLE ? 0.78 : 1);
     playShootSound();
 
     const recoilForce =
@@ -5489,7 +5499,7 @@ export const EnergySwarmGame: React.FC = () => {
     if (invincibilityTimerRef.current > 0) return;
 
     // Apply shield reduction adjusted for active formation defense multipliers
-    const defenseMod = FORMATIONS[activeFormation].shieldMod; // e.g. +0.25 (which means -25% damage taken)
+    const defenseMod = FORMATIONS[activeFormationRef.current].shieldMod; // e.g. +0.25 (which means -25% damage taken)
     const multiplier = Math.max(0.4, 1.0 - defenseMod);
     const gaiaDefenseMultiplier = gaiaMemberRef.current
       ? getGaiaCombatScale(
@@ -5844,7 +5854,7 @@ export const EnergySwarmGame: React.FC = () => {
       stats.qualityPreset,
       isPausedRef.current,
       fotonThreatDirectionRef.current,
-      swarmRef.current.length,
+      runOrbiAcquiredRef.current,
     );
 
     // 8. Draw active floating text feedback (such as CRITICAL or BLOCK)

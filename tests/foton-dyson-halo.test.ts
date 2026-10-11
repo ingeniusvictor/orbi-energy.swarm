@@ -28,18 +28,18 @@ test("true collected-Orbi progression caps at three rings from 20 onward", () =>
   }
 });
 
-test("live swarm size subtracts the free starting companion before ring thresholds", () => {
+test("swarm-size helper never subtracts a phantom starting companion", () => {
   assert.equal(getCollectedOrbiCountFromSwarmSize(0), 0);
-  assert.equal(getCollectedOrbiCountFromSwarmSize(1), 0);
-  assert.equal(getCollectedOrbiCountFromSwarmSize(10), 9);
-  assert.equal(getCollectedOrbiCountFromSwarmSize(11), 10);
-  assert.equal(getCollectedOrbiCountFromSwarmSize(21), 20);
+  assert.equal(getCollectedOrbiCountFromSwarmSize(1), 1);
+  assert.equal(getCollectedOrbiCountFromSwarmSize(9), 9);
+  assert.equal(getCollectedOrbiCountFromSwarmSize(10), 10);
+  assert.equal(getCollectedOrbiCountFromSwarmSize(20), 20);
 
   assert.equal(getUnlockedDysonHaloRingCountFromSwarmSize(1), 1);
-  assert.equal(getUnlockedDysonHaloRingCountFromSwarmSize(10), 1);
-  assert.equal(getUnlockedDysonHaloRingCountFromSwarmSize(11), 2);
-  assert.equal(getUnlockedDysonHaloRingCountFromSwarmSize(20), 2);
-  assert.equal(getUnlockedDysonHaloRingCountFromSwarmSize(21), 3);
+  assert.equal(getUnlockedDysonHaloRingCountFromSwarmSize(9), 1);
+  assert.equal(getUnlockedDysonHaloRingCountFromSwarmSize(10), 2);
+  assert.equal(getUnlockedDysonHaloRingCountFromSwarmSize(19), 2);
+  assert.equal(getUnlockedDysonHaloRingCountFromSwarmSize(20), 3);
 });
 
 test("invalid or negative counts fail safe to the base cyan ring", () => {
