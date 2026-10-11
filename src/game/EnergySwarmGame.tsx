@@ -3,7 +3,8 @@ import React, { useEffect, useRef, useState, useCallback } from "react";
 import { 
   BiomeType, OrbiType, EnemyType, FormationType, ParticleType, 
   OrbiMember, Enemy, Projectile, Resource, Particle, GameStats, 
-  DialogueMessage, QualityPreset, WaveConfig, type RunArchiveEntry
+  DialogueMessage, QualityPreset, WaveConfig, type RunArchiveEntry,
+  type OrbiAffinity, type OrbiCombatRole, type OrbiEnergyId
 } from "./types";
 
 import { 
@@ -156,6 +157,11 @@ import {
   projectFotonThreatDirection,
   selectFotonThreat,
 } from "./fotonThreatTracking";
+import {
+  createShuffledCollectibleEnergyCycle,
+  getCollectibleEnergyDefinition,
+  getOrbiEnergyByAffinity,
+} from "./orbiEnergyCanon";
 
 type InfiniteBossRematchProfile = Extract<
   InfiniteMilestoneEncounterProfile,
@@ -563,16 +569,17 @@ export const EnergySwarmGame: React.FC = () => {
   };
 
   const getStrongestAffinity = (): RunArchiveEntry["strongestAffinity"] => {
-    const counts: Record<
-      Exclude<RunArchiveEntry["strongestAffinity"], "none">,
-      number
-    > = {
+    const counts: Record<OrbiAffinity, number> = {
       solar: 0,
       hydro: 0,
       wind: 0,
       thermal: 0,
+      magnetic: 0,
       nuclear: 0,
+      kinetic: 0,
+      hydrogen: 0,
       quantum: 0,
+      gaia: 0,
     };
 
     swarmRef.current.forEach((member) => {
@@ -1275,43 +1282,32 @@ export const EnergySwarmGame: React.FC = () => {
     playClickSound();
   };
 
-  // --- SHUFFLE BAG FOR BALANCED ELEMENTAL RECRUITMENT ---
-  const recruitBagRef = useRef<Array<"solar" | "hydro" | "wind" | "thermal" | "nuclear" | "quantum">>([]);
-  const combatRoles: Array<"beam" | "rapid" | "pulse" | "arc" | "shield" | "support"> = [
-    "beam", "rapid", "pulse", "arc", "shield", "support"
-  ];
+  // --- CANONICAL ORBI ENERGY RECRUITMENT CYCLE ---
+  // FOTON is the player core and GAIA is fusion-only. Every shuffled cycle
+  // therefore contains each of the eight collectible base energies exactly once.
+  const recruitBagRef = useRef<OrbiEnergyId[]>([]);
   const personalities = ["Curious", "Bold", "Cynical", "Joyful", "Silent", "Anxious", "Enthusiastic", "Calm", "Fiery", "Stoic"];
 
-  const getNextAffinityFromBag = (): "solar" | "hydro" | "wind" | "thermal" | "nuclear" | "quantum" => {
+  const getNextEnergyIdFromBag = (): OrbiEnergyId => {
     if (recruitBagRef.current.length === 0) {
-      // Base suggested distribution percentages: solar: 17%, hydro: 17%, wind: 17%, thermal: 17%, nuclear: 16%, quantum: 16%
-      const temp: Array<"solar" | "hydro" | "wind" | "thermal" | "nuclear" | "quantum"> = [];
-      for (let i = 0; i < 17; i++) temp.push("solar");
-      for (let i = 0; i < 17; i++) temp.push("hydro");
-      for (let i = 0; i < 17; i++) temp.push("wind");
-      for (let i = 0; i < 17; i++) temp.push("thermal");
-      for (let i = 0; i < 16; i++) temp.push("nuclear");
-      for (let i = 0; i < 16; i++) temp.push("quantum");
-
-      // Fisher-Yates shuffle
-      for (let i = temp.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        const hold = temp[i];
-        temp[i] = temp[j];
-        temp[j] = hold;
-      }
-      recruitBagRef.current = temp;
+      recruitBagRef.current = createShuffledCollectibleEnergyCycle();
     }
     return recruitBagRef.current.pop()!;
   };
 
   // --- ADD ORBI FOLLOWER TO ACTIVE SWARM ---
   const addSwarmMember = (
-    predefinedAffinity?: "solar" | "hydro" | "wind" | "thermal" | "nuclear" | "quantum",
-    predefinedCombatRole?: "beam" | "rapid" | "pulse" | "arc" | "shield" | "support"
+    predefinedAffinity?: OrbiAffinity,
+    predefinedCombatRole?: OrbiCombatRole,
+    predefinedEnergyId?: OrbiEnergyId,
   ) => {
-    const affinity = predefinedAffinity || getNextAffinityFromBag();
-    const combatRole = predefinedCombatRole || combatRoles[Math.floor(Math.random() * combatRoles.length)];
+    const energyDefinition = predefinedEnergyId
+      ? getCollectibleEnergyDefinition(predefinedEnergyId)
+      : predefinedAffinity
+        ? getOrbiEnergyByAffinity(predefinedAffinity)
+        : getCollectibleEnergyDefinition(getNextEnergyIdFromBag());
+    const affinity = energyDefinition.affinity;
+    const combatRole = predefinedCombatRole || energyDefinition.combatRole;
 
     const coreLevel = upgradesLevel.quantum_core || 0;
     const capacityLimit = coreLevel >= 3 ? 60 : (coreLevel === 2 ? 48 : (coreLevel === 1 ? 36 : 24));
@@ -1416,16 +1412,8 @@ export const EnergySwarmGame: React.FC = () => {
       return;
     }
 
-    const names = ["Alpha", "Beta", "Gamma", "Delta", "Epsilon", "Zeta", "Eta", "Theta", "Iota", "Kappa"];
-    const baseName = names[Math.floor(Math.random() * names.length)] + "-" + (swarmRef.current.length + 1);
-
-    // Identity and Color based on affinity (Section 7)
-    let color = "#f59e0b";
-    if (affinity === "hydro") color = "#0ea5e9";
-    else if (affinity === "wind") color = "#10b981";
-    else if (affinity === "thermal") color = "#ef4444";
-    else if (affinity === "nuclear") color = "#8b5cf6";
-    else if (affinity === "quantum") color = "#ec4899";
+    const baseName = energyDefinition.displayName + "-" + (swarmRef.current.length + 1);
+    const color = energyDefinition.color;
 
     const personality = personalities[Math.floor(Math.random() * personalities.length)];
 
@@ -1442,6 +1430,8 @@ export const EnergySwarmGame: React.FC = () => {
       shootCooldown: 60 + Math.random() * 40,
       affinity,
       combatRole,
+      energyId: energyDefinition.id,
+      attackSignature: energyDefinition.attackSignature,
       personality,
       evolutionStage: 1,
       level: 1,
@@ -1453,7 +1443,7 @@ export const EnergySwarmGame: React.FC = () => {
     playRecruitSound();
 
     // Floating notification for recruitment
-    addFloatingText(`RECRUITED: ${member.name} (${affinity.toUpperCase()})`, playerPosRef.current.x, playerPosRef.current.y - 25, member.color);
+    addFloatingText("RECRUITED: " + member.name + " · " + energyDefinition.energyLabel.toUpperCase(), playerPosRef.current.x, playerPosRef.current.y - 25, member.color);
 
     // Heavy screen shake and massive physical feedback
     screenShakeRef.current = 15;
@@ -1470,9 +1460,11 @@ export const EnergySwarmGame: React.FC = () => {
       3.5
     );
 
-    const displayAffinity = affinity.toUpperCase();
     const displayRole = combatRole.toUpperCase();
-    postDialogue("SYSTEM", `+1 ${displayAffinity} ORBI RECRUITED: ${baseName} [${displayRole}]`);
+    postDialogue(
+      "SYSTEM",
+      "+1 ORBI " + energyDefinition.displayName + " // " + energyDefinition.energyLabel.toUpperCase() + " [" + displayRole + "]",
+    );
   };
 
   // --- SYSTEM SHOP UPGRADES ---
@@ -1656,26 +1648,23 @@ export const EnergySwarmGame: React.FC = () => {
       }
     }
 
-    let orbiAffinity: "solar" | "hydro" | "wind" | "thermal" | "nuclear" | "quantum" | undefined = undefined;
-    let orbiCombatRole: "beam" | "rapid" | "pulse" | "arc" | "shield" | "support" | undefined = undefined;
+    let orbiAffinity: OrbiAffinity | undefined = undefined;
+    let orbiCombatRole: OrbiCombatRole | undefined = undefined;
+    let orbiEnergyId: OrbiEnergyId | undefined = undefined;
+    let orbiAttackSignature: OrbiMember["attackSignature"] = undefined;
 
     if (type === "ENERGY") {
       color = "#06b6d4";
       size = 7;
     } else if (type === "ORBI") {
-      orbiAffinity = getNextAffinityFromBag();
-      orbiCombatRole = combatRoles[Math.floor(Math.random() * combatRoles.length)];
+      orbiEnergyId = getNextEnergyIdFromBag();
+      const energyDefinition = getCollectibleEnergyDefinition(orbiEnergyId);
+      orbiAffinity = energyDefinition.affinity;
+      orbiCombatRole = energyDefinition.combatRole;
+      orbiAttackSignature = energyDefinition.attackSignature;
+      color = energyDefinition.color;
       size = 9; // slightly larger for Wild Orbi
 
-      // Section 7 primary colors
-      if (orbiAffinity === "solar") color = "#f59e0b";
-      else if (orbiAffinity === "hydro") color = "#0ea5e9";
-      else if (orbiAffinity === "wind") color = "#10b981";
-      else if (orbiAffinity === "thermal") color = "#ef4444";
-      else if (orbiAffinity === "nuclear") color = "#8b5cf6";
-      else if (orbiAffinity === "quantum") color = "#ec4899";
-
-      // Enhanced feedback for rare drops
       playCrystalSound();
       triggerExplosion(
         particlesRef.current,
@@ -1687,7 +1676,10 @@ export const EnergySwarmGame: React.FC = () => {
         25,
         3.5
       );
-      postDialogue("COMPANION", `¡Núcleo silvestre liberado! Señal elemental: ${orbiAffinity.toUpperCase()} [${orbiCombatRole.toUpperCase()}].`);
+      postDialogue(
+        "COMPANION",
+        "¡Núcleo silvestre " + energyDefinition.displayName + " liberado! " + energyDefinition.energyLabel + " [" + orbiCombatRole.toUpperCase() + "].",
+      );
     }
 
     resourcesRef.current.push({
@@ -1700,6 +1692,8 @@ export const EnergySwarmGame: React.FC = () => {
       amount,
       orbiAffinity,
       orbiCombatRole,
+      orbiEnergyId,
+      orbiAttackSignature,
       consumed: false,
       spawnTime: Date.now()
     });
@@ -4382,7 +4376,11 @@ export const EnergySwarmGame: React.FC = () => {
       }
     } else if (res.type === "ORBI") {
       // Recruit Supplementary swarm shooter!
-      addSwarmMember(res.orbiAffinity, res.orbiCombatRole);
+      addSwarmMember(
+        res.orbiAffinity,
+        res.orbiCombatRole,
+        res.orbiEnergyId,
+      );
       scoreRef.current += 50;
     }
   };

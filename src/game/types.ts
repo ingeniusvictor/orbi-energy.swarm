@@ -34,11 +34,11 @@ export interface FormationConfig {
   name: string;
   description: string;
   spacing: number;
-  shieldMod: number;       // e.g. +0.25 (resistencia)
-  damageMod: number;       // e.g. -0.10
-  projSpeedMod: number;    // e.g. +0.15
-  critChanceMod: number;   // e.g. +0.20
-  speedMod: number;        // e.g. -0.10 (player movement speed multiplier)
+  shieldMod: number;
+  damageMod: number;
+  projSpeedMod: number;
+  critChanceMod: number;
+  speedMod: number;
 }
 
 export enum OrbiType {
@@ -48,13 +48,57 @@ export enum OrbiType {
   SHIELD = "SHIELD",
   BEAM = "BEAM",
   ECHO = "ECHO",
-  SOLAR_GUARDIAN = "SOLAR_GUARDIAN", // Fusion Unit
-  HYDRO_LEVIATHAN = "HYDRO_LEVIATHAN" // Fusion Unit
+  SOLAR_GUARDIAN = "SOLAR_GUARDIAN",
+  HYDRO_LEVIATHAN = "HYDRO_LEVIATHAN"
 }
+
+export type OrbiEnergyId =
+  | "FOTON"
+  | "HYDRO"
+  | "AERO"
+  | "TERMO"
+  | "MAGNE"
+  | "ATON"
+  | "KINETRIX"
+  | "H2NOVA"
+  | "QUANTUM"
+  | "GAIA";
+
+export type OrbiAffinity =
+  | "solar"
+  | "hydro"
+  | "wind"
+  | "thermal"
+  | "magnetic"
+  | "nuclear"
+  | "kinetic"
+  | "hydrogen"
+  | "quantum"
+  | "gaia";
+
+export type OrbiCombatRole =
+  | "beam"
+  | "rapid"
+  | "pulse"
+  | "arc"
+  | "shield"
+  | "support";
+
+export type OrbiAttackSignature =
+  | "FOTON_LANCE"
+  | "HYDRO_PULSE"
+  | "AERO_CRESCENT"
+  | "TERMO_BURST"
+  | "MAGNE_ARC"
+  | "ATON_PARTICLE"
+  | "KINETRIX_LANCE"
+  | "H2NOVA_CELL"
+  | "QUANTUM_PHASE"
+  | "GAIA_SYNTHESIS";
 
 export interface OrbiMember {
   id: string;
-  type: OrbiType; // preserved for compatibility
+  type: OrbiType;
   name: string;
   x: number;
   y: number;
@@ -63,8 +107,10 @@ export interface OrbiMember {
   color: string;
   size: number;
   shootCooldown: number;
-  affinity: "solar" | "hydro" | "wind" | "thermal" | "nuclear" | "quantum";
-  combatRole: "beam" | "rapid" | "pulse" | "arc" | "shield" | "support";
+  affinity: OrbiAffinity;
+  combatRole: OrbiCombatRole;
+  energyId?: OrbiEnergyId;
+  attackSignature?: OrbiAttackSignature;
   personality: string;
   evolutionStage: number;
   level: number;
@@ -99,7 +145,6 @@ export type EvolvedEnemySignature =
   | "BROOD_RELEASE"
   | "NULL_PULSE";
 
-
 export interface Enemy {
   id: string;
   type: EnemyType;
@@ -113,15 +158,15 @@ export interface Enemy {
   size: number;
   color: string;
   shootCooldown: number;
-  pulseCooldown: number; // for disruptor or bosses
+  pulseCooldown: number;
   contactDamageCooldown: number;
   isDead: boolean;
   isBoss: boolean;
   bossPhase?: number;
-  flashTicks: number; // For white hit flashing animation
-  slowTimer?: number; // Hydro slow effect timer
-  isMinion?: boolean; // If split from Splitter or spawned as support
-  chargeTimer?: number; // Universal attack/charge telegraph timer
+  flashTicks: number;
+  slowTimer?: number;
+  isMinion?: boolean;
+  chargeTimer?: number;
   milestoneKind?: "MINIBOSS" | "BOSS_REMATCH";
   milestoneId?: string;
   milestoneMovementSpeedMultiplier?: number;
@@ -150,7 +195,9 @@ export interface Projectile {
   fromPlayer: boolean;
   life: number;
   maxLife: number;
-  affinity?: "solar" | "hydro" | "wind" | "thermal" | "nuclear" | "quantum";
+  affinity?: OrbiAffinity;
+  energyId?: OrbiEnergyId;
+  attackSignature?: OrbiAttackSignature;
 }
 
 export interface Resource {
@@ -162,8 +209,10 @@ export interface Resource {
   color: string;
   amount: number;
   orbiType?: OrbiType;
-  orbiAffinity?: "solar" | "hydro" | "wind" | "thermal" | "nuclear" | "quantum";
-  orbiCombatRole?: "beam" | "rapid" | "pulse" | "arc" | "shield" | "support";
+  orbiAffinity?: OrbiAffinity;
+  orbiCombatRole?: OrbiCombatRole;
+  orbiEnergyId?: OrbiEnergyId;
+  orbiAttackSignature?: OrbiAttackSignature;
   consumed?: boolean;
   spawnTime?: number;
 }
@@ -213,26 +262,21 @@ export type WaveModifier =
 export interface WaveConfig {
   waveNumber: number;
   id: string;
-  name: string; // compatibility alias for displayName
+  name: string;
   displayName: string;
   subtitle: string;
   description: string;
   tacticalAdvice: string;
-
-  duration: number; // in milliseconds
+  duration: number;
   enemyBudget: number;
-  spawnInterval: number; // in frames
+  spawnInterval: number;
   maxConcurrentEnemies: number;
-
   enemyComposition: EnemyType[];
   eliteChance: number;
-
   environmentalModifier?: WaveModifier;
   recommendedFormation?: FormationType;
-
   introColor: string;
   warningLevel: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
-
   resourceMultiplier: number;
   difficultyMultiplier: number;
 }
@@ -249,12 +293,7 @@ export type RunArchiveOutcome =
   | "CAMPAIGN_CLEARED";
 
 export type RunArchiveAffinity =
-  | "solar"
-  | "hydro"
-  | "wind"
-  | "thermal"
-  | "nuclear"
-  | "quantum"
+  | OrbiAffinity
   | "none";
 
 export type RunArchiveFormation =
@@ -358,4 +397,3 @@ export interface BossDefinition {
   summonRules: BossSummonRule[];
   defeatSequence: BossDefeatDefinition;
 }
-
