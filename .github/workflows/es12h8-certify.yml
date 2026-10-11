@@ -29,6 +29,21 @@ jobs:
       - name: Apply literal Worm runtime patch
         run: python scripts/es12h8-apply.py
 
+      - name: Normalize generated Worm diff whitespace
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path("src/game/EnergySwarmGame.tsx")
+          text = path.read_text()
+          old = "              \n              // If all nodes are destroyed, trigger core exposed vulnerability window!"
+          new = "\n              // If all nodes are destroyed, trigger core exposed vulnerability window!"
+          count = text.count(old)
+          if count != 1:
+              raise SystemExit(f"fail-closed generated whitespace marker count={count}")
+          path.write_text(text.replace(old, new, 1))
+          PY
+
       - name: H8 focused contracts
         run: >-
           npx tsx --test
