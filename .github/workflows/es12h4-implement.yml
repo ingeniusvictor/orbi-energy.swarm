@@ -58,7 +58,21 @@ jobs:
         run: npm run test:gameplay
 
       - name: Platform tests
-        run: npm run test:platform
+        shell: bash
+        run: |
+          set +e
+          npm run test:platform 2>&1 | tee /tmp/es12h4-platform.log
+          code=${PIPESTATUS[0]}
+          set -e
+          if [ "$code" -ne 0 ]; then
+            cp /tmp/es12h4-platform.log es12h4-platform.log
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add -f es12h4-platform.log
+            git commit -m "chore(h4): capture platform failure" || true
+            git push origin HEAD:feat/es-12h4-survival-doctrine
+            exit "$code"
+          fi
 
       - name: Retire one-shot patchers before product typecheck
         run: rm -f scripts/es12h4-apply.mjs scripts/es12h4-apply-v2.mjs
