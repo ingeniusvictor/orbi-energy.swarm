@@ -38,7 +38,21 @@ jobs:
         run: node scripts/es12h4-apply-v2.mjs
 
       - name: Repository smoke tests
-        run: npm run test:repo
+        shell: bash
+        run: |
+          set +e
+          npm run test:repo 2>&1 | tee /tmp/es12h4-repo-smoke.log
+          code=${PIPESTATUS[0]}
+          set -e
+          if [ "$code" -ne 0 ]; then
+            cp /tmp/es12h4-repo-smoke.log es12h4-repo-smoke.log
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add es12h4-repo-smoke.log
+            git commit -m "chore(h4): capture repository smoke failure" || true
+            git push origin HEAD:feat/es-12h4-survival-doctrine
+            exit "$code"
+          fi
 
       - name: Gameplay tests
         run: npm run test:gameplay
