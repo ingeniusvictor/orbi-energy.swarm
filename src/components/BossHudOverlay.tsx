@@ -1,5 +1,11 @@
 import React from "react";
 import { BLACKOUT_DEVOURER_CANON } from "../game/waveDirector";
+import { getBossChassisProfile } from "../game/bossChassis";
+import { getInfiniteBossFamilyProfile } from "../game/infiniteBossFamily";
+import type {
+  BossChassisId,
+  InfiniteBossIdentity,
+} from "../game/types";
 import { getBossCounterHint, resolveBossAttackId } from "../game/bossTelegraphGuide";
 import { useGameTranslation } from "../i18n";
 
@@ -15,6 +21,8 @@ interface BossHudOverlayProps {
   bossShieldNodes: number;
   isCoreExposed: boolean;
   bossLabelsMode: BossLabelsMode;
+  bossChassis?: BossChassisId;
+  infiniteBossIdentity?: InfiniteBossIdentity;
   onSkipIntro: () => void;
 }
 
@@ -43,9 +51,18 @@ export const BossHudOverlay: React.FC<BossHudOverlayProps> = ({
   bossShieldNodes,
   isCoreExposed,
   bossLabelsMode,
+  bossChassis = "DEVOURER",
+  infiniteBossIdentity,
   onSkipIntro,
 }) => {
   const { language } = useGameTranslation();
+  const chassis = getBossChassisProfile(bossChassis);
+  const family =
+    bossChassis === "DEVOURER" && infiniteBossIdentity
+      ? getInfiniteBossFamilyProfile(infiniteBossIdentity)
+      : null;
+  const displayName = family?.displayName ?? chassis.displayName;
+  const subtitle = family?.subtitle ?? chassis.subtitle;
   const healthRatio = bossMaxHp > 0 ? bossHp / bossMaxHp : 0;
   const bossAttackId = resolveBossAttackId(
     bossAttackName,
@@ -64,14 +81,17 @@ export const BossHudOverlay: React.FC<BossHudOverlayProps> = ({
       className="orbi-boss-hud pointer-events-none"
       role="region"
       aria-labelledby="orbi-boss-title"
+      data-boss-chassis={bossChassis}
     >
       <div className="orbi-boss-heading">
-        <span className="orbi-boss-kicker">⚠ MAJOR COLLAPSE DETECTED</span>
+        <span className="orbi-boss-kicker">
+          {bossChassis === "TITAN_CORE" ? "⚠ RAID ESCALATION DETECTED" : "⚠ MAJOR COLLAPSE DETECTED"}
+        </span>
         <div className="orbi-boss-title-row">
-          <h2 id="orbi-boss-title" className="orbi-boss-title">{BLACKOUT_DEVOURER_CANON.displayName}</h2>
+          <h2 id="orbi-boss-title" className="orbi-boss-title">{displayName}</h2>
           <span className="orbi-boss-phase">PHASE {bossPhase}</span>
         </div>
-        <p className="orbi-boss-subtitle">{BLACKOUT_DEVOURER_CANON.subtitle}</p>
+        <p className="orbi-boss-subtitle">{subtitle}</p>
       </div>
 
       <div
@@ -86,27 +106,21 @@ export const BossHudOverlay: React.FC<BossHudOverlayProps> = ({
         <div className="orbi-boss-health-segment">
           <div
             className="orbi-boss-health-fill orbi-boss-health-fill--phase1"
-            style={{
-              width: `${Math.max(0, Math.min(100, (healthRatio - 0.7) / 0.3 * 100))}%`,
-            }}
+            style={{ width: `${Math.max(0, Math.min(100, (healthRatio - 0.7) / 0.3 * 100))}%` }}
           />
         </div>
         <div className="orbi-boss-health-divider" />
         <div className="orbi-boss-health-segment">
           <div
             className="orbi-boss-health-fill orbi-boss-health-fill--phase2"
-            style={{
-              width: `${Math.max(0, Math.min(100, (healthRatio - 0.35) / 0.35 * 100))}%`,
-            }}
+            style={{ width: `${Math.max(0, Math.min(100, (healthRatio - 0.35) / 0.35 * 100))}%` }}
           />
         </div>
         <div className="orbi-boss-health-divider" />
         <div className="orbi-boss-health-segment">
           <div
             className="orbi-boss-health-fill orbi-boss-health-fill--phase3"
-            style={{
-              width: `${Math.max(0, Math.min(100, healthRatio / 0.35 * 100))}%`,
-            }}
+            style={{ width: `${Math.max(0, Math.min(100, healthRatio / 0.35 * 100))}%` }}
           />
         </div>
       </div>
@@ -118,18 +132,13 @@ export const BossHudOverlay: React.FC<BossHudOverlayProps> = ({
         <strong>{healthPercent}%</strong>
       </div>
 
-      <div
-        className="sr-only"
-        role="status"
-        aria-live="assertive"
-        aria-atomic="true"
-      >
+      <div className="sr-only" role="status" aria-live="assertive" aria-atomic="true">
         {bossTransitionName
           ? `${language === "es" ? "Mutación" : "Mutation"}: ${bossTransitionName}`
           : showAttack && bossAttackName
             ? `${language === "es" ? "Ataque" : "Attack"}: ${bossAttackName}${counterHint ? `. ${language === "es" ? "Respuesta" : "Counter"}: ${counterHint}` : ""}`
             : isCoreExposed
-              ? (language === "es" ? "Núcleo expuesto. Daño doble." : "Core exposed. Double damage.")
+              ? (language === "es" ? "Núcleo expuesto. Daño aumentado." : "Core exposed. Increased damage.")
               : `${language === "es" ? "Fase" : "Phase"} ${bossPhase}`}
       </div>
 
@@ -166,14 +175,14 @@ export const BossHudOverlay: React.FC<BossHudOverlayProps> = ({
 
         {bossShieldNodes > 0 && (
           <div className="orbi-boss-alert orbi-boss-alert--shield">
-            <span>🛡 SHIELD NODES</span>
+            <span>🛡 {chassis.weakpoints.hudLabel}</span>
             <strong>{bossShieldNodes}</strong>
           </div>
         )}
 
         {isCoreExposed && (
           <div className="orbi-boss-alert orbi-boss-alert--critical">
-            ⚠ CORE EXPOSED · DOUBLE DAMAGE
+            ⚠ CORE EXPOSED · INCREASED DAMAGE
           </div>
         )}
       </div>

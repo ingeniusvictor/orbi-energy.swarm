@@ -146,7 +146,8 @@ export enum EnemyType {
   VOID_ANCHOR = "VOID_ANCHOR",
   MINE_WEAVER = "MINE_WEAVER",
   MIRROR_WARDEN = "MIRROR_WARDEN",
-  BOSS_DEVOURER = "BOSS_DEVOURER"
+  BOSS_DEVOURER = "BOSS_DEVOURER",
+  BOSS_TITAN = "BOSS_TITAN"
 }
 
 export type EvolvedEnemyVariantId =
@@ -170,6 +171,9 @@ export type InfiniteBossIdentity =
   | "NULL_ARCHITECT"
   | "RIFT_MATRIARCH"
   | "SIEGE_CATHEDRAL";
+
+export type BossChassisId = "DEVOURER" | "TITAN_CORE";
+export type BossEncounterStage = "PRIMARY" | "RAID_ESCALATION";
 
 export interface Enemy {
   id: string;
@@ -196,6 +200,9 @@ export interface Enemy {
   milestoneKind?: "MINIBOSS" | "BOSS_REMATCH";
   milestoneId?: string;
   infiniteBossIdentity?: InfiniteBossIdentity;
+  bossChassis?: BossChassisId;
+  bossEncounterStage?: BossEncounterStage;
+  milestoneSector?: number;
   milestoneMovementSpeedMultiplier?: number;
   milestoneContactDamageMultiplier?: number;
   milestoneDamageMultiplier?: number;

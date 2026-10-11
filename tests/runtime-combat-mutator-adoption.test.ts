@@ -189,7 +189,7 @@ test("campaign boss spawn remains outside mutator scaling", () => {
   );
   assert.match(
     boss,
-    /BLACKOUT_DEVOURER_CANON\.maxHealth \*[\s\S]*\(rematchProfile\?\.healthMultiplier \?\? 1\)/,
+    /chassisProfile\.baseHealth \* healthMultiplier/,
   );
   assert.match(
     boss,

@@ -133,7 +133,7 @@ test("rematch boss owns isolated scaled metadata while campaign attempts stay be
   );
   assert.match(
     spawn,
-    /BLACKOUT_DEVOURER_CANON\.maxHealth \*[\s\S]*rematchProfile\?\.healthMultiplier/,
+    /chassisProfile\.baseHealth \* healthMultiplier/,
   );
   assert.match(
     spawn,
@@ -141,19 +141,19 @@ test("rematch boss owns isolated scaled metadata while campaign attempts stay be
   );
   assert.match(
     spawn,
-    /infiniteBossIdentity: rematchProfile\?\.bossIdentity/,
+    /infiniteBossIdentity:[\s\S]*stage === "PRIMARY"[\s\S]*rematchProfile\?\.bossIdentity/,
   );
   assert.match(
     spawn,
-    /milestoneDamageMultiplier:[\s\S]*rematchProfile\?\.damageMultiplier/,
+    /const damageMultiplier =[\s\S]*rematchProfile\?\.damageMultiplier[\s\S]*milestoneDamageMultiplier: damageMultiplier/,
   );
   assert.match(
     spawn,
-    /milestoneAttackRateMultiplier:[\s\S]*rematchProfile\?\.attackRateMultiplier/,
+    /const attackRateMultiplier =[\s\S]*rematchProfile\?\.attackRateMultiplier[\s\S]*milestoneAttackRateMultiplier: attackRateMultiplier/,
   );
   assert.match(
     spawn,
-    /milestoneRewardMultiplier:[\s\S]*rematchProfile\?\.rewardMultiplier/,
+    /const rewardMultiplier =[\s\S]*rematchProfile\?\.rewardMultiplier[\s\S]*milestoneRewardMultiplier: rewardMultiplier/,
   );
 });
 
@@ -248,6 +248,15 @@ test("rematch defeat resolves the gate and resumes Infinite Swarm without campai
   );
   assert.match(
     rematchBranch,
+    /resolveBossRematchDefeatAction/,
+  );
+  assert.match(rematchBranch, /SPAWN_RAID_ESCALATION/);
+  assert.match(
+    rematchBranch,
+    /spawnBoss\(rematchProfile, "RAID_ESCALATION"\)/,
+  );
+  assert.match(
+    rematchBranch,
     /markRuntimeBossRematchDefeated/,
   );
   assert.match(
@@ -302,4 +311,6 @@ test("rematch enemy metadata is explicitly represented in Enemy", () => {
     types,
     /infiniteBossIdentity\?: InfiniteBossIdentity/,
   );
+  assert.match(types, /bossChassis\?: BossChassisId/);
+  assert.match(types, /bossEncounterStage\?: BossEncounterStage/);
 });

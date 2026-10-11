@@ -331,6 +331,6 @@ test("campaign Devourer runtime remains isolated from miniboss metadata", () => 
   );
   assert.match(
     boss,
-    /BLACKOUT_DEVOURER_CANON\.maxHealth \*[\s\S]*\(rematchProfile\?\.healthMultiplier \?\? 1\)/,
+    /chassisProfile\.baseHealth \* healthMultiplier/,
   );
 });

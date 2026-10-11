@@ -192,7 +192,7 @@ test("boss runtime is excluded from the new pressure-scaling paths", () => {
   );
   assert.match(
     spawnBoss,
-    /BLACKOUT_DEVOURER_CANON\.maxHealth \*[\s\S]*\(rematchProfile\?\.healthMultiplier \?\? 1\)/,
+    /chassisProfile\.baseHealth \* healthMultiplier/,
   );
   assert.doesNotMatch(
     spawnBoss,

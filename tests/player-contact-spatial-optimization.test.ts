@@ -272,7 +272,7 @@ test("boss shield-node projectile collision uses squared distance", () => {
 
   assert.match(
     section,
-    /shieldCollisionRadius = 14 \+ proj\.size/,
+    /shieldCollisionRadius = node\.collisionRadius \+ proj\.size/,
   );
   assert.match(
     section,

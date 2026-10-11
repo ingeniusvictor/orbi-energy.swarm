@@ -4,7 +4,7 @@ import {
   BiomeType, OrbiType, EnemyType, FormationType, ParticleType, 
   OrbiMember, Enemy, Projectile, Resource, Particle, GameStats, 
   DialogueMessage, QualityPreset, WaveConfig, type RunArchiveEntry,
-  type OrbiAffinity, type OrbiCombatRole, type OrbiEnergyId
+  type OrbiAffinity, type OrbiCombatRole, type OrbiEnergyId, type BossEncounterStage
 } from "./types";
 
 import { 
@@ -78,6 +78,11 @@ import {
   getInfiniteBossAttackWeight,
   getInfiniteBossFamilyProfile,
 } from "./infiniteBossFamily";
+import {
+  getBossChassisAttackWeight,
+  getBossChassisProfile,
+} from "./bossChassis";
+import { resolveBossRematchDefeatAction } from "./infiniteRaidEscalation";
 import {
   createRuntimeMinibossGateState,
   markRuntimeMinibossSpawned,
@@ -329,6 +334,7 @@ export const EnergySwarmGame: React.FC = () => {
   // Boss Refs
   const bossActiveRef = useRef(false);
   const bossRef = useRef<Enemy | null>(null);
+  const activeBossRematchProfileRef = useRef<InfiniteBossRematchProfile | null>(null);
 
   // High-frequency boss states
   const bossIntroTimeRef = useRef<number | null>(null); // introduction remaining time
@@ -339,7 +345,7 @@ export const EnergySwarmGame: React.FC = () => {
   const bossAttackAngleRef = useRef<number>(0); // sweep/rotation angle
   const bossAttackTargetPosRef = useRef<{ x: number, y: number }>({ x: 0, y: 0 }); // coordinates for wells/beams
   const bossLastAttacksRef = useRef<string[]>([]); // prevent consecutive repeating of attacks
-  const shieldNodesRef = useRef<{ id: string; x: number; y: number; health: number; maxHealth: number; angle: number; flashTicks: number }[]>([]);
+  const shieldNodesRef = useRef<{ id: string; x: number; y: number; health: number; maxHealth: number; angle: number; flashTicks: number; motion: "ORBITAL" | "ANCHORED"; radiusX: number; radiusY: number; angularVelocityPerFrame: number; collisionRadius: number }[]>([]);
   const coreExposedTimerRef = useRef<number>(0); // exposed window countdown
   const phaseTransitionTimerRef = useRef<number>(0); // transition immunity freeze timer
   const bossSummonTimersRef = useRef<Record<string, number>>({}); // cooldowns of summons
@@ -1278,6 +1284,7 @@ export const EnergySwarmGame: React.FC = () => {
       createRuntimeMinibossGateState();
     bossRematchGateRef.current =
       createRuntimeBossRematchGateState();
+    activeBossRematchProfileRef.current = null;
     bossActiveRef.current = false;
     bossRef.current = null;
 
@@ -1878,6 +1885,7 @@ export const EnergySwarmGame: React.FC = () => {
     bossRef.current = null;
     bossRematchGateRef.current =
       createRuntimeBossRematchGateState();
+    activeBossRematchProfileRef.current = null;
     enemiesRef.current = [];
     projectilesRef.current = [];
     hazardZonesRef.current = [];
@@ -2709,49 +2717,73 @@ export const EnergySwarmGame: React.FC = () => {
   };
 
   // --- SPAWN GIANT DEVOURER BOSS ---
+  // Legacy section boundary retained; H7 routes this boundary through the shared chassis engine.
+  // --- SPAWN SHARED BOSS CHASSIS ---
   const spawnBoss = (
     rematchProfile: InfiniteBossRematchProfile | null = null,
+    stage: BossEncounterStage = "PRIMARY",
   ) => {
-    // 1. Clear residual standard enemies
     enemiesRef.current = [];
     hazardZonesRef.current = [];
 
     const isRematch = rematchProfile !== null;
-    const familyProfile = rematchProfile
-      ? getInfiniteBossFamilyProfile(rematchProfile.bossIdentity)
-      : null;
+    const raidProfile =
+      stage === "RAID_ESCALATION"
+        ? (rematchProfile?.raidEscalation ?? null)
+        : null;
+    if (stage === "RAID_ESCALATION" && !raidProfile) return;
+
+    const chassisId = raidProfile?.chassis ?? "DEVOURER";
+    const chassisProfile = getBossChassisProfile(chassisId);
+    const familyProfile =
+      rematchProfile && stage === "PRIMARY"
+        ? getInfiniteBossFamilyProfile(rematchProfile.bossIdentity)
+        : null;
     bossActiveRef.current = true;
+
+    if (isRematch && stage === "PRIMARY") {
+      activeBossRematchProfileRef.current = rematchProfile;
+    }
 
     if (!isRematch) {
       bossSessionStartTimeRef.current = Date.now();
-
-      // Campaign boss attempts remain persistent. Infinite rematches are isolated.
       const currentStats = statsRef.current || stats;
       const nextStats = {
         ...currentStats,
-        bossAttempts: (currentStats.bossAttempts || 0) + 1
+        bossAttempts: (currentStats.bossAttempts || 0) + 1,
       };
       updateStatsAndSave(nextStats);
     }
 
-    const health =
-      BLACKOUT_DEVOURER_CANON.maxHealth *
-      (rematchProfile?.healthMultiplier ?? 1);
+    const healthMultiplier =
+      raidProfile?.healthMultiplier ??
+      rematchProfile?.healthMultiplier ??
+      1;
+    const health = chassisProfile.baseHealth * healthMultiplier;
+    const damageMultiplier =
+      raidProfile?.damageMultiplier ?? rematchProfile?.damageMultiplier;
+    const attackRateMultiplier =
+      raidProfile?.attackRateMultiplier ?? rematchProfile?.attackRateMultiplier;
+    const rewardMultiplier =
+      raidProfile?.rewardMultiplier ?? rematchProfile?.rewardMultiplier;
 
     const boss: Enemy = {
-      id: isRematch
-        ? `${rematchProfile?.bossIdentity.toLowerCase() ?? "infinite_boss"}_${rematchProfile?.sector ?? "infinite"}`
-        : "blackout_devourer_boss",
-      type: EnemyType.BOSS_DEVOURER,
+      id:
+        stage === "RAID_ESCALATION"
+          ? `quantum_titan_${rematchProfile?.sector ?? "infinite"}`
+          : isRematch
+            ? `${rematchProfile?.bossIdentity.toLowerCase() ?? "infinite_boss"}_${rematchProfile?.sector ?? "infinite"}`
+            : "blackout_devourer_boss",
+      type: chassisProfile.enemyType,
       x: WORLD_WIDTH / 2,
-      y: -80, // Enters from top center
+      y: -80,
       vx: 0,
       vy: 0,
       health,
       maxHealth: health,
       speed: 0,
-      size: 45,
-      color: familyProfile?.color ?? "#ec4899", // Infinite variants preserve shared chassis with identity color.
+      size: chassisProfile.size,
+      color: familyProfile?.color ?? chassisProfile.color,
       shootCooldown: 100,
       pulseCooldown: 180,
       contactDamageCooldown: 0,
@@ -2761,23 +2793,22 @@ export const EnergySwarmGame: React.FC = () => {
       flashTicks: 0,
       milestoneKind: isRematch ? "BOSS_REMATCH" : undefined,
       milestoneId: rematchProfile?.milestoneId,
-      infiniteBossIdentity: rematchProfile?.bossIdentity,
-      milestoneContactDamageMultiplier:
-        rematchProfile?.damageMultiplier,
-      milestoneDamageMultiplier:
-        rematchProfile?.damageMultiplier,
-      milestoneAttackRateMultiplier:
-        rematchProfile?.attackRateMultiplier,
-      milestoneRewardMultiplier:
-        rematchProfile?.rewardMultiplier,
+      milestoneSector: rematchProfile?.sector,
+      infiniteBossIdentity:
+        stage === "PRIMARY" ? rematchProfile?.bossIdentity : undefined,
+      bossChassis: chassisId,
+      bossEncounterStage: stage,
+      milestoneContactDamageMultiplier: damageMultiplier,
+      milestoneDamageMultiplier: damageMultiplier,
+      milestoneAttackRateMultiplier: attackRateMultiplier,
+      milestoneRewardMultiplier: rewardMultiplier,
     };
 
     enemiesRef.current.push(boss);
     bossRef.current = boss;
 
-    // Reset high frequency states
-    bossIntroTimeRef.current = BLACKOUT_DEVOURER_CANON.introDuration;
-    setBossIntroTime(BLACKOUT_DEVOURER_CANON.introDuration);
+    bossIntroTimeRef.current = chassisProfile.introDurationMs;
+    setBossIntroTime(chassisProfile.introDurationMs);
     setBossHp(health);
     setBossMaxHp(health);
     setBossPhase(1);
@@ -2786,12 +2817,15 @@ export const EnergySwarmGame: React.FC = () => {
     setIsCoreExposed(false);
     setBossTransitionName(null);
 
-    bossAttackTimerRef.current = 1000; // wait 1s after intro finishes
+    bossAttackTimerRef.current = 1000;
     bossCurrentAttackRef.current = null;
     bossAttackTelegraphRef.current = 0;
     bossAttackDurationRef.current = 0;
     bossAttackAngleRef.current = 0;
-    bossAttackTargetPosRef.current = { x: WORLD_WIDTH / 2, y: WORLD_HEIGHT / 2 };
+    bossAttackTargetPosRef.current = {
+      x: WORLD_WIDTH / 2,
+      y: WORLD_HEIGHT / 2,
+    };
     shieldNodesRef.current = [];
     coreExposedTimerRef.current = 0;
     phaseTransitionTimerRef.current = 0;
@@ -2801,24 +2835,27 @@ export const EnergySwarmGame: React.FC = () => {
     gravityWellPulseTimerRef.current = 0;
     shownThreatIntelsRef.current = [];
 
-    // Trigger grid distorting entry particles
     triggerExplosion(
       particlesRef.current,
       getQualityConfig(stats.qualityPreset).maxParticles,
       ParticleType.BOSS_ENTRY,
       WORLD_WIDTH / 2,
       WORLD_HEIGHT / 2,
-      "#ec4899",
-      40
+      chassisProfile.color,
+      40,
     );
 
+    if (isRematch && stage === "PRIMARY") {
+      bossRematchGateRef.current = markRuntimeBossRematchSpawned(
+        bossRematchGateRef.current,
+      );
+    }
+
     if (isRematch) {
-      bossRematchGateRef.current =
-        markRuntimeBossRematchSpawned(
-          bossRematchGateRef.current,
-        );
       setWaveName(
-        `${familyProfile?.displayName.toUpperCase() ?? "INFINITE BOSS"} // SECTOR ${rematchProfile?.sector ?? currentWaveRef.current}`,
+        stage === "RAID_ESCALATION"
+          ? `${chassisProfile.displayName.toUpperCase()} // RAID SECTOR ${rematchProfile?.sector ?? currentWaveRef.current}`
+          : `${familyProfile?.displayName.toUpperCase() ?? "INFINITE BOSS"} // SECTOR ${rematchProfile?.sector ?? currentWaveRef.current}`,
       );
     }
 
@@ -2826,10 +2863,16 @@ export const EnergySwarmGame: React.FC = () => {
     playBossArrivalSound();
     postDialogue(
       "COMPANION",
-      isRematch
-        ? (familyProfile?.introDialogue ?? "¡RESONANCIA HOSTIL RECURRENTE!")
-        : "¡ALERTA! Concentración de energía Blackout masiva en el sector central. ¡El Devorador está entrando!",
+      stage === "RAID_ESCALATION"
+        ? "¡RAID ESCALATION! El Quantum Titan ha entrado. Destruye sus cuatro segmentos y abre el núcleo."
+        : isRematch
+          ? (familyProfile?.introDialogue ?? "¡RESONANCIA HOSTIL RECURRENTE!")
+          : "¡ALERTA! Concentración de energía Blackout masiva en el sector central. ¡El Devorador está entrando!",
     );
+
+    if (stage === "RAID_ESCALATION") {
+      spawnBossShieldNodes(boss);
+    }
   };
 
   const skipBossIntro = () => {
@@ -2837,29 +2880,47 @@ export const EnergySwarmGame: React.FC = () => {
     bossIntroTimeRef.current = null;
     setBossIntroTime(null);
     if (bossRef.current) {
-      bossRef.current.y = 150; // Place it in combat position
+      bossRef.current.y = 150;
     }
     playHeavyImpactSound();
-    postDialogue("COMPANION", "¡ANOMALÍA ESTABILIZADA! Entrando en fase de combate activo contra el Devorador.");
+    const activeChassis = getBossChassisProfile(
+      bossRef.current?.bossChassis ?? "DEVOURER",
+    );
+    postDialogue(
+      "COMPANION",
+      `¡ANOMALÍA ESTABILIZADA! Entrando en combate activo contra ${activeChassis.displayName}.`,
+    );
   };
 
   const spawnBossShieldNodes = (boss: Enemy) => {
+    const chassis = getBossChassisProfile(boss.bossChassis ?? "DEVOURER");
+    const weakpoints = chassis.weakpoints;
     shieldNodesRef.current = [];
-    for (let i = 0; i < 3; i++) {
-      const angle = (i * Math.PI * 2) / 3;
+    for (let i = 0; i < weakpoints.count; i++) {
+      const angle = (i * Math.PI * 2) / weakpoints.count;
       shieldNodesRef.current.push({
         id: Math.random().toString(),
-        x: boss.x + Math.cos(angle) * 110,
-        y: boss.y + Math.sin(angle) * 110,
-        health: 120, // Robust shield nodes
-        maxHealth: 120,
+        x: boss.x + Math.cos(angle) * weakpoints.radiusX,
+        y: boss.y + Math.sin(angle) * weakpoints.radiusY,
+        health: weakpoints.health,
+        maxHealth: weakpoints.health,
         angle,
-        flashTicks: 0
+        flashTicks: 0,
+        motion: weakpoints.motion,
+        radiusX: weakpoints.radiusX,
+        radiusY: weakpoints.radiusY,
+        angularVelocityPerFrame: weakpoints.angularVelocityPerFrame,
+        collisionRadius: weakpoints.collisionRadius,
       });
     }
-    setBossShieldNodes(3);
+    setBossShieldNodes(weakpoints.count);
     playEliteChargeSound();
-    postDialogue("COMPANION", "¡EL DEVORADOR HA ACTIVADO ESCUDOS SEGMENTADOS! Destruye los tres nodos satélite.");
+    postDialogue(
+      "COMPANION",
+      chassis.id === "TITAN_CORE"
+        ? "¡CUATRO SEGMENTOS DEL TITAN ACTIVOS! Destrúyelos para abrir el núcleo cuántico."
+        : "¡EL DEVORADOR HA ACTIVADO ESCUDOS SEGMENTADOS! Destruye los tres nodos satélite.",
+    );
   };
 
   const spawnBossMinion = (type: EnemyType, x: number, y: number) => {
@@ -2901,13 +2962,15 @@ export const EnergySwarmGame: React.FC = () => {
   };
 
   const updateBossAI = (boss: Enemy, delta: number) => {
+    const chassisProfile = getBossChassisProfile(boss.bossChassis ?? "DEVOURER");
+
     // 1. INTRO CINEMATIC TICK
     if (bossIntroTimeRef.current !== null) {
       bossIntroTimeRef.current -= delta;
       setBossIntroTime(Math.max(0, bossIntroTimeRef.current));
 
       // Slow vertical hover entry
-      boss.y = -80 + (1 - Math.max(0, bossIntroTimeRef.current) / BLACKOUT_DEVOURER_CANON.introDuration) * 230;
+      boss.y = -80 + (1 - Math.max(0, bossIntroTimeRef.current) / chassisProfile.introDurationMs) * 230;
       boss.x = WORLD_WIDTH / 2;
 
       // Center camera gradually between Foton and Boss
@@ -2921,7 +2984,7 @@ export const EnergySwarmGame: React.FC = () => {
         bossIntroTimeRef.current = null;
         setBossIntroTime(null);
         playHeavyImpactSound();
-        postDialogue("COMPANION", "¡ANOMALÍA ESTABILIZADA! Firma del Blackout Devourer confirmada.");
+        postDialogue("COMPANION", `¡ANOMALÍA ESTABILIZADA! Firma de ${chassisProfile.displayName} confirmada.`);
       }
       return;
     }
@@ -2965,28 +3028,28 @@ export const EnergySwarmGame: React.FC = () => {
       setIsCoreExposed(true);
       if (coreExposedTimerRef.current <= 0) {
         setIsCoreExposed(false);
-        if ((boss.bossPhase || 1) === 2) {
+        const phase = boss.bossPhase || 1;
+        if (
+          phase === 2 ||
+          (chassisProfile.id === "TITAN_CORE" && phase <= 2)
+        ) {
           spawnBossShieldNodes(boss);
         }
       }
     }
 
-    // 4. SHIELD NODES POSITION ORBIT UPDATES
+    // 4. FIXED-COUNT BOSS WEAKPOINT POSITION UPDATES
     if (shieldNodesRef.current.length > 0) {
       shieldNodesRef.current.forEach((node) => {
-        node.angle += 0.015 * (delta / 16.6);
-        node.x = boss.x + Math.cos(node.angle) * 110;
-        node.y = boss.y + Math.sin(node.angle) * 110;
-        
-        node.flashTicks = decayFrameTicks(
-          node.flashTicks,
-          delta,
-        );
+        if (node.motion === "ORBITAL") {
+          node.angle += node.angularVelocityPerFrame * (delta / 16.6);
+        }
+        node.x = boss.x + Math.cos(node.angle) * node.radiusX;
+        node.y = boss.y + Math.sin(node.angle) * node.radiusY;
 
-        if (
-          Math.random() <
-          projectFrameProbability(0.1, delta)
-        ) {
+        node.flashTicks = decayFrameTicks(node.flashTicks, delta);
+
+        if (Math.random() < projectFrameProbability(0.1, delta)) {
           const px = node.x + (Math.random() - 0.5) * 8;
           const py = node.y + (Math.random() - 0.5) * 8;
           pushVfxParticle({
@@ -2996,11 +3059,11 @@ export const EnergySwarmGame: React.FC = () => {
             y: py,
             vx: (boss.x - px) * 0.08,
             vy: (boss.y - py) * 0.08,
-            color: "#3b82f6",
+            color: chassisProfile.color,
             size: 1.5,
             alpha: 1.0,
             life: 15,
-            maxLife: 15
+            maxLife: 15,
           });
         }
       });
@@ -3019,7 +3082,7 @@ export const EnergySwarmGame: React.FC = () => {
       }
       playBossPhaseTransitionSound();
       phaseTransitionTimerRef.current = 2000;
-      setBossTransitionName("PHASE 2: COLLAPSE ENGINE");
+      setBossTransitionName(chassisProfile.id === "TITAN_CORE" ? "PHASE 2: SEGMENT FORTRESS" : "PHASE 2: COLLAPSE ENGINE");
       hazardZonesRef.current = [];
       bossCurrentAttackRef.current = null;
       setBossAttackName(null);
@@ -3037,7 +3100,7 @@ export const EnergySwarmGame: React.FC = () => {
       }
       playBossPhaseTransitionSound();
       phaseTransitionTimerRef.current = 2000;
-      setBossTransitionName("PHASE 3: SINGULARITY CROWN");
+      setBossTransitionName(chassisProfile.id === "TITAN_CORE" ? "PHASE 3: QUANTUM CORE" : "PHASE 3: SINGULARITY CROWN");
       hazardZonesRef.current = [];
       bossCurrentAttackRef.current = null;
       setBossAttackName(null);
@@ -3088,6 +3151,7 @@ export const EnergySwarmGame: React.FC = () => {
       boss.y = pursuit.y;
     }
 
+    if (chassisProfile.id === "DEVOURER") {
     // 6. SUMMON ADDS
     BLACKOUT_DEVOURER_CANON.summonRules.forEach((rule) => {
       if ((boss.bossPhase || 1) >= rule.phase) {
@@ -3116,6 +3180,7 @@ export const EnergySwarmGame: React.FC = () => {
       }
     });
 
+    if (chassisProfile.id === "DEVOURER") {
     // H3 HUNTER WAVE: bounded support ability. It pauses regular attack
     // selection during a readable 1.2s warning, then deploys a small fixed
     // package. No enemy scan or scheduler is added to the hot path.
@@ -3156,6 +3221,8 @@ export const EnergySwarmGame: React.FC = () => {
       }
     }
 
+    }
+
     // H5 boss-family specialist support reuses the existing summon timer map and hard enemy cap.
     if (boss.infiniteBossIdentity) {
       const family = getInfiniteBossFamilyProfile(boss.infiniteBossIdentity);
@@ -3192,6 +3259,8 @@ export const EnergySwarmGame: React.FC = () => {
       }
     }
 
+    }
+
     // 7. ACTIVE ATTACK COOLDOWNS / SELECTION
     if (bossCurrentAttackRef.current === null && bossHunterWaveTelegraphRef.current <= 0) {
       const bossAttackRateMultiplier =
@@ -3206,20 +3275,28 @@ export const EnergySwarmGame: React.FC = () => {
           const totalWeight = possibleAttacks.reduce(
             (sum, a) =>
               sum +
-              getInfiniteBossAttackWeight(
-                boss.infiniteBossIdentity,
+              getBossChassisAttackWeight(
+                boss.bossChassis,
                 a.id,
-                a.weight,
+                getInfiniteBossAttackWeight(
+                  boss.infiniteBossIdentity,
+                  a.id,
+                  a.weight,
+                ),
               ),
             0,
           );
           let roll = Math.random() * totalWeight;
           let chosen = possibleAttacks[0];
           for (let i = 0; i < possibleAttacks.length; i++) {
-            roll -= getInfiniteBossAttackWeight(
-              boss.infiniteBossIdentity,
+            roll -= getBossChassisAttackWeight(
+              boss.bossChassis,
               possibleAttacks[i].id,
-              possibleAttacks[i].weight,
+              getInfiniteBossAttackWeight(
+                boss.infiniteBossIdentity,
+                possibleAttacks[i].id,
+                possibleAttacks[i].weight,
+              ),
             );
             if (roll <= 0) {
               chosen = possibleAttacks[i];
@@ -3253,7 +3330,7 @@ export const EnergySwarmGame: React.FC = () => {
             shownThreatIntelsRef.current.push(chosen.id);
             const activeBossName = boss.infiniteBossIdentity
               ? getInfiniteBossFamilyProfile(boss.infiniteBossIdentity).displayName
-              : "Devorador";
+              : getBossChassisProfile(boss.bossChassis ?? "DEVOURER").displayName;
             postDialogue("COMPANION", `¡CUIDADO! ${activeBossName} iniciando ${chosen.displayName.toUpperCase()}. ${chosen.description} Moverse de inmediato.`);
             addFloatingText(`WARNING: ${chosen.displayName.toUpperCase()}`, boss.x, boss.y - 45, chosen.warningColor || "#f43f5e");
           } else {
@@ -3809,11 +3886,42 @@ export const EnergySwarmGame: React.FC = () => {
       bossDefeatedSequenceActiveRef.current = false;
 
       if (boss?.milestoneKind === "BOSS_REMATCH") {
-        bossRematchGateRef.current =
-          markRuntimeBossRematchDefeated(
-            bossRematchGateRef.current,
+        const rematchProfile = activeBossRematchProfileRef.current;
+        const defeatAction = resolveBossRematchDefeatAction(
+          boss.bossEncounterStage,
+          rematchProfile?.raidEscalation,
+        );
+
+        if (
+          defeatAction === "SPAWN_RAID_ESCALATION" &&
+          rematchProfile?.raidEscalation
+        ) {
+          bossActiveRef.current = false;
+          bossRef.current = null;
+          enemiesRef.current = [];
+          projectilesRef.current = [];
+          hazardZonesRef.current = [];
+          shieldNodesRef.current = [];
+          bossCurrentAttackRef.current = null;
+          bossIntroTimeRef.current = null;
+          setBossAttackName(null);
+          setBossIntroTime(null);
+          setBossTransitionName(null);
+          setBossShieldNodes(0);
+          setIsCoreExposed(false);
+          postDialogue(
+            "COMPANION",
+            "¡PRIMERA FIRMA DERROTADA! La masa de raid sigue activa: Quantum Titan entrando.",
           );
+          spawnBoss(rematchProfile, "RAID_ESCALATION");
+          return;
+        }
+
+        bossRematchGateRef.current = markRuntimeBossRematchDefeated(
+          bossRematchGateRef.current,
+        );
         persistInfiniteMilestoneDefeat(boss);
+        activeBossRematchProfileRef.current = null;
         bossActiveRef.current = false;
         bossRef.current = null;
         enemiesRef.current = [];
@@ -3827,20 +3935,25 @@ export const EnergySwarmGame: React.FC = () => {
         setBossTransitionName(null);
         setBossShieldNodes(0);
         setIsCoreExposed(false);
-        setBossHp(0);
+
         const defeatedFamily = boss.infiniteBossIdentity
           ? getInfiniteBossFamilyProfile(boss.infiniteBossIdentity)
           : null;
-        setWaveName(
-          defeatedFamily?.defeatLabel ?? "INFINITE BOSS PURGED",
+        const defeatedChassis = getBossChassisProfile(
+          boss.bossChassis ?? "DEVOURER",
         );
-        playVictorySound();
+        addFloatingText(
+          defeatedFamily?.defeatLabel ??
+            `${defeatedChassis.displayName.toUpperCase()} CLEARED`,
+          playerPosRef.current.x,
+          playerPosRef.current.y - 54,
+          defeatedFamily?.color ?? defeatedChassis.color,
+        );
         postDialogue(
-          "SYSTEM",
+          "COMPANION",
           defeatedFamily?.defeatDialogue ??
-            "AMENAZA MILESTONE SELLADA. Reanudando Infinite Swarm.",
+            `¡${defeatedChassis.displayName.toUpperCase()} NEUTRALIZADO! Raid milestone estabilizado.`,
         );
-        startBgm("HIGH_INTENSITY");
         return;
       }
 
@@ -4512,7 +4625,7 @@ export const EnergySwarmGame: React.FC = () => {
       let tx = playerPosRef.current.x;
       let ty = playerPosRef.current.y;
 
-      if (enemy.type === EnemyType.BOSS_DEVOURER) {
+      if (enemy.type === EnemyType.BOSS_DEVOURER || enemy.type === EnemyType.BOSS_TITAN) {
         updateBossAI(enemy, delta);
         enemy.speed = originalSpeed;
         return;
@@ -5244,7 +5357,7 @@ export const EnergySwarmGame: React.FC = () => {
           const node = shieldNodesRef.current[s];
           const ndx = proj.x - node.x;
           const ndy = proj.y - node.y;
-          const shieldCollisionRadius = 14 + proj.size;
+          const shieldCollisionRadius = node.collisionRadius + proj.size;
           if (
             ndx * ndx + ndy * ndy <
             shieldCollisionRadius * shieldCollisionRadius
@@ -5272,14 +5385,16 @@ export const EnergySwarmGame: React.FC = () => {
               shieldNodesRef.current.splice(s, 1);
               bossShieldNodesDestroyedRef.current += 1;
               setBossShieldNodes(shieldNodesRef.current.length);
-              postDialogue("COMPANION", "¡Nodo de escudo destruido! El núcleo del Devorador está más expuesto.");
+              const activeChassis = getBossChassisProfile(bossRef.current?.bossChassis ?? "DEVOURER");
+              postDialogue("COMPANION", activeChassis.id === "TITAN_CORE" ? "¡Segmento del Titan destruido! Continúa abriendo el núcleo." : "¡Nodo de escudo destruido! El núcleo del Devorador está más expuesto.");
               
               // If all nodes are destroyed, trigger core exposed vulnerability window!
               if (shieldNodesRef.current.length === 0) {
-                coreExposedTimerRef.current = 4000; // 4.0s vulnerability window
+                const activeChassis = getBossChassisProfile(bossRef.current?.bossChassis ?? "DEVOURER");
+                coreExposedTimerRef.current = activeChassis.weakpoints.exposureDurationMs;
                 setIsCoreExposed(true);
                 playEliteChargeSound();
-                postDialogue("COMPANION", "¡TODOS LOS NODOS CAÍDOS! ¡EL NÚCLEO ESTÁ EXPUESTO! ¡FUEGO TOTAL!");
+                postDialogue("COMPANION", activeChassis.id === "TITAN_CORE" ? "¡TODOS LOS SEGMENTOS CAÍDOS! ¡NÚCLEO CUÁNTICO EXPUESTO!" : "¡TODOS LOS NODOS CAÍDOS! ¡EL NÚCLEO ESTÁ EXPUESTO! ¡FUEGO TOTAL!");
               }
             }
             break;
@@ -5307,13 +5422,19 @@ export const EnergySwarmGame: React.FC = () => {
             let isCrit = Boolean(proj.isCriticalShot);
             let isShieldBlock = false;
 
-            if (enemy.type === EnemyType.BOSS_DEVOURER) {
+            if (
+              enemy.type === EnemyType.BOSS_DEVOURER ||
+              enemy.type === EnemyType.BOSS_TITAN
+            ) {
+              const chassis = getBossChassisProfile(
+                enemy.bossChassis ?? "DEVOURER",
+              );
               if (shieldNodesRef.current.length > 0) {
                 isShieldBlock = true;
-                damageToApply *= 0.25; // 75% reduction
+                damageToApply *= chassis.weakpoints.protectedDamageMultiplier;
               } else if (coreExposedTimerRef.current > 0) {
                 isCrit = true;
-                damageToApply *= 2.0; // 2x vulnerability damage!
+                damageToApply *= chassis.weakpoints.exposedDamageMultiplier;
               }
             } else if (enemy.type === EnemyType.BLACKOUT_ELITE) {
               const faceX = enemy.vx || (playerPosRef.current.x - enemy.x);
@@ -5485,7 +5606,7 @@ export const EnergySwarmGame: React.FC = () => {
                   otherEnemy.health -= splashDamage;
                   otherEnemy.flashTicks = 4;
 
-                  if (otherEnemy.type === EnemyType.BOSS_DEVOURER) {
+                  if (otherEnemy.type === EnemyType.BOSS_DEVOURER || otherEnemy.type === EnemyType.BOSS_TITAN) {
                     setBossHp(Math.max(0, otherEnemy.health));
                     if (
                       otherEnemy.milestoneKind !== "BOSS_REMATCH"
@@ -5669,11 +5790,11 @@ export const EnergySwarmGame: React.FC = () => {
 
     playerContactCandidates.forEach(({ item: enemy }) => {
       // Trigger contact damage
-      const baseDamage =
-        enemy.type === EnemyType.BOSS_DEVOURER
-          ? 25
-          : 15;
-      if (enemy.type === EnemyType.BOSS_DEVOURER) {
+      const isBossChassis =
+        enemy.type === EnemyType.BOSS_DEVOURER ||
+        enemy.type === EnemyType.BOSS_TITAN;
+      const baseDamage = isBossChassis ? 25 : 15;
+      if (isBossChassis) {
         const attackType =
           bossCurrentAttackRef.current === "devourer_charge"
             ? "devourer_charge"
@@ -6995,6 +7116,8 @@ export const EnergySwarmGame: React.FC = () => {
                     bossShieldNodes={bossShieldNodes}
                     isCoreExposed={isCoreExposed}
                     bossLabelsMode={stats.bossLabelsMode || "FULL"}
+                    bossChassis={bossRef.current?.bossChassis ?? "DEVOURER"}
+                    infiniteBossIdentity={bossRef.current?.infiniteBossIdentity}
                     onSkipIntro={skipBossIntro}
                   />
                 )}
