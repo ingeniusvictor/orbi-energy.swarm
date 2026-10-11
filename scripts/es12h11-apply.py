@@ -225,7 +225,7 @@ css_addition = r'''
     transition: none !important;
   }
 }
-'''
+'''.replace('\\"', '"')
 append_once(
     "src/styles/index.css",
     "ES-12H11 — Cinematic Photo Mode filters",
@@ -269,7 +269,7 @@ test("H11 removes only the paused presentation veil while Photo Mode remains pau
 test("H11 filter CSS targets only the existing game stage", () => {
   for (const id of ["ORIGINAL", "NEON_NOIR", "SOLAR_FILM", "CYANOTYPE", "MONOCHROME"]) {
     assert.ok(
-      css.includes(`data-photo-filter=\\"${id}\\"] .orbi-game-stage`),
+      css.includes(`data-photo-filter="${id}"] .orbi-game-stage`),
       `missing Photo Mode stage selector for ${id}`,
     );
   }
