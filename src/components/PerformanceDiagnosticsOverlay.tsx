@@ -104,6 +104,28 @@ export const PerformanceDiagnosticsOverlay: React.FC<
             </span>
           </div>
 
+          <div
+            className="mt-2 rounded border border-lime-400/20 bg-lime-400/5 p-1.5 text-[8px]"
+            data-gaia-diagnostics="true"
+          >
+            <div className="flex items-center justify-between gap-2">
+              <span className="font-black tracking-[0.12em] text-lime-300">GAIA</span>
+              <span className={snapshot.gaiaActive ? "text-lime-200" : "text-slate-500"}>
+                {snapshot.gaiaActive ? `ACTIVE · L${snapshot.gaiaLevel}` : "DORMANT"}
+              </span>
+            </div>
+            <div className="mt-1 flex justify-between">
+              <span className="text-slate-500">SYNC</span>
+              <span className="text-lime-200">
+                {snapshot.gaiaProgress}/{snapshot.gaiaRequired}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">CYCLES</span>
+              <span className="text-slate-300">{snapshot.gaiaCompletedCycles}</span>
+            </div>
+          </div>
+
           <div className="mt-2 flex items-center justify-between border-t border-slate-800 pt-1.5 text-[7px] uppercase">
             <span className="text-slate-500">
               {snapshot.qualityPreset}

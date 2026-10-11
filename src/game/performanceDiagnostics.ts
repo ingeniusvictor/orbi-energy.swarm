@@ -10,6 +10,11 @@ export interface PerformanceDiagnosticsSample {
   projectiles: number;
   particles: number;
   swarm: number;
+  gaiaActive: boolean;
+  gaiaLevel: number;
+  gaiaCompletedCycles: number;
+  gaiaProgress: number;
+  gaiaRequired: number;
   qualityPreset: QualityPreset;
   frameHealthStatus?: FrameHealthStatus;
 }
@@ -28,6 +33,11 @@ export interface PerformanceDiagnosticsSnapshot {
   projectiles: number;
   particles: number;
   swarm: number;
+  gaiaActive: boolean;
+  gaiaLevel: number;
+  gaiaCompletedCycles: number;
+  gaiaProgress: number;
+  gaiaRequired: number;
   qualityPreset: QualityPreset;
   frameHealthStatus?: FrameHealthStatus;
 }
@@ -97,6 +107,11 @@ export const stepPerformanceDiagnostics = (
       projectiles: Math.max(0, Math.floor(sample.projectiles)),
       particles: Math.max(0, Math.floor(sample.particles)),
       swarm: Math.max(0, Math.floor(sample.swarm)),
+      gaiaActive: Boolean(sample.gaiaActive),
+      gaiaLevel: Math.max(0, Math.floor(sample.gaiaLevel)),
+      gaiaCompletedCycles: Math.max(0, Math.floor(sample.gaiaCompletedCycles)),
+      gaiaProgress: Math.max(0, Math.floor(sample.gaiaProgress)),
+      gaiaRequired: Math.max(1, Math.floor(sample.gaiaRequired)),
       qualityPreset: sample.qualityPreset,
       ...(sample.frameHealthStatus
         ? { frameHealthStatus: sample.frameHealthStatus }
@@ -149,6 +164,11 @@ export const stepPerformanceDiagnostics = (
     projectiles: next.latest.projectiles,
     particles: next.latest.particles,
     swarm: next.latest.swarm,
+    gaiaActive: next.latest.gaiaActive,
+    gaiaLevel: next.latest.gaiaLevel,
+    gaiaCompletedCycles: next.latest.gaiaCompletedCycles,
+    gaiaProgress: next.latest.gaiaProgress,
+    gaiaRequired: next.latest.gaiaRequired,
     qualityPreset: next.latest.qualityPreset,
     ...(next.latest.frameHealthStatus
       ? {

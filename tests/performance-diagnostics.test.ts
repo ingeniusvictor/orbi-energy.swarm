@@ -20,6 +20,11 @@ const sample = (
   projectiles: 80,
   particles: 120,
   swarm: 18,
+  gaiaActive: true,
+  gaiaLevel: 3,
+  gaiaCompletedCycles: 3,
+  gaiaProgress: 5,
+  gaiaRequired: 8,
   qualityPreset: QualityPreset.HIGH,
   frameHealthStatus: "HEALTHY",
   ...overrides,
@@ -71,6 +76,11 @@ test("diagnostics emits a bounded 0.5s aggregate snapshot", () => {
   assert.equal(snapshot.projectiles, 80);
   assert.equal(snapshot.particles, 120);
   assert.equal(snapshot.swarm, 18);
+  assert.equal(snapshot.gaiaActive, true);
+  assert.equal(snapshot.gaiaLevel, 3);
+  assert.equal(snapshot.gaiaCompletedCycles, 3);
+  assert.equal(snapshot.gaiaProgress, 5);
+  assert.equal(snapshot.gaiaRequired, 8);
   assert.equal(snapshot.qualityPreset, QualityPreset.HIGH);
   assert.equal(snapshot.frameHealthStatus, "HEALTHY");
 });
@@ -163,4 +173,26 @@ test("invalid zero frame samples fail closed", () => {
 
   assert.deepEqual(next.state, state);
   assert.equal(next.snapshot, undefined);
+});
+
+test("latest GAIA telemetry wins within the diagnostics window", () => {
+  let state = createPerformanceDiagnosticsState();
+  let snapshot;
+  for (let index = 0; index < 40; index += 1) {
+    const next = stepPerformanceDiagnostics(state, sample({
+      gaiaActive: index >= 20,
+      gaiaLevel: index >= 20 ? 2 : 0,
+      gaiaCompletedCycles: index >= 20 ? 2 : 0,
+      gaiaProgress: index % 8,
+      gaiaRequired: 8,
+    }));
+    state = next.state;
+    if (next.snapshot) { snapshot = next.snapshot; break; }
+  }
+  assert.ok(snapshot);
+  assert.equal(snapshot.gaiaActive, true);
+  assert.equal(snapshot.gaiaLevel, 2);
+  assert.equal(snapshot.gaiaCompletedCycles, 2);
+  assert.equal(snapshot.gaiaRequired, 8);
+  assert.ok(snapshot.gaiaProgress >= 0 && snapshot.gaiaProgress < 8);
 });

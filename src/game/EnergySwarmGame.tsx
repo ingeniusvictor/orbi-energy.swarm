@@ -168,8 +168,10 @@ import {
   getOrbiAttackProfile,
 } from "./orbiAttackProfiles";
 import {
+  GAIA_REQUIRED_ENERGY_COUNT,
   createGaiaEvolutionState,
   getGaiaCombatScale,
+  getGaiaProgressCount,
   registerGaiaEnergy,
 } from "./gaiaEvolution";
 
@@ -3368,6 +3370,14 @@ export const EnergySwarmGame: React.FC = () => {
           projectiles: projectilesRef.current.length,
           particles: particlesRef.current.length,
           swarm: swarmRef.current.length + 1,
+          gaiaActive: gaiaMemberRef.current !== null,
+          gaiaLevel: gaiaEvolutionRef.current.gaiaLevel,
+          gaiaCompletedCycles:
+            gaiaEvolutionRef.current.completedCycles,
+          gaiaProgress: getGaiaProgressCount(
+            gaiaEvolutionRef.current,
+          ),
+          gaiaRequired: GAIA_REQUIRED_ENERGY_COUNT,
           qualityPreset:
             statsRef.current?.qualityPreset ??
             stats.qualityPreset,

@@ -106,6 +106,11 @@ test("diagnostic sample includes live entity pressure and quality", () => {
     "projectilesRef.current.length",
     "particlesRef.current.length",
     "swarmRef.current.length + 1",
+    "gaiaMemberRef.current !== null",
+    "gaiaEvolutionRef.current.gaiaLevel",
+    "gaiaEvolutionRef.current.completedCycles",
+    "getGaiaProgressCount(",
+    "GAIA_REQUIRED_ENERGY_COUNT",
     "qualityPreset",
     "frameHealthRef.current.lastWindow?.status",
   ]) {
@@ -139,6 +144,9 @@ test("overlay exposes phase timing and entity counts", () => {
     "PROJECTILES",
     "PARTICLES",
     "SWARM",
+    "GAIA",
+    "SYNC",
+    "CYCLES",
   ]) {
     assert.ok(
       overlay.includes(label),
@@ -163,4 +171,18 @@ test("game renders diagnostics overlay only while enabled", () => {
     game,
     /performanceDiagnosticsEnabled && \([\s\S]*<PerformanceDiagnosticsOverlay[\s\S]*snapshot=\{performanceDiagnosticsSnapshot\}/,
   );
+});
+
+test("GAIA telemetry is O(1) and does not scan the swarm", () => {
+  const loop = section(
+    "const gameLoop =",
+    "// --- BOSS DEFEAT CINEMATIC SEQUENCE ENGINE",
+  );
+  const start = loop.indexOf("if (diagnosticsActive) {");
+  const end = loop.indexOf("requestAnimationFrame(gameLoop)", start);
+  assert.ok(start >= 0 && end > start);
+  const diagnostics = loop.slice(start, end);
+  assert.match(diagnostics, /gaiaMemberRef\.current !== null/);
+  assert.match(diagnostics, /gaiaEvolutionRef\.current\.gaiaLevel/);
+  assert.doesNotMatch(diagnostics, /swarmRef\.current\.(?:find|filter|reduce|some)\(/);
 });
