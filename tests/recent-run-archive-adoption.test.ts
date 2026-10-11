@@ -99,7 +99,7 @@ test("ordinary recruits and both fusion paths update the peak immediately", () =
   );
 });
 
-test("normal simulation accumulates actual dwell time for the active formation", () => {
+test("normal simulation accumulates actual dwell time for the active runtime formation", () => {
   const physics = section(
     "const updateEnginePhysics =",
     "// --- COLLECT RESOURCES SCRIPT ---",
@@ -109,7 +109,7 @@ test("normal simulation accumulates actual dwell time for the active formation",
     "// Return early to freeze rest of physical ticks!",
   );
   const formationUsage = physics.indexOf(
-    "formationUseCountsRef.current[activeFormation]",
+    "formationUseCountsRef.current[activeFormationRef.current]",
   );
   const runtimeProjection = physics.indexOf(
     "const frameRuntimeProjection =",
@@ -120,7 +120,7 @@ test("normal simulation accumulates actual dwell time for the active formation",
   assert.ok(runtimeProjection > formationUsage);
   assert.match(
     physics,
-    /formationUseCountsRef\.current\[activeFormation\] =[\s\S]*formationUseCountsRef\.current\[activeFormation\] \?\? 0\)[\s\S]*\+\s*delta/,
+    /formationUseCountsRef\.current\[activeFormationRef\.current\] =[\s\S]*formationUseCountsRef\.current\[activeFormationRef\.current\] \?\? 0\)[\s\S]*\+\s*delta/,
   );
   assert.match(
     physics,
