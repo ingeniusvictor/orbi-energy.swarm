@@ -151,7 +151,7 @@ test("LANCE_VOLLEY uses bounded spread without increasing per-projectile damage"
   );
   assert.match(
     shoot,
-    /spreadOffset =[\s\S]*-spread \/ 2[\s\S]*spread \/ 2/,
+    /const spreadOffset =[\s\S]*projectileCount === 1[\s\S]*-spread \/ 2 \+[\s\S]*\(spread \* index\) \/[\s\S]*\(projectileCount - 1\)/,
   );
 
   const damageValues =

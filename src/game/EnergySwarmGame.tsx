@@ -1253,7 +1253,6 @@ export const EnergySwarmGame: React.FC = () => {
     gaiaEvolutionRef.current = createGaiaEvolutionState();
     gaiaMemberRef.current = null;
     swarmDoctrineRef.current = createSwarmDoctrineState();
-    swarmDoctrineRef.current = createSwarmDoctrineState();
 
     currentWaveRef.current = 1;
     runtimeProgressionRef.current = createCampaignRuntimeState(1);
@@ -5074,9 +5073,9 @@ export const EnergySwarmGame: React.FC = () => {
           const spreadOffset =
             projectileCount === 1
               ? 0
-              : index === 0
-                ? -spread / 2
-                : spread / 2;
+              : -spread / 2 +
+                (spread * index) /
+                  (projectileCount - 1);
           const shotAngle = baseAngle + spreadOffset;
           const vx =
             Math.cos(shotAngle) * projectileSpeed;
