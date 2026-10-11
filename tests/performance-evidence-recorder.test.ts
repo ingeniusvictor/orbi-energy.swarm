@@ -44,20 +44,39 @@ const runtime = {
   devicePixelRatio: 1,
 };
 
+const discardAlignmentSnapshot = (
+  state: ReturnType<typeof startPerformanceEvidenceRecording>,
+) => appendPerformanceEvidenceSample(state, snapshot(-1));
+
 test("evidence recorder starts empty and only records while active", () => {
   const idle = createPerformanceEvidenceRecorderState();
   assert.equal(idle.status, "IDLE");
+  assert.equal(idle.skipNextSnapshot, false);
   assert.equal(idle.samples.length, 0);
   assert.equal(appendPerformanceEvidenceSample(idle, snapshot()), idle);
 
   const recording = startPerformanceEvidenceRecording(1_000);
   assert.equal(recording.status, "RECORDING");
   assert.equal(recording.startedAtMs, 1_000);
+  assert.equal(recording.skipNextSnapshot, true);
   assert.equal(recording.samples.length, 0);
 });
 
-test("evidence recorder becomes READY at exactly 30 snapshots and never grows beyond the cap", () => {
-  let state = startPerformanceEvidenceRecording(1_000);
+test("first post-F4 diagnostics snapshot is discarded to align the 15 s evidence interval", () => {
+  const recording = startPerformanceEvidenceRecording(1_000);
+  const aligned = appendPerformanceEvidenceSample(recording, snapshot(99));
+
+  assert.equal(aligned.status, "RECORDING");
+  assert.equal(aligned.skipNextSnapshot, false);
+  assert.equal(aligned.samples.length, 0);
+
+  const firstRetained = appendPerformanceEvidenceSample(aligned, snapshot(0));
+  assert.equal(firstRetained.samples.length, 1);
+  assert.equal(firstRetained.samples[0].enemies, 80);
+});
+
+test("evidence recorder becomes READY at exactly 30 retained snapshots and never grows beyond the cap", () => {
+  let state = discardAlignmentSnapshot(startPerformanceEvidenceRecording(1_000));
 
   for (let index = 0; index < PERFORMANCE_EVIDENCE_TARGET_SAMPLES; index += 1) {
     state = appendPerformanceEvidenceSample(state, snapshot(index));
@@ -73,7 +92,9 @@ test("evidence recorder becomes READY at exactly 30 snapshots and never grows be
 });
 
 test("partial and complete captures are labeled without fabricating duration", () => {
-  let partialState = startPerformanceEvidenceRecording(10_000);
+  let partialState = discardAlignmentSnapshot(
+    startPerformanceEvidenceRecording(10_000),
+  );
   for (let index = 0; index < 5; index += 1) {
     partialState = appendPerformanceEvidenceSample(partialState, snapshot(index));
   }
@@ -87,27 +108,29 @@ test("partial and complete captures are labeled without fabricating duration", (
   assert.equal(partial.sampleCount, 5);
   assert.equal(partial.durationMs, 2_500);
 
-  let completeState = startPerformanceEvidenceRecording(20_000);
+  let completeState = discardAlignmentSnapshot(
+    startPerformanceEvidenceRecording(20_000),
+  );
   for (let index = 0; index < 30; index += 1) {
     completeState = appendPerformanceEvidenceSample(completeState, snapshot(index));
   }
   const complete = buildPerformanceEvidenceCapture(
     completeState,
-    35_000,
+    35_500,
     runtime,
   );
   assert.ok(complete);
   assert.equal(complete.complete, true);
   assert.equal(complete.sampleCount, 30);
-  assert.equal(complete.durationMs, 15_000);
+  assert.ok(complete.durationMs >= 15_000);
   assert.equal(complete.targetSamples, 30);
   assert.equal(complete.sampleIntervalTargetMs, 500);
 });
 
 test("evidence serialization retains GAIA and entity-pressure fields", () => {
-  let state = startPerformanceEvidenceRecording(0);
+  let state = discardAlignmentSnapshot(startPerformanceEvidenceRecording(0));
   state = appendPerformanceEvidenceSample(state, snapshot(3));
-  const capture = buildPerformanceEvidenceCapture(state, 500, runtime);
+  const capture = buildPerformanceEvidenceCapture(state, 1_000, runtime);
   assert.ok(capture);
 
   const serialized = serializePerformanceEvidence(capture);

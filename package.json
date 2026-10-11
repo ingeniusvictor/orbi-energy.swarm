@@ -19,7 +19,8 @@
     "test:repo": "node --test tests/*.test.mjs",
     "test:gameplay": "tsx --test tests/gameplay/*.test.ts",
     "test:platform": "tsx --test tests/*.test.ts",
-    "release:verify": "node scripts/verify-release.mjs"
+    "release:verify": "node scripts/verify-release.mjs",
+    "evidence:analyze": "tsx scripts/analyze-gaia-evidence.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
