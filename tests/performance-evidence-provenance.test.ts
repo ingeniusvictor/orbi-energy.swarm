@@ -8,7 +8,10 @@ import {
   isCanonicalBuildSha,
   isReleaseProductVersion,
 } from "../src/game/buildProvenance.ts";
-import { analyzePerformanceEvidenceProvenance } from "../src/game/performanceEvidenceCertification.ts";
+import {
+  analyzeCertifiedPerformanceEvidenceBundle,
+  analyzePerformanceEvidenceProvenance,
+} from "../src/game/performanceEvidenceCertification.ts";
 
 const SHA_A = "716b663005d1a6b46927812b9741e8bae4643a9f";
 const SHA_B = "1eba5e459860c6562446da8cc449157aaddbaec7";
@@ -88,4 +91,16 @@ test("missing or local provenance is invalid certification evidence", () => {
   });
   assert.equal(local.valid, false);
   assert.match(local.errors.join("\n"), /non-local product build/);
+});
+
+test("structurally invalid evidence outranks a simultaneous provenance mismatch", () => {
+  const report = analyzeCertifiedPerformanceEvidenceBundle({
+    baseline: evidence(SHA_A),
+    gaiaL1: evidence(SHA_B),
+    gaiaL2Plus: evidence(SHA_A),
+  });
+
+  assert.equal(report.triage, "INVALID");
+  assert.ok(report.errors.length > 0);
+  assert.match(report.provenance.mismatches.join("\n"), /build SHA differs/);
 });
