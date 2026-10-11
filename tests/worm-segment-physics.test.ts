@@ -7,6 +7,7 @@ import {
   createWormSegmentChain,
   removeWormSegment,
   stepWormSegmentChain,
+  stepWormSegmentChainInPlace,
 } from "../src/game/wormSegmentPhysics.ts";
 
 const distance = (a: { x: number; y: number }, b: { x: number; y: number }) =>
@@ -38,6 +39,23 @@ test("Worm physics is deterministic and velocity remains bounded", () => {
   assert.deepEqual(a, b);
   for (const segment of a) {
     assert.ok(Math.hypot(segment.vx, segment.vy) <= DEFAULT_WORM_SEGMENT_PHYSICS.maxSpeedPerFrame + 1e-9);
+  }
+});
+
+test("allocation-free step preserves array and segment object identity", () => {
+  const chain = createWormSegmentChain(6, { x: 0, y: 0 });
+  const sameArray = chain;
+  const sameSegments = [...chain];
+
+  stepWormSegmentChainInPlace(chain, { x: 180, y: 70 }, 1000 / 60);
+
+  assert.equal(chain, sameArray);
+  assert.equal(chain.length, 6);
+  for (let index = 0; index < chain.length; index += 1) {
+    assert.equal(chain[index], sameSegments[index]);
+    assert.ok(Number.isFinite(chain[index].x));
+    assert.ok(Number.isFinite(chain[index].y));
+    assert.ok(Math.hypot(chain[index].vx, chain[index].vy) <= DEFAULT_WORM_SEGMENT_PHYSICS.maxSpeedPerFrame + 1e-9);
   }
 });
 
