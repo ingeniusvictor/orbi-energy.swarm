@@ -1,0 +1,102 @@
+name: ES-12H10 Cosmic Whale Certification
+
+on:
+  push:
+    branches:
+      - feat/es-12h10-cosmic-whale-event
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/es-12h10-cosmic-whale-event
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Apply literal Cosmic Whale renderer patch
+        run: python scripts/es12h10-apply.py
+
+      - name: H10 focused contracts
+        run: >-
+          npx tsx --test
+          tests/cosmic-whale-event.test.ts
+          tests/cosmic-whale-adoption.test.ts
+
+      - name: Repository Smoke
+        run: npm run test:repo
+
+      - name: Gameplay
+        run: npm run test:gameplay
+
+      - name: Platform
+        run: npm run test:platform
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Production Build
+        run: npm run build
+
+      - name: Preserve certified gameplay authorities and budgets
+        shell: bash
+        run: |
+          grep -Eq 'MAX_ENEMIES[^0-9]*80' src/game/constants.ts
+          grep -Eq 'MAX_PROJECTILES[^0-9]*120' src/game/constants.ts
+          git diff --exit-code d8edbf304ffbad3d141f4518035a4dda97381af2 -- \
+            src/game/constants.ts \
+            src/game/waveDirector.ts \
+            src/game/runtimeEclipse.ts \
+            src/game/infiniteMutatorDirector.ts \
+            src/game/bossChassis.ts \
+            src/game/infiniteRaidEscalation.ts
+
+      - name: Remove H10 temporary tooling
+        shell: bash
+        run: |
+          rm -f .github/workflows/es12h10-certify.yml
+          rm -f scripts/es12h10-apply.py
+          test ! -e .github/workflows/es12h10-certify.yml
+          test ! -e scripts/es12h10-apply.py
+          git add -A
+
+      - name: Verify H10 diff hygiene
+        shell: bash
+        run: git diff --cached --check
+
+      - name: Verify exact H10 net file set
+        shell: bash
+        run: |
+          cat > /tmp/h10-allowed.txt <<'EOF'
+          src/game/EnergySwarmGame.tsx
+          src/game/backgroundRenderer.ts
+          src/game/cosmicWhaleEvent.ts
+          src/game/quality.ts
+          tests/cosmic-whale-adoption.test.ts
+          tests/cosmic-whale-event.test.ts
+          EOF
+          sort -u /tmp/h10-allowed.txt -o /tmp/h10-allowed.txt
+          git diff --name-only d8edbf304ffbad3d141f4518035a4dda97381af2 -- | sort -u > /tmp/h10-actual.txt
+          echo '=== H10 NET FILES ==='
+          cat /tmp/h10-actual.txt
+          diff -u /tmp/h10-allowed.txt /tmp/h10-actual.txt
+
+      - name: Materialize certified H10 candidate
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "feat(h10): add passive Cosmic Whale visual event"
+          git push origin HEAD:feat/es-12h10-cosmic-whale-event
