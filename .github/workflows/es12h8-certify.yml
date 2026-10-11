@@ -29,19 +29,59 @@ jobs:
       - name: Apply literal Worm runtime patch
         run: python scripts/es12h8-apply.py
 
-      - name: Normalize generated Worm diff whitespace
+      - name: Normalize generated diff whitespace violations
         shell: bash
         run: |
           python - <<'PY'
           from pathlib import Path
-          path = Path("src/game/EnergySwarmGame.tsx")
-          text = path.read_text()
-          old = "              \n              // If all nodes are destroyed, trigger core exposed vulnerability window!"
-          new = "\n              // If all nodes are destroyed, trigger core exposed vulnerability window!"
-          count = text.count(old)
-          if count != 1:
-              raise SystemExit(f"fail-closed generated whitespace marker count={count}")
-          path.write_text(text.replace(old, new, 1))
+          import re
+          import subprocess
+
+          check = subprocess.run(
+              ["git", "diff", "--check"],
+              capture_output=True,
+              text=True,
+          )
+          if check.returncode == 0:
+              raise SystemExit(0)
+
+          issues = []
+          for line in check.stdout.splitlines():
+              match = re.match(r"^(.+):(\d+): trailing whitespace\.$", line)
+              if match:
+                  issues.append((Path(match.group(1)), int(match.group(2))))
+
+          if not issues:
+              print(check.stdout)
+              raise SystemExit("fail-closed: diff --check failed without a trailing-whitespace issue")
+
+          allowed = {
+              Path("src/components/BossHudOverlay.tsx"),
+              Path("src/game/EnergySwarmCanvas.tsx"),
+              Path("src/game/EnergySwarmGame.tsx"),
+          }
+          if any(path not in allowed for path, _ in issues):
+              raise SystemExit(f"fail-closed: unexpected whitespace path(s): {issues}")
+
+          by_path = {}
+          for path, line_number in issues:
+              by_path.setdefault(path, set()).add(line_number)
+
+          for path, line_numbers in by_path.items():
+              lines = path.read_text().splitlines(keepends=True)
+              for line_number in line_numbers:
+                  index = line_number - 1
+                  raw = lines[index]
+                  if raw.endswith("\r\n"):
+                      body, ending = raw[:-2], "\r\n"
+                  elif raw.endswith("\n"):
+                      body, ending = raw[:-1], "\n"
+                  else:
+                      body, ending = raw, ""
+                  lines[index] = body.rstrip(" \t") + ending
+              path.write_text("".join(lines))
+
+          subprocess.run(["git", "diff", "--check"], check=True)
           PY
 
       - name: H8 focused contracts
