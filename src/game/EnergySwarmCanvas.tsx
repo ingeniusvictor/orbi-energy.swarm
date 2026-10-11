@@ -270,6 +270,7 @@ export function drawSwarmRoster(
     const isNear = idx < 12;
     const isMid = idx >= 12 && idx < 36;
     const isFar = idx >= 36;
+    const isGaia = member.energyId === "GAIA";
 
     ctx.save();
 
@@ -281,6 +282,19 @@ export function drawSwarmRoster(
       ctx.beginPath();
       ctx.arc(member.x, member.y, member.size, 0, Math.PI * 2);
       ctx.fill();
+      if (isGaia) {
+        ctx.strokeStyle = "rgba(190, 242, 100, 0.85)";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(
+          member.x,
+          member.y,
+          member.size * 1.65,
+          0,
+          Math.PI * 2,
+        );
+        ctx.stroke();
+      }
       ctx.restore();
       return;
     }
@@ -329,6 +343,40 @@ export function drawSwarmRoster(
     ctx.beginPath();
     ctx.arc(0, 0, r, 0, Math.PI * 2);
     ctx.fill();
+
+    // GAIA synthesis identity: three cheap Canvas2D orbital planes.
+    // This stays in the existing follower pass: no new WebGL scene or entity.
+    if (isGaia) {
+      const gaiaRotation = time * 0.0018;
+      const gaiaAlpha =
+        0.6 + Math.sin(time * 0.004) * 0.12;
+      ctx.save();
+      ctx.globalAlpha = gaiaAlpha;
+      ctx.shadowBlur = isNear ? 8 : 4;
+      ctx.shadowColor = member.color;
+      for (let plane = 0; plane < 3; plane += 1) {
+        ctx.save();
+        ctx.rotate(
+          gaiaRotation + (plane * Math.PI) / 3,
+        );
+        ctx.strokeStyle =
+          plane === 1 ? "#ffffff" : member.color;
+        ctx.lineWidth = isNear ? 1.15 : 0.75;
+        ctx.beginPath();
+        ctx.ellipse(
+          0,
+          0,
+          r * 1.9,
+          r * 0.72,
+          plane * 0.42,
+          0,
+          Math.PI * 2,
+        );
+        ctx.stroke();
+        ctx.restore();
+      }
+      ctx.restore();
+    }
 
     // 2. LOD MID: Moderate detail, simple halos, no eyes, no complex insignias
     if (isMid) {
@@ -473,15 +521,23 @@ export function drawSwarmRoster(
   };
 
   // Double-sweep layout rendering for perfect layer stack
-  // 1. Draw normal followers first
+  // 1. Draw normal followers first.
   swarm.forEach((member, idx) => {
-    if (member.type === OrbiType.SOLAR_GUARDIAN || member.type === OrbiType.HYDRO_LEVIATHAN) return;
+    const isPriorityUnit =
+      member.type === OrbiType.SOLAR_GUARDIAN ||
+      member.type === OrbiType.HYDRO_LEVIATHAN ||
+      member.energyId === "GAIA";
+    if (isPriorityUnit) return;
     drawSingleMember(member, idx);
   });
 
-  // 2. Draw Advanced Fusion Units (Solar Guardian / Hydro Leviathan) on top of normal followers
+  // 2. Draw advanced fusion units and unique GAIA on top.
   swarm.forEach((member, idx) => {
-    if (member.type !== OrbiType.SOLAR_GUARDIAN && member.type !== OrbiType.HYDRO_LEVIATHAN) return;
+    const isPriorityUnit =
+      member.type === OrbiType.SOLAR_GUARDIAN ||
+      member.type === OrbiType.HYDRO_LEVIATHAN ||
+      member.energyId === "GAIA";
+    if (!isPriorityUnit) return;
     drawSingleMember(member, idx);
   });
 }

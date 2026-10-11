@@ -161,11 +161,17 @@ import {
   createShuffledCollectibleEnergyCycle,
   getCollectibleEnergyDefinition,
   getOrbiEnergyByAffinity,
+  getOrbiEnergyDefinition,
 } from "./orbiEnergyCanon";
 import {
   getFallbackAttackSignatureForAffinity,
   getOrbiAttackProfile,
 } from "./orbiAttackProfiles";
+import {
+  createGaiaEvolutionState,
+  getGaiaCombatScale,
+  registerGaiaEnergy,
+} from "./gaiaEvolution";
 
 type InfiniteBossRematchProfile = Extract<
   InfiniteMilestoneEncounterProfile,
@@ -1137,6 +1143,9 @@ export const EnergySwarmGame: React.FC = () => {
     projectilesRef.current = [];
     resourcesRef.current = [];
     particlesRef.current = [];
+    recruitBagRef.current = [];
+    gaiaEvolutionRef.current = createGaiaEvolutionState();
+    gaiaMemberRef.current = null;
 
     currentWaveRef.current = 1;
     runtimeProgressionRef.current = createCampaignRuntimeState(1);
@@ -1290,6 +1299,8 @@ export const EnergySwarmGame: React.FC = () => {
   // FOTON is the player core and GAIA is fusion-only. Every shuffled cycle
   // therefore contains each of the eight collectible base energies exactly once.
   const recruitBagRef = useRef<OrbiEnergyId[]>([]);
+  const gaiaEvolutionRef = useRef(createGaiaEvolutionState());
+  const gaiaMemberRef = useRef<OrbiMember | null>(null);
   const personalities = ["Curious", "Bold", "Cynical", "Joyful", "Silent", "Anxious", "Enthusiastic", "Calm", "Fiery", "Stoic"];
 
   const getNextEnergyIdFromBag = (): OrbiEnergyId => {
@@ -1297,6 +1308,101 @@ export const EnergySwarmGame: React.FC = () => {
       recruitBagRef.current = createShuffledCollectibleEnergyCycle();
     }
     return recruitBagRef.current.pop()!;
+  };
+
+  // --- GAIA NINE-ENERGY SYNTHESIS PROGRESSION ---
+  const trackGaiaEnergyAcquisition = (energyId: OrbiEnergyId) => {
+    const update = registerGaiaEnergy(
+      gaiaEvolutionRef.current,
+      energyId,
+    );
+    gaiaEvolutionRef.current = update.state;
+
+    if (!update.accepted || update.duplicate) return;
+
+    if (!update.cycleCompleted) {
+      addFloatingText(
+        `GAIA SYNC ${update.progressCount}/${update.requiredCount}`,
+        playerPosRef.current.x,
+        playerPosRef.current.y - 42,
+        "#bef264",
+      );
+      return;
+    }
+
+    const gaiaDefinition = getOrbiEnergyDefinition("GAIA");
+    const gaiaScale = getGaiaCombatScale(update.state.gaiaLevel);
+    const existingGaia = gaiaMemberRef.current;
+    let gaiaMember: OrbiMember;
+    let isNewGaia = false;
+
+    if (
+      !existingGaia ||
+      !swarmRef.current.includes(existingGaia)
+    ) {
+      isNewGaia = true;
+      gaiaMember = {
+        id: "gaia_synthesis_" + Math.random().toString(),
+        type: OrbiType.SHIELD,
+        name: "GAIA",
+        x: playerPosRef.current.x,
+        y: playerPosRef.current.y - 24,
+        targetX: playerPosRef.current.x,
+        targetY: playerPosRef.current.y,
+        color: gaiaDefinition.color,
+        size: gaiaScale.size,
+        shootCooldown: 54 * gaiaScale.cooldownMultiplier,
+        affinity: gaiaDefinition.affinity,
+        combatRole: gaiaDefinition.combatRole,
+        energyId: gaiaDefinition.id,
+        attackSignature: gaiaDefinition.attackSignature,
+        personality: "SYNTHESIS",
+        evolutionStage: gaiaScale.evolutionStage,
+        level: update.state.gaiaLevel,
+        xp: update.state.completedCycles * update.requiredCount,
+      };
+      gaiaMemberRef.current = gaiaMember;
+      swarmRef.current.push(gaiaMember);
+      updateRunMaxSwarmSize();
+    } else {
+      gaiaMember = existingGaia;
+      gaiaMember.level = update.state.gaiaLevel;
+      gaiaMember.evolutionStage = gaiaScale.evolutionStage;
+      gaiaMember.size = gaiaScale.size;
+      gaiaMember.shootCooldown = Math.min(
+        gaiaMember.shootCooldown,
+        54 * gaiaScale.cooldownMultiplier,
+      );
+      gaiaMember.xp =
+        update.state.completedCycles * update.requiredCount;
+    }
+
+    playRecruitSound();
+    screenShakeRef.current = isNewGaia ? 18 : 12;
+    triggerExplosion(
+      particlesRef.current,
+      getQualityConfig(stats.qualityPreset).maxParticles,
+      ParticleType.FUSION,
+      gaiaMember.x,
+      gaiaMember.y,
+      gaiaDefinition.color,
+      isNewGaia ? 32 : 22,
+      isNewGaia ? 4.2 : 3.2,
+    );
+    addFloatingText(
+      isNewGaia
+        ? "GAIA SYNTHESIS COMPLETE"
+        : `GAIA ASCENSION · L${update.state.gaiaLevel}`,
+      playerPosRef.current.x,
+      playerPosRef.current.y - 52,
+      gaiaDefinition.color,
+    );
+    postDialogue(
+      "SYSTEM",
+      isNewGaia
+        ? "GAIA DESPERTADA: las nueve energías han entrado en síntesis. Unidad atacante/defensora enlazada."
+        : `GAIA EVOLUCIONA A NIVEL ${update.state.gaiaLevel}: nueva síntesis completa de las nueve energías.`,
+    );
   };
 
   // --- ADD ORBI FOLLOWER TO ACTIVE SWARM ---
@@ -1313,13 +1419,28 @@ export const EnergySwarmGame: React.FC = () => {
     const affinity = energyDefinition.affinity;
     const combatRole = predefinedCombatRole || energyDefinition.combatRole;
 
+    // Acquisition drives GAIA progress even when normal capacity later
+    // consolidates the newly acquired energy into an existing follower.
+    trackGaiaEnergyAcquisition(energyDefinition.id);
+
     const coreLevel = upgradesLevel.quantum_core || 0;
     const capacityLimit = coreLevel >= 3 ? 60 : (coreLevel === 2 ? 48 : (coreLevel === 1 ? 36 : 24));
 
+    // GAIA is unique and does not consume a normal follower slot.
+    const regularSwarmCount = swarmRef.current.reduce(
+      (count, member) =>
+        count + (member.energyId === "GAIA" ? 0 : 1),
+      0,
+    );
+
     // Check capacity limit: evolve/consolidate an existing Orbi of the same affinity if full! (Section 1)
-    if (swarmRef.current.length >= capacityLimit) {
-      // Find candidates with same affinity
-      let candidates = swarmRef.current.filter((m) => m.affinity === affinity);
+    if (regularSwarmCount >= capacityLimit) {
+      // Find candidates with same affinity. GAIA can never be consolidated.
+      let candidates = swarmRef.current.filter(
+        (m) =>
+          m.energyId !== "GAIA" &&
+          m.affinity === affinity,
+      );
       
       // If we have candidates of same affinity, prioritize those with same combat role
       if (candidates.length > 0) {
@@ -1329,7 +1450,9 @@ export const EnergySwarmGame: React.FC = () => {
         }
       } else {
         // Fallback if no member has this affinity at all
-        candidates = swarmRef.current;
+        candidates = swarmRef.current.filter(
+        (m) => m.energyId !== "GAIA",
+      );
       }
       
       // From these candidates, find the lowest level and XP
@@ -4417,6 +4540,13 @@ export const EnergySwarmGame: React.FC = () => {
       member.attackSignature ??
       getFallbackAttackSignatureForAffinity(affinity);
     const profile = getOrbiAttackProfile(signature);
+    const gaiaScale =
+      member.energyId === "GAIA"
+        ? getGaiaCombatScale(member.level)
+        : null;
+    const supportShieldRestore =
+      profile.supportShieldRestore *
+      (gaiaScale?.shieldSupportMultiplier ?? 1);
     const formationSpeed =
       1 + FORMATIONS[activeFormation].projSpeedMod;
     const baseSpeed =
@@ -4431,6 +4561,7 @@ export const EnergySwarmGame: React.FC = () => {
     const primaryDamage =
       baseDamage *
       profile.damageMultiplier *
+      (gaiaScale?.damageMultiplier ?? 1) *
       (critical ? profile.criticalDamageMultiplier : 1);
 
     const makeProjectile = (
@@ -4462,7 +4593,7 @@ export const EnergySwarmGame: React.FC = () => {
       splashDamageMultiplier: profile.splashDamageMultiplier,
       magneticPullRadius: profile.magneticPullRadius,
       magneticPullStrength: profile.magneticPullStrength,
-      supportShieldRestore: profile.supportShieldRestore,
+      supportShieldRestore,
       isCriticalShot: echo ? false : critical,
     });
 
@@ -4485,19 +4616,20 @@ export const EnergySwarmGame: React.FC = () => {
     }
 
     // H2NOVA turns a small portion of each firing cycle into shield support.
-    if (profile.supportShieldRestore > 0) {
+    if (supportShieldRestore > 0) {
       const shieldMax =
         SHIELD_MAX +
         (upgradesLevel.hydrogen_deflector || 0) * 15 +
         (activeRunUpgradesRef.current.foton_integrity || 0) * 30;
       shieldRef.current = Math.min(
         shieldMax,
-        shieldRef.current + profile.supportShieldRestore,
+        shieldRef.current + supportShieldRestore,
       );
     }
 
     member.shootCooldown =
       profile.cooldownFrames *
+      (gaiaScale?.cooldownMultiplier ?? 1) *
       (activeFormation === FormationType.CIRCLE ? 0.78 : 1);
     playShootSound();
 
@@ -5241,7 +5373,13 @@ export const EnergySwarmGame: React.FC = () => {
     // Apply shield reduction adjusted for active formation defense multipliers
     const defenseMod = FORMATIONS[activeFormation].shieldMod; // e.g. +0.25 (which means -25% damage taken)
     const multiplier = Math.max(0.4, 1.0 - defenseMod);
-    const finalDamage = dmg * multiplier;
+    const gaiaDefenseMultiplier = gaiaMemberRef.current
+      ? getGaiaCombatScale(
+          gaiaMemberRef.current.level,
+        ).incomingDamageMultiplier
+      : 1;
+    const finalDamage =
+      dmg * multiplier * gaiaDefenseMultiplier;
 
     shieldRef.current = Math.max(0, shieldRef.current - finalDamage);
     setShield(shieldRef.current);
