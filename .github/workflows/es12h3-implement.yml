@@ -97,6 +97,10 @@ jobs:
           fi
           exit 1
 
+      - name: Retire one-shot patch helpers before product typecheck
+        if: steps.platform.outcome == 'success'
+        run: rm -f scripts/es12h3-apply.mjs scripts/es12h3-apply-v2.mjs
+
       - name: Typecheck
         id: typecheck
         if: steps.platform.outcome == 'success'
@@ -130,11 +134,11 @@ jobs:
 
       - name: Commit validated implementation
         if: steps.platform.outcome == 'success' && steps.typecheck.outcome == 'success'
+        shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git rm .github/workflows/es12h3-implement.yml scripts/es12h3-apply.mjs scripts/es12h3-apply-v2.mjs
-          git rm -f es12h3-platform.log es12h3-typecheck.log 2>/dev/null || true
-          git add src tests docs
+          rm -f .github/workflows/es12h3-implement.yml scripts/es12h3-apply.mjs scripts/es12h3-apply-v2.mjs es12h3-platform.log es12h3-typecheck.log
+          git add -A
           git commit -m "feat(endgame): apply ES-12H3 challenge and Dyson corrections"
           git push origin HEAD:feat/es-12h3-endgame-challenge-dyson
