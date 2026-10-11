@@ -1,4 +1,4 @@
-name: ES-12H7 Platform Adoption Diagnostic
+name: ES-12H7 Full Titan Certification
 
 on:
   push:
@@ -7,15 +7,16 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  diagnose:
+  certify:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           ref: feat/es-12h7-titan-core-chassis
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -56,21 +57,18 @@ jobs:
               "  // --- SPAWN GIANT DEVOURER BOSS ---\n  // Legacy section boundary retained; H7 routes this boundary through the shared chassis engine.\n  // --- SPAWN SHARED BOSS CHASSIS ---",
               "legacy spawn section boundary",
           )
-
           replace_once(
               "tests/live-infinite-record-adoption.test.ts",
               '''  const clear = defeat.indexOf(\n    "bossRef.current = null",\n  );''',
               '''  const clear = defeat.indexOf(\n    "bossRef.current = null",\n    persist,\n  );''',
               "post-persist boss cleanup lookup",
           )
-
           replace_once(
               "tests/player-contact-spatial-optimization.test.ts",
               r'/shieldCollisionRadius = 14 \+ proj\.size/',
               r'/shieldCollisionRadius = node\.collisionRadius \+ proj\.size/',
               "profile-driven weakpoint collision assertion",
           )
-
           rematch_test = "tests/runtime-boss-rematch-adoption.test.ts"
           replace_once(
               rematch_test,
@@ -90,7 +88,6 @@ jobs:
               r'/const rewardMultiplier =[\s\S]*rematchProfile\?\.rewardMultiplier[\s\S]*milestoneRewardMultiplier: rewardMultiplier/',
               "profile-driven rematch reward assertion",
           )
-
           old_health = r'/BLACKOUT_DEVOURER_CANON\.maxHealth \*[\s\S]*\(rematchProfile\?\.healthMultiplier \?\? 1\)/'
           new_health = r'/chassisProfile\.baseHealth \* healthMultiplier/'
           for path in (
@@ -100,30 +97,49 @@ jobs:
           ):
               replace_once(path, old_health, new_health, f"shared chassis health assertion {path}")
           PY
-      - name: Capture Platform
+      - name: Repository Smoke
+        run: npm run test:repo
+      - name: Gameplay
+        run: npm run test:gameplay
+      - name: Platform
+        run: npm run test:platform
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Production Build
+        run: npm run build
+      - name: Guard H4-H6 budgets and Campaign contract
         shell: bash
         run: |
-          set +e
-          npm run test:platform > platform.log 2>&1
-          STATUS=$?
-          cat platform.log
-          printf '%s\n' "$STATUS" > platform.status
-          exit 0
-      - name: Upload platform diagnostic
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: es12h7-platform-diagnostic
-          path: |
-            platform.log
-            platform.status
-          if-no-files-found: error
-          retention-days: 1
-      - name: Preserve platform result
+          git diff -- src/game/constants.ts | tee /tmp/constants.diff
+          test ! -s /tmp/constants.diff
+          grep -F 'spawnBoss();' src/game/EnergySwarmGame.tsx >/dev/null
+          grep -F 'MAX_ENEMIES' src/game/constants.ts >/dev/null
+          grep -F 'MAX_PROJECTILES' src/game/constants.ts >/dev/null
+      - name: Remove H7 temporary tooling
         shell: bash
         run: |
-          STATUS="$(cat platform.status)"
-          if [ "$STATUS" -ne 0 ]; then
-            echo "Platform failed with exit code $STATUS"
-            exit "$STATUS"
-          fi
+          rm -f \
+            .github/workflows/es12h7-certify.yml \
+            .github/workflows/es12h7-implement.yml \
+            .github/workflows/es12h7-implement-v2.yml \
+            .github/workflows/es12h7-implement-v3.yml \
+            scripts/es12h7-apply.py
+          test ! -e .github/workflows/es12h7-certify.yml
+          test ! -e .github/workflows/es12h7-implement.yml
+          test ! -e .github/workflows/es12h7-implement-v2.yml
+          test ! -e .github/workflows/es12h7-implement-v3.yml
+          test ! -e scripts/es12h7-apply.py
+      - name: Verify clean H7 product diff
+        shell: bash
+        run: |
+          git diff --check
+          ! git status --short | grep -E 'platform\.log|platform\.status|smoke\.log|smoke\.status|diagnostic'
+          git status --short
+      - name: Materialize certified H7 candidate
+        shell: bash
+        run: |
+          git config user.name "ingeniusvictor"
+          git config user.email "ingenius.victor@gmail.com"
+          git add -A
+          git commit -m "feat(h7): add Titan Core chassis and raid escalation"
+          git push origin HEAD:feat/es-12h7-titan-core-chassis
