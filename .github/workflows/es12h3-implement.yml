@@ -38,31 +38,41 @@ jobs:
       - name: Apply guarded H3 patch
         run: node scripts/es12h3-apply-v2.mjs
 
-      - name: Normalize H3 platform contracts
+      - name: Normalize H3 generated contracts
         shell: bash
         run: |
           node --input-type=module <<'NODE'
           import fs from "node:fs";
-          const path = "tests/runtime-enemy-evolution.test.ts";
-          let source = fs.readFileSync(path, "utf8");
-          const from = `  const blocked = resolveEvolvedEnemySpawn({
+
+          const testPath = "tests/runtime-enemy-evolution.test.ts";
+          let testSource = fs.readFileSync(testPath, "utf8");
+          const testFrom = `  const blocked = resolveEvolvedEnemySpawn({
               descriptor,
               enemyType: EnemyType.CRAWLER,
               spawnOrdinal: ordinal ?? 0,
               activeEvolvedEnemies: 1,
             });
             assert.equal(blocked, null);`;
-          const to = `  const blocked = resolveEvolvedEnemySpawn({
+          const testTo = `  const blocked = resolveEvolvedEnemySpawn({
               descriptor,
               enemyType: EnemyType.CRAWLER,
               spawnOrdinal: ordinal ?? 0,
               activeEvolvedEnemies: 2,
             });
             assert.equal(blocked, null);`;
-          const count = source.split(from).length - 1;
-          if (count !== 1) throw new Error(`expected one concurrency-contract match, found ${count}`);
-          source = source.replace(from, to);
-          fs.writeFileSync(path, source, "utf8");
+          const testCount = testSource.split(testFrom).length - 1;
+          if (testCount !== 1) throw new Error(`expected one concurrency-contract match, found ${testCount}`);
+          testSource = testSource.replace(testFrom, testTo);
+          fs.writeFileSync(testPath, testSource, "utf8");
+
+          const gamePath = "src/game/EnergySwarmGame.tsx";
+          let gameSource = fs.readFileSync(gamePath, "utf8");
+          const gameFrom = `          bossLastAttacksRef.current.push(finishedId);`;
+          const gameTo = `          if (finishedId) bossLastAttacksRef.current.push(finishedId);`;
+          const gameCount = gameSource.split(gameFrom).length - 1;
+          if (gameCount !== 1) throw new Error(`expected one boss-history narrowing match, found ${gameCount}`);
+          gameSource = gameSource.replace(gameFrom, gameTo);
+          fs.writeFileSync(gamePath, gameSource, "utf8");
           NODE
 
       - name: Repository smoke tests
