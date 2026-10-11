@@ -82,6 +82,10 @@ import {
   getBossChassisAttackWeight,
   getBossChassisProfile,
 } from "./bossChassis";
+import {
+  createWormSegmentChain,
+  stepWormSegmentChainInPlace,
+} from "./wormSegmentPhysics";
 import { resolveBossRematchDefeatAction } from "./infiniteRaidEscalation";
 import {
   createRuntimeMinibossGateState,
@@ -131,7 +135,7 @@ import {
 
 import { 
   EnergySwarmCanvas, drawFoton, drawSwarmRoster, drawResources, 
-  drawEnemiesList, drawProjectilesList 
+  drawEnemiesList, drawProjectilesList, drawWormSegmentChain
 } from "./EnergySwarmCanvas";
 import { projectFlashAccessibility } from "./flashAccessibility";
 import { projectBossPursuit } from "./bossPursuit";
@@ -345,7 +349,7 @@ export const EnergySwarmGame: React.FC = () => {
   const bossAttackAngleRef = useRef<number>(0); // sweep/rotation angle
   const bossAttackTargetPosRef = useRef<{ x: number, y: number }>({ x: 0, y: 0 }); // coordinates for wells/beams
   const bossLastAttacksRef = useRef<string[]>([]); // prevent consecutive repeating of attacks
-  const shieldNodesRef = useRef<{ id: string; x: number; y: number; health: number; maxHealth: number; angle: number; flashTicks: number; motion: "ORBITAL" | "ANCHORED" | "SERPENTINE"; radiusX: number; radiusY: number; angularVelocityPerFrame: number; collisionRadius: number }[]>([]);
+  const shieldNodesRef = useRef<{ id: string; x: number; y: number; vx: number; vy: number; health: number; maxHealth: number; angle: number; flashTicks: number; motion: "ORBITAL" | "ANCHORED" | "SERPENTINE"; radiusX: number; radiusY: number; angularVelocityPerFrame: number; collisionRadius: number }[]>([]);
   const coreExposedTimerRef = useRef<number>(0); // exposed window countdown
   const phaseTransitionTimerRef = useRef<number>(0); // transition immunity freeze timer
   const bossSummonTimersRef = useRef<Record<string, number>>({}); // cooldowns of summons
@@ -2770,7 +2774,7 @@ export const EnergySwarmGame: React.FC = () => {
     const boss: Enemy = {
       id:
         stage === "RAID_ESCALATION"
-          ? `quantum_titan_${rematchProfile?.sector ?? "infinite"}`
+          ? `${chassisId.toLowerCase()}_${rematchProfile?.sector ?? "infinite"}`
           : isRematch
             ? `${rematchProfile?.bossIdentity.toLowerCase() ?? "infinite_boss"}_${rematchProfile?.sector ?? "infinite"}`
             : "blackout_devourer_boss",
@@ -2864,7 +2868,7 @@ export const EnergySwarmGame: React.FC = () => {
     postDialogue(
       "COMPANION",
       stage === "RAID_ESCALATION"
-        ? "¡RAID ESCALATION! El Quantum Titan ha entrado. Destruye sus cuatro segmentos y abre el núcleo."
+        ? `¡RAID ESCALATION! ${chassisProfile.displayName} ha entrado. Destruye ${chassisProfile.weakpoints.count} ${chassisProfile.weakpoints.hudLabel.toLowerCase()} y abre el núcleo.`
         : isRematch
           ? (familyProfile?.introDialogue ?? "¡RESONANCIA HOSTIL RECURRENTE!")
           : "¡ALERTA! Concentración de energía Blackout masiva en el sector central. ¡El Devorador está entrando!",
@@ -2895,13 +2899,25 @@ export const EnergySwarmGame: React.FC = () => {
   const spawnBossShieldNodes = (boss: Enemy) => {
     const chassis = getBossChassisProfile(boss.bossChassis ?? "DEVOURER");
     const weakpoints = chassis.weakpoints;
+    const wormChain =
+      weakpoints.motion === "SERPENTINE"
+        ? createWormSegmentChain(
+            weakpoints.count,
+            { x: boss.x, y: boss.y },
+            weakpoints.chainPhysics,
+          )
+        : [];
+
     shieldNodesRef.current = [];
     for (let i = 0; i < weakpoints.count; i++) {
       const angle = (i * Math.PI * 2) / weakpoints.count;
+      const wormSegment = wormChain[i];
       shieldNodesRef.current.push({
-        id: Math.random().toString(),
-        x: boss.x + Math.cos(angle) * weakpoints.radiusX,
-        y: boss.y + Math.sin(angle) * weakpoints.radiusY,
+        id: wormSegment?.id ?? Math.random().toString(),
+        x: wormSegment?.x ?? boss.x + Math.cos(angle) * weakpoints.radiusX,
+        y: wormSegment?.y ?? boss.y + Math.sin(angle) * weakpoints.radiusY,
+        vx: wormSegment?.vx ?? 0,
+        vy: wormSegment?.vy ?? 0,
         health: weakpoints.health,
         maxHealth: weakpoints.health,
         angle,
@@ -2917,9 +2933,11 @@ export const EnergySwarmGame: React.FC = () => {
     playEliteChargeSound();
     postDialogue(
       "COMPANION",
-      chassis.id === "TITAN_CORE"
-        ? "¡CUATRO SEGMENTOS DEL TITAN ACTIVOS! Destrúyelos para abrir el núcleo cuántico."
-        : "¡EL DEVORADOR HA ACTIVADO ESCUDOS SEGMENTADOS! Destruye los tres nodos satélite.",
+      chassis.id === "WORM_SEGMENTS"
+        ? "¡SEIS SEGMENTOS DEL RIFT WORM ACTIVOS! Rompe la cadena de cabeza a cola."
+        : chassis.id === "TITAN_CORE"
+          ? "¡CUATRO SEGMENTOS DEL TITAN ACTIVOS! Destrúyelos para abrir el núcleo cuántico."
+          : "¡EL DEVORADOR HA ACTIVADO ESCUDOS SEGMENTADOS! Destruye los tres nodos satélite.",
     );
   };
 
@@ -3030,8 +3048,11 @@ export const EnergySwarmGame: React.FC = () => {
         setIsCoreExposed(false);
         const phase = boss.bossPhase || 1;
         if (
-          phase === 2 ||
-          (chassisProfile.id === "TITAN_CORE" && phase <= 2)
+          chassisProfile.id !== "WORM_SEGMENTS" &&
+          (
+            phase === 2 ||
+            (chassisProfile.id === "TITAN_CORE" && phase <= 2)
+          )
         ) {
           spawnBossShieldNodes(boss);
         }
@@ -3040,13 +3061,24 @@ export const EnergySwarmGame: React.FC = () => {
 
     // 4. FIXED-COUNT BOSS WEAKPOINT POSITION UPDATES
     if (shieldNodesRef.current.length > 0) {
-      shieldNodesRef.current.forEach((node) => {
-        if (node.motion === "ORBITAL") {
-          node.angle += node.angularVelocityPerFrame * (delta / 16.6);
-        }
-        node.x = boss.x + Math.cos(node.angle) * node.radiusX;
-        node.y = boss.y + Math.sin(node.angle) * node.radiusY;
+      if (chassisProfile.id === "WORM_SEGMENTS") {
+        stepWormSegmentChainInPlace(
+          shieldNodesRef.current,
+          { x: boss.x, y: boss.y },
+          delta,
+          chassisProfile.weakpoints.chainPhysics,
+        );
+      } else {
+        shieldNodesRef.current.forEach((node) => {
+          if (node.motion === "ORBITAL") {
+            node.angle += node.angularVelocityPerFrame * (delta / 16.6);
+          }
+          node.x = boss.x + Math.cos(node.angle) * node.radiusX;
+          node.y = boss.y + Math.sin(node.angle) * node.radiusY;
+        });
+      }
 
+      shieldNodesRef.current.forEach((node) => {
         node.flashTicks = decayFrameTicks(node.flashTicks, delta);
 
         if (Math.random() < projectFrameProbability(0.1, delta)) {
@@ -3082,11 +3114,19 @@ export const EnergySwarmGame: React.FC = () => {
       }
       playBossPhaseTransitionSound();
       phaseTransitionTimerRef.current = 2000;
-      setBossTransitionName(chassisProfile.id === "TITAN_CORE" ? "PHASE 2: SEGMENT FORTRESS" : "PHASE 2: COLLAPSE ENGINE");
+      setBossTransitionName(
+        chassisProfile.id === "WORM_SEGMENTS"
+          ? "PHASE 2: RIFT COIL"
+          : chassisProfile.id === "TITAN_CORE"
+            ? "PHASE 2: SEGMENT FORTRESS"
+            : "PHASE 2: COLLAPSE ENGINE",
+      );
       hazardZonesRef.current = [];
       bossCurrentAttackRef.current = null;
       setBossAttackName(null);
-      spawnBossShieldNodes(boss);
+      if (chassisProfile.id !== "WORM_SEGMENTS") {
+        spawnBossShieldNodes(boss);
+      }
       return;
     }
     if ((boss.bossPhase || 1) === 2 && hpPercentage <= 0.35) {
@@ -3100,14 +3140,22 @@ export const EnergySwarmGame: React.FC = () => {
       }
       playBossPhaseTransitionSound();
       phaseTransitionTimerRef.current = 2000;
-      setBossTransitionName(chassisProfile.id === "TITAN_CORE" ? "PHASE 3: QUANTUM CORE" : "PHASE 3: SINGULARITY CROWN");
+      setBossTransitionName(
+        chassisProfile.id === "WORM_SEGMENTS"
+          ? "PHASE 3: RIFT HEART"
+          : chassisProfile.id === "TITAN_CORE"
+            ? "PHASE 3: QUANTUM CORE"
+            : "PHASE 3: SINGULARITY CROWN",
+      );
       hazardZonesRef.current = [];
       bossCurrentAttackRef.current = null;
       setBossAttackName(null);
-      shieldNodesRef.current = [];
-      setBossShieldNodes(0);
-      setIsCoreExposed(false);
-      coreExposedTimerRef.current = 0;
+      if (chassisProfile.id !== "WORM_SEGMENTS") {
+        shieldNodesRef.current = [];
+        setBossShieldNodes(0);
+        setIsCoreExposed(false);
+        coreExposedTimerRef.current = 0;
+      }
       return;
     }
 
@@ -3909,9 +3957,12 @@ export const EnergySwarmGame: React.FC = () => {
           setBossTransitionName(null);
           setBossShieldNodes(0);
           setIsCoreExposed(false);
+          const raidChassis = getBossChassisProfile(
+            rematchProfile.raidEscalation.chassis,
+          );
           postDialogue(
             "COMPANION",
-            "¡PRIMERA FIRMA DERROTADA! La masa de raid sigue activa: Quantum Titan entrando.",
+            `¡PRIMERA FIRMA DERROTADA! La masa de raid sigue activa: ${raidChassis.displayName} entrando.`,
           );
           spawnBoss(rematchProfile, "RAID_ESCALATION");
           return;
@@ -4625,7 +4676,11 @@ export const EnergySwarmGame: React.FC = () => {
       let tx = playerPosRef.current.x;
       let ty = playerPosRef.current.y;
 
-      if (enemy.type === EnemyType.BOSS_DEVOURER || enemy.type === EnemyType.BOSS_TITAN) {
+      if (
+        enemy.type === EnemyType.BOSS_DEVOURER ||
+        enemy.type === EnemyType.BOSS_TITAN ||
+        enemy.type === EnemyType.BOSS_WORM
+      ) {
         updateBossAI(enemy, delta);
         enemy.speed = originalSpeed;
         return;
@@ -5382,11 +5437,33 @@ export const EnergySwarmGame: React.FC = () => {
                 1.5
               );
               playHeavyImpactSound();
+              const activeChassis = getBossChassisProfile(
+                bossRef.current?.bossChassis ?? "DEVOURER",
+              );
+              const reward = activeChassis.weakpoints.destructionReward;
+              if (reward) {
+                scoreRef.current += reward.score;
+                nanoCreditsRef.current += reward.nanoCredits;
+                runNanoCreditsEarnedRef.current += reward.nanoCredits;
+                setNanoCredits(nanoCreditsRef.current);
+                addFloatingText(
+                  `SEGMENT +${reward.score}`,
+                  node.x,
+                  node.y - 22,
+                  activeChassis.color,
+                );
+              }
               shieldNodesRef.current.splice(s, 1);
               bossShieldNodesDestroyedRef.current += 1;
               setBossShieldNodes(shieldNodesRef.current.length);
-              const activeChassis = getBossChassisProfile(bossRef.current?.bossChassis ?? "DEVOURER");
-              postDialogue("COMPANION", activeChassis.id === "TITAN_CORE" ? "¡Segmento del Titan destruido! Continúa abriendo el núcleo." : "¡Nodo de escudo destruido! El núcleo del Devorador está más expuesto.");
+              postDialogue(
+                "COMPANION",
+                activeChassis.id === "WORM_SEGMENTS"
+                  ? "¡Segmento del Rift Worm destruido! La cadena pierde protección."
+                  : activeChassis.id === "TITAN_CORE"
+                    ? "¡Segmento del Titan destruido! Continúa abriendo el núcleo."
+                    : "¡Nodo de escudo destruido! El núcleo del Devorador está más expuesto.",
+              );
               
               // If all nodes are destroyed, trigger core exposed vulnerability window!
               if (shieldNodesRef.current.length === 0) {
@@ -5394,7 +5471,14 @@ export const EnergySwarmGame: React.FC = () => {
                 coreExposedTimerRef.current = activeChassis.weakpoints.exposureDurationMs;
                 setIsCoreExposed(true);
                 playEliteChargeSound();
-                postDialogue("COMPANION", activeChassis.id === "TITAN_CORE" ? "¡TODOS LOS SEGMENTOS CAÍDOS! ¡NÚCLEO CUÁNTICO EXPUESTO!" : "¡TODOS LOS NODOS CAÍDOS! ¡EL NÚCLEO ESTÁ EXPUESTO! ¡FUEGO TOTAL!");
+                postDialogue(
+                  "COMPANION",
+                  activeChassis.id === "WORM_SEGMENTS"
+                    ? "¡CADENA DESTRUIDA! ¡EL CORAZÓN DEL RIFT WORM ESTÁ EXPUESTO!"
+                    : activeChassis.id === "TITAN_CORE"
+                      ? "¡TODOS LOS SEGMENTOS CAÍDOS! ¡NÚCLEO CUÁNTICO EXPUESTO!"
+                      : "¡TODOS LOS NODOS CAÍDOS! ¡EL NÚCLEO ESTÁ EXPUESTO! ¡FUEGO TOTAL!",
+                );
               }
             }
             break;
@@ -5424,7 +5508,8 @@ export const EnergySwarmGame: React.FC = () => {
 
             if (
               enemy.type === EnemyType.BOSS_DEVOURER ||
-              enemy.type === EnemyType.BOSS_TITAN
+              enemy.type === EnemyType.BOSS_TITAN ||
+              enemy.type === EnemyType.BOSS_WORM
             ) {
               const chassis = getBossChassisProfile(
                 enemy.bossChassis ?? "DEVOURER",
@@ -5466,7 +5551,7 @@ export const EnergySwarmGame: React.FC = () => {
             enemy.health -= damageToApply;
             enemy.flashTicks = 4; // Trigger flash
 
-            if (enemy.type === EnemyType.BOSS_DEVOURER) {
+            if (enemy.isBoss) {
               setBossHp(Math.max(0, enemy.health));
               if (enemy.milestoneKind !== "BOSS_REMATCH") {
                 bossDamageDealtRef.current += damageToApply;
@@ -5606,7 +5691,7 @@ export const EnergySwarmGame: React.FC = () => {
                   otherEnemy.health -= splashDamage;
                   otherEnemy.flashTicks = 4;
 
-                  if (otherEnemy.type === EnemyType.BOSS_DEVOURER || otherEnemy.type === EnemyType.BOSS_TITAN) {
+                  if (otherEnemy.isBoss) {
                     setBossHp(Math.max(0, otherEnemy.health));
                     if (
                       otherEnemy.milestoneKind !== "BOSS_REMATCH"
@@ -5792,7 +5877,8 @@ export const EnergySwarmGame: React.FC = () => {
       // Trigger contact damage
       const isBossChassis =
         enemy.type === EnemyType.BOSS_DEVOURER ||
-        enemy.type === EnemyType.BOSS_TITAN;
+        enemy.type === EnemyType.BOSS_TITAN ||
+        enemy.type === EnemyType.BOSS_WORM;
       const baseDamage = isBossChassis ? 25 : 15;
       if (isBossChassis) {
         const attackType =
@@ -6245,6 +6331,14 @@ export const EnergySwarmGame: React.FC = () => {
       playerPosRef.current,
       flashProfile,
     );
+    if (bossRef.current?.bossChassis === "WORM_SEGMENTS") {
+      drawWormSegmentChain(
+        ctx,
+        bossRef.current,
+        shieldNodesRef.current,
+        timeElapsedRef.current,
+      );
+    }
 
     // 5. Draw active Particles
     particlesRef.current.forEach((p) => {

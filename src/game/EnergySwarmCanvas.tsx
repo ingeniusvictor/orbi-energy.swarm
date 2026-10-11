@@ -1238,6 +1238,43 @@ export function drawEnemiesList(
         break;
       }
 
+      case EnemyType.BOSS_WORM: {
+        const wormPulse = 0.9 + Math.sin(time * 0.0035) * 0.1;
+        ctx.save();
+        ctx.rotate(Math.sin(time * 0.0012) * 0.12);
+        ctx.shadowColor = "#c084fc";
+        ctx.shadowBlur = 20;
+        ctx.fillStyle = "#170b2e";
+        ctx.strokeStyle = "#c084fc";
+        ctx.lineWidth = 2.3;
+        ctx.beginPath();
+        ctx.moveTo(enemy.size * 1.15, 0);
+        ctx.lineTo(enemy.size * 0.22, -enemy.size * 0.8);
+        ctx.lineTo(-enemy.size * 0.92, -enemy.size * 0.56);
+        ctx.lineTo(-enemy.size * 1.08, 0);
+        ctx.lineTo(-enemy.size * 0.92, enemy.size * 0.56);
+        ctx.lineTo(enemy.size * 0.22, enemy.size * 0.8);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = `rgba(216,180,254,${wormPulse})`;
+        ctx.beginPath();
+        ctx.arc(enemy.size * 0.34, 0, enemy.size * 0.28, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = "rgba(233,213,255,0.85)";
+        ctx.lineWidth = 1.4;
+        for (const side of [-1, 1]) {
+          ctx.beginPath();
+          ctx.moveTo(enemy.size * 0.72, side * enemy.size * 0.18);
+          ctx.lineTo(enemy.size * 1.08, side * enemy.size * 0.34);
+          ctx.stroke();
+        }
+        ctx.restore();
+        break;
+      }
+
       case EnemyType.BOSS_TITAN: {
         const titanPulse = 0.82 + Math.sin(time * 0.004) * 0.18;
         ctx.save();
@@ -1370,6 +1407,62 @@ export function drawEnemiesList(
 
     ctx.restore();
   });
+}
+
+export interface WormSegmentRenderNode {
+  x: number;
+  y: number;
+  health: number;
+  maxHealth: number;
+  flashTicks: number;
+}
+
+export function drawWormSegmentChain(
+  ctx: CanvasRenderingContext2D,
+  boss: Enemy,
+  segments: readonly WormSegmentRenderNode[],
+  time: number,
+) {
+  if (boss.bossChassis !== "WORM_SEGMENTS" || segments.length === 0) return;
+
+  ctx.save();
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  ctx.strokeStyle = "rgba(192,132,252,0.58)";
+  ctx.lineWidth = 8;
+  ctx.shadowColor = "#a855f7";
+  ctx.shadowBlur = 10;
+  ctx.beginPath();
+  ctx.moveTo(boss.x, boss.y);
+  segments.forEach((segment) => ctx.lineTo(segment.x, segment.y));
+  ctx.stroke();
+
+  segments.forEach((segment, index) => {
+    const healthRatio = Math.max(0, Math.min(1, segment.health / Math.max(1, segment.maxHealth)));
+    const radius = Math.max(9, boss.size * 0.32 - index * 0.45);
+    const pulse = 1 + Math.sin(time * 0.0025 + index * 0.8) * 0.04;
+
+    ctx.fillStyle = segment.flashTicks > 0 ? "#f5f3ff" : "#2e1065";
+    ctx.strokeStyle = "#d8b4fe";
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.arc(segment.x, segment.y, radius * pulse, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.strokeStyle = `rgba(34,211,238,${0.35 + healthRatio * 0.6})`;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(
+      segment.x,
+      segment.y,
+      radius * 0.66,
+      -Math.PI / 2,
+      -Math.PI / 2 + Math.PI * 2 * healthRatio,
+    );
+    ctx.stroke();
+  });
+  ctx.restore();
 }
 
 /**
