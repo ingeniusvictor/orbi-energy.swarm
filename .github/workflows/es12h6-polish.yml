@@ -1,0 +1,108 @@
+name: ES-12H6 Fallback Safety Certify
+
+on:
+  push:
+    branches:
+      - feat/es-12h6-environmental-mutators
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  polish-certify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/es-12h6-environmental-mutators
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Make environmental fallback conflict-safe
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('src/game/infiniteMutatorDirector.ts')
+          text = path.read_text()
+          old_preference = '''  if (tier !== "MASTERY") {
+            const preferred = firstBiomePreference(biome, candidates);
+            if (preferred) selected.push(preferred);
+          }
+          '''
+          new_preference = '''  if (tier !== "MASTERY") {
+            const preferred =
+              firstBiomePreference(biome, candidates) ??
+              candidates.find((mutator) => ENVIRONMENTAL_MUTATORS.has(mutator)) ??
+              null;
+            if (preferred) selected.push(preferred);
+          }
+          '''
+          old_fallback = '''  if (tier !== "MASTERY" && !selected.some((mutator) => ENVIRONMENTAL_MUTATORS.has(mutator))) {
+            const fallbackEnvironmental = candidates.find((mutator) =>
+              ENVIRONMENTAL_MUTATORS.has(mutator),
+            );
+            if (fallbackEnvironmental) {
+              selected.splice(Math.max(0, selected.length - 1), 1, fallbackEnvironmental);
+            }
+          }
+
+          '''
+          if text.count(old_preference) != 1:
+              raise SystemExit(f'fail-closed: expected one preference block, found {text.count(old_preference)}')
+          if text.count(old_fallback) != 1:
+              raise SystemExit(f'fail-closed: expected one legacy fallback block, found {text.count(old_fallback)}')
+          text = text.replace(old_preference, new_preference).replace(old_fallback, '')
+          path.write_text(text)
+          PY
+      - name: Add fallback conflict regression
+        run: |
+          cat >> tests/infinite-mutator-director.test.ts <<'EOF'
+
+          test("Advanced+ environmental fallback is selected before conflict filtering", () => {
+            const selected = directInfiniteMutatorSelection({
+              tier: "ENDLESS_ENDGAME",
+              biome: BiomeType.DEEP_WATER,
+              recoverySector: false,
+              targetCount: 3,
+              orderedCandidates: [
+                "FRAGILE_SWARM",
+                "ELECTRICAL_STORM",
+                "DOUBLE_THREAT",
+                "ELITE_BURST",
+              ],
+            });
+
+            assert.equal(selected[0], "ELECTRICAL_STORM");
+            assert.equal(hasEnvironmentalMutator(selected), true);
+            assert.equal(selected.includes("FRAGILE_SWARM"), false);
+            assert.ok(countSevereEnvironmentalMutators(selected) <= 1);
+          });
+          EOF
+      - name: Repository Smoke
+        run: npm run test:repo
+      - name: Gameplay
+        run: npm run test:gameplay
+      - name: Platform
+        run: npm run test:platform
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Production Build
+        run: npm run build
+      - name: Materialize certified product tree
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/es12h6-polish.yml
+          git add src/game/infiniteMutatorDirector.ts tests/infinite-mutator-director.test.ts
+          ACTUAL="$(git diff --cached --name-only | sort)"
+          EXPECTED="$(printf '%s\n' '.github/workflows/es12h6-polish.yml' 'src/game/infiniteMutatorDirector.ts' 'tests/infinite-mutator-director.test.ts' | sort)"
+          if [ "$ACTUAL" != "$EXPECTED" ]; then
+            echo 'fail-closed: unexpected staged paths'
+            printf '%s\n' "$ACTUAL"
+            exit 1
+          fi
+          git commit -m "fix(h6): make environmental fallback conflict-safe"
+          git push origin HEAD:feat/es-12h6-environmental-mutators
