@@ -1,8 +1,9 @@
 # GAIA Evidence Analyzer
 
-Issue: #210  
+Analyzer issue: #210  
+Build provenance issue: #212  
 Umbrella certification: #202  
-Phase: ES-12G4
+Phases: ES-12G4 / ES-12G5
 
 ## Purpose
 
@@ -12,7 +13,7 @@ The analyzer processes the three local JSON captures produced by the F4 evidence
 2. GAIA L1 after the first synthesis cycle.
 3. GAIA L2+ after a later cycle evolves the same entity.
 
-It validates the evidence format, summarizes F3 metrics, verifies that the scenarios and browser environment are comparable, and calculates deterministic deltas against the baseline.
+It validates the evidence format, summarizes F3 metrics, verifies that the scenarios, browser environment and deployed build provenance are comparable, and calculates deterministic deltas against the baseline.
 
 It does **not** replace the final physical/browser review required by `docs/GAIA_RUNTIME_CERTIFICATION.md`.
 
@@ -21,6 +22,27 @@ It does **not** replace the final physical/browser review required by `docs/GAIA
 F4 may be pressed in the middle of an existing 500 ms F3 diagnostics window. To prevent a pre-start fragment from entering the certification interval, the recorder discards the first diagnostics snapshot after F4 starts recording. The following 30 retained snapshots therefore represent 30 complete post-alignment 500 ms diagnostics windows.
 
 A complete capture still must report at least 15,000 ms duration.
+
+## Build provenance
+
+Every browser-generated evidence file now includes two additive runtime metadata fields:
+
+```json
+{
+  "runtime": {
+    "buildSha": "<40-character canonical Git SHA>",
+    "productVersion": "0.2.0-beta.1"
+  }
+}
+```
+
+For GitHub Pages, `ORBI_BUILD_SHA` is injected at build time from the exact `github.event.workflow_run.head_sha` revision that the Pages workflow checks out. The product version is injected from npm package metadata while Vite runs under `npm run build`.
+
+Local development intentionally falls back to `local-development` and `0.0.0-local`. Those values are useful for debugging but are **not valid certification provenance**.
+
+The certification wrapper requires all three physical captures to contain a canonical 40-character SHA, a non-local product version, and exactly matching SHA/version values. A missing or local provenance value produces `INVALID`; a cross-capture SHA/version mismatch produces `ENVIRONMENT_MISMATCH`.
+
+The provenance values are compile-time constants. Reading them when F4 creates metadata does not add a fetch, storage lookup, timer or gameplay scan.
 
 ## Run the analyzer
 
@@ -43,7 +65,8 @@ For every capture:
 - at least 15,000 ms total duration;
 - finite non-negative diagnostics values;
 - one stable quality preset throughout the capture;
-- expected GAIA lifecycle state for the declared scenario.
+- expected GAIA lifecycle state for the declared scenario;
+- canonical build SHA and non-local product version.
 
 Across all three captures it checks:
 
@@ -51,7 +74,9 @@ Across all three captures it checks:
 - viewport width and height;
 - device pixel ratio;
 - browser user agent;
-- deployed page origin/path.
+- deployed page origin/path;
+- build SHA;
+- product version.
 
 The report includes mean, median, minimum, maximum and p95 for FPS, frame time, loop CPU work, physics, render, overhead, peak CPU and entity-pressure counts. It also reports baseline deltas for GAIA L1 and GAIA L2+.
 
@@ -80,9 +105,9 @@ Final #202 certification still requires the real gameplay evidence, visual invar
 
 ## Triage states
 
-- `INVALID`: malformed, partial, short or scenario-inconsistent evidence.
-- `ENVIRONMENT_MISMATCH`: the three captures were not produced under a comparable browser/display/quality environment.
+- `INVALID`: malformed, partial, short, scenario-inconsistent or non-canonical provenance evidence.
+- `ENVIRONMENT_MISMATCH`: the three captures were not produced under a comparable browser/display/quality/build environment.
 - `INVESTIGATE`: GAIA evidence contains more observed `CRITICAL` health snapshots than the baseline.
-- `READY_FOR_MANUAL_REVIEW`: evidence is structurally valid and comparable, with no analyzer-level regression trigger. This is **not** an automatic PASS.
+- `READY_FOR_MANUAL_REVIEW`: evidence is structurally valid, provenance-matched and comparable, with no analyzer-level regression trigger. This is **not** an automatic PASS.
 
 Only the manual certification decision in #202 may conclude PASS, INVESTIGATE or FAIL for the real runtime.
