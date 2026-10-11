@@ -1,0 +1,45 @@
+name: ES-12F8 Final Smoke Diagnostic
+
+on:
+  push:
+    branches:
+      - feat/es-12f8-unique-energy-attacks
+
+permissions:
+  contents: write
+
+jobs:
+  diagnose:
+    if: ${{ !contains(github.event.head_commit.message, '[final-diag-done]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/es-12f8-unique-energy-attacks
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Capture exact failures
+        shell: bash
+        run: |
+          set +e
+          npm test > /tmp/es12f8-final.log 2>&1
+          status=$?
+          set -e
+          {
+            echo "exit_status=$status"
+            echo "=== FAILURES ==="
+            grep -n -B 12 -A 28 "not ok" /tmp/es12f8-final.log || true
+            echo "=== SUMMARY ==="
+            tail -n 35 /tmp/es12f8-final.log
+          } > .github/es12f8-final-diagnostic.txt
+      - name: Commit diagnostic
+        run: |
+          git config user.name "ingeniusvictor"
+          git config user.email "ingenius.victor@gmail.com"
+          git add .github/es12f8-final-diagnostic.txt
+          git commit -m "chore: capture final ES-12F8 failures [final-diag-done]"
+          git push origin HEAD:feat/es-12f8-unique-energy-attacks
