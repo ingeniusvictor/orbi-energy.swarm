@@ -48,7 +48,7 @@ jobs:
             cp /tmp/es12h4-repo-smoke.log es12h4-repo-smoke.log
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add es12h4-repo-smoke.log
+            git add -f es12h4-repo-smoke.log
             git commit -m "chore(h4): capture repository smoke failure" || true
             git push origin HEAD:feat/es-12h4-survival-doctrine
             exit "$code"
