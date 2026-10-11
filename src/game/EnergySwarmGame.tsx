@@ -345,7 +345,7 @@ export const EnergySwarmGame: React.FC = () => {
   const bossAttackAngleRef = useRef<number>(0); // sweep/rotation angle
   const bossAttackTargetPosRef = useRef<{ x: number, y: number }>({ x: 0, y: 0 }); // coordinates for wells/beams
   const bossLastAttacksRef = useRef<string[]>([]); // prevent consecutive repeating of attacks
-  const shieldNodesRef = useRef<{ id: string; x: number; y: number; health: number; maxHealth: number; angle: number; flashTicks: number; motion: "ORBITAL" | "ANCHORED"; radiusX: number; radiusY: number; angularVelocityPerFrame: number; collisionRadius: number }[]>([]);
+  const shieldNodesRef = useRef<{ id: string; x: number; y: number; health: number; maxHealth: number; angle: number; flashTicks: number; motion: "ORBITAL" | "ANCHORED" | "SERPENTINE"; radiusX: number; radiusY: number; angularVelocityPerFrame: number; collisionRadius: number }[]>([]);
   const coreExposedTimerRef = useRef<number>(0); // exposed window countdown
   const phaseTransitionTimerRef = useRef<number>(0); // transition immunity freeze timer
   const bossSummonTimersRef = useRef<Record<string, number>>({}); // cooldowns of summons
