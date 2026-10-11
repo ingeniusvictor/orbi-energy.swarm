@@ -54,7 +54,10 @@ test("Canvas renders different projectile silhouettes instead of one recolored l
     "SYNTHESIS",
     "LANCE",
   ]) {
-    assert.match(canvas, new RegExp(`case \\\"${shape}\\\"`));
+    assert.ok(
+      canvas.includes(`case "${shape}"`),
+      `missing Canvas projectile silhouette for ${shape}`,
+    );
   }
   assert.match(canvas, /ctx\.ellipse\(/);
   assert.match(canvas, /ctx\.roundRect\(/);
