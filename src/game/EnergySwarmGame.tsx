@@ -6319,6 +6319,8 @@ export const EnergySwarmGame: React.FC = () => {
       cameraStateRef.current.zoom,
       quality.drawNebula,
       quality.drawPlanets,
+      quality.drawCosmicWhale &&
+        runtimeProgressionRef.current.mode === "INFINITE",
       bossActiveRef.current,
       cameraStateRef.current.viewportWidth,
       cameraStateRef.current.viewportHeight
