@@ -32,6 +32,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Align guarded source marker
+        run: |
+          sed -i 's#// 7\. ATTACK SELECTION#// 7. ACTIVE ATTACK COOLDOWNS / SELECTION#' scripts/es12h5-apply.mjs
+
       - name: Apply guarded H5 patch
         run: node scripts/es12h5-apply.mjs
 
