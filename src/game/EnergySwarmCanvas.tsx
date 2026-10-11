@@ -1238,6 +1238,82 @@ export function drawEnemiesList(
         break;
       }
 
+      case EnemyType.BOSS_TITAN: {
+        const titanPulse = 0.82 + Math.sin(time * 0.004) * 0.18;
+        ctx.save();
+        ctx.rotate(Math.sin(time * 0.00045) * 0.05);
+
+        ctx.shadowColor = "#67e8f9";
+        ctx.shadowBlur = 22;
+        ctx.fillStyle = "#071827";
+        ctx.strokeStyle = "#67e8f9";
+        ctx.lineWidth = 2.4;
+        ctx.beginPath();
+        ctx.moveTo(-enemy.size * 1.45, -enemy.size * 0.18);
+        ctx.lineTo(-enemy.size * 0.72, -enemy.size * 0.62);
+        ctx.lineTo(enemy.size * 0.72, -enemy.size * 0.62);
+        ctx.lineTo(enemy.size * 1.45, -enemy.size * 0.18);
+        ctx.lineTo(enemy.size * 1.12, enemy.size * 0.52);
+        ctx.lineTo(-enemy.size * 1.12, enemy.size * 0.52);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        const ports = [
+          [-1.25, 0],
+          [0, -0.74],
+          [1.25, 0],
+          [0, 0.74],
+        ] as const;
+        ports.forEach(([px, py]) => {
+          ctx.fillStyle = "#164e63";
+          ctx.strokeStyle = "#a5f3fc";
+          ctx.lineWidth = 1.4;
+          ctx.beginPath();
+          ctx.arc(
+            px * enemy.size,
+            py * enemy.size,
+            enemy.size * 0.16,
+            0,
+            Math.PI * 2,
+          );
+          ctx.fill();
+          ctx.stroke();
+        });
+
+        const coreGradient = ctx.createRadialGradient(
+          0,
+          0,
+          0,
+          0,
+          0,
+          enemy.size * 0.46,
+        );
+        coreGradient.addColorStop(0, `rgba(255,255,255,${titanPulse})`);
+        coreGradient.addColorStop(0.3, "rgba(103,232,249,0.95)");
+        coreGradient.addColorStop(1, "rgba(8,47,73,0.15)");
+        ctx.fillStyle = coreGradient;
+        ctx.beginPath();
+        ctx.arc(0, 0, enemy.size * 0.46, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = "rgba(165,243,252,0.72)";
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.ellipse(
+          0,
+          0,
+          enemy.size * 1.18,
+          enemy.size * 0.72,
+          0,
+          0,
+          Math.PI * 2,
+        );
+        ctx.stroke();
+        ctx.restore();
+        break;
+      }
+
       case EnemyType.BOSS_DEVOURER: {
         // GIANT BOSS: BLACKOUT DEVOURER
         ctx.rotate(time * 0.0008);

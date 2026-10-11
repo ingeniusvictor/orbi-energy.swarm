@@ -159,6 +159,7 @@ test("Devourer rematch persists after the rematch gate reaches DEFEATED and befo
   );
   const clear = defeat.indexOf(
     "bossRef.current = null",
+    persist,
   );
 
   assert.ok(mark >= 0);

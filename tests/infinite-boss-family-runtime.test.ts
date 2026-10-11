@@ -9,7 +9,7 @@ const game = readFileSync(
 
 test("Infinite boss family is adopted without changing the campaign spawn path", () => {
   assert.match(game, /getInfiniteBossFamilyProfile/);
-  assert.match(game, /infiniteBossIdentity: rematchProfile\?\.bossIdentity/);
+  assert.match(game, /stage === "PRIMARY"[\s\S]*rematchProfile\?\.bossIdentity/);
   assert.match(game, /descriptor\.completionPolicy\.type === "BOSS_DEFEAT"[\s\S]*spawnBoss\(\)/);
 });
 
