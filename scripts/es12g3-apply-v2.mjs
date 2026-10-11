@@ -27,6 +27,11 @@ for (const [from, to] of fixes) {
   source = source.replace(from, to);
 }
 
+// Persist the parser-safe helper in the checked-out workspace so TypeScript's
+// allowJs/checkJs traversal cannot fail on the intentionally nested templates.
+// The guarded workflow removes both helpers before the implementation commit.
+writeFileSync(sourcePath, source);
+
 const fixedPath = "/tmp/es12g3-apply-fixed.mjs";
 writeFileSync(fixedPath, source);
 await import(pathToFileURL(fixedPath).href);
