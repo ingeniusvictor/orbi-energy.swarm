@@ -148,14 +148,16 @@ export type EvolvedEnemyVariantId =
   | "PHASE_PARASITE"
   | "LANCE_DRONE"
   | "BROOD_SPLITTER"
-  | "NULL_DISRUPTOR";
+  | "NULL_DISRUPTOR"
+  | "OVERDRIVE_ELITE";
 
 export type EvolvedEnemySignature =
   | "ARMORED_MOMENTUM"
   | "PHASE_LUNGE"
   | "LANCE_VOLLEY"
   | "BROOD_RELEASE"
-  | "NULL_PULSE";
+  | "NULL_PULSE"
+  | "OVERDRIVE_CHARGE";
 
 export interface Enemy {
   id: string;

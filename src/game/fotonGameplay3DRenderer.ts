@@ -36,6 +36,9 @@ type RuntimeStatus =
 interface DysonHaloRuntimeRing {
   descriptor: FotonDysonHaloRingDescriptor;
   planeRoot: any;
+  baseQuaternion: any;
+  precessionQuaternion: any;
+  precessionEuler: any;
   spinRoot: any;
   core: any;
   glow: any;
@@ -198,11 +201,18 @@ const createDysonHaloRing = (
 ): DysonHaloRuntimeRing => {
   const detail = getDysonHaloGeometryDetail(preset);
   const planeRoot = new THREE.Group();
-  planeRoot.rotation.set(
-    descriptor.tilt[0],
-    descriptor.tilt[1],
-    descriptor.tilt[2],
+  const planeNormal = new THREE.Vector3(
+    descriptor.planeNormal[0],
+    descriptor.planeNormal[1],
+    descriptor.planeNormal[2],
+  ).normalize();
+  const baseQuaternion = new THREE.Quaternion().setFromUnitVectors(
+    new THREE.Vector3(0, 0, 1),
+    planeNormal,
   );
+  const precessionQuaternion = new THREE.Quaternion();
+  const precessionEuler = new THREE.Euler(0, 0, 0, "XYZ");
+  planeRoot.quaternion.copy(baseQuaternion);
 
   const spinRoot = new THREE.Group();
   planeRoot.add(spinRoot);
@@ -361,6 +371,9 @@ const createDysonHaloRing = (
   return {
     descriptor,
     planeRoot,
+    baseQuaternion,
+    precessionQuaternion,
+    precessionEuler,
     spinRoot,
     core,
     glow,
@@ -528,22 +541,15 @@ const stepDysonHalo = (
 
     // Small precession gives each orbit a living 3D relationship while the
     // independent spin remains deliberately slow and non-propeller-like.
-    ring.planeRoot.rotation.x =
-      ring.descriptor.tilt[0] +
-      Math.sin(
-        timeSeconds * 0.12 +
-          ring.descriptor.phase,
-      ) *
-        0.018;
-    ring.planeRoot.rotation.y =
-      ring.descriptor.tilt[1] +
-      Math.cos(
-        timeSeconds * 0.1 +
-          ring.descriptor.phase,
-      ) *
-        0.016;
-    ring.planeRoot.rotation.z =
-      ring.descriptor.tilt[2];
+    ring.precessionEuler.set(
+      Math.sin(timeSeconds * 0.12 + ring.descriptor.phase) * 0.018,
+      Math.cos(timeSeconds * 0.1 + ring.descriptor.phase) * 0.016,
+      0,
+    );
+    ring.precessionQuaternion.setFromEuler(ring.precessionEuler);
+    ring.planeRoot.quaternion
+      .copy(ring.baseQuaternion)
+      .multiply(ring.precessionQuaternion);
   });
 };
 

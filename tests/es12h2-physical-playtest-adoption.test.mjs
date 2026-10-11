@@ -38,7 +38,7 @@ test("Devourer pursuit remains O(1) while applying materially stronger phase pre
 
 test("desktop cockpit allocates more height to roster and more width to battlefield", () => {
   assert.match(companion, /lg:h-\[min\(82dvh,820px\)\]/);
-  assert.match(styles, /@media \(min-width: 1600px\)[\s\S]*minmax\(210px, 235px\)[\s\S]*minmax\(270px, 300px\)[\s\S]*gap: 0\.65rem/);
+  assert.match(styles, /@media \(min-width: 1600px\)[\s\S]*minmax\(190px, 210px\)[\s\S]*minmax\(245px, 270px\)[\s\S]*gap: 0\.5rem/);
 });
 
 test("physical-playtest correction preserves logical 800x480 canvas and performance budgets", () => {

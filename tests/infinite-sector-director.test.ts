@@ -54,14 +54,14 @@ test("Sectors 11–1000 always stay inside certified recipe bounds", () => {
       valid: true,
       errors: [],
     });
-    assert.ok(recipe.enemyBudget >= 28 && recipe.enemyBudget <= 180);
+    assert.ok(recipe.enemyBudget >= 32 && recipe.enemyBudget <= 180);
     assert.ok(
-      recipe.maxConcurrentEnemies >= 14 &&
-        recipe.maxConcurrentEnemies <= 36,
+      recipe.maxConcurrentEnemies >= 16 &&
+        recipe.maxConcurrentEnemies <= 38,
     );
     assert.ok(
-      recipe.spawnIntervalFrames >= 42 &&
-        recipe.spawnIntervalFrames <= 105,
+      recipe.spawnIntervalFrames >= 40 &&
+        recipe.spawnIntervalFrames <= 98,
     );
     assert.ok(recipe.waveCount >= 3 && recipe.waveCount <= 7);
     assert.ok(recipe.enemyComposition.length >= 2);
@@ -99,7 +99,7 @@ test("Sectors 11–1000 always stay inside certified recipe bounds", () => {
     );
     assert.equal(recipe.fairness.spawnSafetyRadius, 120);
     assert.ok(
-      recipe.fairness.projectileBudget >= 80 &&
+      recipe.fairness.projectileBudget >= 90 &&
         recipe.fairness.projectileBudget <= 240,
     );
   }

@@ -50,6 +50,7 @@ const ELIGIBLE_EVOLUTION_ENEMIES = [
   EnemyType.DRONE,
   EnemyType.SPLITTER,
   EnemyType.DISRUPTOR,
+  EnemyType.BLACKOUT_ELITE,
 ] as const;
 
 export const EVOLVED_ENEMY_VARIANTS: Readonly<
@@ -108,17 +109,16 @@ export const EVOLVED_ENEMY_VARIANTS: Readonly<
     rewardMultiplier: 1.4,
   }),
   [EnemyType.DISRUPTOR]: Object.freeze({
-    id: "NULL_DISRUPTOR",
-    baseEnemyType: EnemyType.DISRUPTOR,
-    displayName: "Null Disruptor",
-    signature: "NULL_PULSE",
-    healthMultiplier: 1.18,
-    movementSpeedMultiplier: 1,
-    contactDamageMultiplier: 1.05,
-    attackRateMultiplier: 1.15,
-    projectileSpeedMultiplier: 1.1,
-    specialIntensity: 0.45,
-    rewardMultiplier: 1.4,
+    id: "NULL_DISRUPTOR", baseEnemyType: EnemyType.DISRUPTOR, displayName: "Null Disruptor",
+    signature: "NULL_PULSE", healthMultiplier: 1.18, movementSpeedMultiplier: 1,
+    contactDamageMultiplier: 1.05, attackRateMultiplier: 1.15, projectileSpeedMultiplier: 1.1,
+    specialIntensity: 0.45, rewardMultiplier: 1.4,
+  }),
+  [EnemyType.BLACKOUT_ELITE]: Object.freeze({
+    id: "OVERDRIVE_ELITE", baseEnemyType: EnemyType.BLACKOUT_ELITE, displayName: "Overdrive Elite",
+    signature: "OVERDRIVE_CHARGE", healthMultiplier: 1.35, movementSpeedMultiplier: 1.08,
+    contactDamageMultiplier: 1.15, attackRateMultiplier: 1.12, projectileSpeedMultiplier: 1,
+    specialIntensity: 0.45, rewardMultiplier: 1.5,
   }),
 });
 
@@ -131,26 +131,10 @@ const TIER_POLICY: Readonly<
     >
   >
 > = Object.freeze({
-  MASTERY: Object.freeze({
-    enabled: false,
-    evolutionChance: 0,
-    maxConcurrentEvolvedEnemies: 0,
-  }),
-  ADVANCED_COMBINATION: Object.freeze({
-    enabled: true,
-    evolutionChance: 0.12,
-    maxConcurrentEvolvedEnemies: 1,
-  }),
-  HIGH_PRESSURE: Object.freeze({
-    enabled: true,
-    evolutionChance: 0.2,
-    maxConcurrentEvolvedEnemies: 2,
-  }),
-  ENDLESS_ENDGAME: Object.freeze({
-    enabled: true,
-    evolutionChance: 0.28,
-    maxConcurrentEvolvedEnemies: 3,
-  }),
+  MASTERY: Object.freeze({ enabled: true, evolutionChance: 0.08, maxConcurrentEvolvedEnemies: 1 }),
+  ADVANCED_COMBINATION: Object.freeze({ enabled: true, evolutionChance: 0.15, maxConcurrentEvolvedEnemies: 2 }),
+  HIGH_PRESSURE: Object.freeze({ enabled: true, evolutionChance: 0.23, maxConcurrentEvolvedEnemies: 3 }),
+  ENDLESS_ENDGAME: Object.freeze({ enabled: true, evolutionChance: 0.30, maxConcurrentEvolvedEnemies: 4 }),
 });
 
 const hashString = (value: string) => {
