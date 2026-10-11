@@ -18,6 +18,29 @@ jobs:
         with:
           ref: feat/es-12f8-unique-energy-attacks
           fetch-depth: 0
+      - name: Repair staged patcher template literal
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const path = '.github/es12f8-patch.mjs';
+          let source = fs.readFileSync(path, 'utf8');
+          const startNeedle = 'canvas = replaceOnce(\n  canvas,\n  "wild label identity",';
+          const endNeedle = '\n);\n\nconst newProjectileRenderer =';
+          const start = source.indexOf(startNeedle);
+          const end = source.indexOf(endNeedle, start);
+          if (start < 0 || end < 0) throw new Error('wild label repair range not found');
+          const replacement = [
+            'canvas = replaceOnce(',
+            '  canvas,',
+            '  "wild label identity",',
+            '  \'        const displayLabel = lang === "es" ? `${affinity.toUpperCase()} SALVAJE` : `WILD ${affinity.toUpperCase()}`;\',',
+            '  `        const identity = res.orbiEnergyId ?? affinity.toUpperCase();\\n        const displayLabel = lang === "es" ? identity + " SALVAJE" : "WILD " + identity;`,',
+            ');',
+          ].join('\n');
+          const after = end + '\n);'.length;
+          source = source.slice(0, start) + replacement + source.slice(after);
+          fs.writeFileSync(path, source);
+          NODE
       - name: Apply unique energy attack patch
         run: node .github/es12f8-patch.mjs
       - name: Commit patch
