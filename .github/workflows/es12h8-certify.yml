@@ -1,0 +1,102 @@
+name: ES-12H8 Worm Runtime Certification
+
+on:
+  push:
+    branches:
+      - feat/es-12h8-worm-segments
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/es-12h8-worm-segments
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Apply literal Worm runtime patch
+        run: python scripts/es12h8-apply.py
+
+      - name: H8 focused contracts
+        run: >-
+          npx tsx --test
+          tests/boss-chassis.test.ts
+          tests/infinite-raid-escalation.test.ts
+          tests/titan-runtime-milestone.test.ts
+          tests/worm-segment-physics.test.ts
+          tests/worm-runtime-adoption.test.ts
+          tests/titan-runtime-adoption.test.ts
+
+      - name: Repository Smoke
+        run: npm run test:repo
+
+      - name: Gameplay
+        run: npm run test:gameplay
+
+      - name: Platform
+        run: npm run test:platform
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Production Build
+        run: npm run build
+
+      - name: Preserve certified budgets and Campaign boundary
+        shell: bash
+        run: |
+          grep -Eq 'MAX_ENEMIES[^0-9]*80' src/game/constants.ts
+          grep -Eq 'MAX_PROJECTILES[^0-9]*120' src/game/constants.ts
+          git diff --exit-code bc770f97478874f3c65d8e0d6cdf68c9dc9547db -- src/game/constants.ts src/game/waveDirector.ts
+
+      - name: Materialize clean H8 candidate
+        shell: bash
+        run: |
+          rm -f .github/workflows/es12h8-certify.yml
+          rm -f scripts/es12h8-apply.py
+          git add -A
+          git diff --cached --check
+
+          cat > /tmp/h8-allowed.txt <<'EOF'
+          src/components/BossHudOverlay.tsx
+          src/game/EnergySwarmCanvas.tsx
+          src/game/EnergySwarmGame.tsx
+          src/game/bossChassis.ts
+          src/game/infiniteRaidEscalation.ts
+          src/game/runtimeMilestoneEncounter.ts
+          src/game/types.ts
+          src/game/wormSegmentPhysics.ts
+          tests/boss-chassis.test.ts
+          tests/infinite-raid-escalation.test.ts
+          tests/titan-runtime-adoption.test.ts
+          tests/titan-runtime-milestone.test.ts
+          tests/worm-runtime-adoption.test.ts
+          tests/worm-segment-physics.test.ts
+          EOF
+          sort -u /tmp/h8-allowed.txt -o /tmp/h8-allowed.txt
+
+          git diff --name-only bc770f97478874f3c65d8e0d6cdf68c9dc9547db -- | sort -u > /tmp/h8-actual.txt
+          echo '=== H8 NET FILES ==='
+          cat /tmp/h8-actual.txt
+          diff -u /tmp/h8-allowed.txt /tmp/h8-actual.txt
+
+          test ! -e .github/workflows/es12h8-pure.yml
+          test ! -e .github/workflows/es12h8-certify.yml
+          test ! -e scripts/es12h8-apply.py
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "feat(h8): integrate Worm segments raid chassis"
+          git push origin HEAD:feat/es-12h8-worm-segments
