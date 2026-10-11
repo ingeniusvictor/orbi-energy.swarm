@@ -21,6 +21,19 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Bound defeat patch to rematch branch
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path("scripts/es12h7-apply.py")
+          t = p.read_text()
+          old = 'defeat_end = "      bossSessionEndTimeRef.current = Date.now();"'
+          new = 'defeat_end = "      enterInfiniteAfterCampaignVictory();"'
+          if t.count(old) != 1:
+              raise SystemExit(f"fail-closed defeat_end marker count={t.count(old)}")
+          p.write_text(t.replace(old, new, 1))
+          PY
       - name: Apply literal H7 patcher
         run: python scripts/es12h7-apply.py
       - name: Capture Repository Smoke
