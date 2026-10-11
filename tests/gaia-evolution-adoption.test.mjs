@@ -41,14 +41,24 @@ test("one unique GAIA entity is created and later cycles mutate that same compan
   );
 });
 
-test("GAIA remains outside normal follower capacity and consolidation", () => {
-  assert.match(game, /const regularSwarmCount = swarmRef\.current\.reduce/);
+test("GAIA consumes one H4 swarm doctrine slot and cannot bypass the total cap", () => {
   assert.match(
     game,
-    /member\.energyId === "GAIA" \? 0 : 1/,
+    /const doctrineCapacity = getSwarmDoctrineCapacity\(swarmDoctrineRef\.current\)/,
   );
-  const exclusions = game.match(/m\.energyId !== "GAIA"/g) ?? [];
-  assert.ok(exclusions.length >= 2);
+  assert.match(game, /const regularSwarmCount = swarmRef\.current\.length/);
+  assert.doesNotMatch(
+    game,
+    /count \+ \(member\.energyId === "GAIA" \? 0 : 1\)/,
+  );
+  assert.match(
+    game,
+    /swarmRef\.current\.length >=\s*getSwarmDoctrineCapacity\(swarmDoctrineRef\.current\)/,
+  );
+  assert.match(
+    game,
+    /registerSwarmDoctrineMember\(\s*swarmDoctrineRef\.current,\s*gaiaMember\.id,\s*gaiaMember\.level/,
+  );
 });
 
 test("GAIA attacker-defender scaling reuses the bounded ES-12F8 combat pipeline", () => {
