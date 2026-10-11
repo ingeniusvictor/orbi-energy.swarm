@@ -1,0 +1,55 @@
+name: ES-12H5 Typecheck Diagnostic
+
+on:
+  push:
+    branches:
+      - feat/es-12h5-infinite-boss-family
+    paths:
+      - .github/workflows/es12h5-typecheck-diagnostic.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout H5 branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/es-12h5-infinite-boss-family
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Align guarded source marker
+        run: |
+          sed -i 's#// 7\. ATTACK SELECTION#// 7. ACTIVE ATTACK COOLDOWNS / SELECTION#' scripts/es12h5-apply.mjs
+
+      - name: Apply guarded H5 patch in runner only
+        run: node scripts/es12h5-apply.mjs
+
+      - name: Capture exact TypeScript diagnostic
+        shell: bash
+        run: |
+          set +e
+          npm run typecheck > es12h5-typecheck.log 2>&1
+          status=$?
+          cat es12h5-typecheck.log
+          printf '\nTYPECHECK_EXIT_STATUS=%s\n' "$status" >> es12h5-typecheck.log
+          git restore --staged . 2>/dev/null || true
+          git add -f es12h5-typecheck.log
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "ci(h5): capture typecheck diagnostic"
+          git push origin HEAD:feat/es-12h5-infinite-boss-family
+          exit "$status"
