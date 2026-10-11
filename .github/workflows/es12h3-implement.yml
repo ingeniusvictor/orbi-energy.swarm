@@ -1,0 +1,60 @@
+name: ES-12H3 Guarded Implementation
+
+on:
+  push:
+    branches:
+      - feat/es-12h3-endgame-challenge-dyson
+
+permissions:
+  contents: write
+
+concurrency:
+  group: es12h3-endgame-challenge-dyson
+  cancel-in-progress: true
+
+jobs:
+  implement:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout implementation branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/es-12h3-endgame-challenge-dyson
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Apply guarded H3 patch
+        run: node scripts/es12h3-apply.mjs
+
+      - name: Repository smoke tests
+        run: npm run test:repo
+
+      - name: Gameplay tests
+        run: npm run test:gameplay
+
+      - name: Platform tests
+        run: npm run test:platform
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Production build
+        run: npm run build
+
+      - name: Commit validated implementation
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/es12h3-implement.yml scripts/es12h3-apply.mjs
+          git add src tests docs
+          git commit -m "feat(endgame): apply ES-12H3 challenge and Dyson corrections"
+          git push origin HEAD:feat/es-12h3-endgame-challenge-dyson
