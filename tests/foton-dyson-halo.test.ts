@@ -66,18 +66,21 @@ test("rings share one exact Dyson-sphere radius and form a symmetric atomic tria
   assert.equal(cyan.radius, emerald.radius);
   assert.equal(emerald.radius, gold.radius);
 
-  assert.deepEqual(cyan.tilt, [1.08, 0, 0]);
-  assert.deepEqual(emerald.tilt, [1.08, 0, 2.094]);
-  assert.deepEqual(gold.tilt, [1.08, 0, 4.189]);
+  assert.deepEqual(cyan.planeNormal, [0.8660254, 0, 0.5]);
+  assert.deepEqual(emerald.planeNormal, [-0.4330127, 0.75, 0.5]);
+  assert.deepEqual(gold.planeNormal, [-0.4330127, -0.75, 0.5]);
 
-  assert.equal(cyan.tilt[0], emerald.tilt[0]);
-  assert.equal(emerald.tilt[0], gold.tilt[0]);
-  assert.equal(cyan.tilt[1], 0);
-  assert.equal(emerald.tilt[1], 0);
-  assert.equal(gold.tilt[1], 0);
-  assert.ok(Math.abs((emerald.tilt[2] - cyan.tilt[2]) - 2.094) < 0.002);
-  assert.ok(Math.abs((gold.tilt[2] - emerald.tilt[2]) - 2.095) < 0.002);
-  assert.ok(Math.abs((Math.PI * 2 - gold.tilt[2]) - 2.094) < 0.002);
+  const length = (normal: readonly number[]) => Math.hypot(...normal);
+  const dot = (a: readonly number[], b: readonly number[]) =>
+    a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+
+  for (const ring of FOTON_DYSON_HALO_RINGS) {
+    assert.ok(Math.abs(length(ring.planeNormal) - 1) < 0.000001);
+  }
+
+  assert.ok(Math.abs(dot(cyan.planeNormal, emerald.planeNormal) + 0.125) < 0.000001);
+  assert.ok(Math.abs(dot(emerald.planeNormal, gold.planeNormal) + 0.125) < 0.000001);
+  assert.ok(Math.abs(dot(gold.planeNormal, cyan.planeNormal) + 0.125) < 0.000001);
 
   assert.ok(Math.abs(emerald.phase - 2.094) < 0.001);
   assert.ok(Math.abs(gold.phase - 4.189) < 0.001);
