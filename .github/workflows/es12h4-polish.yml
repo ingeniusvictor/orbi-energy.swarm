@@ -1,0 +1,101 @@
+name: ES-12H4 Final Polish
+
+on:
+  push:
+    branches:
+      - feat/es-12h4-survival-doctrine
+
+permissions:
+  contents: write
+
+concurrency:
+  group: es12h4-final-polish
+  cancel-in-progress: true
+
+jobs:
+  polish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout H4 branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/es-12h4-survival-doctrine
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Apply surgical H4 polish
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+
+          const gamePath = 'src/game/EnergySwarmGame.tsx';
+          let game = fs.readFileSync(gamePath, 'utf8');
+
+          const duplicate = `    swarmDoctrineRef.current = createSwarmDoctrineState();\n    swarmDoctrineRef.current = createSwarmDoctrineState();`;
+          if (!game.includes(duplicate)) {
+            throw new Error('Expected duplicate doctrine reset was not found; refusing broad edit.');
+          }
+          game = game.replace(
+            duplicate,
+            `    swarmDoctrineRef.current = createSwarmDoctrineState();`,
+          );
+
+          const oldSpread = `          const spreadOffset =\n            projectileCount === 1\n              ? 0\n              : index === 0\n                ? -spread / 2\n                : spread / 2;`;
+          const newSpread = `          const spreadOffset =\n            projectileCount === 1\n              ? 0\n              : -spread / 2 +\n                (spread * index) /\n                  (projectileCount - 1);`;
+          if (!game.includes(oldSpread)) {
+            throw new Error('Expected specialist spread block was not found; refusing broad edit.');
+          }
+          game = game.replace(oldSpread, newSpread);
+          fs.writeFileSync(gamePath, game);
+
+          const testPath = 'tests/runtime-enemy-signature-adoption.test.ts';
+          let testSource = fs.readFileSync(testPath, 'utf8');
+          const oldContract = `    /spreadOffset =[\\s\\S]*-spread \\/ 2[\\s\\S]*spread \\/ 2/,`;
+          const newContract = `    /const spreadOffset =[\\s\\S]*projectileCount === 1[\\s\\S]*-spread \\/ 2 \\+[\\s\\S]*\\(spread \\* index\\) \\/[\\s\\S]*\\(projectileCount - 1\\)/,`;
+          if (!testSource.includes(oldContract)) {
+            throw new Error('Expected historical spread contract was not found; refusing broad edit.');
+          }
+          testSource = testSource.replace(oldContract, newContract);
+          fs.writeFileSync(testPath, testSource);
+          NODE
+
+      - name: Verify duplicate reset removed
+        shell: bash
+        run: |
+          count=$(grep -n "swarmDoctrineRef.current = createSwarmDoctrineState();" src/game/EnergySwarmGame.tsx | wc -l)
+          test "$count" -eq 1
+
+      - name: Platform tests
+        run: npm run test:platform
+
+      - name: Gameplay tests
+        run: npm run test:gameplay
+
+      - name: Repository smoke tests
+        run: npm run test:repo
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Production build
+        run: npm run build
+
+      - name: Commit clean polish
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          rm -f .github/workflows/es12h4-polish.yml
+          git add -A
+          git commit -m "fix(h4): correct specialist volley spread and reset"
+          git push origin HEAD:feat/es-12h4-survival-doctrine
