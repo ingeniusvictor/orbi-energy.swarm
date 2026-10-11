@@ -165,6 +165,12 @@ export type EvolvedEnemySignature =
   | "NULL_PULSE"
   | "OVERDRIVE_CHARGE";
 
+export type InfiniteBossIdentity =
+  | "DEVOURER_ASCENDANT"
+  | "NULL_ARCHITECT"
+  | "RIFT_MATRIARCH"
+  | "SIEGE_CATHEDRAL";
+
 export interface Enemy {
   id: string;
   type: EnemyType;
@@ -189,6 +195,7 @@ export interface Enemy {
   chargeTimer?: number;
   milestoneKind?: "MINIBOSS" | "BOSS_REMATCH";
   milestoneId?: string;
+  infiniteBossIdentity?: InfiniteBossIdentity;
   milestoneMovementSpeedMultiplier?: number;
   milestoneContactDamageMultiplier?: number;
   milestoneDamageMultiplier?: number;

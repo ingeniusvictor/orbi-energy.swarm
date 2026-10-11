@@ -82,7 +82,7 @@ test("wave completion is blocked until a BOSS_REMATCH gate is resolved", () => {
   );
 });
 
-test("eligible rematch gets an explicit warning then spawns through the existing boss engine", () => {
+test("eligible Infinite boss gets an identity-driven warning then spawns through the existing boss engine", () => {
   const transitions = section(
     game,
     "const handleWaveTransitions",
@@ -91,11 +91,11 @@ test("eligible rematch gets an explicit warning then spawns through the existing
 
   assert.match(
     transitions,
-    /BOSS REMATCH INBOUND \/\/ BLACKOUT DEVOURER/,
+    /getInfiniteBossFamilyProfile/,
   );
   assert.match(
     transitions,
-    /DEVOURER REMATCH INBOUND/,
+    /BOSS MILESTONE INBOUND/,
   );
   assert.match(
     transitions,
@@ -138,6 +138,10 @@ test("rematch boss owns isolated scaled metadata while campaign attempts stay be
   assert.match(
     spawn,
     /milestoneKind: isRematch \? "BOSS_REMATCH" : undefined/,
+  );
+  assert.match(
+    spawn,
+    /infiniteBossIdentity: rematchProfile\?\.bossIdentity/,
   );
   assert.match(
     spawn,
@@ -256,7 +260,7 @@ test("rematch defeat resolves the gate and resumes Infinite Swarm without campai
   );
   assert.match(
     rematchBranch,
-    /DEVOURER REMATCH PURGED/,
+    /defeatedFamily\?\.defeatLabel/,
   );
   assert.match(rematchBranch, /return;/);
   assert.doesNotMatch(
@@ -293,5 +297,9 @@ test("rematch enemy metadata is explicitly represented in Enemy", () => {
   assert.match(
     types,
     /milestoneRewardMultiplier\?: number/,
+  );
+  assert.match(
+    types,
+    /infiniteBossIdentity\?: InfiniteBossIdentity/,
   );
 });

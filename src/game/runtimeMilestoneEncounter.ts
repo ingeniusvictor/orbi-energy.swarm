@@ -1,5 +1,7 @@
 import { EnemyType } from "./types";
 import type { RuntimeWaveDescriptor } from "./runtimeWaveDescriptor";
+import { selectInfiniteBossIdentity } from "./infiniteBossFamily";
+import type { InfiniteBossIdentity } from "./types";
 
 export type InfiniteMilestoneEncounterProfile =
   | {
@@ -26,6 +28,7 @@ export type InfiniteMilestoneEncounterProfile =
       spawnTrigger: "AFTER_REGULAR_BUDGET_CLEAR";
       completionMode: "BOSS_DEFEAT_AFTER_BUDGET";
       enemyType: EnemyType.BOSS_DEVOURER;
+      bossIdentity: InfiniteBossIdentity;
       healthMultiplier: number;
       damageMultiplier: number;
       attackRateMultiplier: number;
@@ -107,6 +110,7 @@ export const projectInfiniteMilestoneEncounter = (
       spawnTrigger: "AFTER_REGULAR_BUDGET_CLEAR",
       completionMode: "BOSS_DEFEAT_AFTER_BUDGET",
       enemyType: EnemyType.BOSS_DEVOURER,
+      bossIdentity: selectInfiniteBossIdentity(descriptor.sector),
       healthMultiplier: round(
         clamp(1.2 + progression * 0.16, 1.2, 2.25),
       ),
