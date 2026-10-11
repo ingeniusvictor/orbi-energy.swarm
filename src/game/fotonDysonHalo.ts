@@ -14,56 +14,56 @@ export interface FotonDysonHaloRingDescriptor {
   segmentArcFraction: number;
 }
 
-export const FOTON_DYSON_HALO_RED_ACCENT = 0xef4444;
+export const FOTON_DYSON_HALO_RED_ACCENT = 0xff1744;
 
-// The three rings intentionally occupy nearly the same orbital radius. Their
-// visual separation comes from strongly different orbital planes, matching an
-// atomic / compact Dyson-sphere silhouette instead of concentric circles.
+// Bright neon palette and a deliberately symmetric atomic triad. All rings
+// share the same center and radius; the atom/Dyson silhouette is created only
+// by mirrored orbital planes, not by offset/concentric geometry.
 export const FOTON_DYSON_HALO_RINGS: readonly FotonDysonHaloRingDescriptor[] = [
   {
     id: "CYAN",
     unlockCollectedOrbi: 0,
-    color: 0x22d3ee,
+    color: 0x00f5ff,
     accentColor: FOTON_DYSON_HALO_RED_ACCENT,
-    radius: 1.04,
-    railTubeRadius: 0.046,
-    energyTubeRadius: 0.012,
-    tilt: [0.08, 0.03, 0.12],
-    angularVelocity: 0.17,
+    radius: 1.055,
+    railTubeRadius: 0.044,
+    energyTubeRadius: 0.018,
+    tilt: [1.08, 0, 0],
+    angularVelocity: 0.14,
     phase: 0,
     buildDurationMs: 620,
     accentNodeCount: 3,
-    segmentArcFraction: 0.58,
+    segmentArcFraction: 0.62,
   },
   {
     id: "EMERALD",
     unlockCollectedOrbi: 10,
-    color: 0x10b981,
+    color: 0x00ff88,
     accentColor: FOTON_DYSON_HALO_RED_ACCENT,
     radius: 1.055,
-    railTubeRadius: 0.039,
-    energyTubeRadius: 0.011,
-    tilt: [0.96, 0.34, -0.48],
-    angularVelocity: -0.13,
-    phase: 2.05,
+    railTubeRadius: 0.041,
+    energyTubeRadius: 0.017,
+    tilt: [0.62, 0.86, 0.78],
+    angularVelocity: -0.115,
+    phase: 2.094,
     buildDurationMs: 680,
     accentNodeCount: 3,
-    segmentArcFraction: 0.56,
+    segmentArcFraction: 0.6,
   },
   {
     id: "GOLD",
     unlockCollectedOrbi: 20,
-    color: 0xfbbf24,
+    color: 0xffd740,
     accentColor: FOTON_DYSON_HALO_RED_ACCENT,
-    radius: 1.068,
-    railTubeRadius: 0.041,
-    energyTubeRadius: 0.012,
-    tilt: [-0.88, -0.44, 0.68],
-    angularVelocity: 0.1,
-    phase: 4.1,
+    radius: 1.055,
+    railTubeRadius: 0.042,
+    energyTubeRadius: 0.018,
+    tilt: [-0.62, -0.86, -0.78],
+    angularVelocity: 0.09,
+    phase: 4.189,
     buildDurationMs: 740,
     accentNodeCount: 3,
-    segmentArcFraction: 0.54,
+    segmentArcFraction: 0.6,
   },
 ] as const;
 
