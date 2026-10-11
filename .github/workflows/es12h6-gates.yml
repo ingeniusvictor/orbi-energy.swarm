@@ -45,6 +45,14 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Locate historical mutator assertion
+        run: |
+          echo "=== tracked candidate ==="
+          git ls-files 'tests/*infinite*' || true
+          echo "=== assertion search after npm ci ==="
+          grep -R -n -F 'recipe.mutators.length >= 1' tests . --exclude-dir=node_modules --exclude-dir=.git || true
+          echo "=== matching test title ==="
+          grep -R -n -F 'sector recipes are deterministic, bounded, and milestone-aware' tests . --exclude-dir=node_modules --exclude-dir=.git || true
       - run: npm run test:platform
 
   typecheck:
