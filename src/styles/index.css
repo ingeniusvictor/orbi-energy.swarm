@@ -1333,10 +1333,10 @@ body {
 
   .orbi-game-workspace {
     grid-template-columns:
-      minmax(210px, 235px)
+      minmax(190px, 210px)
       minmax(0, 1fr)
-      minmax(270px, 300px);
-    gap: 0.65rem;
+      minmax(245px, 270px);
+    gap: 0.5rem;
   }
 
   .orbi-battlefield {

@@ -49,7 +49,7 @@ export const WAVES: WaveConfig[] = [
     displayName: "Drone Lock",
     subtitle: "Long-range vector threat",
     description: "Targeting drones locked onto ORBI FOTON. High-density aiming lines.",
-    tacticalAdvice: "Cover with Front Shield. Reposition dynamically before lock fires.",
+    tacticalAdvice: "Use X-Guard. Reposition dynamically before lock fires.",
     duration: 45000,
     enemyBudget: 22,
     spawnInterval: 95,
@@ -91,7 +91,7 @@ export const WAVES: WaveConfig[] = [
     displayName: "Elite Breach",
     subtitle: "Heavily armored blackout unit",
     description: "Blackout Elite breaching. Front shield protects core from front attacks.",
-    tacticalAdvice: "Use Arrowhead V or Float Walkers to flank its side armor.",
+    tacticalAdvice: "Use Star Matrix or Float Walkers to flank its side armor.",
     duration: 50000,
     enemyBudget: 25,
     spawnInterval: 100,
@@ -154,7 +154,7 @@ export const WAVES: WaveConfig[] = [
     displayName: "Titan Warning",
     subtitle: "Pre-Devourer heavy assault",
     description: "Intensified telegraphs. High core drop rate detected.",
-    tacticalAdvice: "Switch between Front Shield and Arrowhead V dynamically to protect and destroy.",
+    tacticalAdvice: "Switch between X-Guard and Star Matrix dynamically to protect and destroy.",
     duration: 55000,
     enemyBudget: 40,
     spawnInterval: 75,
@@ -309,7 +309,7 @@ export const BLACKOUT_DEVOURER_CANON: BossDefinition = {
       id: "devourer_charge",
       displayName: "Devourer Charge",
       description: "Locked target vector indicators precede a direct colossal charge that leaves dark paths.",
-      counterAdvice: "Dodge laterally immediately. Use Arrowhead V for a quick counter-assault.",
+      counterAdvice: "Dodge laterally immediately. Use Star Matrix for a quick counter-assault.",
       telegraphDuration: 1100,
       cooldown: 7000,
       minimumPhase: 3,
@@ -319,30 +319,11 @@ export const BLACKOUT_DEVOURER_CANON: BossDefinition = {
     }
   ],
   summonRules: [
-    {
-      phase: 2,
-      enemyType: EnemyType.CRAWLER,
-      maxCount: 4,
-      cooldown: 6000
-    },
-    {
-      phase: 2,
-      enemyType: EnemyType.DRONE,
-      maxCount: 1,
-      cooldown: 10000
-    },
-    {
-      phase: 3,
-      enemyType: EnemyType.PARASITE,
-      maxCount: 4,
-      cooldown: 5000
-    },
-    {
-      phase: 3,
-      enemyType: EnemyType.DISRUPTOR,
-      maxCount: 1,
-      cooldown: 14000
-    }
+    { phase: 1, enemyType: EnemyType.CRAWLER, maxCount: 4, cooldown: 7000 },
+    { phase: 1, enemyType: EnemyType.DRONE, maxCount: 1, cooldown: 11000 },
+    { phase: 2, enemyType: EnemyType.SPLITTER, maxCount: 2, cooldown: 9000 },
+    { phase: 2, enemyType: EnemyType.DISRUPTOR, maxCount: 1, cooldown: 12000 },
+    { phase: 3, enemyType: EnemyType.PARASITE, maxCount: 4, cooldown: 4500 }
   ],
   defeatSequence: {
     visualDuration: 4000,

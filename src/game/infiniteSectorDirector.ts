@@ -184,25 +184,25 @@ export const generateInfiniteSectorRecipe = (
   const random = createSeededRandom(numericSeed);
 
   let enemyBudget = clamp(
-    Math.round(24 + progress * 1.25 + logarithmicPressure * 5),
-    28,
+    Math.round(28 + progress * 1.35 + logarithmicPressure * 5.5),
+    32,
     180,
   );
   let maxConcurrentEnemies = clamp(
-    14 + Math.floor(logarithmicPressure * 2.5) + tierIndex * 2,
-    14,
-    36,
+    16 + Math.floor(logarithmicPressure * 2.8) + tierIndex * 2,
+    16,
+    38,
   );
   let spawnIntervalFrames = clamp(
-    Math.round(105 - logarithmicPressure * 6 - tierIndex * 4),
-    42,
-    105,
+    Math.round(98 - logarithmicPressure * 6.5 - tierIndex * 4),
+    40,
+    98,
   );
 
   if (recoverySector) {
-    enemyBudget = Math.max(28, Math.round(enemyBudget * 0.82));
-    maxConcurrentEnemies = Math.max(14, maxConcurrentEnemies - 3);
-    spawnIntervalFrames = Math.min(105, spawnIntervalFrames + 12);
+    enemyBudget = Math.max(32, Math.round(enemyBudget * 0.82));
+    maxConcurrentEnemies = Math.max(16, maxConcurrentEnemies - 3);
+    spawnIntervalFrames = Math.min(98, spawnIntervalFrames + 12);
   }
 
   const compositionCount = clamp(
@@ -238,21 +238,21 @@ export const generateInfiniteSectorRecipe = (
   const aggressionMultiplier = round(
     recoverySector
       ? clamp(
-          (1 + progress * 0.002 + tierIndex * 0.12) * 0.88,
+          (1.08 + progress * 0.003 + tierIndex * 0.13) * 0.88,
           1,
           2,
         )
-      : clamp(1 + progress * 0.002 + tierIndex * 0.12, 1, 2),
+      : clamp(1.08 + progress * 0.003 + tierIndex * 0.13, 1, 2),
   );
 
   const projectileDensityMultiplier = round(
     recoverySector
       ? clamp(
-          (1 + progress * 0.0015 + tierIndex * 0.1) * 0.9,
+          (1.08 + progress * 0.0025 + tierIndex * 0.11) * 0.9,
           1,
           2.2,
         )
-      : clamp(1 + progress * 0.0015 + tierIndex * 0.1, 1, 2.2),
+      : clamp(1.08 + progress * 0.0025 + tierIndex * 0.11, 1, 2.2),
   );
 
   const hazardIntensity = round(
@@ -290,8 +290,8 @@ export const generateInfiniteSectorRecipe = (
   );
 
   const projectileBudget = clamp(
-    Math.round(80 + progress * 0.22 + tierIndex * 12),
-    80,
+    Math.round(90 + progress * 0.26 + tierIndex * 14),
+    90,
     240,
   );
 
@@ -339,18 +339,18 @@ export const validateInfiniteSectorRecipe = (
   if (!Number.isInteger(recipe.sector) || recipe.sector < 11) {
     errors.push("sector");
   }
-  if (recipe.enemyBudget < 28 || recipe.enemyBudget > 180) {
+  if (recipe.enemyBudget < 32 || recipe.enemyBudget > 180) {
     errors.push("enemyBudget");
   }
   if (
-    recipe.maxConcurrentEnemies < 14 ||
-    recipe.maxConcurrentEnemies > 36
+    recipe.maxConcurrentEnemies < 16 ||
+    recipe.maxConcurrentEnemies > 38
   ) {
     errors.push("maxConcurrentEnemies");
   }
   if (
-    recipe.spawnIntervalFrames < 42 ||
-    recipe.spawnIntervalFrames > 105
+    recipe.spawnIntervalFrames < 40 ||
+    recipe.spawnIntervalFrames > 98
   ) {
     errors.push("spawnIntervalFrames");
   }
@@ -412,7 +412,7 @@ export const validateInfiniteSectorRecipe = (
     errors.push("spawnSafetyRadius");
   }
   if (
-    recipe.fairness.projectileBudget < 80 ||
+    recipe.fairness.projectileBudget < 90 ||
     recipe.fairness.projectileBudget > 240
   ) {
     errors.push("projectileBudget");

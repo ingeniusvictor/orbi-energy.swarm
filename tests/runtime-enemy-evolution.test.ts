@@ -50,6 +50,7 @@ const regularEnemyTypes = [
   EnemyType.DRONE,
   EnemyType.SPLITTER,
   EnemyType.DISRUPTOR,
+  EnemyType.BLACKOUT_ELITE,
 ] as const;
 
 const firstSelectedOrdinal = (
@@ -98,39 +99,29 @@ test("campaign descriptors never enable evolved enemies", () => {
   }
 });
 
-test("Infinite Mastery Sectors 11-25 remain evolution-free", () => {
-  for (const sector of [11, 15, 20, 25]) {
-    const descriptor = descriptorForSector(sector);
-    const policy =
-      getRuntimeEnemyEvolutionPolicy(descriptor);
-
-    assert.equal(policy.tier, "MASTERY");
-    assert.equal(policy.enabled, false);
-    assert.equal(policy.evolutionChance, 0);
-    assert.equal(policy.maxConcurrentEvolvedEnemies, 0);
-    assert.deepEqual(policy.eligibleEnemyTypes, []);
-  }
+test("Infinite Mastery Sectors 11-25 introduce one bounded evolved threat", () => {
+  for (const sector of [11,15,20,25]) { const policy=getRuntimeEnemyEvolutionPolicy(descriptorForSector(sector)); assert.equal(policy.tier,"MASTERY"); assert.equal(policy.enabled,true); assert.equal(policy.evolutionChance,0.08); assert.equal(policy.maxConcurrentEvolvedEnemies,1); assert.deepEqual(policy.eligibleEnemyTypes,regularEnemyTypes); }
 });
 
-test("tier policy introduces bounded evolution only from Sector 26 onward", () => {
+test("tier policy escalates bounded evolution after Mastery", () => {
   const cases = [
     {
       sector: 26,
       tier: "ADVANCED_COMBINATION",
-      chance: 0.12,
-      cap: 1,
+      chance: 0.15,
+      cap: 2,
     },
     {
       sector: 51,
       tier: "HIGH_PRESSURE",
-      chance: 0.2,
-      cap: 2,
+      chance: 0.23,
+      cap: 3,
     },
     {
       sector: 101,
       tier: "ENDLESS_ENDGAME",
-      chance: 0.28,
-      cap: 3,
+      chance: 0.30,
+      cap: 4,
     },
   ] as const;
 
@@ -177,10 +168,7 @@ test("variant identities are explicit and exclude milestone/boss enemy classes",
     EVOLVED_ENEMY_VARIANTS[EnemyType.DISRUPTOR]?.id,
     "NULL_DISRUPTOR",
   );
-  assert.equal(
-    EVOLVED_ENEMY_VARIANTS[EnemyType.BLACKOUT_ELITE],
-    undefined,
-  );
+  assert.equal(EVOLVED_ENEMY_VARIANTS[EnemyType.BLACKOUT_ELITE]?.id, "OVERDRIVE_ELITE");
   assert.equal(
     EVOLVED_ENEMY_VARIANTS[EnemyType.BOSS_DEVOURER],
     undefined,
@@ -188,14 +176,6 @@ test("variant identities are explicit and exclude milestone/boss enemy classes",
 
   const descriptor = descriptorForSector(101);
   for (let ordinal = 0; ordinal < 500; ordinal += 1) {
-    assert.equal(
-      selectEvolvedEnemyVariant(
-        descriptor,
-        EnemyType.BLACKOUT_ELITE,
-        ordinal,
-      ),
-      null,
-    );
     assert.equal(
       selectEvolvedEnemyVariant(
         descriptor,
@@ -299,7 +279,7 @@ test("concurrency budget blocks otherwise eligible evolved spawns", () => {
     descriptor,
     enemyType: EnemyType.CRAWLER,
     spawnOrdinal: ordinal ?? 0,
-    activeEvolvedEnemies: 1,
+    activeEvolvedEnemies: 2,
   });
   assert.equal(blocked, null);
 });
@@ -349,25 +329,13 @@ test("evolution policy stays finite bounded and tier-correct through Sector 1000
       true,
     );
     assert.ok(policy.evolutionChance >= 0);
-    assert.ok(policy.evolutionChance <= 0.28);
+    assert.ok(policy.evolutionChance <= 0.30);
     assert.ok(
       policy.maxConcurrentEvolvedEnemies >= 0 &&
-        policy.maxConcurrentEvolvedEnemies <= 3,
+        policy.maxConcurrentEvolvedEnemies <= 4,
     );
 
-    if (sector <= 25) {
-      assert.equal(policy.enabled, false);
-      assert.equal(policy.evolutionChance, 0);
-      assert.equal(
-        policy.maxConcurrentEvolvedEnemies,
-        0,
-      );
-    } else {
-      assert.equal(policy.enabled, true);
-      assert.deepEqual(
-        policy.eligibleEnemyTypes,
-        regularEnemyTypes,
-      );
-    }
+    assert.equal(policy.enabled, true);
+    assert.deepEqual(policy.eligibleEnemyTypes, regularEnemyTypes);
   }
 });

@@ -52,8 +52,8 @@ test("swarm roster uses one scroll surface and a taller responsive cockpit panel
   );
 });
 
-test("Dyson halo owns three equal-tilt planes separated by 120-degree azimuths", () => {
-  assert.match(halo, /tilt: \[1\.08, 0, 0\]/);
-  assert.match(halo, /tilt: \[1\.08, 0, 2\.094\]/);
-  assert.match(halo, /tilt: \[1\.08, 0, 4\.189\]/);
+test("Dyson halo owns three explicit true-plane normals", () => {
+  assert.match(halo, /planeNormal: \[0\.8660254, 0, 0\.5\]/);
+  assert.match(halo, /planeNormal: \[-0\.4330127, 0\.75, 0\.5\]/);
+  assert.match(halo, /planeNormal: \[-0\.4330127, -0\.75, 0\.5\]/);
 });

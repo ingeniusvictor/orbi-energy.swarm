@@ -10,6 +10,8 @@ export interface EvolvedSignatureBehavior {
   droneVolleySpreadRadians: number;
   splitterExtraMinions: 0 | 1;
   disruptDurationMultiplier: number;
+  eliteChargeCooldownMultiplier: number;
+  eliteChargeSpeedMultiplier: number;
 }
 
 export const NEUTRAL_EVOLVED_SIGNATURE_BEHAVIOR: EvolvedSignatureBehavior =
@@ -23,6 +25,8 @@ export const NEUTRAL_EVOLVED_SIGNATURE_BEHAVIOR: EvolvedSignatureBehavior =
     droneVolleySpreadRadians: 0,
     splitterExtraMinions: 0,
     disruptDurationMultiplier: 1,
+    eliteChargeCooldownMultiplier: 1,
+    eliteChargeSpeedMultiplier: 1,
   });
 
 const clamp = (
@@ -99,9 +103,14 @@ export const projectEvolvedSignatureBehavior = (
     case "NULL_PULSE":
       return {
         ...neutralFor(signature, intensity),
-        disruptDurationMultiplier: round(
-          clamp(1 + intensity * 0.4, 1, 1.24),
-        ),
+        disruptDurationMultiplier: round(clamp(1 + intensity * 0.4, 1, 1.24)),
+      };
+
+    case "OVERDRIVE_CHARGE":
+      return {
+        ...neutralFor(signature, intensity),
+        eliteChargeCooldownMultiplier: round(clamp(1 - intensity * 0.42, 0.78, 1)),
+        eliteChargeSpeedMultiplier: round(clamp(1 + intensity * 0.55, 1, 1.33)),
       };
 
     default:

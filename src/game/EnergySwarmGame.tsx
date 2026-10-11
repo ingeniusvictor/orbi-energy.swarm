@@ -333,6 +333,8 @@ export const EnergySwarmGame: React.FC = () => {
   const coreExposedTimerRef = useRef<number>(0); // exposed window countdown
   const phaseTransitionTimerRef = useRef<number>(0); // transition immunity freeze timer
   const bossSummonTimersRef = useRef<Record<string, number>>({}); // cooldowns of summons
+  const bossHunterWaveCooldownRef = useRef<number>(8000);
+  const bossHunterWaveTelegraphRef = useRef<number>(0);
   const gravityWellPulseTimerRef = useRef<number>(0); // timing for gravity well pull
   const shownThreatIntelsRef = useRef<string[]>([]); // prevents repeating full screen threat intel popups for boss attacks
 
@@ -1289,6 +1291,8 @@ export const EnergySwarmGame: React.FC = () => {
     coreExposedTimerRef.current = 0;
     phaseTransitionTimerRef.current = 0;
     bossSummonTimersRef.current = {};
+    bossHunterWaveCooldownRef.current = 8000;
+    bossHunterWaveTelegraphRef.current = 0;
     gravityWellPulseTimerRef.current = 0;
     shownThreatIntelsRef.current = [];
 
@@ -2675,6 +2679,8 @@ export const EnergySwarmGame: React.FC = () => {
     coreExposedTimerRef.current = 0;
     phaseTransitionTimerRef.current = 0;
     bossSummonTimersRef.current = {};
+    bossHunterWaveCooldownRef.current = 8000;
+    bossHunterWaveTelegraphRef.current = 0;
     gravityWellPulseTimerRef.current = 0;
     shownThreatIntelsRef.current = [];
 
@@ -2990,8 +2996,48 @@ export const EnergySwarmGame: React.FC = () => {
       }
     });
 
+    // H3 HUNTER WAVE: bounded support ability. It pauses regular attack
+    // selection during a readable 1.2s warning, then deploys a small fixed
+    // package. No enemy scan or scheduler is added to the hot path.
+    if (bossHunterWaveTelegraphRef.current > 0) {
+      bossHunterWaveTelegraphRef.current -= delta;
+      if (bossHunterWaveTelegraphRef.current <= 0) {
+        const phase = boss.bossPhase || 1;
+        const packageTypes = phase >= 3
+          ? [EnemyType.PARASITE, EnemyType.PARASITE, EnemyType.DISRUPTOR, EnemyType.SPLITTER]
+          : phase >= 2
+            ? [EnemyType.CRAWLER, EnemyType.DRONE, EnemyType.SPLITTER]
+            : [EnemyType.CRAWLER, EnemyType.CRAWLER, EnemyType.DRONE];
+        for (let i = 0; i < packageTypes.length; i += 1) {
+          if (enemiesRef.current.length >= MAX_ENEMIES - 1) break;
+          const angle = (i / packageTypes.length) * Math.PI * 2;
+          spawnBossMinion(
+            packageTypes[i],
+            boss.x + Math.cos(angle) * 72,
+            boss.y + Math.sin(angle) * 56,
+          );
+        }
+        bossHunterWaveCooldownRef.current = phase >= 3 ? 6000 : phase >= 2 ? 7200 : 8500;
+        addFloatingText("HUNTER WAVE", boss.x, boss.y - 58, "#f97316");
+      }
+    } else {
+      bossHunterWaveCooldownRef.current -= delta;
+      if (
+        bossHunterWaveCooldownRef.current <= 0 &&
+        bossCurrentAttackRef.current === null &&
+        phaseTransitionTimerRef.current <= 0
+      ) {
+        bossHunterWaveTelegraphRef.current = 1200;
+        addFloatingText("HUNTER WAVE INCOMING", boss.x, boss.y - 58, "#fbbf24");
+        if (!shownThreatIntelsRef.current.includes("hunter_wave")) {
+          shownThreatIntelsRef.current.push("hunter_wave");
+          postDialogue("COMPANION", "¡OLEADA CAZADORA! El Devorador despliega refuerzos. Divide el fuego antes de volver al núcleo.");
+        }
+      }
+    }
+
     // 7. ACTIVE ATTACK COOLDOWNS / SELECTION
-    if (bossCurrentAttackRef.current === null) {
+    if (bossCurrentAttackRef.current === null && bossHunterWaveTelegraphRef.current <= 0) {
       const bossAttackRateMultiplier =
         boss.milestoneAttackRateMultiplier ?? 1;
       bossAttackTimerRef.current -=
@@ -3072,7 +3118,7 @@ export const EnergySwarmGame: React.FC = () => {
           bossCurrentAttackRef.current = null;
           setBossAttackName(null);
           
-          bossLastAttacksRef.current.push(finishedId);
+          if (finishedId) bossLastAttacksRef.current.push(finishedId);
           if (bossLastAttacksRef.current.length > 2) bossLastAttacksRef.current.shift();
 
           bossAttackTimerRef.current = 2200 + Math.random() * 1800;
@@ -4321,7 +4367,9 @@ export const EnergySwarmGame: React.FC = () => {
             if (enemy.pulseCooldown <= 0) {
               // Initiate Elite charge cycle (1.0s: 36 frames telegraph + 24 frames dash)
               enemy.chargeTimer = 60;
-              enemy.pulseCooldown = 220 + Math.random() * 150; // charge every 4-6s
+              enemy.pulseCooldown =
+                (220 + Math.random() * 150) *
+                signatureBehavior.eliteChargeCooldownMultiplier; // evolved elites charge more often, same telegraph
 
               // Direct charge vector towards Foton leader
               const tAngle = Math.atan2(playerPosRef.current.y - enemy.y, playerPosRef.current.x - enemy.x);
@@ -4332,12 +4380,14 @@ export const EnergySwarmGame: React.FC = () => {
                 Math.cos(tAngle) *
                 7.5 *
                 simulationMutatorEffects.enemySpeedMultiplier *
-                milestoneDashMultiplier;
+                milestoneDashMultiplier *
+                signatureBehavior.eliteChargeSpeedMultiplier;
               enemy.vy =
                 Math.sin(tAngle) *
                 7.5 *
                 simulationMutatorEffects.enemySpeedMultiplier *
-                milestoneDashMultiplier;
+                milestoneDashMultiplier *
+                signatureBehavior.eliteChargeSpeedMultiplier;
 
               playEliteChargeSound();
             }
