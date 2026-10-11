@@ -1,4 +1,4 @@
-name: ES-12H7 Literal Smoke Diagnostic
+name: ES-12H7 Full Titan Certification
 
 on:
   push:
@@ -7,15 +7,16 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  diagnose:
+  certify:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           ref: feat/es-12h7-titan-core-chassis
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -36,30 +37,49 @@ jobs:
           PY
       - name: Apply literal H7 patcher
         run: python scripts/es12h7-apply.py
-      - name: Capture Repository Smoke
+      - name: Repository Smoke
+        run: npm run test:repo
+      - name: Gameplay
+        run: npm run test:gameplay
+      - name: Platform
+        run: npm run test:platform
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Production Build
+        run: npm run build
+      - name: Guard H4-H6 budgets and Campaign contract
         shell: bash
         run: |
-          set +e
-          npm run test:repo > smoke.log 2>&1
-          STATUS=$?
-          cat smoke.log
-          printf '%s\n' "$STATUS" > smoke.status
-          exit 0
-      - name: Upload smoke diagnostic
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: es12h7-smoke-diagnostic
-          path: |
-            smoke.log
-            smoke.status
-          if-no-files-found: error
-          retention-days: 1
-      - name: Preserve smoke result
+          git diff -- src/game/constants.ts | tee /tmp/constants.diff
+          test ! -s /tmp/constants.diff
+          grep -F 'spawnBoss();' src/game/EnergySwarmGame.tsx >/dev/null
+          grep -F 'MAX_ENEMIES' src/game/constants.ts >/dev/null
+          grep -F 'MAX_PROJECTILES' src/game/constants.ts >/dev/null
+      - name: Remove H7 temporary tooling
         shell: bash
         run: |
-          STATUS="$(cat smoke.status)"
-          if [ "$STATUS" -ne 0 ]; then
-            echo "Repository Smoke failed with exit code $STATUS"
-            exit "$STATUS"
-          fi
+          rm -f \
+            .github/workflows/es12h7-certify.yml \
+            .github/workflows/es12h7-implement.yml \
+            .github/workflows/es12h7-implement-v2.yml \
+            .github/workflows/es12h7-implement-v3.yml \
+            scripts/es12h7-apply.py
+          test ! -e .github/workflows/es12h7-certify.yml
+          test ! -e .github/workflows/es12h7-implement.yml
+          test ! -e .github/workflows/es12h7-implement-v2.yml
+          test ! -e .github/workflows/es12h7-implement-v3.yml
+          test ! -e scripts/es12h7-apply.py
+      - name: Verify clean H7 product diff
+        shell: bash
+        run: |
+          git diff --check
+          ! git status --short | grep -E 'smoke\.log|smoke\.status|diagnostic'
+          git status --short
+      - name: Materialize certified H7 candidate
+        shell: bash
+        run: |
+          git config user.name "ingeniusvictor"
+          git config user.email "ingenius.victor@gmail.com"
+          git add -A
+          git commit -m "feat(h7): add Titan Core chassis and raid escalation"
+          git push origin HEAD:feat/es-12h7-titan-core-chassis
