@@ -35,13 +35,14 @@ test("premium orbital language uses structural rails, instanced light segments a
   );
 });
 
-test("rings use atomic-sphere planes rather than widely concentric radii", () => {
-  assert.match(halo, /radius: 1\.04/);
-  assert.match(halo, /radius: 1\.055/);
-  assert.match(halo, /radius: 1\.068/);
-  assert.match(halo, /tilt: \[0\.08, 0\.03, 0\.12\]/);
-  assert.match(halo, /tilt: \[0\.96, 0\.34, -0\.48\]/);
-  assert.match(halo, /tilt: \[-0\.88, -0\.44, 0\.68\]/);
+test("rings use a neon symmetric atomic-sphere triad", () => {
+  const radiusMatches = halo.match(/radius: 1\.055/g) ?? [];
+  assert.equal(radiusMatches.length, 3);
+  assert.match(halo, /tilt: \[1\.08, 0, 0\]/);
+  assert.match(halo, /tilt: \[0\.62, 0\.86, 0\.78\]/);
+  assert.match(halo, /tilt: \[-0\.62, -0\.86, -0\.78\]/);
+  assert.match(halo, /phase: 2\.094/);
+  assert.match(halo, /phase: 4\.189/);
 });
 
 test("ring construction remains progressive instead of hard-popping", () => {
@@ -78,37 +79,16 @@ test("live swarm size is corrected to true collected Orbi before unlocking extra
 });
 
 test("simple 2D integrity ring stays replaced by the transparent Dyson composite", () => {
-  assert.match(
-    runtime,
-    /FOTON_GAMEPLAY_DRAW_SIZE = 37\.5/,
-  );
-  assert.match(
-    runtime,
-    /FOTON_GAMEPLAY_COMPOSITE_SIZE = 49\.2/,
-  );
-  assert.match(
-    canvas,
-    /FOTON_GAMEPLAY_COMPOSITE_SIZE/,
-  );
-  assert.doesNotMatch(
-    canvas,
-    /projectFotonIntegrityVisual/,
-  );
+  assert.match(runtime, /FOTON_GAMEPLAY_DRAW_SIZE = 37\.5/);
+  assert.match(runtime, /FOTON_GAMEPLAY_COMPOSITE_SIZE = 49\.2/);
+  assert.match(canvas, /FOTON_GAMEPLAY_COMPOSITE_SIZE/);
+  assert.doesNotMatch(canvas, /projectFotonIntegrityVisual/);
 });
 
 test("Golden Core is folded into the first cyan structural rail without adding another orbit", () => {
-  assert.match(
-    canvas,
-    /goldenCoreActive: hasGoldenCore/,
-  );
-  assert.match(
-    runtime,
-    /goldenCoreActive\?: boolean \| null/,
-  );
-  assert.match(
-    runtime,
-    /request\.goldenCoreActive \?\? false/,
-  );
+  assert.match(canvas, /goldenCoreActive: hasGoldenCore/);
+  assert.match(runtime, /goldenCoreActive\?: boolean \| null/);
+  assert.match(runtime, /request\.goldenCoreActive \?\? false/);
   assert.match(
     runtime,
     /if \(index === 0\)[\s\S]*active\.goldenCoreActive[\s\S]*0x3d2b0a[\s\S]*0x5b3a05/,
@@ -125,10 +105,7 @@ test("Golden Core is folded into the first cyan structural rail without adding a
   );
   assert.ok(goldenBlockStart >= 0);
   assert.ok(goldenBlockEnd > goldenBlockStart);
-  const goldenBlock = runtime.slice(
-    goldenBlockStart,
-    goldenBlockEnd,
-  );
+  const goldenBlock = runtime.slice(goldenBlockStart, goldenBlockEnd);
   assert.doesNotMatch(
     goldenBlock,
     /new THREE\.(?:TorusGeometry|Group|Mesh|InstancedMesh)/,
@@ -150,23 +127,14 @@ test("standalone Golden Core circle occurs only after normal GLB gameplay return
   assert.ok(goldenIndex > glbReturnIndex);
 });
 
-test("canonical palette stays cyan emerald gold with subtle red accents", () => {
-  assert.match(halo, /color: 0x22d3ee/);
-  assert.match(halo, /color: 0x10b981/);
-  assert.match(halo, /color: 0xfbbf24/);
-  assert.match(
-    halo,
-    /FOTON_DYSON_HALO_RED_ACCENT = 0xef4444/,
-  );
+test("canonical palette is high-luminance neon cyan emerald gold with subtle red accents", () => {
+  assert.match(halo, /color: 0x00f5ff/);
+  assert.match(halo, /color: 0x00ff88/);
+  assert.match(halo, /color: 0xffd740/);
+  assert.match(halo, /FOTON_DYSON_HALO_RED_ACCENT = 0xff1744/);
 });
 
 test("halo adoption does not introduce combat mutations or enemy scans", () => {
-  assert.doesNotMatch(
-    runtime,
-    /enemiesRef|buildSpatialIndex|spawnEnemy|damagePlayer/,
-  );
-  assert.doesNotMatch(
-    halo,
-    /Enemy|Projectile|damage|spawn/,
-  );
+  assert.doesNotMatch(runtime, /enemiesRef|buildSpatialIndex|spawnEnemy|damagePlayer/);
+  assert.doesNotMatch(halo, /Enemy|Projectile|damage|spawn/);
 });
