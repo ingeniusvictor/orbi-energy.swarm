@@ -174,6 +174,16 @@ import {
   getGaiaProgressCount,
   registerGaiaEnergy,
 } from "./gaiaEvolution";
+import {
+  PERFORMANCE_EVIDENCE_TARGET_SAMPLES,
+  appendPerformanceEvidenceSample,
+  buildPerformanceEvidenceCapture,
+  createPerformanceEvidenceRecorderState,
+  downloadPerformanceEvidence,
+  getBrowserPerformanceEvidenceMetadata,
+  startPerformanceEvidenceRecording,
+  type PerformanceEvidenceRecorderStatus,
+} from "./performanceEvidenceRecorder";
 
 type InfiniteBossRematchProfile = Extract<
   InfiniteMilestoneEncounterProfile,
@@ -194,6 +204,10 @@ export const EnergySwarmGame: React.FC = () => {
     performanceDiagnosticsSnapshot,
     setPerformanceDiagnosticsSnapshot,
   ] = useState<PerformanceDiagnosticsSnapshot | null>(null);
+  const [performanceEvidenceStatus, setPerformanceEvidenceStatus] =
+    useState<PerformanceEvidenceRecorderStatus>("IDLE");
+  const [performanceEvidenceSamples, setPerformanceEvidenceSamples] =
+    useState(0);
   const [isGameOver, setIsGameOver] = useState(false);
   const [victory, setVictory] = useState(false);
 
@@ -257,6 +271,9 @@ export const EnergySwarmGame: React.FC = () => {
     useRef<PerformanceDiagnosticsState>(
       createPerformanceDiagnosticsState(),
     );
+  const performanceEvidenceRecorderRef = useRef(
+    createPerformanceEvidenceRecorderState(),
+  );
   const isPausedRef = useRef(false);
   const touchDirectionsRef = useRef(createTouchDirectionState());
 
@@ -888,6 +905,12 @@ export const EnergySwarmGame: React.FC = () => {
         return;
       }
 
+      if (key === "F4") {
+        e.preventDefault();
+        handlePerformanceEvidenceHotkey();
+        return;
+      }
+
       if (isPhotoMode) {
         if (key === "F10" || e.key === "Escape") {
           e.preventDefault();
@@ -1078,11 +1101,74 @@ export const EnergySwarmGame: React.FC = () => {
   // --- GAME START TRIGGER ---
   const togglePerformanceDiagnostics = () => {
     const next = !performanceDiagnosticsEnabledRef.current;
+    if (
+      !next &&
+      performanceEvidenceRecorderRef.current.status === "RECORDING"
+    ) {
+      postDialogue(
+        "SYSTEM",
+        "EVIDENCE REC activa: F4 detiene/exporta antes de cerrar F3.",
+      );
+      return;
+    }
     performanceDiagnosticsEnabledRef.current = next;
     performanceDiagnosticsStateRef.current =
       createPerformanceDiagnosticsState();
     setPerformanceDiagnosticsSnapshot(null);
     setPerformanceDiagnosticsEnabled(next);
+  };
+
+  const resetPerformanceEvidenceRecorder = () => {
+    performanceEvidenceRecorderRef.current =
+      createPerformanceEvidenceRecorderState();
+    setPerformanceEvidenceStatus("IDLE");
+    setPerformanceEvidenceSamples(0);
+  };
+
+  const handlePerformanceEvidenceHotkey = () => {
+    const recorder = performanceEvidenceRecorderRef.current;
+
+    if (recorder.status === "IDLE") {
+      if (!performanceDiagnosticsEnabledRef.current) {
+        performanceDiagnosticsEnabledRef.current = true;
+        performanceDiagnosticsStateRef.current =
+          createPerformanceDiagnosticsState();
+        setPerformanceDiagnosticsSnapshot(null);
+        setPerformanceDiagnosticsEnabled(true);
+      }
+
+      performanceEvidenceRecorderRef.current =
+        startPerformanceEvidenceRecording(Date.now());
+      setPerformanceEvidenceStatus("RECORDING");
+      setPerformanceEvidenceSamples(0);
+      postDialogue(
+        "SYSTEM",
+        `EVIDENCE REC iniciada · ${PERFORMANCE_EVIDENCE_TARGET_SAMPLES} snapshots / 15 s.`,
+      );
+      return;
+    }
+
+    const capture = buildPerformanceEvidenceCapture(
+      recorder,
+      Date.now(),
+      getBrowserPerformanceEvidenceMetadata(),
+    );
+
+    if (capture) {
+      const downloaded = downloadPerformanceEvidence(capture);
+      postDialogue(
+        "SYSTEM",
+        downloaded
+          ? capture.complete
+            ? "EVIDENCE COMPLETE exportada."
+            : "EVIDENCE PARTIAL exportada."
+          : "EVIDENCE preparada, pero el navegador bloqueó la descarga.",
+      );
+    } else {
+      postDialogue("SYSTEM", "EVIDENCE REC cancelada sin muestras.");
+    }
+
+    resetPerformanceEvidenceRecorder();
   };
 
   const startGame = () => {
@@ -1106,6 +1192,10 @@ export const EnergySwarmGame: React.FC = () => {
     performanceDiagnosticsStateRef.current =
       createPerformanceDiagnosticsState();
     setPerformanceDiagnosticsSnapshot(null);
+    performanceEvidenceRecorderRef.current =
+      createPerformanceEvidenceRecorderState();
+    setPerformanceEvidenceStatus("IDLE");
+    setPerformanceEvidenceSamples(0);
     runtimeProjectionBundleCacheRef.current =
       createRuntimeProjectionBundleCache();
     runMaxSwarmSizeRef.current = 1;
@@ -3391,6 +3481,31 @@ export const EnergySwarmGame: React.FC = () => {
         setPerformanceDiagnosticsSnapshot(
           diagnostics.snapshot,
         );
+
+        const evidenceRecorder =
+          performanceEvidenceRecorderRef.current;
+        if (evidenceRecorder.status === "RECORDING") {
+          const nextEvidenceRecorder =
+            appendPerformanceEvidenceSample(
+              evidenceRecorder,
+              diagnostics.snapshot,
+            );
+          performanceEvidenceRecorderRef.current =
+            nextEvidenceRecorder;
+          setPerformanceEvidenceStatus(
+            nextEvidenceRecorder.status,
+          );
+          setPerformanceEvidenceSamples(
+            nextEvidenceRecorder.samples.length,
+          );
+
+          if (nextEvidenceRecorder.status === "READY") {
+            postDialogue(
+              "SYSTEM",
+              "EVIDENCE READY · 15 s completos. F4 para exportar JSON.",
+            );
+          }
+        }
       }
     }
 
@@ -6549,6 +6664,11 @@ export const EnergySwarmGame: React.FC = () => {
                 {performanceDiagnosticsEnabled && (
                   <PerformanceDiagnosticsOverlay
                     snapshot={performanceDiagnosticsSnapshot}
+                    evidenceStatus={performanceEvidenceStatus}
+                    evidenceSamples={performanceEvidenceSamples}
+                    evidenceTargetSamples={
+                      PERFORMANCE_EVIDENCE_TARGET_SAMPLES
+                    }
                   />
                 )}
 
