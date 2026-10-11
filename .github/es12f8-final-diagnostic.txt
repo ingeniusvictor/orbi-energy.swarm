@@ -1,271 +1,38 @@
-exit_status=1
+exit_status=0
 === FAILURES ===
-3141-ok 377 - defeat is explicit, idempotent and resolves the milestone
-3142-  ---
-3143-  duration_ms: 0.29998
-3144-  type: 'test'
-3145-  ...
-3146-# Subtest: ordinary waves are always resolved from the rematch perspective
-3147-ok 378 - ordinary waves are always resolved from the rematch perspective
-3148-  ---
-3149-  duration_ms: 0.259164
-3150-  type: 'test'
-3151-  ...
-3152-# Subtest: live runtime derives a clamped frame scale from delta
-3153:not ok 379 - live runtime derives a clamped frame scale from delta
-3154-  ---
-3155-  duration_ms: 11.183967
-3156-  type: 'test'
-3157-  location: '/home/runner/work/orbi-energy.swarm/orbi-energy.swarm/tests/runtime-cadence-adoption.test.ts:1:593'
-3158-  failureType: 'testCodeFailure'
-3159-  error: |-
-3160-    The expression evaluated to a falsy value:
-3161-    
-3162-      assert.ok(
-3163-    
-3164-  code: 'ERR_ASSERTION'
-3165-  name: 'AssertionError'
-3166-  expected: true
-3167-  actual: false
-3168-  operator: '=='
-3169-  stack: |-
-3170-    TestContext.<anonymous> (/home/runner/work/orbi-energy.swarm/orbi-energy.swarm/tests/runtime-cadence-adoption.test.ts:25:10)
-3171-    Test.runInAsyncScope (node:async_hooks:214:14)
-3172-    Test.run (node:internal/test_runner/test:1047:25)
-3173-    Test.start (node:internal/test_runner/test:944:17)
-3174-    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
-3175-  ...
-3176-# Subtest: player acceleration and damping are delta-normalized
-3177:not ok 380 - player acceleration and damping are delta-normalized
-3178-  ---
-3179-  duration_ms: 3.053343
-3180-  type: 'test'
-3181-  location: '/home/runner/work/orbi-energy.swarm/orbi-energy.swarm/tests/runtime-cadence-adoption.test.ts:1:730'
-3182-  failureType: 'testCodeFailure'
-3183-  error: |-
-3184-    The input did not match the regular expression /playerVelocityRef\.current\.x \+= moveX \* acceleration \* frameScale/. Input:
-3185-    
-3186-    'const updateEnginePhysics = (delta: number) => {\n' +
-3187-      '    // 0. BOSS DEFEAT CINEMATIC SEQUENCE HANDLING\n' +
-3188-      '    if (bossDefeatedSequenceActiveRef.current) {\n' +
-3189-      '      updateBossDefeatSequence(delta);\n' +
-3190-      '\n' +
-3191-      '      // We still update screen shake and camera zoom for dramatic effect!\n' +
-3192-      '      if (screenShakeRef.current > 0) {\n' +
-3193-      '        screenShakeRef.current -= delta / 16.6;\n' +
-3194-      '      }\n' +
-3195-      '      \n' +
-3196-      '      // Update particles\n' +
-3197-      '      particlesRef.current.forEach((p) => {\n' +
-3198-      '        updateParticle(p, delta);\n' +
-3199-      '      });\n' +
-3200-      '      compactArrayInPlace(\n' +
-3201-      '        particlesRef.current,\n' +
-3202-      '        (particle) => particle.life > 0,\n' +
-3203-      '      );\n' +
-3204-      '\n' +
-3205-      '      // Also update player leader flash ticks using refresh-rate-neutral cadence.\n' +
---
-4381-      
-4382-  operator: 'match'
-4383-  stack: |-
-4384-    TestContext.<anonymous> (/home/runner/work/orbi-energy.swarm/orbi-energy.swarm/tests/runtime-cadence-adoption.test.ts:38:10)
-4385-    Test.runInAsyncScope (node:async_hooks:214:14)
-4386-    Test.run (node:internal/test_runner/test:1047:25)
-4387-    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
-4388-    Test.postRun (node:internal/test_runner/test:1173:19)
-4389-    Test.run (node:internal/test_runner/test:1101:12)
-4390-    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
-4391-  ...
-4392-# Subtest: projectiles and particles consume frameScale instead of raw frame steps
-4393:not ok 381 - projectiles and particles consume frameScale instead of raw frame steps
-4394-  ---
-4395-  duration_ms: 1.58509
-4396-  type: 'test'
-4397-  location: '/home/runner/work/orbi-energy.swarm/orbi-energy.swarm/tests/runtime-cadence-adoption.test.ts:1:1132'
-4398-  failureType: 'testCodeFailure'
-4399-  error: |-
-4400-    The input did not match the regular expression /proj\.x \+= proj\.vx \* frameScale/. Input:
-4401-    
-4402-    'const updateEnginePhysics = (delta: number) => {\n' +
-4403-      '    // 0. BOSS DEFEAT CINEMATIC SEQUENCE HANDLING\n' +
-4404-      '    if (bossDefeatedSequenceActiveRef.current) {\n' +
-4405-      '      updateBossDefeatSequence(delta);\n' +
-4406-      '\n' +
-4407-      '      // We still update screen shake and camera zoom for dramatic effect!\n' +
-4408-      '      if (screenShakeRef.current > 0) {\n' +
-4409-      '        screenShakeRef.current -= delta / 16.6;\n' +
-4410-      '      }\n' +
-4411-      '      \n' +
-4412-      '      // Update particles\n' +
-4413-      '      particlesRef.current.forEach((p) => {\n' +
-4414-      '        updateParticle(p, delta);\n' +
-4415-      '      });\n' +
-4416-      '      compactArrayInPlace(\n' +
-4417-      '        particlesRef.current,\n' +
-4418-      '        (particle) => particle.life > 0,\n' +
-4419-      '      );\n' +
-4420-      '\n' +
-4421-      '      // Also update player leader flash ticks using refresh-rate-neutral cadence.\n' +
---
-5597-      
-5598-  operator: 'match'
-5599-  stack: |-
-5600-    TestContext.<anonymous> (/home/runner/work/orbi-energy.swarm/orbi-energy.swarm/tests/runtime-cadence-adoption.test.ts:58:10)
-5601-    Test.runInAsyncScope (node:async_hooks:214:14)
-5602-    Test.run (node:internal/test_runner/test:1047:25)
-5603-    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
-5604-    Test.postRun (node:internal/test_runner/test:1173:19)
-5605-    Test.run (node:internal/test_runner/test:1101:12)
-5606-    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
-5607-  ...
-5608-# Subtest: swarm cooldown and interpolation remain delta-aware
-5609:not ok 382 - swarm cooldown and interpolation remain delta-aware
-5610-  ---
-5611-  duration_ms: 1.961857
-5612-  type: 'test'
-5613-  location: '/home/runner/work/orbi-energy.swarm/orbi-energy.swarm/tests/runtime-cadence-adoption.test.ts:1:1533'
-5614-  failureType: 'testCodeFailure'
-5615-  error: |-
-5616-    The input did not match the regular expression /member\.shootCooldown -= frameScale/. Input:
-5617-    
-5618-    'const updateEnginePhysics = (delta: number) => {\n' +
-5619-      '    // 0. BOSS DEFEAT CINEMATIC SEQUENCE HANDLING\n' +
-5620-      '    if (bossDefeatedSequenceActiveRef.current) {\n' +
-5621-      '      updateBossDefeatSequence(delta);\n' +
-5622-      '\n' +
-5623-      '      // We still update screen shake and camera zoom for dramatic effect!\n' +
-5624-      '      if (screenShakeRef.current > 0) {\n' +
-5625-      '        screenShakeRef.current -= delta / 16.6;\n' +
-5626-      '      }\n' +
-5627-      '      \n' +
-5628-      '      // Update particles\n' +
-5629-      '      particlesRef.current.forEach((p) => {\n' +
-5630-      '        updateParticle(p, delta);\n' +
-5631-      '      });\n' +
-5632-      '      compactArrayInPlace(\n' +
-5633-      '        particlesRef.current,\n' +
-5634-      '        (particle) => particle.life > 0,\n' +
-5635-      '      );\n' +
-5636-      '\n' +
-5637-      '      // Also update player leader flash ticks using refresh-rate-neutral cadence.\n' +
---
-6813-      
-6814-  operator: 'match'
-6815-  stack: |-
-6816-    TestContext.<anonymous> (/home/runner/work/orbi-energy.swarm/orbi-energy.swarm/tests/runtime-cadence-adoption.test.ts:82:10)
-6817-    Test.runInAsyncScope (node:async_hooks:214:14)
-6818-    Test.run (node:internal/test_runner/test:1047:25)
-6819-    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
-6820-    Test.postRun (node:internal/test_runner/test:1173:19)
-6821-    Test.run (node:internal/test_runner/test:1101:12)
-6822-    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
-6823-  ...
-6824-# Subtest: all frame-counted flash decay paths are delta-aware
-6825:not ok 383 - all frame-counted flash decay paths are delta-aware
-6826-  ---
-6827-  duration_ms: 1.826902
-6828-  type: 'test'
-6829-  location: '/home/runner/work/orbi-energy.swarm/orbi-energy.swarm/tests/runtime-cadence-adoption.test.ts:1:1794'
-6830-  failureType: 'testCodeFailure'
-6831-  error: |-
-6832-    The input did not match the regular expression /enemy\.flashTicks = Math\.max\(0, enemy\.flashTicks - frameScale\)/. Input:
-6833-    
-6834-    'import React, { useEffect, useRef, useState, useCallback } from "react";\n' +
-6835-      '\n' +
-6836-      'import { \n' +
-6837-      '  BiomeType, OrbiType, EnemyType, FormationType, ParticleType, \n' +
-6838-      '  OrbiMember, Enemy, Projectile, Resource, Particle, GameStats, \n' +
-6839-      '  DialogueMessage, QualityPreset, WaveConfig, type RunArchiveEntry,\n' +
-6840-      '  type OrbiAffinity, type OrbiCombatRole, type OrbiEnergyId\n' +
-6841-      '} from "./types";\n' +
-6842-      '\n' +
-6843-      'import { \n' +
-6844-      '  CANVAS_WIDTH, CANVAS_HEIGHT, WORLD_WIDTH, WORLD_HEIGHT, MAX_ENEMIES, \n' +
-6845-      '  MAX_PROJECTILES, MAX_RESOURCES, PLAYER_BASE_SPEED, \n' +
-6846-      '  PLAYER_HIT_COOLDOWN, SHIELD_MAX, WORLD_BOUNDS, UPGRADE_REWARD_WAVES\n' +
-6847-      '} from "./constants";\n' +
-6848-      '\n' +
-6849-      'import { \n' +
-6850-      '  loadGameStats, saveGameStats, resetGameStats, DEFAULT_STATS \n' +
-6851-      '} from "./storage";\n' +
-6852-      '\n' +
-6853-      'import { FORMATIONS, calculateSwarmOffset } from "./formations";\n' +
---
-13649-    
-13650-  operator: 'match'
-13651-  stack: |-
-13652-    TestContext.<anonymous> (/home/runner/work/orbi-energy.swarm/orbi-energy.swarm/tests/runtime-cadence-adoption.test.ts:93:10)
-13653-    Test.runInAsyncScope (node:async_hooks:214:14)
-13654-    Test.run (node:internal/test_runner/test:1047:25)
-13655-    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
-13656-    Test.postRun (node:internal/test_runner/test:1173:19)
-13657-    Test.run (node:internal/test_runner/test:1101:12)
-13658-    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
-13659-  ...
-13660-# Subtest: screen shake and swarm recoil damping are delta-normalized
-13661:not ok 384 - screen shake and swarm recoil damping are delta-normalized
-13662-  ---
-13663-  duration_ms: 0.963129
-13664-  type: 'test'
-13665-  location: '/home/runner/work/orbi-energy.swarm/orbi-energy.swarm/tests/runtime-cadence-adoption.test.ts:1:2038'
-13666-  failureType: 'testCodeFailure'
-13667-  error: |-
-13668-    The input did not match the regular expression /getFrameDamping\(0\.9, delta\)/. Input:
-13669-    
-13670-    'import React, { useEffect, useRef, useState, useCallback } from "react";\n' +
-13671-      '\n' +
-13672-      'import { \n' +
-13673-      '  BiomeType, OrbiType, EnemyType, FormationType, ParticleType, \n' +
-13674-      '  OrbiMember, Enemy, Projectile, Resource, Particle, GameStats, \n' +
-13675-      '  DialogueMessage, QualityPreset, WaveConfig, type RunArchiveEntry,\n' +
-13676-      '  type OrbiAffinity, type OrbiCombatRole, type OrbiEnergyId\n' +
-13677-      '} from "./types";\n' +
-13678-      '\n' +
-13679-      'import { \n' +
-13680-      '  CANVAS_WIDTH, CANVAS_HEIGHT, WORLD_WIDTH, WORLD_HEIGHT, MAX_ENEMIES, \n' +
-13681-      '  MAX_PROJECTILES, MAX_RESOURCES, PLAYER_BASE_SPEED, \n' +
-13682-      '  PLAYER_HIT_COOLDOWN, SHIELD_MAX, WORLD_BOUNDS, UPGRADE_REWARD_WAVES\n' +
-13683-      '} from "./constants";\n' +
-13684-      '\n' +
-13685-      'import { \n' +
-13686-      '  loadGameStats, saveGameStats, resetGameStats, DEFAULT_STATS \n' +
-13687-      '} from "./storage";\n' +
-13688-      '\n' +
-13689-      'import { FORMATIONS, calculateSwarmOffset } from "./formations";\n' +
 === SUMMARY ===
   type: 'test'
   ...
 # Subtest: compact Android landscape below 720px remains PHONE_LANDSCAPE
-ok 636 - compact Android landscape below 720px remains PHONE_LANDSCAPE
+ok 634 - compact Android landscape below 720px remains PHONE_LANDSCAPE
   ---
-  duration_ms: 0.226994
+  duration_ms: 0.294458
   type: 'test'
   ...
 # Subtest: portrait advisory stays off for fine pointers and wider tablet portraits
-ok 637 - portrait advisory stays off for fine pointers and wider tablet portraits
+ok 635 - portrait advisory stays off for fine pointers and wider tablet portraits
   ---
-  duration_ms: 0.26748
+  duration_ms: 0.373084
   type: 'test'
   ...
 # Subtest: invalid dimensions fail safe to the logical game viewport
-ok 638 - invalid dimensions fail safe to the logical game viewport
+ok 636 - invalid dimensions fail safe to the logical game viewport
   ---
-  duration_ms: 0.411528
+  duration_ms: 0.517383
   type: 'test'
   ...
 # Subtest: viewport thresholds align with certified CSS breakpoints
-ok 639 - viewport thresholds align with certified CSS breakpoints
+ok 637 - viewport thresholds align with certified CSS breakpoints
   ---
-  duration_ms: 0.550388
+  duration_ms: 0.67645
   type: 'test'
   ...
-1..639
-# tests 639
+1..637
+# tests 637
 # suites 0
-# pass 633
-# fail 6
+# pass 637
+# fail 0
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 12385.205921
+# duration_ms 12549.089072
