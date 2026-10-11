@@ -131,7 +131,11 @@ test("LANCE_VOLLEY is constrained by both global and hostile projectile budgets"
   );
   assert.match(
     shoot,
-    /Math\.min\([\s\S]*signatureBehavior\.droneVolleyProjectileCount,[\s\S]*availableProjectileSlots/,
+    /const requestedProjectileCount =[\s\S]*signatureBehavior\.droneVolleyProjectileCount/,
+  );
+  assert.match(
+    shoot,
+    /const projectileCount = Math\.min\([\s\S]*requestedProjectileCount,[\s\S]*availableProjectileSlots/,
   );
 });
 
@@ -175,7 +179,7 @@ test("Devourer still shares the shooter helper but receives neutral signature be
 
   assert.match(
     shoot,
-    /EnemyType\.DRONE \|\| enemy\.type === EnemyType\.BOSS_DEVOURER/,
+    /EnemyType\.DRONE\s*\|\|\s*enemy\.type === EnemyType\.BOSS_DEVOURER/,
   );
   assert.doesNotMatch(
     boss,
