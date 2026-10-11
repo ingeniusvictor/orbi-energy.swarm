@@ -1,4 +1,4 @@
-name: ES-12H7 Literal Platform Diagnostic
+name: ES-12H7 Platform Adoption Diagnostic
 
 on:
   push:
@@ -36,6 +36,57 @@ jobs:
           PY
       - name: Apply literal H7 patcher
         run: python scripts/es12h7-apply.py
+      - name: Align historical platform adoption contracts
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path, old, new, label):
+              p = Path(path)
+              text = p.read_text()
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f"fail-closed {label}: expected 1, found {count}")
+              p.write_text(text.replace(old, new, 1))
+
+          replace_once(
+              "src/game/EnergySwarmGame.tsx",
+              "  // --- SPAWN SHARED BOSS CHASSIS ---",
+              "  // --- SPAWN GIANT DEVOURER BOSS ---\n  // Legacy section boundary retained; H7 routes this boundary through the shared chassis engine.\n  // --- SPAWN SHARED BOSS CHASSIS ---",
+              "legacy spawn section boundary",
+          )
+
+          replace_once(
+              "tests/live-infinite-record-adoption.test.ts",
+              '''  const clear = defeat.indexOf(\n    "bossRef.current = null",\n  );''',
+              '''  const clear = defeat.indexOf(\n    "bossRef.current = null",\n    persist,\n  );''',
+              "post-persist boss cleanup lookup",
+          )
+
+          replace_once(
+              "tests/player-contact-spatial-optimization.test.ts",
+              r'/shieldCollisionRadius = 14 \+ proj\.size/',
+              r'/shieldCollisionRadius = node\.collisionRadius \+ proj\.size/',
+              "profile-driven weakpoint collision assertion",
+          )
+
+          replace_once(
+              "tests/runtime-boss-rematch-adoption.test.ts",
+              r'/milestoneDamageMultiplier:[\s\S]*rematchProfile\?\.damageMultiplier/',
+              r'/const damageMultiplier =[\s\S]*rematchProfile\?\.damageMultiplier[\s\S]*milestoneDamageMultiplier: damageMultiplier/',
+              "profile-driven rematch damage assertion",
+          )
+
+          old_health = r'/BLACKOUT_DEVOURER_CANON\.maxHealth \*[\s\S]*\(rematchProfile\?\.healthMultiplier \?\? 1\)/'
+          new_health = r'/chassisProfile\.baseHealth \* healthMultiplier/'
+          for path in (
+              "tests/runtime-combat-mutator-adoption.test.ts",
+              "tests/runtime-combat-pressure-adoption.test.ts",
+              "tests/runtime-miniboss-adoption.test.ts",
+          ):
+              replace_once(path, old_health, new_health, f"shared chassis health assertion {path}")
+          PY
       - name: Capture Platform
         shell: bash
         run: |
