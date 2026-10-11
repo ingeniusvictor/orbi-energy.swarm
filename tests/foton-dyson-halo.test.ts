@@ -67,12 +67,17 @@ test("rings share one exact Dyson-sphere radius and form a symmetric atomic tria
   assert.equal(emerald.radius, gold.radius);
 
   assert.deepEqual(cyan.tilt, [1.08, 0, 0]);
-  assert.deepEqual(emerald.tilt, [0.62, 0.86, 0.78]);
-  assert.deepEqual(gold.tilt, [-0.62, -0.86, -0.78]);
+  assert.deepEqual(emerald.tilt, [1.08, 0, 2.094]);
+  assert.deepEqual(gold.tilt, [1.08, 0, 4.189]);
 
-  for (let index = 0; index < emerald.tilt.length; index += 1) {
-    assert.equal(emerald.tilt[index], -gold.tilt[index]);
-  }
+  assert.equal(cyan.tilt[0], emerald.tilt[0]);
+  assert.equal(emerald.tilt[0], gold.tilt[0]);
+  assert.equal(cyan.tilt[1], 0);
+  assert.equal(emerald.tilt[1], 0);
+  assert.equal(gold.tilt[1], 0);
+  assert.ok(Math.abs((emerald.tilt[2] - cyan.tilt[2]) - 2.094) < 0.002);
+  assert.ok(Math.abs((gold.tilt[2] - emerald.tilt[2]) - 2.095) < 0.002);
+  assert.ok(Math.abs((Math.PI * 2 - gold.tilt[2]) - 2.094) < 0.002);
 
   assert.ok(Math.abs(emerald.phase - 2.094) < 0.001);
   assert.ok(Math.abs(gold.phase - 4.189) < 0.001);

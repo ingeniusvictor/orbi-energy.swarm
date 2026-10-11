@@ -125,6 +125,7 @@ import {
   drawEnemiesList, drawProjectilesList 
 } from "./EnergySwarmCanvas";
 import { projectFlashAccessibility } from "./flashAccessibility";
+import { projectBossPursuit } from "./bossPursuit";
 import {
   decayFrameTicks,
   projectFrameDamping,
@@ -2938,31 +2939,18 @@ export const EnergySwarmGame: React.FC = () => {
         );
       }
     } else {
-      if ((boss.bossPhase || 1) === 1) {
-        const centerX = WORLD_WIDTH / 2;
-        const centerY = 160;
-        const targetX = centerX + Math.cos(timeElapsedRef.current * 0.001) * 120;
-        const targetY = centerY + Math.sin(timeElapsedRef.current * 0.0015) * 40;
-        boss.x += (targetX - boss.x) * 0.02 * (delta / 16.6);
-        boss.y += (targetY - boss.y) * 0.02 * (delta / 16.6);
-      } else if ((boss.bossPhase || 1) === 2) {
-        const centerX = WORLD_WIDTH / 2;
-        const centerY = 150;
-        const targetX = centerX + Math.sin(timeElapsedRef.current * 0.0015) * 240;
-        const targetY = centerY + Math.cos(timeElapsedRef.current * 0.001) * 35;
-        boss.x += (targetX - boss.x) * 0.04 * (delta / 16.6);
-        boss.y += (targetY - boss.y) * 0.04 * (delta / 16.6);
-      } else {
-        const tx = playerPosRef.current.x;
-        const ty = playerPosRef.current.y - 140;
-        const dx = tx - boss.x;
-        const dy = ty - boss.y;
-        const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-        if (dist > 20) {
-          boss.x += (dx / dist) * 1.5 * (delta / 16.6);
-          boss.y += (dy / dist) * 1.5 * (delta / 16.6);
-        }
-      }
+      const pursuit = projectBossPursuit({
+        bossX: boss.x,
+        bossY: boss.y,
+        playerX: playerPosRef.current.x,
+        playerY: playerPosRef.current.y,
+        phase: boss.bossPhase || 1,
+        deltaMs: delta,
+        bounds: WORLD_BOUNDS,
+        margin: 40,
+      });
+      boss.x = pursuit.x;
+      boss.y = pursuit.y;
     }
 
     // 6. SUMMON ADDS
@@ -3877,6 +3865,11 @@ export const EnergySwarmGame: React.FC = () => {
     const mouseAngle = Math.atan2(
       pointerRef.current.y - playerPosRef.current.y,
       pointerRef.current.x - playerPosRef.current.x
+    );
+
+    formationCooldownRef.current = Math.max(
+      0,
+      formationCooldownRef.current - delta,
     );
 
     const recoilDamping =
@@ -6506,7 +6499,7 @@ export const EnergySwarmGame: React.FC = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block">SWARM FORMATIONS</span>
+                    <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block">FORMACIONES · CLIC / TECLAS 1–6</span>
                     <div className="flex flex-col gap-1.5">
                       {[
                         { type: FormationType.LINE, label: "Línea de Asalto" },
@@ -6519,6 +6512,8 @@ export const EnergySwarmGame: React.FC = () => {
                         const isSel = activeFormation === f.type;
                         return (
                           <button
+                            type="button"
+                            aria-pressed={isSel}
                             key={f.type}
                             onClick={() => triggerFormationChange(f.type)}
                             className={`w-full flex items-center justify-between p-2 rounded border text-[11px] font-mono transition text-left ${
@@ -6528,7 +6523,7 @@ export const EnergySwarmGame: React.FC = () => {
                             }`}
                           >
                             <span>{f.label}</span>
-                            <span className="text-[8.5px] uppercase tracking-wider text-slate-500 shrink-0">{f.type}</span>
+                            <span className="text-[8.5px] uppercase tracking-wider text-slate-500 shrink-0">{isSel ? "ACTIVA" : f.type}</span>
                           </button>
                         );
                       })}
