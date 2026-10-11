@@ -5,6 +5,7 @@ export interface QualityConfig {
   maxStars: number;
   drawNebula: boolean;
   drawPlanets: boolean;
+  drawCosmicWhale: boolean;
   maxDPR: number;
 }
 
@@ -14,6 +15,7 @@ export const QUALITY_PRESETS: Record<QualityPreset, QualityConfig> = {
     maxStars: 50,
     drawNebula: false,
     drawPlanets: false,
+    drawCosmicWhale: false,
     maxDPR: 1.0
   },
   [QualityPreset.MEDIUM]: {
@@ -21,6 +23,7 @@ export const QUALITY_PRESETS: Record<QualityPreset, QualityConfig> = {
     maxStars: 150,
     drawNebula: true,
     drawPlanets: true,
+    drawCosmicWhale: true,
     maxDPR: 1.5
   },
   [QualityPreset.HIGH]: {
@@ -28,6 +31,7 @@ export const QUALITY_PRESETS: Record<QualityPreset, QualityConfig> = {
     maxStars: 300,
     drawNebula: true,
     drawPlanets: true,
+    drawCosmicWhale: true,
     maxDPR: 2.0
   },
   [QualityPreset.ULTRA]: {
@@ -35,6 +39,7 @@ export const QUALITY_PRESETS: Record<QualityPreset, QualityConfig> = {
     maxStars: 600,
     drawNebula: true,
     drawPlanets: true,
+    drawCosmicWhale: true,
     maxDPR: 2.0
   }
 };
