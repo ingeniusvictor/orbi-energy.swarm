@@ -42,7 +42,7 @@ export const CompanionPanel: React.FC<CompanionPanelProps> = ({
   }, [dialogueLog, activeTab]);
 
   return (
-    <div className="w-full lg:w-[330px] shrink-0 bg-slate-950/70 border border-slate-900 rounded-xl p-3 md:p-4 shadow-xl backdrop-blur-md text-white select-none flex flex-col h-[400px] lg:h-[580px]">
+    <div className="w-full lg:w-[330px] shrink-0 bg-slate-950/70 border border-slate-900 rounded-xl p-3 md:p-4 shadow-xl backdrop-blur-md text-white select-none flex flex-col h-[460px] lg:h-[min(72dvh,720px)] min-h-0">
       
       {/* TABS SELECTOR */}
       <div className="flex bg-slate-900/60 p-1 rounded-lg gap-1 border border-slate-850 mb-3 text-xs uppercase">
@@ -110,7 +110,7 @@ export const CompanionPanel: React.FC<CompanionPanelProps> = ({
                   : "No supplementary Orbi collectors active. Gather Wild Orbis!"}
               </div>
             ) : (
-              <div className="space-y-1.5 max-h-[300px] lg:max-h-[400px] overflow-y-auto pr-0.5">
+              <div className="space-y-1.5 pr-0.5" data-swarm-roster-list>
                 {swarm.map((member, idx) => {
                   const affinityColors: Record<string, string> = {
                     solar: "text-amber-400 border-amber-500/30 bg-amber-500/10",

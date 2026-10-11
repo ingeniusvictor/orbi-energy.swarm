@@ -39,8 +39,8 @@ test("rings use a neon symmetric atomic-sphere triad", () => {
   const radiusMatches = halo.match(/radius: 1\.055/g) ?? [];
   assert.equal(radiusMatches.length, 3);
   assert.match(halo, /tilt: \[1\.08, 0, 0\]/);
-  assert.match(halo, /tilt: \[0\.62, 0\.86, 0\.78\]/);
-  assert.match(halo, /tilt: \[-0\.62, -0\.86, -0\.78\]/);
+  assert.match(halo, /tilt: \[1\.08, 0, 2\.094\]/);
+  assert.match(halo, /tilt: \[1\.08, 0, 4\.189\]/);
   assert.match(halo, /phase: 2\.094/);
   assert.match(halo, /phase: 4\.189/);
 });
