@@ -36,7 +36,7 @@ Issue #253 / PR #257
 ---
 
 ## J2 — ORBI Overdrive
-Status: **ACTIVE PROGRAM**
+Status: **ACTIVE — FINAL CERTIFICATION SLICE**
 
 Goal: turn earned full Resonance into a temporary mastery state with bounded gameplay value, strong readability and no uncontrolled amplification.
 
@@ -72,71 +72,72 @@ Issue #276 / PR #278
 `projectCombatOverdriveEffects()` is adopted exactly once at centralized player-projectile damage resolution while preserving base/profile/GAIA/critical ordering and existing projectile variant ratios.
 
 ### J2D — Reactive VFX / Audio / Safety
-Status: **ACTIVE PROGRAM SLICE**
+Status: **DEPLOYED / FROZEN PROGRAM SLICE**
 
-Goal: give certified Overdrive a strong ORBI identity without altering its gameplay authority or budgets.
-
-#### J2D-A — Pure Overdrive Presentation Profile Contract
+#### J2D-A — Pure Presentation Profile Contract
 Status: **DEPLOYED / FROZEN**  
 Canonical: `39f9b33c9a229c7c8d991aecd81ea695510c82a0`  
 Issue #281 / PR #282
 
+Pure quality-bounded presentation projection with neutral inactive output, maximum direct ring count 3, activation pulse derived from certified remaining ratio and no independent clock/timer.
+
+#### J2D-B — Live Reactive Presentation Adoption
+Status: **DEPLOYED / FROZEN**  
+Canonical: `9743890d98b33d365cbc18a048015f3815b144e5`  
+Issue #286 / PR #287
+
 Implemented:
-- pure `combatOverdrivePresentation.ts` projection;
-- consumes only certified Overdrive `active`, `remainingRatio` and existing `QualityPreset`;
-- inactive projection exactly neutral;
-- LOW/MEDIUM/HIGH/ULTRA progressively scale bounded direct-draw presentation;
-- maximum direct canvas ring count = 3;
-- activation pulse derives only from certified remaining ratio; no second clock/timer;
-- finite ratios clamp to `[0,1]`; non-finite ratios fail closed;
-- immutable caller input;
-- no live renderer/audio adoption, entity scans, particle growth or tuning duplication.
+- live use of certified `projectCombatOverdrivePresentation()`;
+- authoritative Overdrive state + simulation time + existing quality preset;
+- direct bounded Canvas2D full-field tint and collective FOTON/swarm halo/rings;
+- no particle/entity arrays or entity scans;
+- short procedural activation stinger only after successful explicit activation;
+- existing TACTICAL audio lane, mute-safe and user-gesture bound;
+- no mount-time/autoplay activation path;
+- no new timer/clock/RAF authority;
+- no Overdrive gameplay/timing/damage/score/cap-budget tuning changes.
 
 Evidence:
-- pre-PR `38299553187`, job `114978848191` GREEN;
-- PR CI `38299974128` GREEN;
-- PR Android `38299974261` GREEN;
-- main CI `38300161662` GREEN;
-- main Android `38300161573` GREEN;
-- Pages `38300237659` GREEN.
+- pre-PR `38302074362`, job `114987146051` GREEN;
+- PR CI `38302405528` GREEN;
+- PR Android `38302405569` GREEN;
+- main CI `38302618451` GREEN;
+- main Android `38302618447` GREEN;
+- Pages `38302704724` GREEN.
 
-#### J2D-B — Live Reactive Overdrive Presentation Adoption
+### J2E — Overdrive Integration Certification
 Status: **ACTIVE / NEXT IMPLEMENTATION TARGET**
 
-Contract direction:
-- consume J2D-A projection in existing canvas/HUD/audio paths only;
-- no change to J2A duration/re-entry, J2B activation/consumption or J2C damage tuning;
-- no duplicated J2D-A presentation constants in runtime;
-- bounded activation stinger plus active-state swarm/canvas treatment;
-- no independent wall-clock/RAF/timer authority;
-- audio must respect mute and user-gesture/autoplay constraints; no mount-time playback;
-- pause/photo/lifecycle/reset must follow existing simulation-time Overdrive state;
-- LOW/mobile presets must avoid expensive continuous full-screen effects and entity-heavy presentation;
-- preserve objective/boss/threat/HUD readability/accessibility;
-- preserve all global entity/projectile budgets and Campaign/Infinite isolation;
-- no FOTON GLB or GAIA tuning changes;
-- adoption regressions must prove runtime consumes certified projection instead of duplicating tuning.
+Purpose: prove the complete J1/J2 stack behaves as one bounded system before introducing J3.
 
-### J2E — Integration Certification
-Status: PLANNED
+Certification contract:
+- deterministic pure integration test that earns Resonance through mixed affinities, reaches readiness, activates Overdrive, consumes readiness once, applies certified J2C damage and J2D presentation, expires at the exact 8 s boundary and respects 4 s re-entry lock;
+- prove repeated activation cannot stack/refresh duration or damage;
+- prove J1 score multiplier remains authoritative and Overdrive does not add score/economy multipliers;
+- prove accepted player damage still performs J1 Resonance break while active Overdrive state remains governed only by J2A;
+- prove pause/photo/lifecycle safety through simulation-time invariants and source adoption contracts;
+- prove fresh run/restart resets both Resonance and Overdrive;
+- long deterministic sequence with finite/bounded chain/resonance/Overdrive/damage/presentation values;
+- source contract proving J2B/J2C/J2D each consume their certified pure modules exactly once at their intended seams;
+- no gameplay tuning change unless certification exposes a demonstrated defect, in which case open a dedicated correction issue;
+- full repo/gameplay/platform/typecheck/release/dossier/build/readiness + Android + scope guard;
+- PR CI + Android, squash merge, exact-SHA main CI + Android + Pages.
 
-Cross-check J1/J2 interaction, long-run behavior, Android, performance, restart/pause/photo/lifecycle, no chain/resonance regressions and exact-SHA deployment.
+J2E should preferably be **tests/certification only**. Do not modify runtime merely to make the certification pass.
 
-Do not start J3 until J2 is deployed/frozen unless a dedicated corrective issue requires otherwise.
+Do not start J3 until J2E is deployed/frozen.
 
 ---
 
 ## J3 — Advanced Enemy Formation Director
-Status: PLANNED
+Status: PLANNED / NEXT AFTER J2E
 
 Tactical route vocabulary: pincers, wedges, X-cross, rings, spirals/corkscrews, serpentine columns, orbit attacks, encirclement, staggered artillery, fake retreats, portal ambushes, convoy assaults and leader/follower formations. Severe routes require readable telegraphs and bounded simultaneous pressure.
 
 ## J4 — Tactical Enemy Families
 Status: PLANNED
 
-Candidate roles: Shield Phalanx, Reflector Drone, Jammer, Mine Layer, Artillery Carrier, Warp Ambusher, Swarm Leech, Energy Vampire, Formation Breaker, Commander, Repair Drone, Stealth Hunter, Siege Fortress, Parasite Queen, Mirror Drone.
-
-Rule: every family must create a distinct tactical question, not merely different stats.
+Candidate roles: Shield Phalanx, Reflector Drone, Jammer, Mine Layer, Artillery Carrier, Warp Ambusher, Swarm Leech, Energy Vampire, Formation Breaker, Commander, Repair Drone, Stealth Hunter, Siege Fortress, Parasite Queen, Mirror Drone. Every family must create a distinct tactical question, not merely different stats.
 
 ## J5 — Priority Targets & Chain-Reaction Combat
 Status: PLANNED
@@ -146,7 +147,7 @@ Command Cores, linked formations, destructible priority nodes, chain-reaction ki
 ## J6 — Dynamic Mid-Sector Events
 Status: PLANNED
 
-Candidate events: Solar Storm, Quantum Rift, Blackout Surge, Crystal Rush, Dyson Eclipse, Swarm Distress Call, Convoy Defense, Void Hunt, Elite Incursion, Mirror Swarm, Meteor/Debris Field, Singularity Event.
+Solar Storm, Quantum Rift, Blackout Surge, Crystal Rush, Dyson Eclipse, Swarm Distress Call, Convoy Defense, Void Hunt, Elite Incursion, Mirror Swarm, Meteor/Debris Field and Singularity Event.
 
 ## J7 — Bonus Challenge Rounds
 Status: PLANNED
@@ -186,10 +187,7 @@ C/B/A/S/S+ ranks, optional sector objectives, perfect sectors, no-damage/swarm-p
 ## J14 — Procedural Interaction Matrix
 Status: PLANNED
 
-Safely combine:
-`enemy archetype + evolved trait + formation + biome + mutator + event`
-
-Requirements: deterministic seed reproduction, explicit compatibility rejection, global caps/budgets authoritative, variety from interaction rather than uncontrolled multiplication.
+Safely combine `enemy archetype + evolved trait + formation + biome + mutator + event` with deterministic seed reproduction, explicit compatibility rejection and global caps/budgets authoritative.
 
 ## J15 — Gameplay Integration & Long-Range Balance
 Status: PLANNED
@@ -203,7 +201,7 @@ Only after ES-13 stabilizes should the full RC manual campaign be repeated.
 ## ES-14 — Living Warfront
 Status: FUTURE PROGRAM / NOT YET COMMITTED
 
-Potential: new biomes/sectors, thematic arcs, contracts/missions, codex/discovery, deeper persistent mastery, mode unlocks, daily/weekly challenges, secure leaderboards when justified, evolving warfront between runs.
+Potential: new biomes/sectors, thematic arcs, contracts/missions, codex/discovery, deeper persistent mastery, mode unlocks, daily/weekly challenges, secure leaderboards when justified and an evolving warfront between runs.
 
 ## Manual RC strategy
 Manual blockers remain open: #4 visual/responsive, #5 Infinite play-feel, #202 GAIA physical runtime, #248 Android real-device. Full final evidence is deferred while ES-13 changes gameplay. CI must never fabricate human/device PASS.
