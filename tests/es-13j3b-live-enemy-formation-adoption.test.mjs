@@ -99,7 +99,14 @@ test("J3B fresh-run, wave-start and boss transitions reset director ownership", 
 test("J3B keeps player/FOTON formation authority separate", () => {
   assert.match(gameSource, /from "\.\/formations"/);
   assert.doesNotMatch(playerFormationsSource, /enemyFormation|EnemyFormation|PINCER|X_CROSS|SERPENTINE/);
-  assert.doesNotMatch(directorSource, /FormationType|calculateSwarmOffset|FORMATIONS/);
+  assert.doesNotMatch(
+    directorSource,
+    /from ["']\.\/(?:formations|formationCycle)["']/,
+  );
+  assert.doesNotMatch(
+    directorSource,
+    /\bFormationType\b|\bcalculateSwarmOffset\b|\bFORMATIONS\b/,
+  );
 });
 
 test("J3B director remains bounded and does not own combat/economy/projectiles", () => {
