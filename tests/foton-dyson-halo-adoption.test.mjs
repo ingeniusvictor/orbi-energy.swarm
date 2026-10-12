@@ -63,7 +63,11 @@ test("ring construction remains progressive instead of hard-popping", () => {
 
 test("cumulative acquired Orbis drive monotonic ring progression", () => {
   assert.match(game, /const runOrbiAcquiredRef = useRef<number>\(0\)/);
-  assert.equal((game.match(/runOrbiAcquiredRef\.current \+= 1/g) ?? []).length, 4);
+  assert.equal((game.match(/runOrbiAcquiredRef\.current \+= 1/g) ?? []).length, 3);
+  assert.match(
+    game,
+    /const tryTriggerAffinityFusion = \(\) =>[\s\S]*runOrbiAcquiredRef\.current \+= 1/,
+  );
   assert.match(game, /drawFoton\([\s\S]*fotonThreatDirectionRef\.current,[\s\S]*runOrbiAcquiredRef\.current/);
   assert.match(canvas, /orbiCount,/);
   assert.match(runtime, /request\.orbiCount \?\? 0/);
