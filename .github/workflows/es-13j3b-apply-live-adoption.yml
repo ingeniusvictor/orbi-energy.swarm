@@ -1,0 +1,56 @@
+name: ES-13J3B Apply Live Adoption Patch
+
+on:
+  push:
+    branches:
+      - feat/es-13j3b-live-enemy-formation-director
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: ${{ github.actor != 'github-actions[bot]' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Apply exact guarded source patch
+        run: python scripts/es-13j3b-apply-live-adoption.py
+
+      - name: Verify uncommitted patch scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --name-only | sort -u > /tmp/j3b-live-files.txt
+          cat /tmp/j3b-live-files.txt
+          test "$(cat /tmp/j3b-live-files.txt)" = $'src/game/EnergySwarmGame.tsx\nsrc/game/types.ts'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Gameplay regression
+        run: npm run test:gameplay
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Commit guarded live adoption
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/game/types.ts src/game/EnergySwarmGame.tsx
+          git commit -m "feat(j3b): adopt formation routes at live spawn and movement seams"
+          git push origin HEAD:feat/es-13j3b-live-enemy-formation-director
