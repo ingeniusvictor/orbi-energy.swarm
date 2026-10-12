@@ -34,15 +34,18 @@ human visual, Infinite play-feel and real-device Android validation remain open.
   base-safe manifest, 192/512 install icons and SHA-versioned fail-open caching.
 - Reproducible Capacitor 8 Android packaging foundation targeting Android 16 /
   API 36, with local web assets and a CI-built debug APK.
+- Deterministic ES-12 RC-readiness evaluation with SHA-bound CI evidence and
+  explicit `BLOCKED`, `ELIGIBLE_FOR_PROMOTION`, `RC` and `STABLE` decisions.
 
 ### Changed
 
-- Repository quality gates now protect smoke tests, TypeScript correctness and
-  production builds across the expanded runtime.
+- Repository quality gates now protect smoke tests, TypeScript correctness,
+  release-contract consistency, production builds and RC-readiness evidence.
 - Presentation and performance systems are increasingly contract-driven while
   preserving the original gameplay baseline.
-- Distribution is PWA-first for the beta; native Android packaging remains
-  deferred until real-device certification is complete.
+- Distribution remains PWA-first for the beta; native Android packaging is now
+  reproducible, while release signing remains external and deferred until the
+  manual real-device certification obligations are complete.
 
 ### Known certification blockers
 
@@ -50,7 +53,8 @@ human visual, Infinite play-feel and real-device Android validation remain open.
 - Issue #5: manual Infinite difficulty/play-feel validation.
 - ES-11 hardware validation: thermal, battery, browser chrome, hand/thumb
   ergonomics and OEM GPU/driver behavior on real devices.
-- ES-12 release-candidate certification remains open; Android signing and real-device validation are still required.
+- RC promotion remains blocked until the manual evidence above is complete;
+  Android release signing also remains external to the repository.
 
 ## [0.1.0] — Recovery baseline
 
