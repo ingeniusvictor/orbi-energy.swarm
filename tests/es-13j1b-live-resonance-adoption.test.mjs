@@ -13,6 +13,12 @@ const sliceBetween = (source, start, end) => {
   return source.slice(startIndex, endIndex);
 };
 
+const sliceFrom = (source, start, length) => {
+  const startIndex = source.indexOf(start);
+  assert.notEqual(startIndex, -1, `Missing start marker: ${start}`);
+  return source.slice(startIndex, startIndex + length);
+};
+
 test("J1B imports and uses the J1A core rather than duplicating resonance arithmetic", () => {
   for (const symbol of [
     "applyCombatResonanceDamageBreak",
@@ -47,18 +53,18 @@ test("both live player defeat paths route score through registerCombatDefeat wit
 });
 
 test("accepted player damage breaks resonance only after the invincibility guard", () => {
-  const damagePlayer = sliceBetween(
+  const damagePlayer = sliceFrom(
     gameSource,
     "const damagePlayer = (dmg: number) =>",
-    "// --- ENGINE UPDATES (Movement, projectile, spawn, single-impact collision sweeps) ---",
+    3200,
   );
   const invincibilityGuard = damagePlayer.indexOf("if (invincibilityTimerRef.current > 0) return;");
   const breakIndex = damagePlayer.indexOf("applyCombatResonanceDamageBreak(");
   const shieldWrite = damagePlayer.indexOf("shieldRef.current = Math.max");
 
-  assert.ok(invincibilityGuard >= 0);
-  assert.ok(breakIndex > invincibilityGuard);
-  assert.ok(shieldWrite > breakIndex);
+  assert.ok(invincibilityGuard >= 0, "missing invincibility guard");
+  assert.ok(breakIndex > invincibilityGuard, "damage break must follow accepted-hit guard");
+  assert.ok(shieldWrite > breakIndex, "damage break must occur before shield mutation");
 });
 
 test("chain expiry is simulation-time based and flushed only on the existing HUD cadence", () => {
@@ -80,8 +86,9 @@ test("new runs reset resonance and the live ref owns high-frequency state", () =
     "const startGame =",
     "// --- REBOOT GAME ON LOSS ---",
   );
-  assert.match(startGame, /combatResonanceRef\.current\s*=\s*createCombatResonanceState\(\)/);
-  assert.match(startGame, /setCombatResonanceView\(/);
+  assert.match(startGame, /const resetResonanceState\s*=\s*createCombatResonanceState\(\);/);
+  assert.match(startGame, /combatResonanceRef\.current\s*=\s*resetResonanceState;/);
+  assert.match(startGame, /setCombatResonanceView\(\{[\s\S]*projectCombatResonance\(resetResonanceState\)/);
 });
 
 test("GameHud receives a compact low-frequency resonance projection", () => {
