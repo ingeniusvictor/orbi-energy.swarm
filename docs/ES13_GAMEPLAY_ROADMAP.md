@@ -170,43 +170,45 @@ Implemented:
 Evidence: pre-PR `38315199129` / job `115030050802`; PR CI `38315423545`; PR Android `38315423642`; main CI `38315550962`; main Android `38315550956`; Pages `38315617546` — GREEN.
 
 #### J3C-B — Controlled Live Adoption
-Status: **NEXT ENGINEERING SLICE AFTER DOC12 CLOSURE**
+Status: **DEPLOYED / FROZEN**  
+Canonical: `5c345672b5365dbcc983403f73da62555489a98f`  
+Issue #306 / PR #307
 
-Goal: expose the advanced pure routes through the existing J3B live director without increasing combat budgets or creating parallel ownership.
+Implemented:
+- advanced route adoption through the existing J3B director; no second movement/runtime authority;
+- deterministic full live cycle PINCER/X_CROSS/SERPENTINE/WEDGE/ORBIT/SPIRAL when advanced routes are enabled;
+- legacy routes and SPIRAL use bounded live pairs;
+- WEDGE/ORBIT use bounded 3-member plans only;
+- ordinary CRAWLER/SPLITTER spawn opportunities assemble members one by one;
+- current remaining capacity must satisfy the route plan before start and remaining assembly before each assignment;
+- incomplete assembly expires safely without replacement spawns;
+- one active or assembling group at a time;
+- advanced-route adoption independently configurable for Campaign and Infinite;
+- existing simulation-time movement, pause/photo safety, Hydro cancellation and run/wave/boss reset preserved;
+- `EnergySwarmGame.tsx`, `types.ts`, constants/caps and player/FOTON formations untouched;
+- no new full-array scan, entity/projectile ownership, score/economy/damage/J1/J2/GAIA/FOTON GLB change.
 
-Critical design point: the J3B live group size 2 cannot satisfy WEDGE/ORBIT minimum 3. J3C-B must therefore make planning route-aware rather than increasing all formations globally.
-
-Required contract:
-- route plan determines required group size within existing local max 8;
-- formation members consume ordinary spawn opportunities one by one; no burst/extra spawns;
-- start a route only when current remaining capacity can satisfy its required group size;
-- pending assembly is bounded and fails safely if it cannot complete;
-- one active/assembling formation group at a time;
-- deterministic route cycle/selection after assignment;
-- existing `enemiesRef.current` and per-enemy assignment metadata remain authoritative;
-- route motion continues to replace the legacy movement branch, never stack;
-- simulation time owns progression; pause/photo/reset safety preserved;
-- explicit independent Campaign/Infinite eligibility;
-- milestones/evolved/random elites/minibosses/bosses excluded unless separately scoped;
-- no new full-array scan, entity/projectile cap change, score/economy/damage/J1/J2/GAIA/FOTON change.
+Evidence: pre-PR `38317062905` / job `115036102323`; final head `eba0d94663c217ee56986f0d7ca86c4d873f08f3`; PR CI `38317340298`; PR Android `38317340308`; main CI `38317440415`; main Android `38317440420`; Pages `38317520671` — GREEN.
 
 #### J3C-C — Stateful Tactical Patterns if justified
-Status: PLANNED
+Status: **DEFERRED / NOT CURRENTLY JUSTIFIED**
 
-Candidate later patterns: convoy/leader-follower, fake retreats, portal ambushes, encirclement, staggered artillery routes. Isolate any extra state/telegraph authority rather than hiding it inside the simple normalized-route model.
-
-Admission rule: every pattern must create a distinct player decision rather than merely more density.
+Potential convoy/leader-follower, fake-retreat, portal-ambush, encirclement or staggered-artillery patterns remain future candidates. Do not add them merely to expand vocabulary. Any activation requires a dedicated issue proving a distinct tactical question, explicit extra-state ownership, bounded telegraph behavior and no entity/projectile budget inflation.
 
 ### J3D — Telegraph / Fairness / Integration Certification
-Status: PLANNED
+Status: **NEXT ENGINEERING SLICE AFTER DOC13 CLOSURE**
 
-Certify:
-- severe crossings/encirclement/ambush routes have readable telegraphs;
-- pressure remains bounded with recovery space;
-- deterministic replay/restart/pause behavior;
-- no cap/budget regression;
-- no J1/J2 regression;
-- desktop + Android performance and exact-SHA deployment evidence.
+Certification-first goals:
+- prove all six routes expose readable route-specific telegraph metadata before severe pressure;
+- certify lead-in/recovery windows for both 2- and 3-member plans;
+- prove WEDGE/ORBIT assembly cannot overcommit capacity or silently raise density;
+- certify incomplete assembly, Hydro cancellation, fresh-run/wave/boss reset and pause/photo safety;
+- certify deterministic replay boundaries and explicit Campaign/Infinite policy;
+- prove no global cap/budget/entity/projectile/score/economy/J1/J2 regression;
+- prove player/FOTON formation authority remains separate;
+- repeat desktop + Android automated certification and exact-SHA deployment evidence.
+
+Prefer tests/contracts and make runtime corrections only if certification exposes a demonstrated fairness or integration defect. Existing manual visual/play-feel/physical-device blockers remain open and are not replaced by CI.
 
 ---
 
