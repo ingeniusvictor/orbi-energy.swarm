@@ -27,17 +27,24 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Prove baseline contract location
+      - name: Run repository smoke exactly as J1B
+        run: npm run test:repo
+
+      - name: Trace generated paused-loop contract
         shell: bash
         run: |
           set -euo pipefail
           echo "HEAD=$(git rev-parse HEAD)"
           echo "BASE=feb263957b52839d35a7cb1249762c223ba22595"
-          echo "Tracked professionalization candidates:"
+          echo "--- git status after test:repo ---"
+          git status --short
+          echo "--- tracked professionalization candidates ---"
           git ls-files | grep -i 'professionalization' || true
+          echo "--- generator candidates in repo smoke tests ---"
+          grep -RIn --include='*.test.mjs' -E 'professionalization\.test\.ts|Game loop advances live simulation only when not paused|Paused loop branch must not render the canvas' tests || true
           FILE=$(grep -RIl --include='*.test.ts' 'Game loop advances live simulation only when not paused' tests | head -1)
           if [ -z "$FILE" ]; then
-            echo "Unable to locate paused-loop contract test" >&2
+            echo "Unable to locate generated paused-loop contract test after test:repo" >&2
             exit 1
           fi
           echo "CONTRACT_FILE=$FILE"
