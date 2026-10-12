@@ -103,7 +103,8 @@ test("J3D certifies the existing spawn seam supplies capacity and simulation tim
 
 test("J3D certifies formation movement replaces rather than stacks on the legacy movement branch", () => {
   assert.match(gameSource, /projectLiveEnemyFormationMotion/);
-  assert.match(gameSource, /if \(enemy\.enemyFormation\)/);
+  assert.match(gameSource, /const formationMotion = enemy\.enemyFormation/);
+  assert.match(gameSource, /if \(formationMotion && !formationMotion\.complete\)/);
   assert.match(gameSource, /enemy\.x = formationMotion\.x/);
   assert.match(gameSource, /enemy\.y = formationMotion\.y/);
   assert.match(gameSource, /enemy\.enemyFormation = undefined/);
