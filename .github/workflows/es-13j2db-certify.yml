@@ -89,7 +89,7 @@ jobs:
           while IFS= read -r file; do
             [ -z "$file" ] && continue
             case "$file" in
-              .github/workflows/es-13j2db-certify.yml|scripts/j2db-materialize.cjs|src/game/EnergySwarmGame.tsx|src/game/audio.ts|src/game/combatOverdrivePresentationRenderer.ts|tests/es-13j2db-live-overdrive-presentation-adoption.test.mjs) ;;
+              .github/workflows/es-13j2db-certify.yml|scripts/j2db-materialize.cjs|src/game/EnergySwarmGame.tsx|src/game/audio.ts|src/game/combatOverdrivePresentationRenderer.ts|tests/es-13j2db-live-overdrive-presentation-adoption.test.mjs|tests/es-13j2b-live-overdrive-adoption.test.mjs) ;;
               *) echo "Unexpected J2D-B scope: $file" >&2; exit 1 ;;
             esac
           done < /tmp/j2db-files.txt
@@ -100,6 +100,6 @@ jobs:
           set -euo pipefail
           git config user.name ingeniusvictor
           git config user.email ingenius.victor@gmail.com
-          git add src/game/EnergySwarmGame.tsx src/game/audio.ts src/game/combatOverdrivePresentationRenderer.ts tests/es-13j2db-live-overdrive-presentation-adoption.test.mjs
+          git add src/game/EnergySwarmGame.tsx src/game/audio.ts src/game/combatOverdrivePresentationRenderer.ts tests/es-13j2db-live-overdrive-presentation-adoption.test.mjs tests/es-13j2b-live-overdrive-adoption.test.mjs
           git commit -m 'feat(j2db): adopt live Overdrive presentation [j2db-materialized]'
           git push origin HEAD:${{ github.ref_name }}
