@@ -28,6 +28,7 @@ Rules:
 | ES-13J2D-A — Pure Presentation Profile | DEPLOYED / FROZEN | `39f9b33c9a229c7c8d991aecd81ea695510c82a0` | #281 | #282 |
 | ES-13J2D-B — Live Reactive Presentation | DEPLOYED / FROZEN | `9743890d98b33d365cbc18a048015f3815b144e5` | #286 | #287 |
 | ES-13J2E — Overdrive Integration Certification | DEPLOYED / FROZEN | `bf0e6a858e3c96091c002ea623b29eb5c260c6ea` | #290 | #291 |
+| ES-13J3A — Pure Enemy Formation Route Contract | DEPLOYED / FROZEN | `3c5ece8d8e59bc38de468b4d0d9644953fa6a8be` | #294 | #295 |
 
 ## ES-12 evidence anchors
 
@@ -62,7 +63,7 @@ Evidence: pre-PR `38293627094`, job `114959353674`; head `e43a1d3f4f4a7801fb8360
 ### J2C-A — Pure Bounded Combat Expression
 Pure damage projection: inactive `1.0`, active `1.20`, hard ceiling `1.25`, deterministic/non-stacking, no score/economy/fire-rate/projectile-count/speed/crit/defense/budget mutation.
 
-Initial cert `38295319991` failed only because a raw source-purity regex matched a comment. Corrected pre-PR cert `38295483032`, job `114965401785`; head `992612a5315e87813e2e9d4e269a635806753e38`; PR CI `38295901224`; PR Android `38295901194`; main CI `38296053435`; main Android `38296053642`; Pages `38296151229` — GREEN.
+Corrected pre-PR cert `38295483032`, job `114965401785`; head `992612a5315e87813e2e9d4e269a635806753e38`; PR CI `38295901224`; PR Android `38295901194`; main CI `38296053435`; main Android `38296053642`; Pages `38296151229` — GREEN.
 
 ### J2C-B — Live Bounded Damage Adoption
 `projectCombatOverdriveEffects()` adopted exactly once at centralized player-projectile damage resolution after existing base/profile/GAIA/critical resolution.
@@ -70,40 +71,40 @@ Initial cert `38295319991` failed only because a raw source-purity regex matched
 Evidence: pre-PR `38297477355`, job `114971948257`; head `02d4296bd288860362eeb0502c387d801a31e45c`; PR CI `38297915036`; PR Android `38297913596`; main CI `38298120771`; main Android `38298120436`; Pages `38298206493` — GREEN.
 
 ### J2D-A — Pure Presentation Profile
-Pure `combatOverdrivePresentation.ts`: active/remainingRatio/quality in; neutral inactive output; bounded quality profiles; max ring count 3; activation pulse from certified remaining ratio; no second timer or live side effects.
+Pure quality-bounded presentation projection with neutral inactive output, max direct ring count 3, activation pulse from certified remaining ratio and no second timer or side effects.
 
 Evidence: pre-PR `38299553187`, job `114978848191`; head `5a70b0d55122ddf95b9af303dd24624f57b2f216`; PR CI `38299974128`; PR Android `38299974261`; main CI `38300161662`; main Android `38300161573`; Pages `38300237659` — GREEN.
 
 ### J2D-B — Live Reactive Presentation Adoption
-Live runtime consumes J2D-A projection and adds bounded direct Canvas2D field tint + collective FOTON/swarm halo/rings. No particles/entity arrays/scans were added. A short procedural TACTICAL-lane stinger runs only after successful explicit Overdrive activation and remains mute/user-gesture safe. No new clock/timer authority and no gameplay tuning/cap/budget changes.
+Live runtime consumes J2D-A projection and adds bounded direct Canvas2D field tint + collective FOTON/swarm halo/rings. No particles/entity arrays/scans were added. Short TACTICAL-lane activation stinger remains user-gesture/mute safe. No timer/gameplay/cap/budget changes.
 
-Certification chronology:
-- first cert `38301784513`, job `114986181271` failed Repository Smoke only because 3 tests were too literal: J2B generic sound prohibition did not yet allow the sanctioned J2D-B stinger, a comment word matched a raw particle regex, and a mount-effect text marker was formatting-fragile. No product commit was produced;
-- contracts were made semantic/stricter rather than weakened;
-- successful pre-PR cert `38302074362`, job `114987146051` GREEN across repo/gameplay/platform/typecheck/release/dossier/build/readiness/Android/APK/scope/materialization;
-- clean PR head `c96954ffabc1c6330bbbe2736b90456537878c10`;
-- PR CI `38302405528` GREEN;
-- PR Android `38302405569` GREEN;
-- canonical `9743890d98b33d365cbc18a048015f3815b144e5`;
-- main CI `38302618451` GREEN;
-- main Android `38302618447` GREEN;
-- Pages `38302704724` GREEN.
+Evidence: successful pre-PR cert `38302074362`, job `114987146051`; clean PR head `c96954ffabc1c6330bbbe2736b90456537878c10`; PR CI `38302405528`; PR Android `38302405569`; main CI `38302618451`; main Android `38302618447`; Pages `38302704724` — GREEN.
 
 ### J2E — Overdrive Integration Certification
-Certification-only closure of the complete J1/J2 system. Final gameplay diff added exactly two tests and changed no runtime/gameplay source. Deterministic coverage proves readiness → one-shot activation/consumption → bounded J2C damage/J2D presentation → exact 8 s expiry + 4 s re-entry, non-stacking activation, accepted-damage Resonance break, exact fresh-run reset, simulation-time pause safety, finite/bounded long sequences and live adoption of certified pure modules without duplicated tuning.
+Certification-only closure of J1/J2. Final gameplay diff added two tests and changed no runtime source. It certified readiness → activation/consumption → bounded damage/presentation → exact 8 s expiry + 4 s lock, non-stacking activation, damage interaction, fresh-run reset, pause safety, long deterministic bounded sequences and live pure-module adoption.
+
+Evidence: pre-PR head `eba9a30f627875103f53a49e27069eff2a3c3861`; run `38303651696`, job `114992339524`; final PR head `0dcd9b4533976a43f872d6b070607076c6336b48`; PR CI `38308946054`; PR Android `38309446296`; canonical `bf0e6a858e3c96091c002ea623b29eb5c260c6ea`; main CI `38309074528`; main Android `38309218634`; Pages `38309135916` — GREEN.
+
+### J3A — Pure Enemy Formation Route Contract
+Added a new pure enemy-only route projection authority, separate from the existing player/FOTON `formations.ts` system. Initial vocabulary is `PINCER`, `X_CROSS`, `SERPENTINE`. Caller supplies route/member slot/count/normalized progress/mirror; output is finite bounded normalized position plus phase/role/telegraph metadata. Local member cap is 8; route extent ±1.25. Invalid inputs fail closed. No runtime adoption, entity ownership, RNG/time authority, Campaign/Infinite logic, caps/budgets, projectile tuning, player formations, J1/J2, GAIA or FOTON GLB changes.
+
+Files:
+- `src/game/enemyFormationRoutes.ts`;
+- `tests/gameplay/enemy-formation-routes.test.ts`;
+- `tests/es-13j3a-enemy-formation-route-contract.test.mjs`.
 
 Evidence:
-- pre-PR certified head `eba9a30f627875103f53a49e27069eff2a3c3861`;
-- pre-PR run `38303651696`, job `114992339524` GREEN across repo/gameplay/platform/typecheck/release/dossier/build/readiness/Android/APK/scope;
-- final PR head `0dcd9b4533976a43f872d6b070607076c6336b48`;
-- PR CI `38308946054` GREEN on exact final PR head;
-- PR Android `38309446296` GREEN on exact final PR head; explicit workflow dispatch used only because Android PR path filters exclude tests-only changes;
-- canonical `bf0e6a858e3c96091c002ea623b29eb5c260c6ea`, single parent `95beb172e845794d03484e446128896a44428996`;
-- main CI `38309074528` GREEN on exact canonical;
-- main Android `38309218634` GREEN on exact canonical; explicit workflow dispatch used only because Android push path filters exclude tests-only changes;
-- Pages `38309135916` GREEN on exact canonical.
+- pre-PR certified head `685d0c498615a35f659cf8f7c8b231c85a8e6e0e`;
+- pre-PR run `38310490857`, job `115014740153` GREEN across repo/gameplay/platform/typecheck/release/dossier/build/readiness/Android/APK/scope;
+- final PR head `5e01e4d21bf1cdc185a8755e16006a2ee70ca89c`;
+- PR CI `38310847060` GREEN;
+- PR Android `38310847054` GREEN;
+- canonical `3c5ece8d8e59bc38de468b4d0d9644953fa6a8be`, single parent `40bff2cb7b2d109cb13bf1142c76e0238e1d0d19`;
+- main CI `38310975108` GREEN;
+- main Android `38310975021` GREEN;
+- Pages `38311040652` GREEN.
 
-Temporary branch-only dispatch helpers were removed after use and never merged to `main`.
+Temporary certification workflow was removed before PR and never merged to `main`.
 
 ## Documentation continuity milestones
 - ES-13DOC — #255 / PR #256: persistent roadmap/continuity policy.
@@ -114,25 +115,30 @@ Temporary branch-only dispatch helpers were removed after use and never merged t
 - DOC6 — #279 / PR #280: J2C-B closure + J2D activation; successor `efd212c7ea2a93e166d719721680fd5d88df402d`.
 - DOC7 — #284 / PR #285: J2D-A closure + J2D-B activation; successor `51fff02e687a2ce88a9c3e727edfb4de2c42f4b6`.
 - DOC8 — #288 / PR #289: J2D-B closure + J2E activation; successor `95beb172e845794d03484e446128896a44428996`.
-- DOC9 — #292: ACTIVE documentation closure at this ledger update; baseline gameplay canonical `bf0e6a858e3c96091c002ea623b29eb5c260c6ea`; activates J3 after merge.
+- DOC9 — #292 / PR #293: J2E closure + J3 activation; successor `40bff2cb7b2d109cb13bf1142c76e0238e1d0d19`.
+- DOC10 — #296: ACTIVE documentation closure at this ledger update; baseline J3A gameplay canonical `3c5ece8d8e59bc38de468b4d0d9644953fa6a8be`; activates J3B after merge.
 
 Resolved stale/diagnostic issues: #254 CLOSED NOT_PLANNED; #283 CLOSED NOT_PLANNED; neither produced a product merge.
 
 ## Next gameplay phase
 
-### ES-13J3 — Advanced Enemy Formation Director
-Status: ACTIVE / NEXT ENGINEERING TARGET AFTER DOC9 CLOSURE
+### ES-13J3B — Live Enemy Formation Director Adoption
+Status: ACTIVE / NEXT ENGINEERING TARGET AFTER DOC10 CLOSURE
 
-Recommended implementation sequence:
-- J3A pure deterministic formation-route contract with caller-owned state, bounded member slots and telegraph metadata;
-- J3B live adoption at existing spawn/movement seams without parallel entity ownership or new scans;
-- J3C selected advanced tactical vocabulary: pincers, wedges, X-cross, spirals/corkscrews, serpentine/convoy/orbit/encirclement/fake-retreat/portal patterns, each justified by a distinct player decision;
-- J3D telegraph/fairness/performance/integration certification.
-
-Hard constraints: preserve Campaign/Infinite isolation, `MAX_ENEMIES`, `MAX_PROJECTILES`, entity arrays, simulation budgets, J1/J2 contracts, FOTON GLB and GAIA tuning unless a dedicated demonstrated issue proves otherwise.
+Adopt J3A into the existing enemy spawn/movement authority with the smallest live surface:
+- retain `enemiesRef.current` as the only enemy entity array;
+- no additional full-array scan solely for formations;
+- no increase to `MAX_ENEMIES`, `MAX_PROJECTILES`, descriptor concurrency or simulation budgets;
+- explicit Campaign/Infinite adoption; no silent recipe changes;
+- regular-enemy first slice only unless existing architecture proves another class shares the same safe seam;
+- deterministic route evolution after assignment, using existing simulation ownership;
+- safe fallback/cancel when group capacity is unavailable;
+- minimum necessary per-enemy formation metadata or an equally bounded caller-owned map;
+- player/FOTON formations remain separate;
+- no J1/J2, GAIA, FOTON GLB, score/economy/damage/projectile changes.
 
 ## Remaining ES-13 chronology
-J3 Advanced Formations → J4 Tactical Enemy Families → J5 Priority Targets/Chain Reactions → J6 Dynamic Events → J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance.
+J3B Live Adoption → J3C Advanced Vocabulary → J3D Telegraph/Fairness/Integration → J4 Tactical Enemy Families → J5 Priority Targets/Chain Reactions → J6 Dynamic Events → J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance.
 
 Post-J15: ES-14 Living Warfront.
 
