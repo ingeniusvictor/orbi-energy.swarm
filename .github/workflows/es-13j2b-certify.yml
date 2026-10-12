@@ -163,7 +163,7 @@ jobs:
           while IFS= read -r file; do
             [ -z "$file" ] && continue
             case "$file" in
-              .github/workflows/es-13j2b-certify.yml|scripts/es-13j2b-materialize.py|j2b-repo-smoke-failure.txt|src/game/EnergySwarmGame.tsx|src/components/GameHud.tsx|tests/es-13j2b-live-overdrive-adoption.test.mjs) ;;
+              .github/workflows/es-13j2b-certify.yml|scripts/es-13j2b-materialize.py|j2b-repo-smoke-failure.txt|src/game/EnergySwarmGame.tsx|src/components/GameHud.tsx|tests/es-13j2b-live-overdrive-adoption.test.mjs|tests/es-13j1b-live-resonance-adoption.test.mjs|tests/es-13j2a-overdrive-contract.test.mjs) ;;
               *) echo "Unexpected J2B scope: $file" >&2; exit 1 ;;
             esac
           done < /tmp/j2b-files.txt
@@ -175,6 +175,6 @@ jobs:
           set -euo pipefail
           git config user.name "ingeniusvictor"
           git config user.email "ingenius.victor@gmail.com"
-          git add src/game/EnergySwarmGame.tsx src/components/GameHud.tsx tests/es-13j2b-live-overdrive-adoption.test.mjs
+          git add src/game/EnergySwarmGame.tsx src/components/GameHud.tsx tests/es-13j2b-live-overdrive-adoption.test.mjs tests/es-13j1b-live-resonance-adoption.test.mjs tests/es-13j2a-overdrive-contract.test.mjs
           git commit -m "feat(j2b): adopt live Overdrive activation and HUD [j2b-materialized]"
           git push origin HEAD:feat/es-13j2b-live-overdrive-activation
