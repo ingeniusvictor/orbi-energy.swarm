@@ -27,6 +27,7 @@ Rules:
 | ES-13J2C-B — Live Bounded Damage Adoption | DEPLOYED / FROZEN | `7e15ee1e79ee9ae8903891a66b0b1031b0600bca` | #276 | #278 |
 | ES-13J2D-A — Pure Presentation Profile | DEPLOYED / FROZEN | `39f9b33c9a229c7c8d991aecd81ea695510c82a0` | #281 | #282 |
 | ES-13J2D-B — Live Reactive Presentation | DEPLOYED / FROZEN | `9743890d98b33d365cbc18a048015f3815b144e5` | #286 | #287 |
+| ES-13J2E — Overdrive Integration Certification | DEPLOYED / FROZEN | `bf0e6a858e3c96091c002ea623b29eb5c260c6ea` | #290 | #291 |
 
 ## ES-12 evidence anchors
 
@@ -74,7 +75,7 @@ Pure `combatOverdrivePresentation.ts`: active/remainingRatio/quality in; neutral
 Evidence: pre-PR `38299553187`, job `114978848191`; head `5a70b0d55122ddf95b9af303dd24624f57b2f216`; PR CI `38299974128`; PR Android `38299974261`; main CI `38300161662`; main Android `38300161573`; Pages `38300237659` — GREEN.
 
 ### J2D-B — Live Reactive Presentation Adoption
-Live runtime now consumes J2D-A projection and adds bounded direct Canvas2D field tint + collective FOTON/swarm halo/rings. No particles/entity arrays/scans were added. A short procedural TACTICAL-lane stinger runs only after successful explicit Overdrive activation and remains mute/user-gesture safe. No new clock/timer authority and no gameplay tuning/cap/budget changes.
+Live runtime consumes J2D-A projection and adds bounded direct Canvas2D field tint + collective FOTON/swarm halo/rings. No particles/entity arrays/scans were added. A short procedural TACTICAL-lane stinger runs only after successful explicit Overdrive activation and remains mute/user-gesture safe. No new clock/timer authority and no gameplay tuning/cap/budget changes.
 
 Certification chronology:
 - first cert `38301784513`, job `114986181271` failed Repository Smoke only because 3 tests were too literal: J2B generic sound prohibition did not yet allow the sanctioned J2D-B stinger, a comment word matched a raw particle regex, and a mount-effect text marker was formatting-fragile. No product commit was produced;
@@ -88,6 +89,22 @@ Certification chronology:
 - main Android `38302618447` GREEN;
 - Pages `38302704724` GREEN.
 
+### J2E — Overdrive Integration Certification
+Certification-only closure of the complete J1/J2 system. Final gameplay diff added exactly two tests and changed no runtime/gameplay source. Deterministic coverage proves readiness → one-shot activation/consumption → bounded J2C damage/J2D presentation → exact 8 s expiry + 4 s re-entry, non-stacking activation, accepted-damage Resonance break, exact fresh-run reset, simulation-time pause safety, finite/bounded long sequences and live adoption of certified pure modules without duplicated tuning.
+
+Evidence:
+- pre-PR certified head `eba9a30f627875103f53a49e27069eff2a3c3861`;
+- pre-PR run `38303651696`, job `114992339524` GREEN across repo/gameplay/platform/typecheck/release/dossier/build/readiness/Android/APK/scope;
+- final PR head `0dcd9b4533976a43f872d6b070607076c6336b48`;
+- PR CI `38308946054` GREEN on exact final PR head;
+- PR Android `38309446296` GREEN on exact final PR head; explicit workflow dispatch used only because Android PR path filters exclude tests-only changes;
+- canonical `bf0e6a858e3c96091c002ea623b29eb5c260c6ea`, single parent `95beb172e845794d03484e446128896a44428996`;
+- main CI `38309074528` GREEN on exact canonical;
+- main Android `38309218634` GREEN on exact canonical; explicit workflow dispatch used only because Android push path filters exclude tests-only changes;
+- Pages `38309135916` GREEN on exact canonical.
+
+Temporary branch-only dispatch helpers were removed after use and never merged to `main`.
+
 ## Documentation continuity milestones
 - ES-13DOC — #255 / PR #256: persistent roadmap/continuity policy.
 - DOC2 — #258 / PR #259: J1B closure + J2 activation; successor `113842b3747827585fa32f90db4c2759828e302c`.
@@ -96,30 +113,26 @@ Certification chronology:
 - DOC5 — #273 / PR #275: J2C-A closure + J2C-B activation; successor `5d80833c71f8fe0c31f58945ed5cabb5f40b85b4`.
 - DOC6 — #279 / PR #280: J2C-B closure + J2D activation; successor `efd212c7ea2a93e166d719721680fd5d88df402d`.
 - DOC7 — #284 / PR #285: J2D-A closure + J2D-B activation; successor `51fff02e687a2ce88a9c3e727edfb4de2c42f4b6`.
-- DOC8 — #288: ACTIVE documentation at this ledger update; baseline gameplay canonical `9743890d98b33d365cbc18a048015f3815b144e5`.
+- DOC8 — #288 / PR #289: J2D-B closure + J2E activation; successor `95beb172e845794d03484e446128896a44428996`.
+- DOC9 — #292: ACTIVE documentation closure at this ledger update; baseline gameplay canonical `bf0e6a858e3c96091c002ea623b29eb5c260c6ea`; activates J3 after merge.
 
 Resolved stale/diagnostic issues: #254 CLOSED NOT_PLANNED; #283 CLOSED NOT_PLANNED; neither produced a product merge.
 
 ## Next gameplay phase
 
-### ES-13J2E — Overdrive Integration Certification
-Status: NEXT / NOT YET IMPLEMENTED
+### ES-13J3 — Advanced Enemy Formation Director
+Status: ACTIVE / NEXT ENGINEERING TARGET AFTER DOC9 CLOSURE
 
-Target:
-- deterministic J1 Resonance → J2 activation → J2C damage → J2D presentation integration regressions;
-- exact activation/expiry/re-entry boundaries;
-- accepted damage vs Resonance / active Overdrive authority;
-- pause/photo/lifecycle simulation-time safety;
-- fresh-run reset of Resonance + Overdrive;
-- no extra score multiplier, damage stacking or presentation gameplay side effects;
-- long deterministic sequences for bounded finite state;
-- no tuning change unless a dedicated demonstrated defect requires correction;
-- full repo/gameplay/platform/typecheck/release/dossier/build/readiness/Android/scope and exact-SHA PR/main/Pages certification.
+Recommended implementation sequence:
+- J3A pure deterministic formation-route contract with caller-owned state, bounded member slots and telegraph metadata;
+- J3B live adoption at existing spawn/movement seams without parallel entity ownership or new scans;
+- J3C selected advanced tactical vocabulary: pincers, wedges, X-cross, spirals/corkscrews, serpentine/convoy/orbit/encirclement/fake-retreat/portal patterns, each justified by a distinct player decision;
+- J3D telegraph/fairness/performance/integration certification.
 
-After J2E: J3 Advanced Enemy Formation Director.
+Hard constraints: preserve Campaign/Infinite isolation, `MAX_ENEMIES`, `MAX_PROJECTILES`, entity arrays, simulation budgets, J1/J2 contracts, FOTON GLB and GAIA tuning unless a dedicated demonstrated issue proves otherwise.
 
 ## Remaining ES-13 chronology
-J2E → J3 Advanced Formations → J4 Tactical Enemy Families → J5 Priority Targets/Chain Reactions → J6 Dynamic Events → J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance.
+J3 Advanced Formations → J4 Tactical Enemy Families → J5 Priority Targets/Chain Reactions → J6 Dynamic Events → J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance.
 
 Post-J15: ES-14 Living Warfront.
 

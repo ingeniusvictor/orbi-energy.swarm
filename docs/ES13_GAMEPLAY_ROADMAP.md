@@ -36,7 +36,7 @@ Issue #253 / PR #257
 ---
 
 ## J2 — ORBI Overdrive
-Status: **ACTIVE — FINAL CERTIFICATION SLICE**
+Status: **DEPLOYED / FROZEN PROGRAM**
 
 Goal: turn earned full Resonance into a temporary mastery state with bounded gameplay value, strong readability and no uncontrolled amplification.
 
@@ -106,33 +106,90 @@ Evidence:
 - Pages `38302704724` GREEN.
 
 ### J2E — Overdrive Integration Certification
-Status: **ACTIVE / NEXT IMPLEMENTATION TARGET**
+Status: **DEPLOYED / FROZEN**  
+Canonical: `bf0e6a858e3c96091c002ea623b29eb5c260c6ea`  
+Issue #290 / PR #291
 
-Purpose: prove the complete J1/J2 stack behaves as one bounded system before introducing J3.
+J2E remained tests/certification-only. It introduced no runtime/gameplay tuning changes.
 
-Certification contract:
-- deterministic pure integration test that earns Resonance through mixed affinities, reaches readiness, activates Overdrive, consumes readiness once, applies certified J2C damage and J2D presentation, expires at the exact 8 s boundary and respects 4 s re-entry lock;
-- prove repeated activation cannot stack/refresh duration or damage;
-- prove J1 score multiplier remains authoritative and Overdrive does not add score/economy multipliers;
-- prove accepted player damage still performs J1 Resonance break while active Overdrive state remains governed only by J2A;
-- prove pause/photo/lifecycle safety through simulation-time invariants and source adoption contracts;
-- prove fresh run/restart resets both Resonance and Overdrive;
-- long deterministic sequence with finite/bounded chain/resonance/Overdrive/damage/presentation values;
-- source contract proving J2B/J2C/J2D each consume their certified pure modules exactly once at their intended seams;
-- no gameplay tuning change unless certification exposes a demonstrated defect, in which case open a dedicated correction issue;
-- full repo/gameplay/platform/typecheck/release/dossier/build/readiness + Android + scope guard;
-- PR CI + Android, squash merge, exact-SHA main CI + Android + Pages.
+Certified contract:
+- deterministic mixed-affinity sequence reaches J1 Resonance readiness and activates J2 exactly once;
+- successful activation consumes readiness exactly once;
+- J1 score projection remains authoritative and J2 adds no score/economy multiplier;
+- J2C applies exactly one bounded player-damage multiplier and cannot stack/refresh;
+- J2D remains projection/presentation-only with no gameplay side effects;
+- exact 8 s simulation-time expiry and 4 s re-entry lock are preserved;
+- repeated activation while active cannot extend duration;
+- accepted damage still applies J1 Resonance break without taking ownership of active J2 timing;
+- fresh run resets J1 Resonance + J2 Overdrive exactly;
+- pause/photo/lifecycle source contracts preserve simulation-time ownership;
+- long deterministic sequences remain finite/bounded;
+- live J2B/J2C/J2D seams consume certified pure modules without importing duplicated tuning constants.
 
-J2E should preferably be **tests/certification only**. Do not modify runtime merely to make the certification pass.
+Evidence:
+- pre-PR `38303651696`, job `114992339524` GREEN;
+- final PR head `0dcd9b4533976a43f872d6b070607076c6336b48`;
+- PR CI `38308946054` GREEN;
+- PR Android `38309446296` GREEN on exact final PR head via explicit dispatch because tests-only changes do not match normal Android path filters;
+- main CI `38309074528` GREEN;
+- main Android `38309218634` GREEN on exact canonical via explicit dispatch for the same tests-only path-filter reason;
+- Pages `38309135916` GREEN.
 
-Do not start J3 until J2E is deployed/frozen.
+No temporary certification/dispatch workflow was merged into `main`.
 
 ---
 
 ## J3 — Advanced Enemy Formation Director
-Status: PLANNED / NEXT AFTER J2E
+Status: **ACTIVE / NEXT IMPLEMENTATION TARGET AFTER DOC9 CLOSURE**
 
-Tactical route vocabulary: pincers, wedges, X-cross, rings, spirals/corkscrews, serpentine columns, orbit attacks, encirclement, staggered artillery, fake retreats, portal ambushes, convoy assaults and leader/follower formations. Severe routes require readable telegraphs and bounded simultaneous pressure.
+Goal: create spatially tactical enemy movement that forces route/positioning decisions while keeping existing enemy/projectile caps and simulation budgets authoritative.
+
+### Proposed J3 decomposition
+
+#### J3A — Pure Formation Route Contract
+Status: **NEXT ENGINEERING SLICE**
+
+Design target:
+- deterministic pure formation/route planning with caller-owned state;
+- bounded member-slot count; no entity creation or array ownership;
+- normalized route/progress semantics that can be evaluated from caller-supplied simulation time/progress;
+- explicit formation identity, member role/slot, phase and telegraph metadata;
+- pure projection suitable for tests without renderer, React, audio, storage, RAF, wall clock or random authority;
+- immutable caller inputs and finite bounded outputs;
+- compatibility contract that allows later live adoption without forking Campaign/Infinite logic.
+
+Before implementation, audit existing spawn, formation, movement and route authorities. J3A must extend the smallest existing seam rather than create a parallel movement engine.
+
+#### J3B — Live Formation Director Adoption
+Status: PLANNED
+
+Consume J3A through existing spawn/movement authority. Preserve current entity arrays, `MAX_ENEMIES`, `MAX_PROJECTILES`, simulation budgets, Campaign/Infinite isolation and existing boss/special systems. No new full-array scans solely for formation behavior.
+
+#### J3C — Advanced Tactical Formation Vocabulary
+Status: PLANNED
+
+Candidate vocabulary: pincers, wedges, X-cross, rings, spirals/corkscrews, serpentine columns, orbit attacks, encirclement, staggered artillery routes, fake retreats, portal ambushes, convoy assaults and leader/follower formations.
+
+Admission rule: a formation is added only if it creates a distinct tactical question such as lane commitment, center denial, timing a gap, choosing a flank, tracking a leader or deciding whether to chase a retreat. Variety must not come from simply raising HP, enemy count or projectile count.
+
+#### J3D — Telegraph / Fairness / Integration Certification
+Status: PLANNED
+
+Certify:
+- severe crossings/encirclement/ambush routes have readable telegraphs;
+- pressure remains bounded with recovery space;
+- deterministic replay/restart/pause behavior;
+- no cap/budget regression;
+- no J1/J2 regression;
+- desktop + Android performance and exact-SHA deployment evidence.
+
+Hard constraints across J3:
+- preserve `MAX_ENEMIES`, `MAX_PROJECTILES`, existing entity arrays and simulation budgets unless a dedicated demonstrated issue proves a change is required;
+- no unnecessary additional entities/projectiles;
+- Campaign and Infinite remain isolated where intended;
+- no FOTON GLB or GAIA tuning changes;
+- no hidden wall-clock/random state where deterministic simulation inputs can own the behavior;
+- route telegraphs must preserve player/boss/objective/HUD readability.
 
 ## J4 — Tactical Enemy Families
 Status: PLANNED
