@@ -24,6 +24,7 @@ Rules:
 | ES-13J2A — ORBI Overdrive Pure State Contract | DEPLOYED / FROZEN | `6adfb7cc4785c5238c78821e6e67fdac3c0f4eb7` | #260 | #261 |
 | ES-13J2B — Live Overdrive Activation & HUD | DEPLOYED / FROZEN | `466242e91fa927bc4d996d09efdbb87f8f572d44` | #264 | #267 |
 | ES-13J2C-A — Pure Bounded Overdrive Combat Expression | DEPLOYED / FROZEN | `eca68cce510cf506053fd6d9121b501db7cd1f64` | #271 | #272 |
+| ES-13J2C-B — Live Bounded Overdrive Damage Adoption | DEPLOYED / FROZEN | `7e15ee1e79ee9ae8903891a66b0b1031b0600bca` | #276 | #278 |
 
 ## ES-12 evidence anchors
 
@@ -72,12 +73,11 @@ Implemented `src/game/combatOverdriveEffects.ts` as a pure projection layer:
 - hard contract ceiling = `1.25`;
 - deterministic, immutable and non-stacking;
 - no score/economy, fire-rate, projectile-count/speed, crit, defense or entity-budget change;
-- no clock/RAF/React runtime/render/audio/storage/random/entity scans;
-- no live runtime adoption yet.
+- no clock/RAF/React runtime/render/audio/storage/random/entity scans.
 
 Certification chronology:
 - temporary cert `38295319991`, job `114964869404` failed only because raw `/React/` in the new purity test matched a source comment; no product defect was demonstrated;
-- the test was made structure-aware, rejecting real React imports/hooks rather than prose;
+- test corrected to reject actual React imports/hooks rather than prose;
 - corrected full pre-PR cert `38295483032`, job `114965401785` — GREEN;
 - clean PR head `992612a5315e87813e2e9d4e269a635806753e38`;
 - PR CI `38295901224` — GREEN;
@@ -86,6 +86,28 @@ Certification chronology:
 - main CI `38296053435` — GREEN;
 - main Android `38296053642` — GREEN;
 - Pages `38296151229` build + deploy GREEN.
+
+### J2C-B — Live Bounded Overdrive Damage Adoption
+Implemented the certified J2C-A effect at the existing centralized player projectile damage seam:
+- runtime imports `projectCombatOverdriveEffects()` but not its tuning constants;
+- authoritative active signal is `combatOverdriveRef.current.active`;
+- existing base/profile/GAIA/critical resolution remains first;
+- certified player-damage multiplier is applied exactly once before projectile damage assignment;
+- `makeProjectile()` plus existing echo/mitosis variants remain derived from adjusted primary damage;
+- no new Overdrive timing/state or entity scans;
+- no fire-rate/cooldown, projectile speed/count, score/economy, splash/crit, cap/budget, Campaign/Infinite, FOTON or GAIA changes.
+
+The historical J2C-A no-live-adoption assertion was replaced with a forward-safe source rule requiring the live runtime to consume the projection helper without importing its tuning constants. J2C-A purity coverage remains intact.
+
+Evidence:
+- pre-PR certification `38297477355`, job `114971948257` — GREEN;
+- clean PR head `02d4296bd288860362eeb0502c387d801a31e45c`;
+- PR CI `38297915036` — GREEN;
+- PR Android `38297913596` — GREEN;
+- canonical `7e15ee1e79ee9ae8903891a66b0b1031b0600bca`;
+- main CI `38298120771` — GREEN;
+- main Android `38298120436` — GREEN;
+- Pages `38298206493` build + deploy GREEN.
 
 ## Documentation continuity milestones
 
@@ -102,39 +124,43 @@ Issue #262 / PR #263 — documentation-only main successor `a485e52542b3d0975117
 Issue #268 / PR #269 — documentation-only main successor `681442b08718e53fcf29a90dde94b4bb398c2d9f`; main CI `38294936715`; Pages `38295038742` — GREEN.
 
 ### ES-13DOC5 — J2C-A Closure Ledger & J2C-B Activation
-Issue #273 — ACTIVE DOCUMENTATION at this ledger update. Baseline gameplay canonical `eca68cce510cf506053fd6d9121b501db7cd1f64`.
+Issue #273 / PR #275 — documentation-only main successor `5d80833c71f8fe0c31f58945ed5cabb5f40b85b4`; activated J2C-B from deployed J2C-A.
+
+### ES-13DOC6 — J2C-B Closure Ledger & J2D Activation
+Issue #279 — ACTIVE DOCUMENTATION at this ledger update. Baseline gameplay canonical `7e15ee1e79ee9ae8903891a66b0b1031b0600bca`.
 
 ## Next gameplay phase
 
-### ES-13J2C-B — Live Bounded Overdrive Damage Adoption
+### ES-13J2D — Reactive Overdrive VFX / Audio / Safety
 Status: NEXT / NOT YET IMPLEMENTED
 
 Target:
-- use `projectCombatOverdriveEffects()` as the sole combat-expression authority;
-- adopt only at the centralized player-projectile damage seam inside `shootFromSwarm()`;
-- apply the multiplier once after existing base/profile/GAIA/critical damage resolution and before projectile damage assignment;
-- inactive behavior remains neutral; active behavior adds only certified +20% damage;
-- no duplicate `1.2` literal in live runtime;
-- preserve `MAX_PROJECTILES`, quantum/mitosis budgets, cooldown/fire-rate, projectile speed, score/economy, splash ratios, crit semantics, Campaign/Infinite, FOTON and GAIA;
-- no VFX/audio identity yet (J2D).
+- presentation only; no new gameplay multiplier/duration/re-entry/score/cadence/cap/budget tuning;
+- consume the already-certified J2 Overdrive active/projection state rather than duplicate timing;
+- bounded activation stinger and active-state visual identity;
+- muted/audio-autoplay-safe behavior with no mount-time playback;
+- pause/photo/lifecycle/reset correctness;
+- mobile/low-quality-friendly effects with no uncontrolled entity growth;
+- preserve HUD/objective/boss readability;
+- no Campaign/Infinite recipe, FOTON GLB or GAIA tuning change;
+- add adoption regressions proving presentation depends on certified state rather than a second clock or tuning path.
 
 ## Remaining ES-13 chronology
-1. J2C-B — Live Bounded Damage Adoption
-2. J2D — Reactive VFX/Audio & Safety
-3. J2E — Overdrive Integration Certification
-4. J3 — Advanced Enemy Formation Director
-5. J4 — Tactical Enemy Families
-6. J5 — Priority Targets & Chain Reactions
-7. J6 — Dynamic Mid-Sector Events
-8. J7 — Bonus Challenge Rounds
-9. J8 — Additional Game Modes
-10. J9 — Boss & Miniboss Expansion
-11. J10 — Expert Risk/Reward
-12. J11 — Build & Synergy Expansion
-13. J12 — Rare Events & Secret Encounters
-14. J13 — Score, Rank & Mastery
-15. J14 — Procedural Interaction Matrix
-16. J15 — Integration & Long-Range Balance Certification
+1. J2D — Reactive VFX/Audio & Safety
+2. J2E — Overdrive Integration Certification
+3. J3 — Advanced Enemy Formation Director
+4. J4 — Tactical Enemy Families
+5. J5 — Priority Targets & Chain Reactions
+6. J6 — Dynamic Mid-Sector Events
+7. J7 — Bonus Challenge Rounds
+8. J8 — Additional Game Modes
+9. J9 — Boss & Miniboss Expansion
+10. J10 — Expert Risk/Reward
+11. J11 — Build & Synergy Expansion
+12. J12 — Rare Events & Secret Encounters
+13. J13 — Score, Rank & Mastery
+14. J14 — Procedural Interaction Matrix
+15. J15 — Integration & Long-Range Balance Certification
 
 Post-J15: ES-14 — Living Warfront.
 
