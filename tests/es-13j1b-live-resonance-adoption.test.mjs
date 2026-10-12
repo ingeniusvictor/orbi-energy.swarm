@@ -50,7 +50,7 @@ test("accepted player damage breaks resonance only after the invincibility guard
   const damagePlayer = sliceBetween(
     gameSource,
     "const damagePlayer = (dmg: number) =>",
-    "// --- ENTITY UPDATE PHYSICS ---",
+    "// --- ENGINE UPDATES (Movement, projectile, spawn, single-impact collision sweeps) ---",
   );
   const invincibilityGuard = damagePlayer.indexOf("if (invincibilityTimerRef.current > 0) return;");
   const breakIndex = damagePlayer.indexOf("applyCombatResonanceDamageBreak(");
@@ -75,7 +75,11 @@ test("chain expiry is simulation-time based and flushed only on the existing HUD
 
 test("new runs reset resonance and the live ref owns high-frequency state", () => {
   assert.match(gameSource, /combatResonanceRef\s*=\s*useRef\(createCombatResonanceState\(\)\)/);
-  const startGame = sliceBetween(gameSource, "const startGame =", "const resetGame =");
+  const startGame = sliceBetween(
+    gameSource,
+    "const startGame =",
+    "// --- REBOOT GAME ON LOSS ---",
+  );
   assert.match(startGame, /combatResonanceRef\.current\s*=\s*createCombatResonanceState\(\)/);
   assert.match(startGame, /setCombatResonanceView\(/);
 });
