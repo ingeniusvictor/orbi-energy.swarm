@@ -1,0 +1,105 @@
+name: ES-13J2D-B Live Overdrive Presentation Certification
+
+on:
+  push:
+    branches:
+      - feat/es-13j2db-live-overdrive-presentation
+
+permissions:
+  contents: write
+
+jobs:
+  certify:
+    if: ${{ !contains(github.event.head_commit.message, '[j2db-materialized]') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Materialize J2D-B live presentation
+        run: node scripts/j2db-materialize.cjs
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Repository smoke
+        run: npm run test:repo
+
+      - name: Gameplay regression
+        run: npm run test:gameplay
+
+      - name: Platform regression
+        run: npm run test:platform
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Release contract
+        run: npm run release:verify
+
+      - name: Manual certification dossier
+        run: npm run release:evidence:verify
+
+      - name: Production build
+        run: npm run build
+
+      - name: RC readiness remains fail-closed
+        env:
+          ORBI_RELEASE_SHA: ${{ github.sha }}
+        run: npm run release:readiness -- --output release-readiness.json
+
+      - name: Setup Java 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+
+      - name: Install Android 16 SDK
+        run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0' >/dev/null
+
+      - name: Build Android debug APK
+        env:
+          ORBI_BUILD_SHA: ${{ github.sha }}
+        run: npm run android:debug
+
+      - name: Verify Android APK
+        run: test -s android/app/build/outputs/apk/debug/app-debug.apk
+
+      - name: J2D-B scope guard
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --name-only 51fff02e687a2ce88a9c3e727edfb4de2c42f4b6 | sort -u > /tmp/j2db-files.txt
+          cat /tmp/j2db-files.txt
+          while IFS= read -r file; do
+            [ -z "$file" ] && continue
+            case "$file" in
+              .github/workflows/es-13j2db-certify.yml|scripts/j2db-materialize.cjs|src/game/EnergySwarmGame.tsx|src/game/audio.ts|src/game/combatOverdrivePresentationRenderer.ts|tests/es-13j2db-live-overdrive-presentation-adoption.test.mjs) ;;
+              *) echo "Unexpected J2D-B scope: $file" >&2; exit 1 ;;
+            esac
+          done < /tmp/j2db-files.txt
+
+      - name: Commit certified J2D-B materialization
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name ingeniusvictor
+          git config user.email ingenius.victor@gmail.com
+          git add src/game/EnergySwarmGame.tsx src/game/audio.ts src/game/combatOverdrivePresentationRenderer.ts tests/es-13j2db-live-overdrive-presentation-adoption.test.mjs
+          git commit -m 'feat(j2db): adopt live Overdrive presentation [j2db-materialized]'
+          git push origin HEAD:${{ github.ref_name }}
