@@ -192,6 +192,11 @@ import {
   getOrbiAttackProfile,
 } from "./orbiAttackProfiles";
 import {
+  applyAffinityFusion,
+  consumeAffinityFusionEnergy,
+  resolveAffinityFusion,
+} from "./affinityFusionDirector";
+import {
   GAIA_REQUIRED_ENERGY_COUNT,
   createGaiaEvolutionState,
   getGaiaCombatScale,
@@ -1807,6 +1812,9 @@ export const EnergySwarmGame: React.FC = () => {
       "SYSTEM",
       "+1 ORBI " + energyDefinition.displayName + " // " + energyDefinition.energyLabel.toUpperCase() + " [" + displayRole + "]",
     );
+
+    // A full meter may have been waiting for this exact third compatible source.
+    tryTriggerAffinityFusion();
   };
 
   // --- SYSTEM SHOP UPGRADES ---
@@ -2042,94 +2050,67 @@ export const EnergySwarmGame: React.FC = () => {
     });
   };
 
-  // --- TRIGGER FUSION SUMMONS ---
-  const triggerFusion = (fusionType: "SOLAR" | "HYDRO") => {
-    const fusionCapacity = Math.max(
-      0,
-      getSwarmDoctrineCapacity(swarmDoctrineRef.current) -
-        (gaiaMemberRef.current ? 0 : 1),
+  // --- AFFINITY FUSION DIRECTOR ---
+  const tryTriggerAffinityFusion = () => {
+    const resolution = resolveAffinityFusion(
+      swarmRef.current,
+      fusionEnergyRef.current,
     );
-    if (swarmRef.current.length >= fusionCapacity) {
-      postDialogue(
-        "SYSTEM",
-        "FUSIÓN RETENIDA: no hay slot de enjambre. Promueve veteranos para ampliar la formación.",
-      );
-      return;
+    if (!resolution) return false;
+
+    const fusedMemberId =
+      `affinity_fusion_${resolution.recipe.id.toLowerCase()}_${runOrbiAcquiredRef.current + 1}`;
+    const applied = applyAffinityFusion(
+      swarmRef.current,
+      resolution,
+      fusedMemberId,
+      playerPosRef.current,
+    );
+    if (!applied) return false;
+
+    // Fusion is contraction-only (3 -> 1), but keep the doctrine boundary
+    // fail-closed in case a stale/corrupt runtime roster reaches this helper.
+    if (
+      applied.members.length >
+      getSwarmDoctrineCapacity(swarmDoctrineRef.current)
+    ) {
+      return false;
     }
 
-    // Requires exact energy consumption only after capacity admission.
-    fusionEnergyRef.current = 0;
+    swarmRef.current = applied.members;
+    fusionEnergyRef.current = consumeAffinityFusionEnergy(
+      fusionEnergyRef.current,
+    );
+
+    // Intentionally do NOT register the level-5 fusion body with Swarm Doctrine.
+    // Historical source credits stay monotonic; later real promotions remain
+    // exclusively owned by the normal doctrine progression path.
+    runOrbiAcquiredRef.current += 1;
+    updateRunMaxSwarmSize();
+    playRecruitSound();
+    screenShakeRef.current = 15;
 
     triggerExplosion(
       particlesRef.current,
       getQualityConfig(stats.qualityPreset).maxParticles,
       ParticleType.FUSION,
-      playerPosRef.current.x,
-      playerPosRef.current.y,
-      fusionType === "SOLAR" ? "#fbbf24" : "#06b6d4",
-      35,
-      4.0
+      applied.fusedMember.x,
+      applied.fusedMember.y,
+      applied.fusedMember.color,
+      32,
+      4.2,
     );
-
-    if (fusionType === "SOLAR") {
-      // Create Solar Guardian Prime
-      const g: OrbiMember = {
-        id: "solar_guardian_prime_" + Math.random().toString(),
-        type: OrbiType.SOLAR_GUARDIAN,
-        name: "SOLAR GUARDIAN",
-        x: playerPosRef.current.x,
-        y: playerPosRef.current.y,
-        targetX: playerPosRef.current.x,
-        targetY: playerPosRef.current.y,
-        color: "#fbbf24",
-        size: 7,
-        shootCooldown: 25, // Insanely rapid fire!
-        affinity: "solar",
-        combatRole: "beam",
-        personality: "PRIMAL",
-        evolutionStage: 3,
-        level: 5,
-        xp: 0
-      };
-      swarmRef.current.push(g);
-      swarmDoctrineRef.current = registerSwarmDoctrineMember(
-        swarmDoctrineRef.current,
-        g.id,
-        g.level,
-      );
-      runOrbiAcquiredRef.current += 1;
-      updateRunMaxSwarmSize();
-      postDialogue("COMPANION", "¡FUSIÓN SOLAR DETECTADA! Guardián Solar Prime convocado.");
-    } else {
-      // Create Hydro Leviathan
-      const l: OrbiMember = {
-        id: "hydro_leviathan_" + Math.random().toString(),
-        type: OrbiType.HYDRO_LEVIATHAN,
-        name: "HYDRO LEVIATHAN",
-        x: playerPosRef.current.x,
-        y: playerPosRef.current.y,
-        targetX: playerPosRef.current.x,
-        targetY: playerPosRef.current.y,
-        color: "#22d3ee",
-        size: 16,
-        shootCooldown: 30,
-        affinity: "hydro",
-        combatRole: "pulse",
-        personality: "MAJESTIC",
-        evolutionStage: 3,
-        level: 5,
-        xp: 0
-      };
-      swarmRef.current.push(l);
-      swarmDoctrineRef.current = registerSwarmDoctrineMember(
-        swarmDoctrineRef.current,
-        l.id,
-        l.level,
-      );
-      runOrbiAcquiredRef.current += 1;
-      updateRunMaxSwarmSize();
-      postDialogue("COMPANION", "¡FUSIÓN HÍDRICA DETECTADA! Hidro-Leviatán estabilizado en órbita.");
-    }
+    addFloatingText(
+      `FUSION: ${applied.fusedMember.name}`,
+      playerPosRef.current.x,
+      playerPosRef.current.y - 42,
+      applied.fusedMember.color,
+    );
+    postDialogue(
+      "COMPANION",
+      `${applied.fusedMember.name} ONLINE // 3→1 AFFINITY FUSION`,
+    );
+    return true;
   };
 
   // --- WAVE TRANSITIONS DIRECTOR ---
@@ -5136,20 +5117,8 @@ export const EnergySwarmGame: React.FC = () => {
       fusionEnergyRef.current = Math.min(100, fusionEnergyRef.current + boost);
       scoreRef.current += 25;
 
-      // Check Fusion triggers
-      if (fusionEnergyRef.current >= 100) {
-        const solarCount = swarmRef.current.filter((m) => m.color === "#f59e0b" || m.affinity === "solar").length;
-        const hydroCount = swarmRef.current.filter((m) => m.color === "#0ea5e9" || m.affinity === "hydro").length;
-
-        if (solarCount >= 10) {
-          triggerFusion("SOLAR");
-        } else if (hydroCount >= 12) {
-          triggerFusion("HYDRO");
-        } else {
-          // default backup fusion burst
-          triggerFusion("SOLAR");
-        }
-      }
+      // H12: a full meter is only consumed when a canonical 3→1 recipe resolves.
+      tryTriggerAffinityFusion();
     } else if (res.type === "ORBI") {
       // Recruit Supplementary swarm shooter!
       addSwarmMember(

@@ -23,7 +23,11 @@ test("runtime formation source of truth cannot go stale behind React UI state", 
 test("Dyson progression uses monotonic run acquisition instead of live follower attrition", () => {
   assert.match(game, /const runOrbiAcquiredRef = useRef<number>\(0\)/);
   assert.match(game, /runOrbiAcquiredRef\.current = 0/);
-  assert.equal((game.match(/runOrbiAcquiredRef\.current \+= 1/g) ?? []).length, 4);
+  assert.equal((game.match(/runOrbiAcquiredRef\.current \+= 1/g) ?? []).length, 3);
+  assert.match(
+    game,
+    /const tryTriggerAffinityFusion = \(\) =>[\s\S]*runOrbiAcquiredRef\.current \+= 1/,
+  );
   assert.match(game, /fotonThreatDirectionRef\.current,\s*runOrbiAcquiredRef\.current,\s*\);/);
   assert.doesNotMatch(halo, /normalizeCount\(swarmMemberCount\) - 1/);
 });
