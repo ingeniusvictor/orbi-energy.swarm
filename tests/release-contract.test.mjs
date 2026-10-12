@@ -13,6 +13,7 @@ const release = readJson("release/release.json");
 const changelog = read("CHANGELOG.md");
 const readme = read("README.md");
 const verifier = read("scripts/verify-release.mjs");
+const readiness = read("scripts/check-rc-readiness.mjs");
 const ci = read(".github/workflows/ci.yml");
 
 test("beta release version is synchronized across package metadata", () => {
@@ -45,10 +46,18 @@ test("manual release blockers remain explicit and machine-readable", () => {
   );
 });
 
-test("pending ES-12 release engineering work is explicit", () => {
-  assert.deepEqual(release.pendingReleaseEngineering, [
-    "release-candidate-certification",
-  ]);
+test("I3 completes release engineering without pretending manual certification is done", () => {
+  assert.deepEqual(release.pendingReleaseEngineering, []);
+  assert.equal(release.automatedCertification.rcReadinessGate, true);
+  assert.equal(release.rcReadiness.policyVersion, 1);
+  assert.equal(release.rcReadiness.command, "npm run release:readiness");
+  assert.equal(release.rcReadiness.expectedDecision, "BLOCKED");
+  assert.equal(release.rcReadiness.promotionIsExplicit, true);
+  assert.match(
+    release.rcReadiness.evidenceArtifactPattern,
+    /orbi-energy-swarm-rc-readiness-\{sha\}/,
+  );
+
   assert.equal(release.webDistribution.deploymentTarget, "github-pages");
   assert.equal(release.webDistribution.installability, "pwa");
   assert.equal(release.androidDistribution.strategy, "capacitor-8");
@@ -80,36 +89,60 @@ test("README no longer presents the current product as the 0.1.0 baseline", () =
   );
 });
 
-test("release verifier enforces parity and RC blocker safety", () => {
+test("release verifier enforces parity, blocker safety and explicit promotion", () => {
   assert.match(verifier, /lock\.version !== pkg\.version/);
   assert.match(verifier, /rootLock\?\.version !== pkg\.version/);
   assert.match(verifier, /release\.version !== pkg\.version/);
   assert.match(verifier, /CHANGELOG entry missing/);
+  assert.match(verifier, /pendingReleaseEngineering must be an array/);
   assert.match(
     verifier,
-    /release\.releaseCandidateEligible === true[\s\S]*release\.manualBlockers\.length > 0/,
+    /release\.releaseCandidateEligible === true && blockerCount > 0/,
   );
   assert.match(
     verifier,
-    /release\.channel === "rc"[\s\S]*release\.releaseCandidateEligible !== true/,
+    /release\.channel === "rc" \|\| release\.channel === "stable"/,
   );
+  assert.match(verifier, /SemVer channel/);
 });
 
-test("package exposes release verifier and CI executes it before production build", () => {
+test("readiness evaluator is machine-readable and fail-closed", () => {
+  assert.match(readiness, /BLOCKED/);
+  assert.match(readiness, /ELIGIBLE_FOR_PROMOTION/);
+  assert.match(readiness, /decision = "RC"/);
+  assert.match(readiness, /sourceSha/);
+  assert.match(readiness, /releaseCandidateEligible cannot be true/);
+});
+
+test("package exposes release gates and CI emits readiness evidence after build", () => {
   assert.equal(
     pkg.scripts["release:verify"],
     "node scripts/verify-release.mjs",
   );
+  assert.equal(
+    pkg.scripts["release:readiness"],
+    "node scripts/check-rc-readiness.mjs",
+  );
 
   const releaseGate = ci.indexOf("name: Release contract");
   const buildGate = ci.indexOf("name: Production build");
+  const readinessGate = ci.indexOf("name: RC readiness evidence");
+  const uploadGate = ci.indexOf("name: Upload RC readiness evidence");
+
   assert.ok(releaseGate >= 0);
   assert.ok(buildGate > releaseGate);
+  assert.ok(readinessGate > buildGate);
+  assert.ok(uploadGate > readinessGate);
   assert.match(ci, /run: npm run release:verify/);
+  assert.match(ci, /npm run release:readiness -- --output release-readiness\.json/);
+  assert.ok(ci.includes("ORBI_RELEASE_SHA: ${{ github.sha }}"));
+  assert.ok(ci.includes("orbi-energy-swarm-rc-readiness-${{ github.sha }}"));
+  assert.ok(ci.includes("path: release-readiness.json"));
 });
 
 test("beta metadata does not claim stable or RC release readiness", () => {
   assert.notEqual(release.channel, "rc");
   assert.notEqual(release.channel, "stable");
   assert.equal(release.releaseCandidateEligible, false);
+  assert.equal(release.rcReadiness.expectedDecision, "BLOCKED");
 });

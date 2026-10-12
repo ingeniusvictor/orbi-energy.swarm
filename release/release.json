@@ -15,7 +15,8 @@
     "accessibilityContracts": true,
     "androidPerformanceSoftwareMatrix": true,
     "pwaDistributionContracts": true,
-    "androidPackagingContracts": true
+    "androidPackagingContracts": true,
+    "rcReadinessGate": true
   },
   "webDistribution": {
     "deploymentTarget": "github-pages",
@@ -53,7 +54,13 @@
       "requirement": "Real-device thermal, sustained battery, browser chrome, ergonomics and OEM GPU/driver validation."
     }
   ],
-  "pendingReleaseEngineering": [
-    "release-candidate-certification"
-  ]
+  "pendingReleaseEngineering": [],
+  "rcReadiness": {
+    "policyVersion": 1,
+    "command": "npm run release:readiness",
+    "expectedDecision": "BLOCKED",
+    "promotionIsExplicit": true,
+    "evidenceArtifactPattern": "orbi-energy-swarm-rc-readiness-{sha}",
+    "rule": "Manual blockers must be zero before explicit RC promotion."
+  }
 }

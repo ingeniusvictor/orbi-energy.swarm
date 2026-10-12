@@ -37,3 +37,16 @@ jobs:
 
       - name: Production build
         run: npm run build
+
+      - name: RC readiness evidence
+        env:
+          ORBI_RELEASE_SHA: ${{ github.sha }}
+        run: npm run release:readiness -- --output release-readiness.json
+
+      - name: Upload RC readiness evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: orbi-energy-swarm-rc-readiness-${{ github.sha }}
+          path: release-readiness.json
+          if-no-files-found: error
+          retention-days: 30
