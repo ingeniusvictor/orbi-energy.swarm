@@ -13,18 +13,22 @@ jobs:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
       - name: Apply documentation patch
         run: python .github/scripts/es13doc12_apply.py
-      - name: Verify documentation-only diff
+
+      - name: Verify exact documentation-only diff
         shell: bash
         run: |
-          git diff --check
           changed="$(git diff --name-only | sort)"
           expected="$(printf '%s\n' docs/ES13_GAMEPLAY_ROADMAP.md docs/IMPLEMENTATION_LEDGER.md docs/PROJECT_CONTINUITY.md | sort)"
+          printf 'changed:\n%s\nexpected:\n%s\n' "$changed" "$expected"
           test "$changed" = "$expected"
+
       - name: Commit documentation transition
         shell: bash
         run: |
