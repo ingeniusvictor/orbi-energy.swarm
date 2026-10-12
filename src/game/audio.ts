@@ -846,3 +846,41 @@ export const playBossPulseSound = () => {
   osc.start();
   osc.stop(ctx.currentTime + 0.6);
 };
+
+
+// ES-13J2D-B: bounded tactical Overdrive activation stinger.
+// Called only after a successful explicit activation gesture; never on mount.
+export const playOverdriveActivationSound = () => {
+  const ctx = initAudio();
+  if (!ctx || isMuted) return;
+
+  beginTacticalPriority(ctx, 0.8);
+  const now = ctx.currentTime;
+  const frequencies = [220, 440, 880] as const;
+
+  frequencies.forEach((frequency, index) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const startAt = now + index * 0.055;
+    const stopAt = startAt + 0.32;
+
+    osc.type = index === 2 ? "sine" : "triangle";
+    osc.frequency.setValueAtTime(frequency, startAt);
+    osc.frequency.exponentialRampToValueAtTime(
+      frequency * 1.35,
+      stopAt,
+    );
+
+    gain.gain.setValueAtTime(0.0001, startAt);
+    gain.gain.linearRampToValueAtTime(
+      laneGain(ctx, index === 2 ? 0.11 : 0.085, "TACTICAL"),
+      startAt + 0.025,
+    );
+    gain.gain.exponentialRampToValueAtTime(0.0001, stopAt);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(startAt);
+    osc.stop(stopAt);
+  });
+};

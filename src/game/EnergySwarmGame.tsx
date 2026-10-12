@@ -134,7 +134,7 @@ import {
   playDisruptorPulseSound, playHeavyImpactSound, playShieldDeflectSound,
   playCriticalHitSound,
   playBossArrivalSound, playBossPhaseTransitionSound, playBossChargeSound,
-  playBossShardsSound, playBossPulseSound
+  playBossShardsSound, playBossPulseSound, playOverdriveActivationSound
 } from "./audio";
 
 import { 
@@ -223,6 +223,11 @@ import {
   projectCombatOverdrive,
 } from "./combatOverdrive";
 import { projectCombatOverdriveEffects } from "./combatOverdriveEffects";
+import { projectCombatOverdrivePresentation } from "./combatOverdrivePresentation";
+import {
+  drawCombatOverdriveFieldOverlay,
+  drawCombatOverdriveSwarmHalo,
+} from "./combatOverdrivePresentationRenderer";
 import {
   PERFORMANCE_EVIDENCE_TARGET_SAMPLES,
   appendPerformanceEvidenceSample,
@@ -993,6 +998,9 @@ export const EnergySwarmGame: React.FC = () => {
     if (!resolution.activated || !resolution.consumeResonance) {
       return false;
     }
+
+    // Successful explicit activation is already a user gesture (keyboard/HUD).
+    playOverdriveActivationSound();
 
     combatResonanceRef.current = {
       ...combatResonanceRef.current,
@@ -6495,6 +6503,23 @@ export const EnergySwarmGame: React.FC = () => {
       cameraStateRef.current.viewportHeight
     );
 
+    const liveOverdriveRenderProjection = projectCombatOverdrive(
+      combatOverdriveRef.current,
+      timeElapsedRef.current,
+      projectCombatResonance(combatResonanceRef.current).overdriveReady,
+    );
+    const liveOverdrivePresentation = projectCombatOverdrivePresentation({
+      active: liveOverdriveRenderProjection.active,
+      remainingRatio: liveOverdriveRenderProjection.remainingRatio,
+      qualityPreset: statsRef.current?.qualityPreset ?? stats.qualityPreset,
+    });
+    drawCombatOverdriveFieldOverlay(
+      ctx,
+      liveOverdrivePresentation,
+      cameraStateRef.current.viewportWidth,
+      cameraStateRef.current.viewportHeight,
+    );
+
     // Apply camera transformation context and screen shake translation
     ctx.save();
     
@@ -6538,6 +6563,13 @@ export const EnergySwarmGame: React.FC = () => {
     particlesRef.current.forEach((p) => {
       drawParticle(ctx, p);
     });
+
+    // J2D-B: bounded collective Overdrive field, drawn directly with no particles.
+    drawCombatOverdriveSwarmHalo(
+      ctx,
+      liveOverdrivePresentation,
+      playerPosRef.current,
+    );
 
     // 6. Draw swarm shooters
     drawSwarmRoster(

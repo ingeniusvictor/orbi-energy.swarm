@@ -72,8 +72,19 @@ test("J2B activation is explicit, guarded, simulation-time based and consumes re
     activation,
     /chain:\s*0|bestChain:\s*0|affinityTrail:\s*\[\]/,
   );
+  // J2D-B authorizes exactly one presentation-only activation stinger after
+  // successful explicit activation. Preserve every original J2B prohibition
+  // for the remainder of the handler.
+  assert.equal(
+    (activation.match(/playOverdriveActivationSound\(\);/g) ?? []).length,
+    1,
+  );
+  const activationWithoutJ2dbStinger = activation.replace(
+    "playOverdriveActivationSound();",
+    "",
+  );
   assert.doesNotMatch(
-    activation,
+    activationWithoutJ2dbStinger,
     /startBgm|playEnemy|play.*Sound|projectilesRef|damageMultiplier|fireRate|scoreRef\.current\s*[+*]=/i,
   );
 });
