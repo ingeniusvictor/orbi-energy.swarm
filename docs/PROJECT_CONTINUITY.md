@@ -18,78 +18,75 @@ Never infer deployment/certification from conversation text alone.
 
 ## Last certified gameplay canonical
 
-`eca68cce510cf506053fd6d9121b501db7cd1f64`
+`7e15ee1e79ee9ae8903891a66b0b1031b0600bca`
 
-Phase: **ES-13J2C-A — Pure Bounded Overdrive Combat Expression Contract**  
+Phase: **ES-13J2C-B — Live Bounded Overdrive Damage Adoption**  
 Status: **DEPLOYED / FROZEN**  
-Issue: #271 — CLOSED  
-PR: #272 — squash merged
+Issue: #276 — CLOSED  
+PR: #278 — squash merged
 
 Parent documented `main` at merge:
-`681442b08718e53fcf29a90dde94b4bb398c2d9f`
+`5d80833c71f8fe0c31f58945ed5cabb5f40b85b4` — ES-13DOC5.
 
-J2C-A is exactly one gameplay commit ahead of that parent.
+J2C-B is exactly one gameplay commit ahead of that parent.
 
 Version remains `0.2.0-beta.1`. Full RC/manual certification remains intentionally deferred while ES-13 materially expands gameplay.
 
-## J2C-A implementation summary
-- added pure `src/game/combatOverdriveEffects.ts`;
-- J2A/J2B remain the sole Overdrive activation/timing authority;
-- input is only the certified Overdrive `active` projection;
-- inactive projection is exactly neutral: `playerDamageMultiplier = 1`;
-- active projection is exactly `1.20`;
-- hard contractual ceiling is `1.25`;
-- deterministic, non-stacking and immutable;
-- no score/economy, fire-rate, projectile-count, projectile-speed, crit, defense or entity-budget change;
-- no clock/RAF/React runtime/render/audio/storage/random/entity-array/simulation-scan dependency;
-- no live `EnergySwarmGame.tsx` adoption yet.
+## J2C-B implementation summary
+- adopted the certified `projectCombatOverdriveEffects()` projection at the centralized player-projectile damage seam inside `shootFromSwarm()`;
+- reads only authoritative high-frequency `combatOverdriveRef.current.active`;
+- existing damage ordering remains `base → attack profile → GAIA → critical → Overdrive`;
+- applies `playerDamageMultiplier` exactly once before projectile damage assignment;
+- all existing projectile variants continue deriving from the adjusted primary damage;
+- inactive behavior remains neutral through the J2C-A `1.0` projection;
+- active Overdrive uses only the certified J2C-A `1.20x` expression; runtime does not duplicate `1.2` or the `1.25` ceiling;
+- no new timer/state, fire-rate/cooldown, projectile speed/count, score/economy, splash/crit, cap/budget, entity-scan, Campaign/Infinite, FOTON or GAIA change.
 
-The first temporary certification run failed only because a new source-purity test used raw `/React/` and matched the word `React` inside a documentation comment. The product module was not defective. The test was corrected to reject actual React imports/hooks instead of prose, preserving and improving the intended purity guarantee.
+The J2C-A source safeguard was evolved only where its old phase-boundary assertion became stale: it now requires live runtime to consume the projection helper without importing J2C-A tuning constants. All J2C-A purity/dependency protections remain.
 
-## J2C-A exact evidence
-- first temporary cert `38295319991`, job `114964869404` — FAIL only on the demonstrated test false positive above;
-- corrected full pre-PR cert `38295483032`, job `114965401785` — GREEN;
-- final clean PR head `992612a5315e87813e2e9d4e269a635806753e38`;
-- PR CI `38295901224` — GREEN;
-- PR Android `38295901194` — GREEN;
-- squash canonical `eca68cce510cf506053fd6d9121b501db7cd1f64`;
-- main CI `38296053435` — GREEN;
-- main Android `38296053642` — GREEN;
-- Pages `38296151229` — build + deploy GREEN.
+## J2C-B exact evidence
+- pre-PR certification `38297477355`, job `114971948257` — GREEN;
+- final clean PR head `02d4296bd288860362eeb0502c387d801a31e45c`;
+- PR CI `38297915036` — GREEN;
+- PR Android `38297913596` — GREEN;
+- squash canonical `7e15ee1e79ee9ae8903891a66b0b1031b0600bca`;
+- main CI `38298120771` — GREEN;
+- main Android `38298120436` — GREEN;
+- Pages `38298206493` — build + deploy GREEN.
 
 ## Previous ES-13 gameplay canonicals
 - J1A — Combat Chain & Resonance Core: `feb263957b52839d35a7cb1249762c223ba22595`;
 - J1B — Live Combat Resonance Adoption & HUD: `91564e365d0a2220e4db2999e38372809ec397f3`;
 - J2A — ORBI Overdrive Pure State Contract: `6adfb7cc4785c5238c78821e6e67fdac3c0f4eb7`;
-- J2B — Live Overdrive Activation & HUD: `466242e91fa927bc4d996d09efdbb87f8f572d44`.
+- J2B — Live Overdrive Activation & HUD: `466242e91fa927bc4d996d09efdbb87f8f572d44`;
+- J2C-A — Pure Bounded Overdrive Combat Expression: `eca68cce510cf506053fd6d9121b501db7cd1f64`.
 
 ## Resolved diagnostic note
 Issue #254 (`ES-12I5R1`) is CLOSED / NOT PLANNED. Forensic reproduction proved the historical platform failure was not an I5 pause regression. #254 produced no product merge.
 
 ## Current administrative work
-Issue #273 — `ES-13DOC5 — J2C-A Closure Ledger & J2C-B Activation`  
-Branch: `docs/es-13-j2ca-closure-j2cb-activation`  
+Issue #279 — `ES-13DOC6 — J2C-B Closure Ledger & J2D Activation`  
+Branch: `docs/es-13-j2cb-closure-j2d-activation`  
 Scope: documentation only.
 
-A documentation-only merge may advance repository `main` without changing the gameplay canonical above. Always verify live `main` before creating J2C-B.
+A documentation-only merge may advance repository `main` without changing the gameplay canonical above. Always verify live `main` before creating J2D.
 
 ## Next gameplay phase
 
-### ES-13J2C-B — Live Bounded Overdrive Damage Adoption
+### ES-13J2D — Reactive Overdrive VFX / Audio / Safety
 Status: **NEXT / NOT YET IMPLEMENTED**
 
 Recommended contract:
-- import and use `projectCombatOverdriveEffects()`; do not duplicate `1.20` in live runtime;
-- adopt only at the existing centralized player-projectile damage seam inside `shootFromSwarm()`;
-- use the already-certified live Overdrive projection/state as the active signal;
-- multiply the existing resolved player projectile damage once by `playerDamageMultiplier`;
-- inactive Overdrive must remain bit-for-bit neutral in damage behavior;
-- active Overdrive must add only the certified +20% damage expression;
-- preserve `MAX_PROJECTILES` and all quantum/mitosis projectile-budget guards;
-- do not modify cooldown/fire-rate, projectile speed, score/economy, splash ratios, crit rules, defense, Campaign/Infinite recipes, FOTON or GAIA;
-- no new entity-array scans or per-frame React state;
-- no VFX/audio identity yet; that remains J2D;
-- add adoption tests proving one authoritative multiplier application and absence of duplicate literal tuning.
+- presentation only: no new damage, score, cadence, duration, re-entry, cap or budget tuning;
+- J2A/J2B remain activation/timing authority and J2C remains combat-expression authority;
+- use existing Overdrive active/projection state; do not create a second clock or per-frame React authority;
+- add a clear bounded activation stinger and active-state visual identity without continuous heavy particle/entity growth;
+- respect audio mute and browser/user-gesture constraints; no mount-time playback;
+- pause/photo/lifecycle suspension must not consume or restart presentation state independently of certified simulation time;
+- low-quality/mobile presets must avoid expensive full-screen effects; preserve current global caps/budgets;
+- HUD/canvas presentation must remain readable and accessible, especially warning/objective/boss layers;
+- no Campaign/Infinite recipe, FOTON GLB or GAIA tuning change;
+- add source/adoption regressions proving presentation consumes certified state rather than duplicating Overdrive timing/tuning.
 
 ## Frozen manual/physical blockers
 Still OPEN and intentionally deferred while ES-13 changes gameplay:
@@ -114,7 +111,7 @@ Rules:
 - no phase is declared deployed before exact-SHA main + Pages evidence.
 
 ## Gameplay chronology
-`J2C-B Live Damage Adoption → J2D Reactive VFX/Audio/Safety → J2E Integration → J3 Advanced Formations → J4 Tactical Enemy Families → J5 Priority Targets/Chain Reactions → J6 Dynamic Events → J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance`
+`J2D Reactive VFX/Audio/Safety → J2E Integration Certification → J3 Advanced Formations → J4 Tactical Enemy Families → J5 Priority Targets/Chain Reactions → J6 Dynamic Events → J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance`
 
 Post-J15 direction: **ES-14 — Living Warfront**.
 
