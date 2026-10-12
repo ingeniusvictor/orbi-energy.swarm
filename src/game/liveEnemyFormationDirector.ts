@@ -7,7 +7,10 @@ import {
 import { EnemyType } from "./types";
 import type { RuntimeWaveSourceMode } from "./runtimeWaveDescriptor";
 
+// J3B legacy/default live group size. J3C-B keeps legacy routes at 2 while
+// allowing only routes that require it to use the bounded advanced size below.
 export const LIVE_ENEMY_FORMATION_GROUP_SIZE = 2;
+export const LIVE_ENEMY_FORMATION_ADVANCED_GROUP_SIZE = 3;
 export const LIVE_ENEMY_FORMATION_ROUTE_DURATION_MS = 5200;
 export const LIVE_ENEMY_FORMATION_LEAD_IN_MS = 700;
 export const LIVE_ENEMY_FORMATION_RECOVERY_MS = 1800;
@@ -17,10 +20,21 @@ export const LIVE_ENEMY_FORMATION_SPAN_X = 250;
 export const LIVE_ENEMY_FORMATION_SPAN_Y = 190;
 export const LIVE_ENEMY_FORMATION_WORLD_MARGIN = 20;
 
-const ROUTE_CYCLE: readonly EnemyFormationRouteId[] = [
+const LEGACY_ROUTE_CYCLE: readonly EnemyFormationRouteId[] = [
   "PINCER",
   "X_CROSS",
   "SERPENTINE",
+];
+
+const ADVANCED_ROUTE_CYCLE: readonly EnemyFormationRouteId[] = [
+  "WEDGE",
+  "ORBIT",
+  "SPIRAL",
+];
+
+const FULL_ROUTE_CYCLE: readonly EnemyFormationRouteId[] = [
+  ...LEGACY_ROUTE_CYCLE,
+  ...ADVANCED_ROUTE_CYCLE,
 ];
 
 export interface LiveEnemyFormationPolicy {
@@ -28,6 +42,8 @@ export interface LiveEnemyFormationPolicy {
   infiniteEnabled: boolean;
   campaignMinWave: number;
   campaignMaxWave: number;
+  campaignAdvancedRoutesEnabled: boolean;
+  infiniteAdvancedRoutesEnabled: boolean;
 }
 
 export const LIVE_ENEMY_FORMATION_POLICY: Readonly<LiveEnemyFormationPolicy> = {
@@ -35,7 +51,21 @@ export const LIVE_ENEMY_FORMATION_POLICY: Readonly<LiveEnemyFormationPolicy> = {
   infiniteEnabled: true,
   campaignMinWave: 4,
   campaignMaxWave: 9,
+  campaignAdvancedRoutesEnabled: true,
+  infiniteAdvancedRoutesEnabled: true,
 };
+
+export interface LiveEnemyFormationRoutePlan {
+  route: EnemyFormationRouteId;
+  memberCount: number;
+}
+
+export const getLiveEnemyFormationRouteMemberCount = (
+  route: EnemyFormationRouteId,
+) =>
+  route === "WEDGE" || route === "ORBIT"
+    ? LIVE_ENEMY_FORMATION_ADVANCED_GROUP_SIZE
+    : LIVE_ENEMY_FORMATION_GROUP_SIZE;
 
 export interface LiveEnemyFormationAssignment {
   groupId: string;
@@ -144,6 +174,38 @@ const isModeEnabled = (
   );
 };
 
+const areAdvancedRoutesEnabled = (
+  request: LiveEnemyFormationSpawnRequest,
+  policy: Readonly<LiveEnemyFormationPolicy>,
+) =>
+  request.sourceMode === "INFINITE"
+    ? policy.infiniteAdvancedRoutesEnabled
+    : policy.campaignAdvancedRoutesEnabled;
+
+export const resolveLiveEnemyFormationRoutePlan = (
+  groupOrdinal: number,
+  sourceMode: RuntimeWaveSourceMode,
+  policy: Readonly<LiveEnemyFormationPolicy> = LIVE_ENEMY_FORMATION_POLICY,
+): LiveEnemyFormationRoutePlan => {
+  if (!Number.isInteger(groupOrdinal) || groupOrdinal < 0) {
+    throw new RangeError("groupOrdinal must be a non-negative integer.");
+  }
+
+  const advancedRoutesEnabled =
+    sourceMode === "INFINITE"
+      ? policy.infiniteAdvancedRoutesEnabled
+      : policy.campaignAdvancedRoutesEnabled;
+  const routeCycle = advancedRoutesEnabled
+    ? FULL_ROUTE_CYCLE
+    : LEGACY_ROUTE_CYCLE;
+  const route = routeCycle[groupOrdinal % routeCycle.length];
+
+  return {
+    route,
+    memberCount: getLiveEnemyFormationRouteMemberCount(route),
+  };
+};
+
 const sanitizePending = (
   state: LiveEnemyFormationDirectorState,
   nowMs: number,
@@ -189,22 +251,46 @@ export const requestLiveEnemyFormationSpawn = (
     isModeEnabled(request, policy);
 
   if (current.pending && eligible) {
+    const remainingMembers =
+      current.pending.common.memberCount - current.pending.nextMemberIndex;
+
+    // The caller still owns the current regular spawn. If the remaining live
+    // capacity can no longer complete the planned group, this spawn falls back
+    // to legacy behavior rather than partially overcommitting the plan.
+    if (request.remainingCapacity < remainingMembers) {
+      return { state: current, assignment: null };
+    }
+
     const assignment: LiveEnemyFormationAssignment = {
       ...current.pending.common,
       memberIndex: current.pending.nextMemberIndex,
     };
+    const nextMemberIndex = current.pending.nextMemberIndex + 1;
+
     return {
       state: {
         ...current,
-        pending: null,
+        pending:
+          nextMemberIndex < current.pending.common.memberCount
+            ? {
+                ...current.pending,
+                nextMemberIndex,
+              }
+            : null,
       },
       assignment,
     };
   }
 
+  const groupOrdinal = current.nextGroupOrdinal;
+  const routePlan = resolveLiveEnemyFormationRoutePlan(
+    groupOrdinal,
+    request.sourceMode,
+    policy,
+  );
   const mayStart =
     eligible &&
-    request.remainingCapacity >= LIVE_ENEMY_FORMATION_GROUP_SIZE &&
+    request.remainingCapacity >= routePlan.memberCount &&
     request.spawnOrdinal > 0 &&
     request.spawnOrdinal % LIVE_ENEMY_FORMATION_SPAWN_CADENCE === 0 &&
     request.nowMs >= current.activeUntilMs;
@@ -213,14 +299,12 @@ export const requestLiveEnemyFormationSpawn = (
     return { state: current, assignment: null };
   }
 
-  const groupOrdinal = current.nextGroupOrdinal;
-  const route = ROUTE_CYCLE[groupOrdinal % ROUTE_CYCLE.length];
   const mirror: EnemyFormationRouteMirror = groupOrdinal % 2 === 0 ? 1 : -1;
   const startsAtMs = request.nowMs + LIVE_ENEMY_FORMATION_LEAD_IN_MS;
   const common: Omit<LiveEnemyFormationAssignment, "memberIndex"> = {
     groupId: `${request.descriptorId}:formation:${groupOrdinal}`,
-    route,
-    memberCount: LIVE_ENEMY_FORMATION_GROUP_SIZE,
+    route: routePlan.route,
+    memberCount: routePlan.memberCount,
     mirror,
     startsAtMs,
     durationMs: LIVE_ENEMY_FORMATION_ROUTE_DURATION_MS,
@@ -235,12 +319,15 @@ export const requestLiveEnemyFormationSpawn = (
         startsAtMs +
         LIVE_ENEMY_FORMATION_ROUTE_DURATION_MS +
         LIVE_ENEMY_FORMATION_RECOVERY_MS,
-      pending: {
-        common,
-        nextMemberIndex: 1,
-        assemblyDeadlineMs:
-          startsAtMs + LIVE_ENEMY_FORMATION_ASSEMBLY_GRACE_MS,
-      },
+      pending:
+        routePlan.memberCount > 1
+          ? {
+              common,
+              nextMemberIndex: 1,
+              assemblyDeadlineMs:
+                startsAtMs + LIVE_ENEMY_FORMATION_ASSEMBLY_GRACE_MS,
+            }
+          : null,
     },
     assignment: {
       ...common,
