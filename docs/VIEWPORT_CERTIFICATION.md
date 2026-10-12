@@ -135,6 +135,8 @@ Protected by automated repository/platform tests:
 
 ## Visual QA status
 
-The repository does not currently document a canonical deployed preview URL. Therefore this phase does **not** claim screenshot-level visual certification from an external browser.
+GitHub Pages / Web Beta is now part of the canonical deployment flow. Human visual certification must use a successful `Web Beta / Pages` deployment whose source revision matches the exact candidate SHA recorded in the manual-certification dossier.
 
-The structural contracts above are the prerequisite for that browser QA. A deployed preview can later be checked against this matrix without redefining responsive behavior.
+The structural contracts above remain prerequisites, not screenshot-level proof. For every viewport class, the reviewer must inspect the rendered candidate in a real browser/device, record observations and attach durable screenshot/video/issue references before marking a criterion PASS. A GREEN automated viewport suite or a successful Pages deployment alone does not close Issue #4.
+
+See `docs/MANUAL_RC_CERTIFICATION.md` and `release/manual-certification.json` for the evidence-intake procedure.

@@ -36,11 +36,14 @@ human visual, Infinite play-feel and real-device Android validation remain open.
   API 36, with local web assets and a CI-built debug APK.
 - Deterministic ES-12 RC-readiness evaluation with SHA-bound CI evidence and
   explicit `BLOCKED`, `ELIGIBLE_FOR_PROMOTION`, `RC` and `STABLE` decisions.
+- Canonical ES-12 manual-certification dossier and fail-closed evidence intake for
+  the remaining visual, Infinite play-feel and real-device Android RC blockers.
 
 ### Changed
 
 - Repository quality gates now protect smoke tests, TypeScript correctness,
-  release-contract consistency, production builds and RC-readiness evidence.
+  release-contract consistency, manual-evidence structure, production builds and
+  RC-readiness evidence.
 - Presentation and performance systems are increasingly contract-driven while
   preserving the original gameplay baseline.
 - Distribution remains PWA-first for the beta; native Android packaging is now
