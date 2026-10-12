@@ -1,5 +1,5 @@
 import React from "react";
-import { Shield, Award, Users, Volume2, VolumeX, Pause, Play } from "lucide-react";
+import { Shield, Award, Users, Volume2, VolumeX, Pause, Play, Zap } from "lucide-react";
 import { useGameTranslation, formatNumber } from "../i18n";
 import { getCampaignObjective } from "../game/campaignGuide";
 import type { ResonanceTier } from "../game/combatResonance";
@@ -20,6 +20,13 @@ interface GameHudProps {
   combatResonance: number;
   combatResonanceTier: ResonanceTier;
   combatScoreMultiplier: number;
+  combatOverdriveActive: boolean;
+  combatOverdriveCanActivate: boolean;
+  combatOverdriveActionEnabled: boolean;
+  combatOverdriveRemainingMs: number;
+  combatOverdriveReentryLocked: boolean;
+  combatOverdriveReentryRemainingMs: number;
+  onActivateOverdrive: () => void;
   onTogglePause: () => void;
   onToggleMute: () => void;
 }
@@ -40,6 +47,13 @@ export const GameHud: React.FC<GameHudProps> = ({
   combatResonance,
   combatResonanceTier,
   combatScoreMultiplier,
+  combatOverdriveActive,
+  combatOverdriveCanActivate,
+  combatOverdriveActionEnabled,
+  combatOverdriveRemainingMs,
+  combatOverdriveReentryLocked,
+  combatOverdriveReentryRemainingMs,
+  onActivateOverdrive,
   onTogglePause,
   onToggleMute
 }) => {
@@ -100,6 +114,25 @@ export const GameHud: React.FC<GameHudProps> = ({
   const resonanceAriaLabel = language === "es"
     ? `Cadena ${combatChain}, resonancia ${Math.round(combatResonance)} por ciento, ${resonanceTierLabel}, multiplicador ${combatScoreMultiplier.toFixed(2)}`
     : `Chain ${combatChain}, resonance ${Math.round(combatResonance)} percent, ${resonanceTierLabel}, multiplier ${combatScoreMultiplier.toFixed(2)}`;
+
+  const overdriveSeconds = Math.max(
+    0,
+    Math.ceil(
+      (combatOverdriveActive
+        ? combatOverdriveRemainingMs
+        : combatOverdriveReentryRemainingMs) / 1000,
+    ),
+  );
+  const overdriveStatus = combatOverdriveActive
+    ? `ACTIVE ${overdriveSeconds}s`
+    : combatOverdriveReentryLocked
+      ? `RECHARGING ${overdriveSeconds}s`
+      : combatOverdriveCanActivate
+        ? "READY"
+        : "CHARGE";
+  const overdriveAriaLabel = language === "es"
+    ? `Sobrecarga ORBI: ${overdriveStatus}. Atajo O.`
+    : `ORBI Overdrive: ${overdriveStatus}. Shortcut O.`;
 
   // Localized wave details lookup helper
   const getLocalizedWaveDetails = () => {
@@ -202,6 +235,26 @@ export const GameHud: React.FC<GameHudProps> = ({
 
       {/* 5. QUICK CONTROLLER BUTTONS */}
       <div className="orbi-hud-actions flex items-center gap-1">
+        <button
+          onClick={onActivateOverdrive}
+          disabled={!combatOverdriveActionEnabled}
+          className={`flex items-center gap-1 rounded border px-1.5 py-1 text-[8px] font-black uppercase transition ${
+            combatOverdriveActive
+              ? "border-amber-400/60 bg-amber-950/40 text-amber-300"
+              : combatOverdriveReentryLocked
+                ? "border-slate-800 bg-slate-950/60 text-slate-600"
+                : combatOverdriveCanActivate
+                  ? "border-amber-400/70 bg-amber-500/15 text-amber-300 hover:bg-amber-500/25 cursor-pointer"
+                  : "border-slate-850 bg-slate-950/40 text-slate-600"
+          } disabled:cursor-not-allowed`}
+          title={overdriveAriaLabel}
+          aria-label={overdriveAriaLabel}
+          aria-disabled={!combatOverdriveActionEnabled}
+        >
+          <Zap size={10} />
+          <span>{overdriveStatus}</span>
+        </button>
+
         <button
           onClick={onTogglePause}
           className={`p-1.5 rounded cursor-pointer transition ${

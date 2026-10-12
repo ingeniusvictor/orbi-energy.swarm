@@ -40,7 +40,18 @@ test("J2A exposes a one-shot readiness-consumption contract without mutating J1A
   assert.doesNotMatch(source, /combatResonance|MAX_RESONANCE|resonance\s*=/);
 });
 
-test("J2A is not adopted into the live game yet", () => {
-  assert.doesNotMatch(liveGame, /combatOverdrive/);
-  assert.doesNotMatch(liveGame, /activateCombatOverdrive|advanceCombatOverdrive|projectCombatOverdrive/);
+test("J2B adopts J2A through the certified pure helpers without duplicating timing constants", () => {
+  for (const symbol of [
+    "activateCombatOverdrive",
+    "advanceCombatOverdrive",
+    "createCombatOverdriveState",
+    "projectCombatOverdrive",
+  ]) {
+    assert.match(liveGame, new RegExp(`\\b${symbol}\\b`));
+  }
+  assert.match(liveGame, /from\s+["']\.\/combatOverdrive["']/);
+  assert.doesNotMatch(
+    liveGame,
+    /\bOVERDRIVE_DURATION_MS\b|\bOVERDRIVE_REENTRY_LOCK_MS\b/,
+  );
 });
