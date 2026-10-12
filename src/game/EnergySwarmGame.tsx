@@ -217,6 +217,12 @@ import {
   registerCombatResonanceDefeat,
 } from "./combatResonance";
 import {
+  activateCombatOverdrive,
+  advanceCombatOverdrive,
+  createCombatOverdriveState,
+  projectCombatOverdrive,
+} from "./combatOverdrive";
+import {
   PERFORMANCE_EVIDENCE_TARGET_SAMPLES,
   appendPerformanceEvidenceSample,
   buildPerformanceEvidenceCapture,
@@ -276,6 +282,9 @@ export const EnergySwarmGame: React.FC = () => {
       ...projectCombatResonance(initialState),
     };
   });
+  const [combatOverdriveView, setCombatOverdriveView] = useState(() =>
+    projectCombatOverdrive(createCombatOverdriveState(), 0, false),
+  );
 
   // Stats persisting
   const [stats, setStats] = useState<GameStats>({ ...DEFAULT_STATS });
@@ -348,6 +357,7 @@ export const EnergySwarmGame: React.FC = () => {
   const nanoCreditsRef = useRef(0);
   const fusionEnergyRef = useRef(0);
   const combatResonanceRef = useRef(createCombatResonanceState());
+  const combatOverdriveRef = useRef(createCombatOverdriveState());
 
   const keysPressedRef = useRef<Record<string, boolean>>({});
   const activeFormationRef = useRef<FormationType>(FormationType.LINE);
@@ -939,6 +949,65 @@ export const EnergySwarmGame: React.FC = () => {
     setHighScore(finalCommit.stats.highScore);
   };
 
+  const handleOverdriveActivation = () => {
+    if (
+      !isPlaying ||
+      isGameOver ||
+      isPausedRef.current ||
+      isPhotoMode ||
+      isUpgradeSelectionOpenRef.current
+    ) {
+      return false;
+    }
+
+    const nowMs = timeElapsedRef.current;
+    combatOverdriveRef.current = advanceCombatOverdrive(
+      combatOverdriveRef.current,
+      nowMs,
+    );
+    const resonanceProjection = projectCombatResonance(
+      combatResonanceRef.current,
+    );
+    const preActivationProjection = projectCombatOverdrive(
+      combatOverdriveRef.current,
+      nowMs,
+      resonanceProjection.overdriveReady,
+    );
+
+    if (!preActivationProjection.canActivate) {
+      setCombatOverdriveView(preActivationProjection);
+      return false;
+    }
+
+    const resolution = activateCombatOverdrive(
+      combatOverdriveRef.current,
+      {
+        occurredAtMs: nowMs,
+        overdriveReady: resonanceProjection.overdriveReady,
+      },
+    );
+    combatOverdriveRef.current = resolution.state;
+    setCombatOverdriveView(resolution.projection);
+
+    if (!resolution.activated || !resolution.consumeResonance) {
+      return false;
+    }
+
+    combatResonanceRef.current = {
+      ...combatResonanceRef.current,
+      resonance: 0,
+    };
+    const consumedResonanceProjection = projectCombatResonance(
+      combatResonanceRef.current,
+    );
+    setCombatResonanceView({
+      chain: combatResonanceRef.current.chain,
+      resonance: combatResonanceRef.current.resonance,
+      ...consumedResonanceProjection,
+    });
+    return true;
+  };
+
   // --- KEY LISTENER LISTENERS ---
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -1019,6 +1088,12 @@ export const EnergySwarmGame: React.FC = () => {
         return; // BLOCK ALL OTHER INPUTS
       }
 
+      if (key === "O") {
+        e.preventDefault();
+        handleOverdriveActivation();
+        return;
+      }
+
       keysPressedRef.current[key] = true;
 
       const movementKeys = ["W", "A", "S", "D", "ARROWUP", "ARROWDOWN", "ARROWLEFT", "ARROWRIGHT"];
@@ -1063,7 +1138,7 @@ export const EnergySwarmGame: React.FC = () => {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
-  }, [isPlaying, isPaused, isPhotoMode, upgradesLevel]);
+  }, [isPlaying, isPaused, isPhotoMode, isGameOver, upgradesLevel]);
 
   // --- ANDROID / WEB APP LIFECYCLE SAFETY ---
   useEffect(() => {
@@ -1317,6 +1392,11 @@ export const EnergySwarmGame: React.FC = () => {
       resonance: resetResonanceState.resonance,
       ...projectCombatResonance(resetResonanceState),
     });
+    const resetOverdriveState = createCombatOverdriveState();
+    combatOverdriveRef.current = resetOverdriveState;
+    setCombatOverdriveView(
+      projectCombatOverdrive(resetOverdriveState, 0, false),
+    );
     playerFlashRef.current = 0;
     invincibilityTimerRef.current = 0;
 
@@ -3846,11 +3926,21 @@ export const EnergySwarmGame: React.FC = () => {
       const liveResonanceProjection = projectCombatResonance(
         combatResonanceRef.current,
       );
+      combatOverdriveRef.current = advanceCombatOverdrive(
+        combatOverdriveRef.current,
+        timeElapsedRef.current,
+      );
+      const liveOverdriveProjection = projectCombatOverdrive(
+        combatOverdriveRef.current,
+        timeElapsedRef.current,
+        liveResonanceProjection.overdriveReady,
+      );
       setCombatResonanceView({
         chain: combatResonanceRef.current.chain,
         resonance: combatResonanceRef.current.resonance,
         ...liveResonanceProjection,
       });
+      setCombatOverdriveView(liveOverdriveProjection);
       setScore(scoreRef.current);
       setShield(shieldRef.current);
       setSwarmSize(swarmRef.current.length + 1);
@@ -7259,6 +7349,19 @@ export const EnergySwarmGame: React.FC = () => {
                 combatResonance={combatResonanceView.resonance}
                 combatResonanceTier={combatResonanceView.tier}
                 combatScoreMultiplier={combatResonanceView.scoreMultiplier}
+                combatOverdriveActive={combatOverdriveView.active}
+                combatOverdriveCanActivate={combatOverdriveView.canActivate}
+                combatOverdriveActionEnabled={
+                  combatOverdriveView.canActivate &&
+                  !isPaused &&
+                  !isGameOver &&
+                  !isPhotoMode &&
+                  !isUpgradeSelectionOpen
+                }
+                combatOverdriveRemainingMs={combatOverdriveView.remainingMs}
+                combatOverdriveReentryLocked={combatOverdriveView.reentryLocked}
+                combatOverdriveReentryRemainingMs={combatOverdriveView.reentryRemainingMs}
+                onActivateOverdrive={handleOverdriveActivation}
                 onTogglePause={togglePause}
                 onToggleMute={toggleMute}
               />
