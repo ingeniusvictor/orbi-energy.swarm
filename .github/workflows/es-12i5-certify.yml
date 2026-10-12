@@ -169,7 +169,18 @@ jobs:
       - name: Gameplay regression
         run: npm run test:gameplay
       - name: Platform regression
-        run: npm run test:platform
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run test:platform 2>&1 | tee platform-regression.log
+      - name: Upload platform regression diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: i5-platform-regression-${{ github.run_id }}
+          path: platform-regression.log
+          if-no-files-found: error
+          retention-days: 1
       - name: Typecheck
         run: npm run typecheck
       - name: Release contract
