@@ -48,12 +48,13 @@ test('I2 CI builds an APK without repository signing credentials', () => {
   assert.doesNotMatch(workflow, /keystorepass|keystorealiaspass|storePassword|keyPassword|SIGNING_KEY/);
 });
 
-test('I2 release metadata closes packaging pipeline but remains beta and non-RC', () => {
+test('I2 packaging remains certified while I3 closes release engineering without claiming RC', () => {
   assert.equal(release.version, '0.2.0-beta.1');
   assert.equal(release.releaseCandidateEligible, false);
   assert.equal(release.androidDistribution.strategy, 'capacitor-8');
   assert.equal(release.androidDistribution.targetSdk, 36);
   assert.equal(release.androidDistribution.signing, 'external-secrets-required-for-release');
-  assert.ok(!release.pendingReleaseEngineering.includes('android-packaging-pipeline'));
-  assert.deepEqual(release.pendingReleaseEngineering, ['release-candidate-certification']);
+  assert.deepEqual(release.pendingReleaseEngineering, []);
+  assert.equal(release.rcReadiness.expectedDecision, 'BLOCKED');
+  assert.ok(release.manualBlockers.some((blocker) => blocker.category === 'android-hardware'));
 });
