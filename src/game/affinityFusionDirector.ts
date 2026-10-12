@@ -190,10 +190,17 @@ export const applyAffinityFusion = (
   const sourceIds = new Set(resolution.sourceIds);
   if (sourceIds.size !== AFFINITY_FUSION_SOURCE_COUNT) return null;
 
-  const consumed = members.filter((member) => sourceIds.has(member.id));
-  if (consumed.length !== AFFINITY_FUSION_SOURCE_COUNT) return null;
+  const consumed = resolution.sourceIds.map((sourceId) =>
+    members.find((member) => member.id === sourceId),
+  );
+  if (consumed.some((member) => member === undefined)) return null;
+  const consumedMembers = consumed as [
+    OrbiMember,
+    OrbiMember,
+    OrbiMember,
+  ];
   if (
-    consumed.some(
+    consumedMembers.some(
       (member) =>
         !isAffinityFusionSource(member) ||
         member.combatRole !== resolution.recipe.sourceCombatRole,
@@ -228,6 +235,6 @@ export const applyAffinityFusion = (
   return {
     members: [...survivors, fusedMember],
     fusedMember,
-    consumedMembers: [consumed[0], consumed[1], consumed[2]],
+    consumedMembers,
   };
 };

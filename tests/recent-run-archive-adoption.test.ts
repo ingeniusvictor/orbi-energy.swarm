@@ -73,19 +73,23 @@ test("peak swarm helper is non-recursive and samples Foton plus followers", () =
   );
 });
 
-test("ordinary recruits and both fusion paths update the peak immediately", () => {
+test("ordinary recruits and the canonical affinity fusion path update the peak immediately", () => {
   const recruit = section(
     "const addSwarmMember =",
     "// --- SYSTEM SHOP UPGRADES ---",
   );
   const fusion = section(
-    "const triggerFusion =",
+    "const tryTriggerAffinityFusion =",
     "// --- WAVE TRANSITIONS DIRECTOR ---",
   );
 
   assert.match(
     recruit,
     /swarmRef\.current\.push\(member\);[\s\S]*updateRunMaxSwarmSize\(\)/,
+  );
+  assert.match(
+    fusion,
+    /const applied = applyAffinityFusion\([\s\S]*if \(!applied\) return false;[\s\S]*swarmRef\.current = applied\.members;[\s\S]*updateRunMaxSwarmSize\(\)/,
   );
 
   const fusionPeakUpdates =
@@ -94,8 +98,8 @@ test("ordinary recruits and both fusion paths update the peak immediately", () =
     ) ?? [];
   assert.equal(
     fusionPeakUpdates.length,
-    2,
-    "Solar and Hydro fusion pushes must both update run peak telemetry",
+    1,
+    "The shared H12 fusion path must update run peak telemetry after a successful 3→1 application",
   );
 });
 
