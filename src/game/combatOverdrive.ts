@@ -82,11 +82,11 @@ export const projectCombatOverdrive = (
     current.active && current.endsAtMs !== null
       ? Math.max(0, current.endsAtMs - nowMs)
       : 0;
-  const reentryRemainingMs = current.active
-    ? Math.max(0, current.reentryAllowedAtMs - (current.endsAtMs ?? nowMs))
-    : Math.max(0, current.reentryAllowedAtMs - nowMs);
   const reentryLocked =
     !current.active && nowMs < current.reentryAllowedAtMs;
+  const reentryRemainingMs = reentryLocked
+    ? Math.max(0, current.reentryAllowedAtMs - nowMs)
+    : 0;
 
   return {
     active: current.active,
