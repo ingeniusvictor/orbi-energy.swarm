@@ -1,3 +1,5 @@
+import type { LiveEnemyFormationAssignment } from "./liveEnemyFormationDirector";
+
 export enum BiomeType {
   SOLAR_PLAINS = "SOLAR_PLAINS",
   DEEP_WATER = "DEEP_WATER",
@@ -216,6 +218,7 @@ export interface Enemy {
   evolvedProjectileSpeedMultiplier?: number;
   evolvedRewardMultiplier?: number;
   evolvedSpecialIntensity?: number;
+  enemyFormation?: LiveEnemyFormationAssignment;
 }
 
 export interface Projectile {

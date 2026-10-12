@@ -225,6 +225,11 @@ import {
 import { projectCombatOverdriveEffects } from "./combatOverdriveEffects";
 import { projectCombatOverdrivePresentation } from "./combatOverdrivePresentation";
 import {
+  createLiveEnemyFormationDirectorState,
+  projectLiveEnemyFormationMotion,
+  requestLiveEnemyFormationSpawn,
+} from "./liveEnemyFormationDirector";
+import {
   drawCombatOverdriveFieldOverlay,
   drawCombatOverdriveSwarmHalo,
 } from "./combatOverdrivePresentationRenderer";
@@ -385,6 +390,9 @@ export const EnergySwarmGame: React.FC = () => {
   const waveTimeRemainingRef = useRef(0);
   const spawnTimerRef = useRef(0);
   const waveBreakTimerRef = useRef(0);
+  const enemyFormationDirectorRef = useRef(
+    createLiveEnemyFormationDirectorState(),
+  );
 
   // Boss Refs
   const bossActiveRef = useRef(false);
@@ -2477,6 +2485,8 @@ export const EnergySwarmGame: React.FC = () => {
             ? descriptor.completionPolicy.durationMs
             : (cfg?.duration ?? 0);
         waveBudgetSpawnedRef.current = 0;
+        enemyFormationDirectorRef.current =
+          createLiveEnemyFormationDirectorState();
         setIsWaveBreak(false);
         setWaveName(descriptor.display.name);
 
@@ -2759,6 +2769,49 @@ export const EnergySwarmGame: React.FC = () => {
       color = "#f43f5e";
     }
 
+    const formationResolution =
+      requestLiveEnemyFormationSpawn(
+        enemyFormationDirectorRef.current,
+        {
+          sourceMode: descriptor.sourceMode,
+          waveNumber: descriptor.waveNumber,
+          descriptorId: descriptor.descriptorId,
+          milestoneActive: descriptor.milestone !== null,
+          spawnOrdinal: waveBudgetSpawnedRef.current,
+          enemyType: type,
+          eligibleEnemy:
+            !spawningMiniboss &&
+            !evolvedProfile &&
+            !isElite,
+          remainingCapacity:
+            Math.min(
+              MAX_ENEMIES,
+              descriptor.spawn.maxConcurrentEnemies,
+            ) - enemiesRef.current.length,
+          nowMs: timeElapsedRef.current,
+          anchorX: playerPosRef.current.x,
+          anchorY: playerPosRef.current.y,
+          worldWidth: WORLD_WIDTH,
+          worldHeight: WORLD_HEIGHT,
+        },
+      );
+    enemyFormationDirectorRef.current =
+      formationResolution.state;
+    const enemyFormation =
+      formationResolution.assignment;
+
+    if (enemyFormation) {
+      const initialFormationMotion =
+        projectLiveEnemyFormationMotion({
+          assignment: enemyFormation,
+          nowMs: timeElapsedRef.current,
+          worldWidth: WORLD_WIDTH,
+          worldHeight: WORLD_HEIGHT,
+        });
+      ex = initialFormationMotion.x;
+      ey = initialFormationMotion.y;
+    }
+
     if (
       !spawningMiniboss &&
       type === EnemyType.BLACKOUT_ELITE &&
@@ -2788,6 +2841,7 @@ export const EnergySwarmGame: React.FC = () => {
       contactDamageCooldown: 0,
       isDead: false,
       isBoss: false,
+      enemyFormation: enemyFormation ?? undefined,
       flashTicks: 0,
       evolvedVariantId: evolvedProfile?.id,
       evolvedSignature: evolvedProfile?.signature,
@@ -5028,9 +5082,33 @@ export const EnergySwarmGame: React.FC = () => {
             eclipseParasiteSpeedMultiplier *
             (delta / 16.6);
         } else {
-          // Direct slither for Crawler, Splitter, and minion parts
-          enemy.x += (dx / dist) * enemy.speed * (delta / 16.6);
-          enemy.y += (dy / dist) * enemy.speed * (delta / 16.6);
+          // J3B: certified enemy formation routing replaces the existing
+          // direct-slither movement only for opted-in Crawler/Splitter members.
+          // Hydro slow cancels formation ownership so status control remains
+          // effective instead of becoming an accidental formation immunity.
+          if (isSlowed && enemy.enemyFormation) {
+            enemy.enemyFormation = undefined;
+          }
+          const formationMotion = enemy.enemyFormation
+            ? projectLiveEnemyFormationMotion({
+                assignment: enemy.enemyFormation,
+                nowMs: timeElapsedRef.current,
+                worldWidth: WORLD_WIDTH,
+                worldHeight: WORLD_HEIGHT,
+              })
+            : null;
+
+          if (formationMotion && !formationMotion.complete) {
+            enemy.x = formationMotion.x;
+            enemy.y = formationMotion.y;
+          } else {
+            if (formationMotion?.complete) {
+              enemy.enemyFormation = undefined;
+            }
+            // Legacy direct slither for non-formation Crawler/Splitter/minions.
+            enemy.x += (dx / dist) * enemy.speed * (delta / 16.6);
+            enemy.y += (dy / dist) * enemy.speed * (delta / 16.6);
+          }
         }
       }
 
