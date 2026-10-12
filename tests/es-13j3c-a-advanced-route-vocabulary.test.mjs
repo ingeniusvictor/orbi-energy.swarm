@@ -7,10 +7,6 @@ const liveDirectorSource = readFileSync("src/game/liveEnemyFormationDirector.ts"
 const gameSource = readFileSync("src/game/EnergySwarmGame.tsx", "utf8");
 const playerFormationsSource = readFileSync("src/game/formations.ts", "utf8");
 
-const routeCycleStart = liveDirectorSource.indexOf("const ROUTE_CYCLE");
-const routeCycleEnd = liveDirectorSource.indexOf("];", routeCycleStart);
-const liveRouteCycle = liveDirectorSource.slice(routeCycleStart, routeCycleEnd + 2);
-
 test("J3C-A extends only the existing pure enemy route authority", () => {
   assert.doesNotMatch(routeSource, /^\s*import\s/m);
   assert.match(routeSource, /"PINCER"/);
@@ -78,14 +74,15 @@ test("J3C-A does not own modes, entities, projectiles, score or simulation budge
   }
 });
 
-test("J3C-A deliberately does not adopt new routes into the J3B live cycle", () => {
-  assert.notEqual(routeCycleStart, -1);
-  assert.notEqual(routeCycleEnd, -1);
-  assert.match(liveRouteCycle, /"PINCER"/);
-  assert.match(liveRouteCycle, /"X_CROSS"/);
-  assert.match(liveRouteCycle, /"SERPENTINE"/);
-  assert.doesNotMatch(liveRouteCycle, /"WEDGE"|"ORBIT"|"SPIRAL"/);
-
+test("J3C-A pure authority stays separate when later J3C-B adopts routes live", () => {
+  assert.match(
+    liveDirectorSource,
+    /from ["']\.\/enemyFormationRoutes["']/,
+  );
+  assert.match(liveDirectorSource, /"WEDGE"/);
+  assert.match(liveDirectorSource, /"ORBIT"/);
+  assert.match(liveDirectorSource, /"SPIRAL"/);
+  assert.doesNotMatch(routeSource, /liveEnemyFormationDirector|EnergySwarmGame/);
   assert.doesNotMatch(gameSource, /WEDGE_ADVANCE|ROTATING_RING|SPIRAL_COMPRESSION/);
 });
 
