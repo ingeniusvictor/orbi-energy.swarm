@@ -1,0 +1,100 @@
+name: ES-13J3C-B Pre-PR Certification
+
+on:
+  push:
+    branches:
+      - feat/es-13j3c-b-controlled-live-adoption
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      ORBI_BUILD_SHA: ${{ github.sha }}
+      ORBI_RELEASE_SHA: ${{ github.sha }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Setup Java 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+
+      - name: Install Android 16 SDK
+        run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0' >/dev/null
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Repository Smoke
+        run: npm run test:repo
+
+      - name: Gameplay
+        run: npm run test:gameplay
+
+      - name: Platform
+        run: npm run test:platform
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Release Contract
+        run: npm run release:verify
+
+      - name: Manual dossier
+        run: npm run release:evidence:verify
+
+      - name: Production Build
+        run: npm run build
+
+      - name: RC readiness fail-closed
+        run: npm run release:readiness -- --output release-readiness.json
+
+      - name: Android debug APK
+        run: npm run android:debug
+
+      - name: APK verification
+        run: test -s android/app/build/outputs/apk/debug/app-debug.apk
+
+      - name: J3C-B scope and adoption guard
+        shell: bash
+        run: |
+          git fetch origin main
+          changed="$(git diff --name-only origin/main...HEAD | sort)"
+          expected="$(printf '%s\n' \
+            '.github/workflows/es-13j3c-b-pre-pr-certification.yml' \
+            'src/game/liveEnemyFormationDirector.ts' \
+            'tests/es-13j3c-a-advanced-route-vocabulary.test.mjs' \
+            'tests/es-13j3c-b-controlled-live-adoption.test.mjs' \
+            'tests/gameplay/live-enemy-formation-director.test.ts' | sort)"
+          printf 'changed:\n%s\nexpected:\n%s\n' "$changed" "$expected"
+          test "$changed" = "$expected"
+          grep -Fq 'LIVE_ENEMY_FORMATION_GROUP_SIZE = 2' src/game/liveEnemyFormationDirector.ts
+          grep -Fq 'LIVE_ENEMY_FORMATION_ADVANCED_GROUP_SIZE = 3' src/game/liveEnemyFormationDirector.ts
+          grep -Fq 'campaignAdvancedRoutesEnabled' src/game/liveEnemyFormationDirector.ts
+          grep -Fq 'infiniteAdvancedRoutesEnabled' src/game/liveEnemyFormationDirector.ts
+          grep -Fq '"WEDGE"' src/game/liveEnemyFormationDirector.ts
+          grep -Fq '"ORBIT"' src/game/liveEnemyFormationDirector.ts
+          grep -Fq '"SPIRAL"' src/game/liveEnemyFormationDirector.ts
+          grep -Fq 'request.remainingCapacity >= routePlan.memberCount' src/game/liveEnemyFormationDirector.ts
+          ! grep -Eq 'Math\.random|Date\.now|performance\.now|requestAnimationFrame|setTimeout|setInterval|MAX_ENEMIES|MAX_PROJECTILES|enemiesRef|projectilesRef' src/game/liveEnemyFormationDirector.ts
+          git diff --quiet origin/main...HEAD -- src/game/EnergySwarmGame.tsx src/game/types.ts src/game/formations.ts src/game/formationCycle.ts src/game/constants.ts
