@@ -32,6 +32,8 @@ human visual, Infinite play-feel and real-device Android validation remain open.
   laptop, desktop and ultrawide classes.
 - Canonical GitHub Pages distribution metadata plus an installable PWA shell with
   base-safe manifest, 192/512 install icons and SHA-versioned fail-open caching.
+- Reproducible Capacitor 8 Android packaging foundation targeting Android 16 /
+  API 36, with local web assets and a CI-built debug APK.
 
 ### Changed
 
@@ -48,7 +50,7 @@ human visual, Infinite play-feel and real-device Android validation remain open.
 - Issue #5: manual Infinite difficulty/play-feel validation.
 - ES-11 hardware validation: thermal, battery, browser chrome, hand/thumb
   ergonomics and OEM GPU/driver behavior on real devices.
-- ES-12 native Android packaging and release-candidate certification remain open.
+- ES-12 release-candidate certification remains open; Android signing and real-device validation are still required.
 
 ## [0.1.0] — Recovery baseline
 

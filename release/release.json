@@ -14,7 +14,8 @@
     "infiniteLargeRange": true,
     "accessibilityContracts": true,
     "androidPerformanceSoftwareMatrix": true,
-    "pwaDistributionContracts": true
+    "pwaDistributionContracts": true,
+    "androidPackagingContracts": true
   },
   "webDistribution": {
     "deploymentTarget": "github-pages",
@@ -23,9 +24,15 @@
     "serviceWorkerPolicy": "build-sha-versioned-fail-open"
   },
   "androidDistribution": {
-    "strategy": "pwa-first",
-    "nativePackaging": "deferred",
-    "requirement": "Complete real-device certification before selecting and certifying a native Android wrapper."
+    "strategy": "capacitor-8",
+    "nativePackaging": "capacitor-local-bundle",
+    "applicationId": "com.orbiecosystem.energyswarm",
+    "minSdk": 24,
+    "compileSdk": 36,
+    "targetSdk": 36,
+    "pipeline": "github-actions-debug-apk",
+    "signing": "external-secrets-required-for-release",
+    "requirement": "Complete real-device thermal/battery/ergonomics validation and external signing before RC promotion."
   },
   "manualBlockers": [
     {
@@ -47,7 +54,6 @@
     }
   ],
   "pendingReleaseEngineering": [
-    "android-packaging-pipeline",
     "release-candidate-certification"
   ]
 }
