@@ -45,7 +45,7 @@ test("I1 index advertises manifest and install icons with relative URLs", async 
   assert.match(index, /href="\.\/icons\/orbi-192\.png"/);
 });
 
-test("I1 web distribution remains locked while I2 advances Android packaging", async () => {
+test("I1/I2 distribution remains locked while I3 completes readiness engineering", async () => {
   const release = await readJson("release/release.json");
   assert.equal(release.version, "0.2.0-beta.1");
   assert.equal(release.channel, "beta");
@@ -63,12 +63,15 @@ test("I1 web distribution remains locked while I2 advances Android packaging", a
     release.androidDistribution.signing,
     "external-secrets-required-for-release",
   );
-  assert.ok(!release.pendingReleaseEngineering.includes("web-deployment-target"));
-  assert.ok(!release.pendingReleaseEngineering.includes("pwa-or-native-wrapper-decision"));
-  assert.ok(!release.pendingReleaseEngineering.includes("android-packaging-pipeline"));
-  assert.deepEqual(release.pendingReleaseEngineering, [
-    "release-candidate-certification",
-  ]);
+  assert.deepEqual(release.pendingReleaseEngineering, []);
+  assert.equal(release.rcReadiness.expectedDecision, "BLOCKED");
+  assert.ok(release.manualBlockers.some((blocker) => blocker.issue === 4));
+  assert.ok(release.manualBlockers.some((blocker) => blocker.issue === 5));
+  assert.ok(
+    release.manualBlockers.some(
+      (blocker) => blocker.category === "android-hardware",
+    ),
+  );
 });
 
 test("Pages retains the canonical base-path and release gate", async () => {
