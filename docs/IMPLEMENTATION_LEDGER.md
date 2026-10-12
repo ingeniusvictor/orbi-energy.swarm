@@ -21,160 +21,151 @@ Rules:
 | ES-12I5 — First-frame / startup safety | FROZEN | `6901c67eaf369c3b41dba5d60480ad7d173275a7` | #249 | #250 |
 | ES-13J1A — Combat Chain & Resonance Core | DEPLOYED / FROZEN | `feb263957b52839d35a7cb1249762c223ba22595` | #251 | #252 |
 | ES-13J1B — Live Combat Resonance Adoption & HUD | DEPLOYED / FROZEN | `91564e365d0a2220e4db2999e38372809ec397f3` | #253 | #257 |
+| ES-13J2A — ORBI Overdrive Pure State Contract | DEPLOYED / FROZEN | `6adfb7cc4785c5238c78821e6e67fdac3c0f4eb7` | #260 | #261 |
 
-## Key milestone evidence
+## ES-12 evidence anchors
 
-### ES-12I4
+### I4
 - main CI `38208264830` GREEN;
 - Android `38208264879` GREEN;
 - Pages `38208313953` GREEN;
-- readiness artifact: `orbi-energy-swarm-rc-readiness-6cae3eda798cd754a0f47aa7a927fbe59749de30`;
 - Android artifact ID `11728093302`.
 
-### ES-12I5
-Corrected:
-- first-frame suspended rendering safety;
-- Eclipse TDZ risk by using initialized frame mutator projection;
-- premature unmuted BGM startup before user gesture.
+### I5
+Corrected first-frame suspended render safety, Eclipse TDZ usage and premature unmuted BGM startup.
+- branch cert `38264942317`;
+- PR CI `38265445991`;
+- PR Android `38265446421`;
+- main CI `38265745892`;
+- main Android `38265745833`;
+- Pages `38265853615` — all GREEN.
 
-Evidence:
-- branch cert `38264942317` GREEN;
-- PR CI `38265445991` GREEN;
-- PR Android `38265446421` GREEN;
-- main CI `38265745892` GREEN;
-- main Android `38265745833` GREEN;
-- Pages `38265853615` GREEN.
+## ES-13 gameplay ledger
 
-### ES-13J1A — Combat Chain & Resonance Core
-Implemented pure deterministic core:
-- 2.2 s bounded chain window;
-- affinity-diversity resonance gains;
+### J1A — Combat Chain & Resonance Core
+Pure deterministic core:
+- 2.2 s chain window;
+- affinity diversity gains;
 - tiers `QUIET → SYNCED → HARMONIC → SURGING → OVERDRIVE_READY`;
-- combined score projection capped at 2×;
+- score projection capped at 2×;
 - elite/boss weighting;
-- damage break with bounded resonance penalty;
-- chain cap 999 and resonance cap 100;
-- invalid inputs fail closed;
-- no React/audio/storage/entity scans in the core.
+- bounded damage break;
+- chain cap 999 / resonance cap 100;
+- no React/audio/storage/entity scans.
 
 Evidence:
-- pre-PR cert `38273358267` GREEN;
-- PR CI `38273679009` GREEN;
-- PR Android `38273679054` GREEN;
-- main CI `38273920992` GREEN;
-- main Android `38273919797` GREEN;
-- Pages `38274024789` GREEN.
+- pre-PR `38273358267`;
+- PR CI `38273679009`;
+- PR Android `38273679054`;
+- main CI `38273920992`;
+- main Android `38273919797`;
+- Pages `38274024789` — GREEN.
 
-### ES-13J1B — Live Combat Resonance Adoption & HUD
+### J1B — Live Combat Resonance Adoption & HUD
 Implemented:
-- direct and splash player-caused defeats route through `registerCombatDefeat()`;
-- projectile affinity passed to J1A when available;
-- existing `getEnemyScoreReward(enemy)` remains the base-score authority;
-- J1A `awardedScore` controls live score projection;
-- milestone/evolved reward multipliers remain preserved;
-- accepted damage breaks resonance after invincibility rejection;
-- chain expiry uses simulation time and existing low-frequency HUD cadence;
+- direct+splash defeat routing through `registerCombatDefeat()`;
+- projectile affinity attribution;
+- `getEnemyScoreReward(enemy)` retained as base reward authority;
+- J1A awarded-score live projection;
+- damage break post-invincibility guard;
+- simulation-time chain expiry;
 - fresh-run reset;
-- HUD exposes chain, resonance %, tier and score multiplier;
-- `OVERDRIVE_READY` is presentation-only;
-- no new entity scans, cap/budget changes, Campaign/Infinite recipe changes, FOTON/GAIA changes or damage tuning.
+- low-frequency HUD chain/resonance/tier/multiplier;
+- no active Overdrive yet.
 
-Diagnostic chronology:
-- initial J1B branch attempts exposed test-contract ambiguity;
-- exact forensic reproduction showed two failures only: historical reward-routing tests counted direct `getEnemyScoreReward()` calls in collision paths;
-- the tests were strengthened to validate centralized routing plus preserved reward authority;
-- Issue #254 (paused-frame hypothesis) was closed NOT PLANNED with no product merge.
+Diagnostic note:
+- exact reproduction proved two historical reward-routing assertions were stale;
+- Issue #254 pause hypothesis was closed NOT PLANNED with no product merge.
 
 Evidence:
-- clean pre-PR cert run `38285523692`, job `114932841692` GREEN;
+- pre-PR `38285523692`, job `114932841692`;
 - PR #257 head `22e2bf380374f2e9933dbec76086855d1ae09a94`;
-- PR CI `38287053826` GREEN;
-- PR Android `38287053915` GREEN;
-- squash canonical `91564e365d0a2220e4db2999e38372809ec397f3`;
-- main CI `38287238136` GREEN;
-- main Android `38287238150` GREEN;
-- Pages/Web Beta `38287336600` build + deploy GREEN.
+- PR CI `38287053826`;
+- PR Android `38287053915`;
+- canonical `91564e365d0a2220e4db2999e38372809ec397f3`;
+- main CI `38287238136`;
+- main Android `38287238150`;
+- Pages `38287336600` — GREEN.
+
+### J2A — ORBI Overdrive Pure State Contract
+Implemented new pure module `src/game/combatOverdrive.ts`:
+- `OVERDRIVE_DURATION_MS = 8000`;
+- `OVERDRIVE_REENTRY_LOCK_MS = 4000`;
+- activation requires explicit Resonance readiness;
+- successful activation emits one-shot `consumeResonance` signal;
+- J1 Resonance core remains untouched;
+- repeated activation while active cannot stack/refresh/extend;
+- exact simulation-time expiry at `nowMs >= endsAtMs`;
+- exact re-entry boundary;
+- projection for active/remaining/lock state;
+- fresh reset, invalid-time rejection and immutable transitions;
+- no live runtime/HUD, combat buffs, VFX/audio, entities/scans, caps/budgets or tuning.
+
+Evidence:
+- pre-PR `38288374752`, job `114942126186` GREEN;
+- PR #261 head `565b94bf9bf873a9280ef2ca123e3dcbd88d98ad`;
+- PR CI `38288795483` GREEN;
+- PR Android `38288795462` GREEN;
+- canonical `6adfb7cc4785c5238c78821e6e67fdac3c0f4eb7`;
+- main CI `38288929402` GREEN;
+- main Android `38288929417` GREEN;
+- Pages `38289009730`, build `114944244748`, deploy `114944343151` GREEN.
 
 ## Documentation continuity milestones
 
 ### ES-13DOC — Persistent Gameplay Roadmap & Continuity Ledger
-Issue #255 / PR #256.
-
-Established:
-- `PROJECT_CONTINUITY.md`;
-- `IMPLEMENTATION_LEDGER.md`;
-- `ES13_GAMEPLAY_ROADMAP.md`;
-- handoff template;
-- roadmap status definitions;
-- traceability policy;
-- phase closure checklist.
-
-Purpose: project continuity must live in Git, not in ChatGPT context length.
+Issue #255 / PR #256 — established continuity files, handoff template, roadmap status, traceability policy and closure checklist.
 
 ### ES-13DOC2 — J1B Closure Ledger & J2 Activation
-Issue #258.  
-Status: ACTIVE DOCUMENTATION at this ledger update.  
-Baseline gameplay canonical: `91564e365d0a2220e4db2999e38372809ec397f3`.
+Issue #258 / PR #259 — CLOSED / MERGED. Documentation-only main successor `113842b3747827585fa32f90db4c2759828e302c`; main CI `38287807460` GREEN; Pages `38287871927` GREEN.
 
-Scope: documentation only; records J1B closure and activates J2 as next gameplay target.
+### ES-13DOC3 — J2A Closure Ledger & J2B Activation
+Issue #262 — ACTIVE DOCUMENTATION at this ledger update. Baseline gameplay canonical `6adfb7cc4785c5238c78821e6e67fdac3c0f4eb7`.
 
 ## Next gameplay phase
 
-### ES-13J2 — ORBI Overdrive
+### ES-13J2B — Live Overdrive Activation & HUD
 Status: NEXT / NOT YET IMPLEMENTED
 
-Target intent:
-- explicit earned activation from `OVERDRIVE_READY`;
-- bounded duration/re-entry behavior;
-- reactive visual/audio layer;
-- meaningful but bounded combat advantage;
-- high-value target opportunities;
-- affinity-aware variation where safe;
-- robust reset/pause/photo/lifecycle semantics;
-- no uncontrolled entity growth or unlimited damage amplification.
-
-J2 must receive its own Issue and branch from the exact documented live `main` after ES-13DOC2 merges.
+Target:
+- adopt J2A state into live runtime using simulation time;
+- explicit player activation only when certified readiness + J2A permission allow it;
+- consume Resonance exactly once on successful activation;
+- low-frequency HUD active/countdown/lock projection;
+- reset on new run/restart;
+- pause/photo/lifecycle must not consume wall-clock time;
+- no combat benefit yet (J2C);
+- no VFX/audio identity yet (J2D).
 
 ## Remaining ES-13 chronology
+1. J2B — Live Activation & HUD
+2. J2C — Combat Expression Layer
+3. J2D — Reactive VFX/Audio & Safety
+4. J2E — Overdrive Integration Certification
+5. J3 — Advanced Enemy Formation Director
+6. J4 — Tactical Enemy Families
+7. J5 — Priority Targets & Chain Reactions
+8. J6 — Dynamic Mid-Sector Events
+9. J7 — Bonus Challenge Rounds
+10. J8 — Additional Game Modes
+11. J9 — Boss & Miniboss Expansion
+12. J10 — Expert Risk/Reward
+13. J11 — Build & Synergy Expansion
+14. J12 — Rare Events & Secret Encounters
+15. J13 — Score, Rank & Mastery
+16. J14 — Procedural Interaction Matrix
+17. J15 — Integration & Long-Range Balance Certification
 
-1. J2 — ORBI Overdrive
-2. J3 — Advanced Enemy Formation Director
-3. J4 — Tactical Enemy Families
-4. J5 — Priority Targets & Chain Reactions
-5. J6 — Dynamic Mid-Sector Events
-6. J7 — Bonus Challenge Rounds
-7. J8 — Additional Game Modes
-8. J9 — Boss & Miniboss Expansion
-9. J10 — Expert Risk/Reward Mechanics
-10. J11 — Build & Synergy Expansion
-11. J12 — Rare Events & Secret Encounters
-12. J13 — Score, Rank & Mastery
-13. J14 — Procedural Interaction Matrix
-14. J15 — Integration & Long-Range Balance Certification
-
-Post-J15 direction: ES-14 — Living Warfront.
+Post-J15: ES-14 — Living Warfront.
 
 ## Open manual/physical blockers
-
 Still open and not replaceable by CI:
-- #4 — visual/responsive certification;
-- #5 — Infinite play-feel;
-- #202 — GAIA physical runtime/performance;
-- #248 — Android real-device manual certification.
+- #4 visual/responsive;
+- #5 Infinite play-feel;
+- #202 GAIA physical runtime/performance;
+- #248 Android real-device.
 
-Full final RC evidence collection is deferred while ES-13 materially changes gameplay.
+Full final RC evidence remains deferred while ES-13 changes gameplay.
 
 ## Maintenance rule
-
-For every merged gameplay phase record:
-- phase/status;
-- exact gameplay canonical;
-- Issue/PR;
-- implementation outcome;
-- pre-PR cert run(s);
-- PR CI + Android run IDs;
-- main CI + Android + Pages run IDs;
-- unresolved follow-ups;
-- roadmap status transition.
-
-Never record DEPLOYED merely because a PR merged.
+For every merged gameplay phase record exact canonical, Issue/PR, implementation outcome, pre-PR cert, PR CI/Android, main CI/Android/Pages, unresolved follow-ups and roadmap transition. Never record DEPLOYED merely because a PR merged.
