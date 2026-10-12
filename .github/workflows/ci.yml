@@ -35,6 +35,9 @@ jobs:
       - name: Release contract
         run: npm run release:verify
 
+      - name: Manual certification dossier
+        run: npm run release:evidence:verify
+
       - name: Production build
         run: npm run build
 
