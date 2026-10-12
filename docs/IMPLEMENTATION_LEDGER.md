@@ -25,6 +25,7 @@ Rules:
 | ES-13J2B — Live Overdrive Activation & HUD | DEPLOYED / FROZEN | `466242e91fa927bc4d996d09efdbb87f8f572d44` | #264 | #267 |
 | ES-13J2C-A — Pure Bounded Overdrive Combat Expression | DEPLOYED / FROZEN | `eca68cce510cf506053fd6d9121b501db7cd1f64` | #271 | #272 |
 | ES-13J2C-B — Live Bounded Overdrive Damage Adoption | DEPLOYED / FROZEN | `7e15ee1e79ee9ae8903891a66b0b1031b0600bca` | #276 | #278 |
+| ES-13J2D-A — Pure Overdrive Presentation Profile | DEPLOYED / FROZEN | `39f9b33c9a229c7c8d991aecd81ea695510c82a0` | #281 | #282 |
 
 ## ES-12 evidence anchors
 
@@ -51,102 +52,92 @@ Pure deterministic core: 2.2 s chain window, affinity diversity, resonance tiers
 Evidence: pre-PR `38273358267`; PR CI `38273679009`; PR Android `38273679054`; main CI `38273920992`; main Android `38273919797`; Pages `38274024789` — GREEN.
 
 ### J1B — Live Combat Resonance Adoption & HUD
-Implemented direct+splash defeat routing, projectile affinity attribution, J1A awarded-score live projection, post-invincibility damage break, simulation-time chain expiry, fresh-run reset and low-frequency HUD projection.
+Direct+splash defeat routing, projectile affinity attribution, J1A awarded-score live projection, post-invincibility damage break, simulation-time chain expiry, fresh-run reset and low-frequency HUD projection.
 
-Evidence: pre-PR `38285523692`, job `114932841692`; PR #257 head `22e2bf380374f2e9933dbec76086855d1ae09a94`; PR CI `38287053826`; PR Android `38287053915`; canonical `91564e365d0a2220e4db2999e38372809ec397f3`; main CI `38287238136`; main Android `38287238150`; Pages `38287336600` — GREEN.
+Evidence: pre-PR `38285523692`, job `114932841692`; PR head `22e2bf380374f2e9933dbec76086855d1ae09a94`; PR CI `38287053826`; PR Android `38287053915`; canonical `91564e365d0a2220e4db2999e38372809ec397f3`; main CI `38287238136`; main Android `38287238150`; Pages `38287336600` — GREEN.
 
 ### J2A — ORBI Overdrive Pure State Contract
-Implemented `src/game/combatOverdrive.ts`: 8 s active duration, 4 s re-entry lock, explicit readiness, one-shot `consumeResonance`, no stacking/refresh, deterministic simulation-time expiry/re-entry, reset and immutable transitions. No live adoption/buffs/VFX/audio/entity work.
+Pure deterministic `combatOverdrive.ts`: 8 s active duration, 4 s re-entry lock, explicit readiness, one-shot `consumeResonance`, no stacking/refresh, simulation-time expiry/re-entry, reset and immutable transitions. No live adoption/buffs/VFX/audio/entity work.
 
 Evidence: pre-PR `38288374752`, job `114942126186`; PR CI `38288795483`; PR Android `38288795462`; canonical `6adfb7cc4785c5238c78821e6e67fdac3c0f4eb7`; main CI `38288929402`; main Android `38288929417`; Pages `38289009730` — GREEN.
 
 ### J2B — Live Overdrive Activation & HUD
-Implemented live J2A state/timing adoption, ref-owned high-frequency state, simulation-time lifecycle, explicit `O` + HUD activation, gameplay guards, one-shot Resonance consumption, fresh-run reset and compact READY/ACTIVE/RECHARGING HUD. No combat benefit/VFX/audio/scans/cap-budget changes.
+Live J2A timing/state adoption with ref-owned high-frequency state, simulation-time lifecycle, explicit `O` + HUD activation, gameplay guards, one-shot Resonance consumption, fresh-run reset and compact READY/ACTIVE/RECHARGING HUD. No combat benefit/VFX/audio/scans/cap-budget changes.
 
-Evidence: pre-PR `38293627094`, job `114959353674`; clean PR head `e43a1d3f4f4a7801fb836055cbf23176992dc74b`; PR CI `38294148486`; PR Android `38294148448`; canonical `466242e91fa927bc4d996d09efdbb87f8f572d44`; main CI `38294331547`; main Android `38294331726`; Pages `38294411795` — GREEN.
+Evidence: pre-PR `38293627094`, job `114959353674`; clean head `e43a1d3f4f4a7801fb836055cbf23176992dc74b`; PR CI `38294148486`; PR Android `38294148448`; canonical `466242e91fa927bc4d996d09efdbb87f8f572d44`; main CI `38294331547`; main Android `38294331726`; Pages `38294411795` — GREEN.
 
 ### J2C-A — Pure Bounded Overdrive Combat Expression
-Implemented `src/game/combatOverdriveEffects.ts` as a pure projection layer:
-- J2A/J2B retain activation/timing authority;
-- inactive projection = exact neutral `1.0` player damage multiplier;
-- active projection = exact `1.20`;
-- hard contract ceiling = `1.25`;
-- deterministic, immutable and non-stacking;
-- no score/economy, fire-rate, projectile-count/speed, crit, defense or entity-budget change;
-- no clock/RAF/React runtime/render/audio/storage/random/entity scans.
+Pure `combatOverdriveEffects.ts` projection: inactive `1.0`, active `1.20`, hard ceiling `1.25`, deterministic/non-stacking, no score/economy/fire-rate/projectile-count/speed/crit/defense/entity-budget mutation.
 
 Certification chronology:
-- temporary cert `38295319991`, job `114964869404` failed only because raw `/React/` in the new purity test matched a source comment; no product defect was demonstrated;
-- test corrected to reject actual React imports/hooks rather than prose;
-- corrected full pre-PR cert `38295483032`, job `114965401785` — GREEN;
-- clean PR head `992612a5315e87813e2e9d4e269a635806753e38`;
-- PR CI `38295901224` — GREEN;
-- PR Android `38295901194` — GREEN;
+- initial cert `38295319991`, job `114964869404` failed only because a raw `/React/` source-purity regex matched a comment; no product defect;
+- corrected pre-PR cert `38295483032`, job `114965401785` GREEN;
+- clean head `992612a5315e87813e2e9d4e269a635806753e38`;
+- PR CI `38295901224` GREEN;
+- PR Android `38295901194` GREEN;
 - canonical `eca68cce510cf506053fd6d9121b501db7cd1f64`;
-- main CI `38296053435` — GREEN;
-- main Android `38296053642` — GREEN;
-- Pages `38296151229` build + deploy GREEN.
+- main CI `38296053435` GREEN;
+- main Android `38296053642` GREEN;
+- Pages `38296151229` GREEN.
 
 ### J2C-B — Live Bounded Overdrive Damage Adoption
-Implemented the certified J2C-A effect at the existing centralized player projectile damage seam:
-- runtime imports `projectCombatOverdriveEffects()` but not its tuning constants;
-- authoritative active signal is `combatOverdriveRef.current.active`;
-- existing base/profile/GAIA/critical resolution remains first;
-- certified player-damage multiplier is applied exactly once before projectile damage assignment;
-- `makeProjectile()` plus existing echo/mitosis variants remain derived from adjusted primary damage;
-- no new Overdrive timing/state or entity scans;
-- no fire-rate/cooldown, projectile speed/count, score/economy, splash/crit, cap/budget, Campaign/Infinite, FOTON or GAIA changes.
+Adopted `projectCombatOverdriveEffects()` at the centralized player-projectile damage seam. Existing base/profile/GAIA/critical resolution remains first; certified Overdrive damage multiplier applies exactly once before projectile assignment. No timing/state/fire-rate/projectile-count/speed/score/cap-budget/Campaign/Infinite/FOTON/GAIA change.
 
-The historical J2C-A no-live-adoption assertion was replaced with a forward-safe source rule requiring the live runtime to consume the projection helper without importing its tuning constants. J2C-A purity coverage remains intact.
+Evidence: pre-PR `38297477355`, job `114971948257`; clean head `02d4296bd288860362eeb0502c387d801a31e45c`; PR CI `38297915036`; PR Android `38297913596`; canonical `7e15ee1e79ee9ae8903891a66b0b1031b0600bca`; main CI `38298120771`; main Android `38298120436`; Pages `38298206493` — GREEN.
+
+### J2D-A — Pure Overdrive Presentation Profile Contract
+Implemented pure `combatOverdrivePresentation.ts`:
+- consumes only certified `active`, `remainingRatio` and `QualityPreset`;
+- inactive projection exactly neutral;
+- quality-bounded presentation profiles for LOW/MEDIUM/HIGH/ULTRA;
+- max direct canvas ring count = 3;
+- activation pulse derived only from certified remaining-ratio window, with no independent timer;
+- ratios clamp to `[0,1]`, non-finite input fails closed;
+- immutable caller input;
+- no live renderer/audio adoption;
+- no React/DOM/canvas/WebAudio/storage/random/entity scans;
+- no J2A timing or J2C damage tuning duplication.
 
 Evidence:
-- pre-PR certification `38297477355`, job `114971948257` — GREEN;
-- clean PR head `02d4296bd288860362eeb0502c387d801a31e45c`;
-- PR CI `38297915036` — GREEN;
-- PR Android `38297913596` — GREEN;
-- canonical `7e15ee1e79ee9ae8903891a66b0b1031b0600bca`;
-- main CI `38298120771` — GREEN;
-- main Android `38298120436` — GREEN;
-- Pages `38298206493` build + deploy GREEN.
+- pre-PR certification `38299553187`, job `114978848191` GREEN;
+- clean PR head `5a70b0d55122ddf95b9af303dd24624f57b2f216`;
+- PR CI `38299974128` GREEN;
+- PR Android `38299974261` GREEN;
+- canonical `39f9b33c9a229c7c8d991aecd81ea695510c82a0`;
+- main CI `38300161662` GREEN;
+- main Android `38300161573` GREEN;
+- Pages `38300237659` build + deploy GREEN.
 
 ## Documentation continuity milestones
+- ES-13DOC — Issue #255 / PR #256: established persistent roadmap/continuity/traceability policy.
+- ES-13DOC2 — Issue #258 / PR #259: J1B closure + J2 activation; main successor `113842b3747827585fa32f90db4c2759828e302c`.
+- ES-13DOC3 — Issue #262 / PR #263: J2A closure + J2B activation; successor `a485e52542b3d097511789c15f1a7afcb6ba5cb0`.
+- ES-13DOC4 — Issue #268 / PR #269: J2B closure + J2C activation; successor `681442b08718e53fcf29a90dde94b4bb398c2d9f`.
+- ES-13DOC5 — Issue #273 / PR #275: J2C-A closure + J2C-B activation; successor `5d80833c71f8fe0c31f58945ed5cabb5f40b85b4`.
+- ES-13DOC6 — Issue #279 / PR #280: J2C-B closure + J2D activation; successor `efd212c7ea2a93e166d719721680fd5d88df402d`.
+- ES-13DOC7 — Issue #284: ACTIVE DOCUMENTATION at this ledger update; baseline gameplay canonical `39f9b33c9a229c7c8d991aecd81ea695510c82a0`.
 
-### ES-13DOC — Persistent Gameplay Roadmap & Continuity Ledger
-Issue #255 / PR #256 — established repository-native continuity, roadmap, traceability and closure rules.
-
-### ES-13DOC2 — J1B Closure Ledger & J2 Activation
-Issue #258 / PR #259 — documentation-only main successor `113842b3747827585fa32f90db4c2759828e302c`; main CI `38287807460`; Pages `38287871927` — GREEN.
-
-### ES-13DOC3 — J2A Closure Ledger & J2B Activation
-Issue #262 / PR #263 — documentation-only main successor `a485e52542b3d097511789c15f1a7afcb6ba5cb0`.
-
-### ES-13DOC4 — J2B Closure Ledger & J2C Activation
-Issue #268 / PR #269 — documentation-only main successor `681442b08718e53fcf29a90dde94b4bb398c2d9f`; main CI `38294936715`; Pages `38295038742` — GREEN.
-
-### ES-13DOC5 — J2C-A Closure Ledger & J2C-B Activation
-Issue #273 / PR #275 — documentation-only main successor `5d80833c71f8fe0c31f58945ed5cabb5f40b85b4`; activated J2C-B from deployed J2C-A.
-
-### ES-13DOC6 — J2C-B Closure Ledger & J2D Activation
-Issue #279 — ACTIVE DOCUMENTATION at this ledger update. Baseline gameplay canonical `7e15ee1e79ee9ae8903891a66b0b1031b0600bca`.
+Issue #283 is CLOSED / NOT PLANNED: opened from stale chat state during UI interruption; produced no branch/merge.
 
 ## Next gameplay phase
 
-### ES-13J2D — Reactive Overdrive VFX / Audio / Safety
+### ES-13J2D-B — Live Reactive Overdrive Presentation Adoption
 Status: NEXT / NOT YET IMPLEMENTED
 
 Target:
-- presentation only; no new gameplay multiplier/duration/re-entry/score/cadence/cap/budget tuning;
-- consume the already-certified J2 Overdrive active/projection state rather than duplicate timing;
+- consume certified J2D-A presentation projection in existing canvas/HUD/audio paths;
+- no duplicate Overdrive timing/damage/presentation tuning constants;
 - bounded activation stinger and active-state visual identity;
-- muted/audio-autoplay-safe behavior with no mount-time playback;
-- pause/photo/lifecycle/reset correctness;
-- mobile/low-quality-friendly effects with no uncontrolled entity growth;
-- preserve HUD/objective/boss readability;
-- no Campaign/Infinite recipe, FOTON GLB or GAIA tuning change;
-- add adoption regressions proving presentation depends on certified state rather than a second clock or tuning path.
+- no mount-time or autoplay-unsafe audio;
+- respect mute, pause/photo/lifecycle/reset and simulation-time authority;
+- low/mobile quality remains bounded; no uncontrolled particle/entity growth;
+- preserve HUD/objective/boss/threat readability;
+- no Campaign/Infinite/FOTON/GAIA or cap/budget changes.
+
+After J2D-B: J2E Integration Certification, then J3 Advanced Enemy Formation Director.
 
 ## Remaining ES-13 chronology
-1. J2D — Reactive VFX/Audio & Safety
+1. J2D-B — Live Reactive VFX/Audio Adoption
 2. J2E — Overdrive Integration Certification
 3. J3 — Advanced Enemy Formation Director
 4. J4 — Tactical Enemy Families
