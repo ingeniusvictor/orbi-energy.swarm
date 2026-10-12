@@ -147,39 +147,55 @@ Evidence:
 Temporary patch/reset/certification workflows were removed before PR. The accepted evidence is the final fully GREEN certification path above.
 
 ### J3C — Advanced Tactical Formation Vocabulary
-Status: **NEXT ENGINEERING SLICE AFTER DOC11 CLOSURE**
+Status: **ACTIVE PROGRAM**
 
-Purpose: expand enemy route vocabulary only where a new pattern creates a distinct tactical question. J3C must build on the certified J3A/J3B authority instead of creating a second route or movement engine.
+Purpose: expand enemy route vocabulary only where a new pattern creates a distinct tactical question while reusing the certified J3A/J3B authority.
 
 #### J3C-A — Pure Advanced Route Vocabulary
-Recommended first pure set:
-- `WEDGE` — center denial; choose a flank or commit through the point;
-- `ORBIT` / `RING` — rotating exclusion zone; choose inside/outside lane and timing;
-- `SPIRAL` / `CORKSCREW` — moving compression corridor; time entry/escape rather than merely follow a sine lane.
+Status: **DEPLOYED / FROZEN**  
+Canonical: `0fd337e3a0efe96fd52d5f5686e3f110e1b361d8`  
+Issue #302 / PR #303
 
-J3C-A constraints:
-- pure `enemyFormationRoutes.ts` expansion only;
-- caller-owned normalized progress/mirror/member slot/count;
-- finite deterministic bounded positions;
-- preserve J3A member cap unless a separate proof justifies change;
-- explicit route phase/role/telegraph/safe-intent metadata;
-- no renderer, audio, storage, RNG, wall clock, RAF, timers, entity/projectile ownership or live selection;
-- no runtime adoption, caps, budgets, score/economy/damage/J1/J2/GAIA/FOTON changes;
-- each route must state the player decision it introduces and prove it is not redundant with PINCER/X_CROSS/SERPENTINE.
+Implemented:
+- added `WEDGE`, `ORBIT`, `SPIRAL` to the pure enemy route projection authority;
+- preserved `PINCER`, `X_CROSS`, `SERPENTINE` behavior/contracts;
+- preserved local route member cap 8 and normalized extent ±1.25;
+- WEDGE: center denial / flank choice, minimum 3 members;
+- ORBIT: rotating exclusion ring / inside-outside timing, minimum 3 members;
+- SPIRAL: rotating compression corridor / timing the gap, minimum 2 members;
+- explicit advanced member roles, telegraph kinds/severity/laneCount/safeIntent;
+- deterministic bounded geometry across all valid slots/progress/mirrors;
+- no imports, side effects, time/RNG authority, live director adoption, Campaign/Infinite selection, entity/projectile ownership or player-formation changes.
+
+Evidence: pre-PR `38315199129` / job `115030050802`; PR CI `38315423545`; PR Android `38315423642`; main CI `38315550962`; main Android `38315550956`; Pages `38315617546` — GREEN.
 
 #### J3C-B — Controlled Live Adoption
-After J3C-A certification, selectively add certified routes to the existing J3B live director. Preserve:
-- one movement authority;
-- existing spawn opportunities/capacity;
-- no additional enemy scan or entity array;
-- explicit Campaign/Infinite eligibility;
-- simulation-time ownership and reset/pause safety;
-- safe legacy fallback.
+Status: **NEXT ENGINEERING SLICE AFTER DOC12 CLOSURE**
+
+Goal: expose the advanced pure routes through the existing J3B live director without increasing combat budgets or creating parallel ownership.
+
+Critical design point: the J3B live group size 2 cannot satisfy WEDGE/ORBIT minimum 3. J3C-B must therefore make planning route-aware rather than increasing all formations globally.
+
+Required contract:
+- route plan determines required group size within existing local max 8;
+- formation members consume ordinary spawn opportunities one by one; no burst/extra spawns;
+- start a route only when current remaining capacity can satisfy its required group size;
+- pending assembly is bounded and fails safely if it cannot complete;
+- one active/assembling formation group at a time;
+- deterministic route cycle/selection after assignment;
+- existing `enemiesRef.current` and per-enemy assignment metadata remain authoritative;
+- route motion continues to replace the legacy movement branch, never stack;
+- simulation time owns progression; pause/photo/reset safety preserved;
+- explicit independent Campaign/Infinite eligibility;
+- milestones/evolved/random elites/minibosses/bosses excluded unless separately scoped;
+- no new full-array scan, entity/projectile cap change, score/economy/damage/J1/J2/GAIA/FOTON change.
 
 #### J3C-C — Stateful Tactical Patterns if justified
-Candidate later patterns: convoy/leader-follower, fake retreats, portal ambushes, encirclement, staggered artillery routes. These should not be forced into the simple normalized-route model if they require independent state or telegraph authority. Any richer contract must remain bounded and must not increase entities/projectiles merely to create difficulty.
+Status: PLANNED
 
-Admission rule for all J3C work: add a formation only if it creates a distinct tactical question such as lane commitment, center denial, timing a moving gap, choosing inside/outside space, tracking a leader or deciding whether to chase a retreat.
+Candidate later patterns: convoy/leader-follower, fake retreats, portal ambushes, encirclement, staggered artillery routes. Isolate any extra state/telegraph authority rather than hiding it inside the simple normalized-route model.
+
+Admission rule: every pattern must create a distinct player decision rather than merely more density.
 
 ### J3D — Telegraph / Fairness / Integration Certification
 Status: PLANNED
