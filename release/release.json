@@ -13,7 +13,19 @@
     "responsiveContracts": true,
     "infiniteLargeRange": true,
     "accessibilityContracts": true,
-    "androidPerformanceSoftwareMatrix": true
+    "androidPerformanceSoftwareMatrix": true,
+    "pwaDistributionContracts": true
+  },
+  "webDistribution": {
+    "deploymentTarget": "github-pages",
+    "installability": "pwa",
+    "basePath": "/orbi-energy.swarm/",
+    "serviceWorkerPolicy": "build-sha-versioned-fail-open"
+  },
+  "androidDistribution": {
+    "strategy": "pwa-first",
+    "nativePackaging": "deferred",
+    "requirement": "Complete real-device certification before selecting and certifying a native Android wrapper."
   },
   "manualBlockers": [
     {
@@ -35,8 +47,6 @@
     }
   ],
   "pendingReleaseEngineering": [
-    "web-deployment-target",
-    "pwa-or-native-wrapper-decision",
     "android-packaging-pipeline",
     "release-candidate-certification"
   ]
