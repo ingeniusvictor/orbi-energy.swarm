@@ -4,6 +4,7 @@ import test from "node:test";
 
 const gameSource = fs.readFileSync("src/game/EnergySwarmGame.tsx", "utf8");
 const hudSource = fs.readFileSync("src/components/GameHud.tsx", "utf8");
+const resonanceSource = fs.readFileSync("src/game/combatResonance.ts", "utf8");
 
 const sliceBetween = (source, start, end) => {
   const startIndex = source.indexOf(start);
@@ -67,16 +68,39 @@ test("accepted player damage breaks resonance only after the invincibility guard
   assert.ok(shieldWrite > breakIndex, "damage break must occur before shield mutation");
 });
 
-test("chain expiry is simulation-time based and flushed only on the existing HUD cadence", () => {
+test("chain expiry stays simulation-time based and resonance projection is limited to authorized publication paths", () => {
   const cadence = sliceBetween(
     gameSource,
     "if (hudCadence.shouldFlush) {",
     "if (diagnosticsActive) {",
   );
+  const startGame = sliceBetween(
+    gameSource,
+    "const startGame =",
+    "// --- REBOOT GAME ON LOSS ---",
+  );
+  const overdriveActivation = sliceBetween(
+    gameSource,
+    "const handleOverdriveActivation =",
+    "// --- KEY LISTENER LISTENERS ---",
+  );
+
   assert.match(cadence, /expireCombatChain\([\s\S]*timeElapsedRef\.current/);
   assert.match(cadence, /projectCombatResonance\(/);
-  assert.match(cadence, /setCombatResonanceView\(/);
-  assert.equal((gameSource.match(/setCombatResonanceView\(/g) ?? []).length, 2);
+
+  const cadenceWrites = (cadence.match(/setCombatResonanceView\(/g) ?? []).length;
+  const resetWrites = (startGame.match(/setCombatResonanceView\(/g) ?? []).length;
+  const activationWrites = (overdriveActivation.match(/setCombatResonanceView\(/g) ?? []).length;
+  const globalWrites = (gameSource.match(/setCombatResonanceView\(/g) ?? []).length;
+
+  assert.equal(cadenceWrites, 1, "HUD cadence owns one periodic resonance projection");
+  assert.equal(resetWrites, 1, "fresh run owns one reset projection");
+  assert.equal(activationWrites, 1, "accepted explicit Overdrive activation owns one immediate consumption projection");
+  assert.equal(
+    globalWrites,
+    cadenceWrites + resetWrites + activationWrites,
+    "no additional per-frame or hidden resonance React publications are allowed",
+  );
 });
 
 test("new runs reset resonance and the live ref owns high-frequency state", () => {
@@ -107,7 +131,13 @@ test("GameHud receives a compact low-frequency resonance projection", () => {
   assert.match(hudSource, /OVERDRIVE_READY/);
 });
 
-test("J1B does not activate Overdrive yet", () => {
-  assert.doesNotMatch(gameSource, /activateOverdrive|startOverdrive|overdriveTimerRef/i);
-  assert.doesNotMatch(hudSource, /onActivateOverdrive|activateOverdrive/i);
+test("J1B resonance remains readiness-only while J2B delegates activation to the certified Overdrive core", () => {
+  assert.match(resonanceSource, /overdriveReady:\s*boolean/);
+  assert.match(resonanceSource, /overdriveReady:\s*state\.resonance\s*>=\s*MAX_RESONANCE/);
+  assert.doesNotMatch(
+    resonanceSource,
+    /activateCombatOverdrive|OVERDRIVE_DURATION_MS|OVERDRIVE_REENTRY_LOCK_MS|setTimeout|requestAnimationFrame/,
+  );
+  assert.match(gameSource, /activateCombatOverdrive\(/);
+  assert.match(hudSource, /onActivateOverdrive/);
 });
