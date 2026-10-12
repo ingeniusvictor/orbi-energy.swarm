@@ -59,8 +59,18 @@ test("J2C-A owns no clock, renderer, audio, storage, randomness or entity scans"
   }
 });
 
-test("J2C-A does not adopt the combat expression into live runtime yet", () => {
-  assert.doesNotMatch(gameSource, /combatOverdriveEffects/);
-  assert.doesNotMatch(gameSource, /OVERDRIVE_PLAYER_DAMAGE_MULTIPLIER/);
-  assert.doesNotMatch(gameSource, /projectCombatOverdriveEffects/);
+test("live adoption consumes the J2C-A projection helper without importing its tuning constants", () => {
+  assert.match(
+    gameSource,
+    /import \{ projectCombatOverdriveEffects \} from "\.\/combatOverdriveEffects";/,
+  );
+  assert.match(gameSource, /projectCombatOverdriveEffects\(/);
+  assert.doesNotMatch(
+    gameSource,
+    /\bOVERDRIVE_PLAYER_DAMAGE_MULTIPLIER\b/,
+  );
+  assert.doesNotMatch(
+    gameSource,
+    /\bMAX_OVERDRIVE_PLAYER_DAMAGE_MULTIPLIER\b/,
+  );
 });
