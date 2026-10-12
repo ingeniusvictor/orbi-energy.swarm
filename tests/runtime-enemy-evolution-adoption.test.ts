@@ -244,12 +244,27 @@ test("score reward composes milestone and evolved multipliers in one helper", ()
     "const detectAndResolveCollisions =",
     "// --- SPAWN SPLITTED ENEMY PARTS ---",
   );
-  const uses =
-    collisions.match(/getEnemyScoreReward\(/g) ?? [];
+  const defeatHelper = section(
+    game,
+    "const registerCombatDefeat =",
+    "// --- DETECT SINGLE-IMPACT COLLISION SWEEPS ---",
+  );
+  assert.match(
+    defeatHelper,
+    /baseScore:\s*getEnemyScoreReward\(enemy\)/,
+  );
+  assert.match(
+    collisions,
+    /registerCombatDefeat\(otherEnemy, proj\.affinity\);/,
+  );
+  assert.match(
+    collisions,
+    /registerCombatDefeat\(enemy, proj\.affinity\);/,
+  );
   assert.equal(
-    uses.length,
-    2,
-    "direct and splash kills must share evolved-aware rewards",
+    (collisions.match(/getEnemyScoreReward\(/g) ?? []).length,
+    0,
+    "direct and splash kills must route through the single evolved-aware reward authority",
   );
 });
 

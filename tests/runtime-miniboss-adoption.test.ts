@@ -224,12 +224,27 @@ test("miniboss contact damage and reward multipliers are isolated enemy metadata
     /enemy\.milestoneRewardMultiplier \?\? 1/,
   );
 
-  const rewardCalls =
-    collisions.match(/getEnemyScoreReward\(/g) ?? [];
+  const defeatHelper = section(
+    game,
+    "const registerCombatDefeat =",
+    "// --- DETECT SINGLE-IMPACT COLLISION SWEEPS ---",
+  );
+  assert.match(
+    defeatHelper,
+    /baseScore:\s*getEnemyScoreReward\(enemy\)/,
+  );
+  assert.match(
+    collisions,
+    /registerCombatDefeat\(otherEnemy, proj\.affinity\);/,
+  );
+  assert.match(
+    collisions,
+    /registerCombatDefeat\(enemy, proj\.affinity\);/,
+  );
   assert.equal(
-    rewardCalls.length,
-    2,
-    "both direct and splash kill paths must use milestone-aware score rewards",
+    (collisions.match(/getEnemyScoreReward\(/g) ?? []).length,
+    0,
+    "direct and splash kills must route through the single milestone-aware reward authority",
   );
 });
 

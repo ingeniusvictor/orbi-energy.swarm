@@ -2,6 +2,7 @@ import React from "react";
 import { Shield, Award, Users, Volume2, VolumeX, Pause, Play } from "lucide-react";
 import { useGameTranslation, formatNumber } from "../i18n";
 import { getCampaignObjective } from "../game/campaignGuide";
+import type { ResonanceTier } from "../game/combatResonance";
 
 interface GameHudProps {
   score: number;
@@ -15,6 +16,10 @@ interface GameHudProps {
   audioMuted: boolean;
   isPaused: boolean;
   nanoCredits: number;
+  combatChain: number;
+  combatResonance: number;
+  combatResonanceTier: ResonanceTier;
+  combatScoreMultiplier: number;
   onTogglePause: () => void;
   onToggleMute: () => void;
 }
@@ -31,6 +36,10 @@ export const GameHud: React.FC<GameHudProps> = ({
   audioMuted,
   isPaused,
   nanoCredits,
+  combatChain,
+  combatResonance,
+  combatResonanceTier,
+  combatScoreMultiplier,
   onTogglePause,
   onToggleMute
 }) => {
@@ -58,6 +67,39 @@ export const GameHud: React.FC<GameHudProps> = ({
     if (size >= 10) return "text-amber-400 border-amber-500/50 bg-amber-950/30";
     return "text-slate-400 border-slate-800 bg-slate-900/40";
   };
+
+  const getResonanceTone = () => {
+    switch (combatResonanceTier) {
+      case "OVERDRIVE_READY":
+        return "border-amber-400/70 text-amber-300 bg-amber-950/40";
+      case "SURGING":
+        return "border-fuchsia-400/60 text-fuchsia-300 bg-fuchsia-950/35";
+      case "HARMONIC":
+        return "border-violet-400/55 text-violet-300 bg-violet-950/30";
+      case "SYNCED":
+        return "border-cyan-400/50 text-cyan-300 bg-cyan-950/30";
+      default:
+        return "border-slate-700 text-slate-400 bg-slate-900/40";
+    }
+  };
+
+  const getResonanceFill = () => {
+    switch (combatResonanceTier) {
+      case "OVERDRIVE_READY":
+        return "bg-amber-300 shadow-[0_0_8px_rgba(252,211,77,0.75)]";
+      case "SURGING":
+        return "bg-fuchsia-400 shadow-[0_0_7px_rgba(232,121,249,0.6)]";
+      case "HARMONIC":
+        return "bg-violet-400 shadow-[0_0_7px_rgba(167,139,250,0.55)]";
+      default:
+        return "bg-cyan-400 shadow-[0_0_6px_rgba(34,211,238,0.5)]";
+    }
+  };
+
+  const resonanceTierLabel = combatResonanceTier.replaceAll("_", " ");
+  const resonanceAriaLabel = language === "es"
+    ? `Cadena ${combatChain}, resonancia ${Math.round(combatResonance)} por ciento, ${resonanceTierLabel}, multiplicador ${combatScoreMultiplier.toFixed(2)}`
+    : `Chain ${combatChain}, resonance ${Math.round(combatResonance)} percent, ${resonanceTierLabel}, multiplier ${combatScoreMultiplier.toFixed(2)}`;
 
   // Localized wave details lookup helper
   const getLocalizedWaveDetails = () => {
@@ -127,8 +169,8 @@ export const GameHud: React.FC<GameHudProps> = ({
         </span>
       </div>
 
-      {/* 4. SCORE & CREDITS */}
-      <div className="orbi-hud-score flex items-center gap-4 font-mono">
+      {/* 4. SCORE, CREDITS & COMBAT RESONANCE */}
+      <div className="orbi-hud-score flex items-center gap-2 font-mono flex-wrap">
         <div className="flex items-center gap-1.5">
           <Award size={11} className="text-amber-400" />
           <span className="text-slate-400 uppercase">{t("hud.score")}:</span>
@@ -137,6 +179,24 @@ export const GameHud: React.FC<GameHudProps> = ({
         <div className="flex items-center gap-1.5 font-bold text-amber-400">
           <span>$</span>
           <span>{formatNumber(nanoCredits)}</span>
+        </div>
+        <div
+          className={`flex items-center gap-1.5 rounded border px-1.5 py-0.5 text-[9px] font-bold uppercase ${getResonanceTone()}`}
+          aria-label={resonanceAriaLabel}
+          title={resonanceAriaLabel}
+        >
+          <span>{language === "es" ? "CAD" : "CHAIN"} {combatChain}</span>
+          <div className="h-1 w-10 overflow-hidden rounded-full bg-slate-950/80" aria-hidden="true">
+            <div
+              className={`h-full rounded-full transition-[width] duration-150 ${getResonanceFill()}`}
+              style={{ width: `${Math.max(0, Math.min(100, combatResonance))}%` }}
+            />
+          </div>
+          <span>{Math.round(combatResonance)}%</span>
+          <span>×{combatScoreMultiplier.toFixed(2)}</span>
+          {combatResonanceTier === "OVERDRIVE_READY" && (
+            <span className="text-amber-200">READY</span>
+          )}
         </div>
       </div>
 
