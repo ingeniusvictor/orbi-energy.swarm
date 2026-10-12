@@ -1430,6 +1430,8 @@ export const EnergySwarmGame: React.FC = () => {
     currentWaveRef.current = 1;
     runtimeProgressionRef.current = createCampaignRuntimeState(1);
     waveActiveRef.current = false;
+    enemyFormationDirectorRef.current =
+      createLiveEnemyFormationDirectorState();
     waveBreakTimerRef.current = 2500; // 2.5 seconds visual preparation break
 
     // Reset mid-run upgrades
@@ -2924,6 +2926,8 @@ export const EnergySwarmGame: React.FC = () => {
     stage: BossEncounterStage = "PRIMARY",
   ) => {
     enemiesRef.current = [];
+    enemyFormationDirectorRef.current =
+      createLiveEnemyFormationDirectorState();
     hazardZonesRef.current = [];
 
     const isRematch = rematchProfile !== null;
