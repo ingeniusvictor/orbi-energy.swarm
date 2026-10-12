@@ -1,0 +1,28 @@
+{
+  "id": "./",
+  "name": "ORBI Energy Swarm",
+  "short_name": "ORBI Swarm",
+  "description": "Premium sci-fi energy swarm combat with a handcrafted campaign and Infinite Swarm progression.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#020617",
+  "theme_color": "#020617",
+  "categories": ["games", "entertainment"],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "icons/orbi-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/orbi-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

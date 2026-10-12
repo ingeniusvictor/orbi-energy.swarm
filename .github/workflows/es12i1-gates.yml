@@ -1,0 +1,73 @@
+name: ES-12I1 PWA Foundation Certification
+
+on:
+  push:
+    branches:
+      - feat/es-12i1-pwa-foundation
+
+permissions:
+  contents: write
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout I1 branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: feat/es-12i1-pwa-foundation
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Repository Smoke
+        run: npm run test:repo
+
+      - name: Gameplay
+        run: npm run test:gameplay
+
+      - name: Platform
+        run: npm run test:platform
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Production Build
+        run: npm run build
+
+      - name: Release contract
+        run: npm run release:verify
+
+      - name: GitHub Pages base-path build
+        env:
+          ORBI_PUBLIC_BASE: /orbi-energy.swarm/
+          ORBI_BUILD_SHA: ${{ github.sha }}
+        run: npm run build
+
+      - name: Verify I1 scope and materialize product tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=e74ee87008f5eb53eca19950f2890d6a114a291b
+
+          if git diff --name-only "$BASE"...HEAD | grep -E '^src/game/|^src/components/|^public/assets/orbi-foton\.glb$'; then
+            echo "I1 scope violation: gameplay, components or FOTON asset changed"
+            exit 1
+          fi
+
+          rm .github/workflows/es12i1-gates.yml
+          git diff --check
+
+          git config user.name "ingeniusvictor"
+          git config user.email "ingeniusvictor@users.noreply.github.com"
+          git add .github/workflows/es12i1-gates.yml
+          git commit -m "chore(i1): remove temporary certification workflow"
+          git push origin HEAD:feat/es-12i1-pwa-foundation

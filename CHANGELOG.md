@@ -30,6 +30,8 @@ human visual, Infinite play-feel and real-device Android validation remain open.
 - Advisory sustained frame-health monitoring.
 - Device/orientation × quality certification matrix spanning Android, tablet,
   laptop, desktop and ultrawide classes.
+- Canonical GitHub Pages distribution metadata plus an installable PWA shell with
+  base-safe manifest, 192/512 install icons and SHA-versioned fail-open caching.
 
 ### Changed
 
@@ -37,6 +39,8 @@ human visual, Infinite play-feel and real-device Android validation remain open.
   production builds across the expanded runtime.
 - Presentation and performance systems are increasingly contract-driven while
   preserving the original gameplay baseline.
+- Distribution is PWA-first for the beta; native Android packaging remains
+  deferred until real-device certification is complete.
 
 ### Known certification blockers
 
@@ -44,7 +48,7 @@ human visual, Infinite play-feel and real-device Android validation remain open.
 - Issue #5: manual Infinite difficulty/play-feel validation.
 - ES-11 hardware validation: thermal, battery, browser chrome, hand/thumb
   ergonomics and OEM GPU/driver behavior on real devices.
-- ES-12 deployment and Android packaging decisions are not yet finalized.
+- ES-12 native Android packaging and release-candidate certification remain open.
 
 ## [0.1.0] — Recovery baseline
 
