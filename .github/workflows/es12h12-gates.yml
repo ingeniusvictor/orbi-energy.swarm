@@ -1,0 +1,101 @@
+name: ES-12H12 Affinity Fusion Certification
+
+on:
+  push:
+    branches:
+      - feat/es-12h12-affinity-fusions
+
+permissions:
+  contents: write
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout H12 branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: feat/es-12h12-affinity-fusions
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Apply fail-closed H12 runtime patch
+        run: python3 scripts/es12h12-apply.py
+
+      - name: Verify patch cleanliness
+        run: git diff --check
+
+      - name: Repository Smoke
+        run: npm run test:repo
+
+      - name: Gameplay
+        run: npm run test:gameplay
+
+      - name: Platform
+        run: npm run test:platform
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Production Build
+        run: npm run build
+
+      - name: Materialize clean H12 product tree
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          python3 - <<'PY'
+          import subprocess
+
+          changed = set(
+              subprocess.check_output(
+                  ["git", "diff", "--name-only", "HEAD"],
+                  text=True,
+              ).splitlines()
+          )
+          expected = {"src/game/EnergySwarmGame.tsx"}
+          if changed != expected:
+              raise SystemExit(
+                  f"Unexpected pre-cleanup H12 diff: {sorted(changed)}; expected {sorted(expected)}"
+              )
+          PY
+
+          rm scripts/es12h12-apply.py
+          rm .github/workflows/es12h12-gates.yml
+
+          git diff --check
+
+          python3 - <<'PY'
+          import subprocess
+
+          changed = set(
+              subprocess.check_output(
+                  ["git", "diff", "--name-only", "HEAD"],
+                  text=True,
+              ).splitlines()
+          )
+          expected = {
+              "src/game/EnergySwarmGame.tsx",
+              "scripts/es12h12-apply.py",
+              ".github/workflows/es12h12-gates.yml",
+          }
+          if changed != expected:
+              raise SystemExit(
+                  f"Unexpected final H12 materialization diff: {sorted(changed)}; expected {sorted(expected)}"
+              )
+          PY
+
+          git config user.name "ingeniusvictor"
+          git config user.email "ingeniusvictor@users.noreply.github.com"
+          git add src/game/EnergySwarmGame.tsx scripts/es12h12-apply.py .github/workflows/es12h12-gates.yml
+          git commit -m "feat(h12): integrate deterministic affinity fusions"
+          git push origin HEAD:feat/es-12h12-affinity-fusions
