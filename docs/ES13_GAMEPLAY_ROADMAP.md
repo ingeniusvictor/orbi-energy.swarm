@@ -37,8 +37,6 @@ Issue #253 / PR #257
 
 Direct+splash defeats feed J1A, accepted damage breaks resonance, simulation-time expiry is live, fresh runs reset state and HUD shows chain/resonance/tier/multiplier.
 
-Evidence: pre-PR `38285523692`; PR CI `38287053826`; PR Android `38287053915`; main CI `38287238136`; main Android `38287238150`; Pages `38287336600` — GREEN.
-
 ---
 
 ## J2 — ORBI Overdrive
@@ -51,63 +49,57 @@ Status: **DEPLOYED / FROZEN**
 Canonical: `6adfb7cc4785c5238c78821e6e67fdac3c0f4eb7`  
 Issue #260 / PR #261
 
-Implemented pure state/timing contract:
-- 8 s active duration;
-- 4 s post-window re-entry lock;
-- explicit Resonance readiness;
-- one-shot `consumeResonance`;
-- no stacking/refresh/extension;
-- deterministic simulation-time expiry/re-entry;
-- reset, invalid-time rejection and immutable transitions;
-- no live runtime/HUD/buffs/VFX/audio/scans/tuning.
-
-Evidence: pre-PR `38288374752`; PR CI `38288795483`; PR Android `38288795462`; main CI `38288929402`; main Android `38288929417`; Pages `38289009730` — GREEN.
+Pure deterministic 8 s active + 4 s re-entry state contract, explicit readiness, one-shot Resonance consumption signal, simulation-time boundaries, reset and immutable transitions.
 
 ### J2B — Live Activation & HUD
 Status: **DEPLOYED / FROZEN**  
 Canonical: `466242e91fa927bc4d996d09efdbb87f8f572d44`  
 Issue #264 / PR #267
 
-Implemented:
-- high-frequency J2A state ref in live runtime;
-- `timeElapsedRef` simulation time only;
-- explicit activation via `O` and HUD action;
-- guarded failure when not playing/game-over/paused/Photo Mode/upgrade modal;
-- current Resonance readiness + J2A `canActivate` required;
-- one-shot Resonance consumption after accepted activation while preserving chain state;
-- fresh-run/restart reset;
-- low-frequency `READY / ACTIVE / RECHARGING / CHARGE` HUD projection;
-- no combat benefit, VFX/audio, scans, cap/budget or mode tuning.
-
-Evidence:
-- pre-PR `38293627094`, job `114959353674` GREEN;
-- PR CI `38294148486` GREEN;
-- PR Android `38294148448` GREEN;
-- main CI `38294331547` GREEN;
-- main Android `38294331726` GREEN;
-- Pages `38294411795` build + deploy GREEN.
+Live J2A adoption with ref-owned high-frequency state, simulation-time lifecycle, explicit `O` + HUD activation, gameplay guards, one-shot Resonance consumption, fresh-run reset and compact READY/ACTIVE/RECHARGING HUD. No combat benefit yet.
 
 ### J2C — Bounded Overdrive Combat Expression
-Status: **NEXT / ACTIVE IMPLEMENTATION TARGET**
+Status: **ACTIVE PROGRAM**
 
-Design intent:
-- keep J2A/J2B activation and time state authoritative;
-- define combat-effect projection independently from React/render/audio;
-- apply effects only while Overdrive is active;
-- keep every multiplier explicitly bounded and non-stacking;
-- do not create a second duration/re-entry clock;
-- do not add entity scans or bypass projectile/entity budgets;
-- no automatic activation;
-- preserve Campaign/Infinite isolation and pause/photo/lifecycle correctness;
-- prefer a modest offensive expression over raw unlimited damage;
-- keep score/economy effects bounded and explicit if introduced;
-- leave spectacle, VFX and audio stingers for J2D.
+#### J2C-A — Pure Bounded Combat Expression Contract
+Status: **DEPLOYED / FROZEN**  
+Canonical: `eca68cce510cf506053fd6d9121b501db7cd1f64`  
+Issue #271 / PR #272
 
-Recommended implementation split if more than one combat statistic is affected:
-1. **J2C-A — pure combat-expression projection contract**;
-2. **J2C-B — live adoption** using existing engine seams only.
+Implemented:
+- pure `combatOverdriveEffects.ts` projection;
+- J2A/J2B remain activation/timing authority;
+- inactive damage multiplier exactly `1.0`;
+- active player-damage multiplier exactly `1.20`;
+- contract ceiling `1.25`;
+- deterministic, immutable, non-stacking;
+- no score/economy, fire-rate, projectile-count/speed, crit, defense or entity-budget mutation;
+- no live runtime adoption.
 
-This split is preferred because it preserves the successful J1A/J1B and J2A/J2B architecture: pure deterministic contract first, live adoption second.
+Evidence:
+- first cert `38295319991` failed only on a new-test false positive where raw `/React/` matched documentation prose;
+- corrected full pre-PR `38295483032`, job `114965401785` GREEN;
+- PR CI `38295901224` GREEN;
+- PR Android `38295901194` GREEN;
+- main CI `38296053435` GREEN;
+- main Android `38296053642` GREEN;
+- Pages `38296151229` build + deploy GREEN.
+
+#### J2C-B — Live Bounded Damage Adoption
+Status: **ACTIVE / NEXT IMPLEMENTATION TARGET**
+
+Adoption contract:
+- import/use `projectCombatOverdriveEffects()`; live runtime must not duplicate the `1.20` tuning literal;
+- wire only into the centralized player-projectile damage resolution inside `shootFromSwarm()`;
+- resolve existing base/profile/GAIA/critical damage first, then apply the certified Overdrive multiplier exactly once before projectile damage assignment;
+- inactive Overdrive remains neutral;
+- active Overdrive adds only +20% player projectile damage;
+- preserve `MAX_PROJECTILES` and all existing quantum/mitosis guards;
+- preserve cooldown/fire-rate, projectile velocity, score/economy, crit chance, splash ratios, Campaign/Infinite recipes, FOTON and GAIA;
+- no entity-array scan or per-frame React state;
+- no VFX/audio identity here; that remains J2D.
+
+Verification should prove one authoritative multiplier application, neutrality when inactive, the exact active multiplier source, no duplicate literal tuning and unchanged projectile/cooldown budgets.
 
 ### J2D — Reactive VFX / Audio / Safety
 Status: PLANNED
