@@ -45,134 +45,133 @@ Status: **DEPLOYED / FROZEN**
 Canonical: `6adfb7cc4785c5238c78821e6e67fdac3c0f4eb7`  
 Issue #260 / PR #261
 
-Pure deterministic 8 s active + 4 s re-entry state contract, explicit readiness, one-shot Resonance consumption signal, simulation-time boundaries, reset and immutable transitions.
-
 ### J2B — Live Activation & HUD
 Status: **DEPLOYED / FROZEN**  
 Canonical: `466242e91fa927bc4d996d09efdbb87f8f572d44`  
 Issue #264 / PR #267
 
-Live J2A adoption with ref-owned high-frequency state, simulation-time lifecycle, explicit `O` + HUD activation, gameplay guards, one-shot Resonance consumption, fresh-run reset and compact READY/ACTIVE/RECHARGING HUD.
-
-### J2C — Bounded Overdrive Combat Expression
-Status: **DEPLOYED / FROZEN PROGRAM SLICE**
-
-#### J2C-A — Pure Bounded Combat Expression Contract
+### J2C-A — Pure Bounded Combat Expression
 Status: **DEPLOYED / FROZEN**  
 Canonical: `eca68cce510cf506053fd6d9121b501db7cd1f64`  
 Issue #271 / PR #272
 
-Inactive player-damage multiplier `1.0`, active `1.20`, hard ceiling `1.25`, deterministic/non-stacking and isolated from score/economy/fire-rate/projectile-count/speed/crit/defense/entity budgets.
-
-#### J2C-B — Live Bounded Damage Adoption
+### J2C-B — Live Bounded Damage Adoption
 Status: **DEPLOYED / FROZEN**  
 Canonical: `7e15ee1e79ee9ae8903891a66b0b1031b0600bca`  
 Issue #276 / PR #278
 
-`projectCombatOverdriveEffects()` is adopted exactly once at centralized player-projectile damage resolution while preserving base/profile/GAIA/critical ordering and existing projectile variant ratios.
-
-### J2D — Reactive VFX / Audio / Safety
-Status: **DEPLOYED / FROZEN PROGRAM SLICE**
-
-#### J2D-A — Pure Presentation Profile Contract
+### J2D-A — Pure Presentation Profile
 Status: **DEPLOYED / FROZEN**  
 Canonical: `39f9b33c9a229c7c8d991aecd81ea695510c82a0`  
 Issue #281 / PR #282
 
-Pure quality-bounded presentation projection with neutral inactive output, maximum direct ring count 3, activation pulse derived from certified remaining ratio and no independent clock/timer.
-
-#### J2D-B — Live Reactive Presentation Adoption
+### J2D-B — Live Reactive Presentation
 Status: **DEPLOYED / FROZEN**  
 Canonical: `9743890d98b33d365cbc18a048015f3815b144e5`  
 Issue #286 / PR #287
-
-Implemented:
-- live use of certified `projectCombatOverdrivePresentation()`;
-- authoritative Overdrive state + simulation time + existing quality preset;
-- direct bounded Canvas2D full-field tint and collective FOTON/swarm halo/rings;
-- no particle/entity arrays or entity scans;
-- short procedural activation stinger only after successful explicit activation;
-- existing TACTICAL audio lane, mute-safe and user-gesture bound;
-- no mount-time/autoplay activation path;
-- no new timer/clock/RAF authority;
-- no Overdrive gameplay/timing/damage/score/cap-budget tuning changes.
-
-Evidence:
-- pre-PR `38302074362`, job `114987146051` GREEN;
-- PR CI `38302405528` GREEN;
-- PR Android `38302405569` GREEN;
-- main CI `38302618451` GREEN;
-- main Android `38302618447` GREEN;
-- Pages `38302704724` GREEN.
 
 ### J2E — Overdrive Integration Certification
 Status: **DEPLOYED / FROZEN**  
 Canonical: `bf0e6a858e3c96091c002ea623b29eb5c260c6ea`  
 Issue #290 / PR #291
 
-J2E remained tests/certification-only. It introduced no runtime/gameplay tuning changes.
+J2E certified exact J1/J2 integration, one-shot readiness consumption, bounded J2C damage, J2D presentation-only behavior, exact 8 s active + 4 s lock timing, pause safety, reset and long deterministic bounded sequences. It changed no runtime source.
 
-Certified contract:
-- deterministic mixed-affinity sequence reaches J1 Resonance readiness and activates J2 exactly once;
-- successful activation consumes readiness exactly once;
-- J1 score projection remains authoritative and J2 adds no score/economy multiplier;
-- J2C applies exactly one bounded player-damage multiplier and cannot stack/refresh;
-- J2D remains projection/presentation-only with no gameplay side effects;
-- exact 8 s simulation-time expiry and 4 s re-entry lock are preserved;
-- repeated activation while active cannot extend duration;
-- accepted damage still applies J1 Resonance break without taking ownership of active J2 timing;
-- fresh run resets J1 Resonance + J2 Overdrive exactly;
-- pause/photo/lifecycle source contracts preserve simulation-time ownership;
-- long deterministic sequences remain finite/bounded;
-- live J2B/J2C/J2D seams consume certified pure modules without importing duplicated tuning constants.
-
-Evidence:
-- pre-PR `38303651696`, job `114992339524` GREEN;
-- final PR head `0dcd9b4533976a43f872d6b070607076c6336b48`;
-- PR CI `38308946054` GREEN;
-- PR Android `38309446296` GREEN on exact final PR head via explicit dispatch because tests-only changes do not match normal Android path filters;
-- main CI `38309074528` GREEN;
-- main Android `38309218634` GREEN on exact canonical via explicit dispatch for the same tests-only path-filter reason;
-- Pages `38309135916` GREEN.
-
-No temporary certification/dispatch workflow was merged into `main`.
+Evidence anchors: pre-PR `38303651696` / job `114992339524`; PR CI `38308946054`; PR Android `38309446296`; main CI `38309074528`; main Android `38309218634`; Pages `38309135916` — GREEN.
 
 ---
 
 ## J3 — Advanced Enemy Formation Director
-Status: **ACTIVE / NEXT IMPLEMENTATION TARGET AFTER DOC9 CLOSURE**
+Status: **ACTIVE PROGRAM**
 
 Goal: create spatially tactical enemy movement that forces route/positioning decisions while keeping existing enemy/projectile caps and simulation budgets authoritative.
 
-### Proposed J3 decomposition
+Important architecture boundary: `src/game/formations.ts` and `formationCycle.ts` are the **player/FOTON swarm** formation system. J3 is an enemy-routing system and must remain a separate authority.
 
-#### J3A — Pure Formation Route Contract
-Status: **NEXT ENGINEERING SLICE**
+### J3A — Pure Enemy Formation Route Contract
+Status: **DEPLOYED / FROZEN**  
+Canonical: `3c5ece8d8e59bc38de468b4d0d9644953fa6a8be`  
+Issue #294 / PR #295
 
-Design target:
-- deterministic pure formation/route planning with caller-owned state;
-- bounded member-slot count; no entity creation or array ownership;
-- normalized route/progress semantics that can be evaluated from caller-supplied simulation time/progress;
-- explicit formation identity, member role/slot, phase and telegraph metadata;
-- pure projection suitable for tests without renderer, React, audio, storage, RAF, wall clock or random authority;
-- immutable caller inputs and finite bounded outputs;
-- compatibility contract that allows later live adoption without forking Campaign/Infinite logic.
+Implemented:
+- new standalone pure module `src/game/enemyFormationRoutes.ts`;
+- initial route vocabulary: `PINCER`, `X_CROSS`, `SERPENTINE`;
+- caller-owned `route`, member slot/count, normalized progress and mirror;
+- finite bounded normalized route positions with phase/role/telegraph/safe-intent metadata;
+- local member cap 8 and route extent ±1.25;
+- exact phase projection from caller progress only;
+- fail-closed validation for unknown route, invalid count/slot/progress/mirror;
+- caller input immutability;
+- no renderer, React, audio, storage, wall clock, RAF, random, network, entity-array or projectile ownership;
+- no Campaign/Infinite selection inside the pure contract;
+- no runtime adoption yet;
+- no changes to global caps, simulation budgets, J1/J2, GAIA, FOTON GLB or player-swarm formations.
 
-Before implementation, audit existing spawn, formation, movement and route authorities. J3A must extend the smallest existing seam rather than create a parallel movement engine.
+Tactical decisions already encoded:
+- PINCER → escape converging flanks before closure;
+- X_CROSS → time diagonal crossing lanes;
+- SERPENTINE → track a moving gap/corridor.
 
-#### J3B — Live Formation Director Adoption
+Evidence:
+- pre-PR certified head `685d0c498615a35f659cf8f7c8b231c85a8e6e0e`;
+- pre-PR run `38310490857`, job `115014740153` GREEN;
+- final PR head `5e01e4d21bf1cdc185a8755e16006a2ee70ca89c`;
+- PR CI `38310847060` GREEN;
+- PR Android `38310847054` GREEN;
+- main CI `38310975108` GREEN;
+- main Android `38310975021` GREEN;
+- Pages `38311040652` GREEN.
+
+Temporary certification workflow was removed before PR and was never merged.
+
+### J3B — Live Enemy Formation Director Adoption
+Status: **ACTIVE / NEXT ENGINEERING SLICE AFTER DOC10 CLOSURE**
+
+Purpose: adopt J3A into the live enemy runtime through the smallest safe spawn/movement seam without creating a parallel entity or movement engine.
+
+Required live-adoption constraints:
+- `enemiesRef.current` remains the single enemy entity array;
+- no extra full-array scan solely for formation behavior;
+- preserve `MAX_ENEMIES`, `MAX_PROJECTILES`, descriptor `maxConcurrentEnemies`, entity arrays and simulation budgets;
+- a formation group consumes existing spawn capacity rather than adding reserved entities;
+- first live slice targets ordinary enemies only; bosses/minibosses/special systems remain out unless a demonstrated shared seam makes them safe;
+- explicit Campaign/Infinite eligibility and no silent wave/recipe drift;
+- once assigned, route evolution is deterministic and based on caller-owned simulation progress;
+- no wall-clock or secondary RAF/timer authority;
+- normalized J3A coordinates are materialized through the current playfield/camera coordinate authority;
+- movement must be shaped/replaced for opted-in enemies rather than applied as a second velocity stack;
+- safe fallback if remaining enemy capacity is insufficient to form a valid group;
+- reset/restart/pause cannot leave stale route/group ownership;
+- use the minimum per-enemy metadata required to identify group, route, slot and progress origin, or an equally bounded caller-owned map if that is architecturally cleaner;
+- no score/economy/damage/projectile/J1/J2/GAIA/FOTON GLB changes;
+- player/FOTON formation code remains untouched.
+
+Recommended narrow first slice:
+- at most one live formation group at a time;
+- bounded regular-enemy group size within the existing J3A max of 8 and actual remaining runtime capacity;
+- deterministic route assignment after an existing spawn opportunity chooses formation eligibility;
+- start with the three certified J3A routes only;
+- no presentation-polish expansion beyond what is minimally necessary for route fairness.
+
+Tests for J3B must prove:
+- no cap/concurrency regression;
+- no duplicate entity ownership;
+- correct opt-in/opt-out fallback;
+- deterministic movement given the same assignment/progress;
+- reset/restart cleanup;
+- pause does not advance route progress;
+- ordinary non-formation enemies retain existing movement behavior;
+- Campaign and Infinite remain independently controllable;
+- J1/J2 behavior is unchanged.
+
+### J3C — Advanced Tactical Formation Vocabulary
 Status: PLANNED
 
-Consume J3A through existing spawn/movement authority. Preserve current entity arrays, `MAX_ENEMIES`, `MAX_PROJECTILES`, simulation budgets, Campaign/Infinite isolation and existing boss/special systems. No new full-array scans solely for formation behavior.
+Candidate vocabulary after J3B stabilizes: wedges, rings, spirals/corkscrews, convoy attacks, orbit attacks, encirclement, staggered artillery routes, fake retreats, portal ambushes and leader/follower formations.
 
-#### J3C — Advanced Tactical Formation Vocabulary
-Status: PLANNED
+Admission rule: add a formation only if it creates a distinct tactical question such as lane commitment, center denial, timing a gap, choosing a flank, tracking a leader or deciding whether to chase a retreat. Variety must not come from simply raising HP, enemy count or projectile count.
 
-Candidate vocabulary: pincers, wedges, X-cross, rings, spirals/corkscrews, serpentine columns, orbit attacks, encirclement, staggered artillery routes, fake retreats, portal ambushes, convoy assaults and leader/follower formations.
-
-Admission rule: a formation is added only if it creates a distinct tactical question such as lane commitment, center denial, timing a gap, choosing a flank, tracking a leader or deciding whether to chase a retreat. Variety must not come from simply raising HP, enemy count or projectile count.
-
-#### J3D — Telegraph / Fairness / Integration Certification
+### J3D — Telegraph / Fairness / Integration Certification
 Status: PLANNED
 
 Certify:
@@ -183,13 +182,7 @@ Certify:
 - no J1/J2 regression;
 - desktop + Android performance and exact-SHA deployment evidence.
 
-Hard constraints across J3:
-- preserve `MAX_ENEMIES`, `MAX_PROJECTILES`, existing entity arrays and simulation budgets unless a dedicated demonstrated issue proves a change is required;
-- no unnecessary additional entities/projectiles;
-- Campaign and Infinite remain isolated where intended;
-- no FOTON GLB or GAIA tuning changes;
-- no hidden wall-clock/random state where deterministic simulation inputs can own the behavior;
-- route telegraphs must preserve player/boss/objective/HUD readability.
+---
 
 ## J4 — Tactical Enemy Families
 Status: PLANNED
