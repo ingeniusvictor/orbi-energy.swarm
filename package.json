@@ -21,6 +21,7 @@
     "test:platform": "tsx --test tests/*.test.ts",
     "release:verify": "node scripts/verify-release.mjs",
     "release:readiness": "node scripts/check-rc-readiness.mjs",
+    "release:evidence:verify": "node scripts/verify-manual-certification.mjs",
     "evidence:analyze": "tsx scripts/analyze-gaia-evidence.ts",
     "android:sync": "npm run build && npx cap sync android",
     "android:debug": "npm run android:sync && node scripts/android-gradle.mjs assembleDebug"
