@@ -1,4 +1,5 @@
 import {
+  ENEMY_FORMATION_ROUTE_EXTENT,
   projectEnemyFormationRoute,
   type EnemyFormationRouteId,
   type EnemyFormationRouteMirror,
@@ -123,7 +124,7 @@ const clampAnchor = (
   span: number,
   worldExtent: number,
 ) => {
-  const routeExtent = span * 1.25;
+  const routeExtent = span * ENEMY_FORMATION_ROUTE_EXTENT;
   const min = LIVE_ENEMY_FORMATION_WORLD_MARGIN + routeExtent;
   const max = worldExtent - LIVE_ENEMY_FORMATION_WORLD_MARGIN - routeExtent;
   if (max < min) return worldExtent / 2;
