@@ -41,7 +41,39 @@ jobs:
           set -e
           echo "status=$status" >> "$GITHUB_OUTPUT"
           if [ "$status" -ne 0 ]; then
-            tail -n 260 /tmp/j2b-repo-smoke.log > j2b-repo-smoke-failure.txt
+            set +e
+            node --test tests/es-13j2b-live-overdrive-adoption.test.mjs > /tmp/j2b-isolated.log 2>&1
+            isolated_status=$?
+            set -e
+            python3 - <<'PY'
+          from pathlib import Path
+
+          full = Path('/tmp/j2b-repo-smoke.log').read_text(errors='replace').splitlines()
+          isolated = Path('/tmp/j2b-isolated.log').read_text(errors='replace')
+          snippets = []
+          seen = set()
+          for index, line in enumerate(full):
+              if line.lstrip().startswith('not ok '):
+                  start = max(0, index - 3)
+                  end = min(len(full), index + 45)
+                  key = (start, end)
+                  if key not in seen:
+                      seen.add(key)
+                      snippets.append('\n'.join(full[start:end]))
+          summary = '\n'.join(full[-18:])
+          report = [
+              '=== EXTRACTED FAILING SUBTESTS FROM FULL REPOSITORY SMOKE ===',
+              '\n\n'.join(snippets) if snippets else '(no not-ok blocks found)',
+              '',
+              '=== ISOLATED J2B ADOPTION TEST ===',
+              isolated,
+              '',
+              '=== FULL REPOSITORY SMOKE SUMMARY ===',
+              summary,
+          ]
+          Path('j2b-repo-smoke-failure.txt').write_text('\n'.join(report))
+          PY
+            echo "isolated_status=$isolated_status"
             cat j2b-repo-smoke-failure.txt
           fi
 
@@ -53,7 +85,7 @@ jobs:
           git config user.name "ingeniusvictor"
           git config user.email "ingenius.victor@gmail.com"
           git add j2b-repo-smoke-failure.txt
-          git commit -m "ci(j2b): capture repository smoke failure [j2b-diagnostic]"
+          git commit -m "ci(j2b): capture exact repository smoke assertions [j2b-diagnostic]"
           git push origin HEAD:feat/es-13j2b-live-overdrive-activation
 
       - name: Fail after repository smoke diagnostic
@@ -131,7 +163,7 @@ jobs:
           while IFS= read -r file; do
             [ -z "$file" ] && continue
             case "$file" in
-              .github/workflows/es-13j2b-certify.yml|scripts/es-13j2b-materialize.py|src/game/EnergySwarmGame.tsx|src/components/GameHud.tsx|tests/es-13j2b-live-overdrive-adoption.test.mjs) ;;
+              .github/workflows/es-13j2b-certify.yml|scripts/es-13j2b-materialize.py|j2b-repo-smoke-failure.txt|src/game/EnergySwarmGame.tsx|src/components/GameHud.tsx|tests/es-13j2b-live-overdrive-adoption.test.mjs) ;;
               *) echo "Unexpected J2B scope: $file" >&2; exit 1 ;;
             esac
           done < /tmp/j2b-files.txt
