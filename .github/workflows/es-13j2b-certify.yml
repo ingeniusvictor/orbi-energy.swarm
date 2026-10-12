@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   certify:
-    if: ${{ !contains(github.event.head_commit.message, '[j2b-materialized]') }}
+    if: ${{ !contains(github.event.head_commit.message, '[j2b-materialized]') && !contains(github.event.head_commit.message, '[j2b-diagnostic]') }}
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
@@ -32,32 +32,66 @@ jobs:
         run: npm ci
 
       - name: Repository smoke
-        run: npm run test:repo
+        id: repo_smoke
+        shell: bash
+        run: |
+          set +e
+          npm run test:repo > /tmp/j2b-repo-smoke.log 2>&1
+          status=$?
+          set -e
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          if [ "$status" -ne 0 ]; then
+            tail -n 260 /tmp/j2b-repo-smoke.log > j2b-repo-smoke-failure.txt
+            cat j2b-repo-smoke-failure.txt
+          fi
+
+      - name: Commit repository smoke diagnostic
+        if: ${{ steps.repo_smoke.outputs.status != '0' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "ingeniusvictor"
+          git config user.email "ingenius.victor@gmail.com"
+          git add j2b-repo-smoke-failure.txt
+          git commit -m "ci(j2b): capture repository smoke failure [j2b-diagnostic]"
+          git push origin HEAD:feat/es-13j2b-live-overdrive-activation
+
+      - name: Fail after repository smoke diagnostic
+        if: ${{ steps.repo_smoke.outputs.status != '0' }}
+        run: exit 1
 
       - name: Gameplay regression
+        if: ${{ steps.repo_smoke.outputs.status == '0' }}
         run: npm run test:gameplay
 
       - name: Platform regression
+        if: ${{ steps.repo_smoke.outputs.status == '0' }}
         run: npm run test:platform
 
       - name: Typecheck
+        if: ${{ steps.repo_smoke.outputs.status == '0' }}
         run: npm run typecheck
 
       - name: Release contract
+        if: ${{ steps.repo_smoke.outputs.status == '0' }}
         run: npm run release:verify
 
       - name: Manual certification dossier
+        if: ${{ steps.repo_smoke.outputs.status == '0' }}
         run: npm run release:evidence:verify
 
       - name: Production build
+        if: ${{ steps.repo_smoke.outputs.status == '0' }}
         run: npm run build
 
       - name: RC readiness remains fail-closed
+        if: ${{ steps.repo_smoke.outputs.status == '0' }}
         env:
           ORBI_RELEASE_SHA: ${{ github.sha }}
         run: npm run release:readiness -- --output release-readiness.json
 
       - name: Setup Java 21
+        if: ${{ steps.repo_smoke.outputs.status == '0' }}
         uses: actions/setup-java@v5
         with:
           distribution: temurin
@@ -65,22 +99,27 @@ jobs:
           cache: gradle
 
       - name: Setup Android SDK
+        if: ${{ steps.repo_smoke.outputs.status == '0' }}
         uses: android-actions/setup-android@v3
         with:
           packages: platform-tools
 
       - name: Install Android 16 SDK
+        if: ${{ steps.repo_smoke.outputs.status == '0' }}
         run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0' >/dev/null
 
       - name: Build Android debug APK
+        if: ${{ steps.repo_smoke.outputs.status == '0' }}
         env:
           ORBI_BUILD_SHA: ${{ github.sha }}
         run: npm run android:debug
 
       - name: Verify Android APK
+        if: ${{ steps.repo_smoke.outputs.status == '0' }}
         run: test -s android/app/build/outputs/apk/debug/app-debug.apk
 
       - name: J2B scope guard
+        if: ${{ steps.repo_smoke.outputs.status == '0' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -98,6 +137,7 @@ jobs:
           done < /tmp/j2b-files.txt
 
       - name: Commit certified materialization
+        if: ${{ steps.repo_smoke.outputs.status == '0' }}
         shell: bash
         run: |
           set -euo pipefail
