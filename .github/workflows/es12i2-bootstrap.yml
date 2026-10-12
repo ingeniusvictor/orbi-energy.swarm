@@ -1,0 +1,107 @@
+name: ES-12I2 Android Bootstrap Certification
+
+on:
+  push:
+    branches:
+      - feat/es-12i2-android-packaging
+
+permissions:
+  contents: write
+
+jobs:
+  bootstrap:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout I2 branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: feat/es-12i2-android-packaging
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Setup Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android 16 SDK
+        run: yes | sdkmanager 'platforms;android-36' 'build-tools;36.0.0' >/dev/null
+
+      - name: Install Capacitor 8 dependencies
+        run: |
+          npm install @capacitor/core@8 @capacitor/android@8
+          npm install --save-dev @capacitor/cli@8
+
+      - name: Build local web bundle
+        env:
+          ORBI_BUILD_SHA: ${{ github.sha }}
+        run: npm run build
+
+      - name: Generate native Android project
+        run: npx cap add android
+
+      - name: Materialize I2 product contracts
+        run: node scripts/es12i2-materialize.mjs
+
+      - name: Synchronize Android project
+        env:
+          ORBI_BUILD_SHA: ${{ github.sha }}
+        run: npx cap sync android
+
+      - name: Repository Smoke
+        run: npm run test:repo
+
+      - name: Gameplay
+        run: npm run test:gameplay
+
+      - name: Platform
+        run: npm run test:platform
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Production Build
+        run: npm run build
+
+      - name: Release contract
+        run: npm run release:verify
+
+      - name: Android debug APK
+        env:
+          ORBI_BUILD_SHA: ${{ github.sha }}
+        run: node scripts/android-gradle.mjs assembleDebug
+
+      - name: Verify debug APK
+        run: test -s android/app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Verify I2 scope and materialize clean branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=c9ab02b10383a666df2b317d2b2e9cd534a90356
+
+          if git diff --name-only "$BASE"...HEAD | grep -E '^src/game/|^src/components/|^public/assets/orbi-foton\.glb$'; then
+            echo 'I2 scope violation: gameplay, components or FOTON asset changed'
+            exit 1
+          fi
+
+          rm .github/workflows/es12i2-bootstrap.yml
+          rm scripts/es12i2-materialize.mjs
+          git diff --check
+
+          git config user.name 'ingeniusvictor'
+          git config user.email 'ingeniusvictor@users.noreply.github.com'
+          git add -A
+          git commit -m 'feat(i2): materialize Capacitor 8 Android packaging pipeline'
+          git push origin HEAD:feat/es-12i2-android-packaging
