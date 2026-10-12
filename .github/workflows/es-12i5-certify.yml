@@ -39,8 +39,6 @@ jobs:
           game = Path('src/game/EnergySwarmGame.tsx')
           source = game.read_text()
 
-          # Root-cause fix: the follower loop was reading simulationMutatorEffects
-          # before that const was initialized later in updateEnginePhysics().
           tdz_pattern = re.compile(
               r'(getEclipseSolarCooldownRecoveryMultiplier\(\s*)'
               r'simulationMutatorEffects'
@@ -50,7 +48,6 @@ jobs:
           if count != 1:
               raise SystemExit(f'Expected one TDZ follower cooldown reference, found {count}')
 
-          # Mount must restore mute state without autoplaying Web Audio/BGM.
           audio_pattern = re.compile(
               r'(?m)^([ \t]*)setAudioMuted\(loaded\.audioMuted\);\n'
               r'\1setMuteState\(loaded\.audioMuted\);'
@@ -59,8 +56,7 @@ jobs:
               indent = match.group(1)
               return (
                   f'{indent}setAudioMuted(loaded.audioMuted);\n'
-                  f'{indent}// Restore persisted mute state without starting Web Audio/BGM before a user gesture.\n'
-                  f'{indent}// The audio module defaults to unmuted, so only persisted muted=true needs action.\n'
+                  f'{indent}// Restore persisted mute state without starting BGM before a user gesture.\n'
                   f'{indent}if (loaded.audioMuted) {{\n'
                   f'{indent}  setMuteState(true);\n'
                   f'{indent}}}'
@@ -69,10 +65,9 @@ jobs:
           if count != 1:
               raise SystemExit(f'Expected one startup mute restore block, found {count}')
 
-          # Track whether a frozen frame has already been materialized.
           ref_pattern = re.compile(
               r'(const canvasRef = useRef<HTMLCanvasElement \| null>\(null\);\n'
-              r'\s*const loopActiveRef = useRef\(false\);)'
+              r'[ \t]*const loopActiveRef = useRef\(false\);)'
           )
           source, count = ref_pattern.subn(
               r'\1\n  const suspendedFrameRenderedRef = useRef(false);',
@@ -82,41 +77,40 @@ jobs:
           if count != 1:
               raise SystemExit(f'Expected one loop ref block, found {count}')
 
-          old_pause = '''    if (isPausedRef.current || isUpgradeSelectionOpenRef.current) {
-              lastTimeRef.current = timestamp;
-              frameHealthRef.current = resetFrameHealthState(
-                frameHealthRef.current,
-              );
-              requestAnimationFrame(gameLoop);
-              return;
-            }
-
-            let delta = timestamp - lastTimeRef.current;'''
-          # Dedent the literal independently of workflow YAML indentation.
-          import textwrap
-          old_pause = textwrap.dedent(old_pause)
-          new_pause = textwrap.dedent('''
-            if (isPausedRef.current || isUpgradeSelectionOpenRef.current) {
-              lastTimeRef.current = timestamp;
-              frameHealthRef.current = resetFrameHealthState(
-                frameHealthRef.current,
-              );
-              // A lifecycle pause can happen before the first active frame. Materialize one
-              // battlefield frame once the canvas exists, but never advance simulation state.
-              if (!suspendedFrameRenderedRef.current && canvasRef.current) {
-                renderCanvasScene();
-                suspendedFrameRenderedRef.current = true;
-              }
-              requestAnimationFrame(gameLoop);
-              return;
-            }
-
-            suspendedFrameRenderedRef.current = false;
-            let delta = timestamp - lastTimeRef.current;
-          ''').lstrip('\n').rstrip('\n')
-          if source.count(old_pause) != 1:
-              raise SystemExit(f'Expected one paused gameLoop branch, found {source.count(old_pause)}')
-          source = source.replace(old_pause, new_pause, 1)
+          pause_pattern = re.compile(
+              r'(?m)^([ \t]*)if \(isPausedRef\.current \|\| isUpgradeSelectionOpenRef\.current\) \{\n'
+              r'\1  lastTimeRef\.current = timestamp;\n'
+              r'\1  frameHealthRef\.current = resetFrameHealthState\(\n'
+              r'\1    frameHealthRef\.current,\n'
+              r'\1  \);\n'
+              r'\1  requestAnimationFrame\(gameLoop\);\n'
+              r'\1  return;\n'
+              r'\1\}\n\n'
+              r'\1let delta = timestamp - lastTimeRef\.current;'
+          )
+          def pause_replacement(match):
+              i = match.group(1)
+              return (
+                  f'{i}if (isPausedRef.current || isUpgradeSelectionOpenRef.current) {{\n'
+                  f'{i}  lastTimeRef.current = timestamp;\n'
+                  f'{i}  frameHealthRef.current = resetFrameHealthState(\n'
+                  f'{i}    frameHealthRef.current,\n'
+                  f'{i}  );\n'
+                  f'{i}  // Lifecycle suspension may win the race before the first active frame.\n'
+                  f'{i}  // Draw one frozen frame once the canvas exists; never advance simulation.\n'
+                  f'{i}  if (!suspendedFrameRenderedRef.current && canvasRef.current) {{\n'
+                  f'{i}    renderCanvasScene();\n'
+                  f'{i}    suspendedFrameRenderedRef.current = true;\n'
+                  f'{i}  }}\n'
+                  f'{i}  requestAnimationFrame(gameLoop);\n'
+                  f'{i}  return;\n'
+                  f'{i}}}\n\n'
+                  f'{i}suspendedFrameRenderedRef.current = false;\n'
+                  f'{i}let delta = timestamp - lastTimeRef.current;'
+              )
+          source, count = pause_pattern.subn(pause_replacement, source, count=1)
+          if count != 1:
+              raise SystemExit(f'Expected one paused gameLoop branch, found {count}')
 
           start_pattern = re.compile(
               r'(frameHealthRef\.current = createFrameHealthState\(\);\n)'
@@ -128,12 +122,11 @@ jobs:
               count=1,
           )
           if count != 1:
-              raise SystemExit(f'Expected one startGame frame health reset block, found {count}')
+              raise SystemExit(f'Expected one startGame frame-health reset, found {count}')
 
           game.write_text(source)
 
-          test = Path('tests/es-12i5-runtime-startup.test.mjs')
-          test.write_text(r'''import assert from "node:assert/strict";
+          Path('tests/es-12i5-runtime-startup.test.mjs').write_text(r'''import assert from "node:assert/strict";
           import { readFile } from "node:fs/promises";
           import test from "node:test";
 
@@ -143,9 +136,9 @@ jobs:
             const frameDeclaration = source.indexOf("const frameMutatorEffects =");
             const followerUse = source.search(/getEclipseSolarCooldownRecoveryMultiplier\(\s*frameMutatorEffects,\s*member\.affinity,/);
             const simulationDeclaration = source.indexOf("const simulationMutatorEffects =");
-            assert.ok(frameDeclaration >= 0, "frame mutator projection must exist");
-            assert.ok(followerUse > frameDeclaration, "follower cooldown must use initialized frame projection");
-            assert.ok(simulationDeclaration > followerUse, "later simulation projection remains post-follower");
+            assert.ok(frameDeclaration >= 0);
+            assert.ok(followerUse > frameDeclaration);
+            assert.ok(simulationDeclaration > followerUse);
             assert.doesNotMatch(source, /getEclipseSolarCooldownRecoveryMultiplier\(\s*simulationMutatorEffects,\s*member\.affinity,/);
           });
 
@@ -154,7 +147,7 @@ jobs:
             assert.match(source, /setAudioMuted\(loaded\.audioMuted\);[\s\S]*?if \(loaded\.audioMuted\) \{\s*setMuteState\(true\);\s*\}/);
           });
 
-          test("I5 suspended loop materializes at most one frame without advancing simulation", () => {
+          test("I5 suspended loop materializes one frozen frame without advancing simulation", () => {
             assert.match(source, /const suspendedFrameRenderedRef = useRef\(false\);/);
             const pausedStart = source.indexOf("if (isPausedRef.current || isUpgradeSelectionOpenRef.current)");
             const activeStart = source.indexOf("suspendedFrameRenderedRef.current = false;", pausedStart);
@@ -171,28 +164,20 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-
       - name: Repository smoke
         run: npm run test:repo
-
       - name: Gameplay regression
         run: npm run test:gameplay
-
       - name: Platform regression
         run: npm run test:platform
-
       - name: Typecheck
         run: npm run typecheck
-
       - name: Release contract
         run: npm run release:verify
-
       - name: Manual certification dossier
         run: npm run release:evidence:verify
-
       - name: Production build
         run: npm run build
-
       - name: RC readiness remains blocked
         run: npm run release:readiness
 
@@ -202,18 +187,14 @@ jobs:
           distribution: temurin
           java-version: '21'
           cache: gradle
-
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
           packages: platform-tools
-
       - name: Install Android 16 SDK
         run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0' >/dev/null
-
       - name: Android debug regression
         run: npm run android:debug
-
       - name: Verify Android APK
         run: test -s android/app/build/outputs/apk/debug/app-debug.apk
 
