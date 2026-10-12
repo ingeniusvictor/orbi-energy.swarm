@@ -1,252 +1,202 @@
-ok 178 - manual release blockers remain explicit and machine-readable
-  ---
-  duration_ms: 0.1563
+=== EXTRACTED FAILING SUBTESTS FROM FULL REPOSITORY SMOKE ===
   type: 'test'
   ...
-# Subtest: I3 completes release engineering without pretending manual certification is done
-ok 179 - I3 completes release engineering without pretending manual certification is done
+# Subtest: chain expiry is simulation-time based and flushed only on the existing HUD cadence
+not ok 18 - chain expiry is simulation-time based and flushed only on the existing HUD cadence
   ---
-  duration_ms: 0.639171
+  duration_ms: 1.608035
+  type: 'test'
+  location: '/home/runner/work/orbi-energy.swarm/orbi-energy.swarm/tests/es-13j1b-live-resonance-adoption.test.mjs:70:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    3 !== 2
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 2
+  actual: 3
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/runner/work/orbi-energy.swarm/orbi-energy.swarm/tests/es-13j1b-live-resonance-adoption.test.mjs:79:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: new runs reset resonance and the live ref owns high-frequency state
+ok 19 - new runs reset resonance and the live ref owns high-frequency state
+  ---
+  duration_ms: 0.479696
   type: 'test'
   ...
-# Subtest: changelog contains current beta and preserves recovery baseline history
-ok 180 - changelog contains current beta and preserves recovery baseline history
+# Subtest: GameHud receives a compact low-frequency resonance projection
+ok 20 - GameHud receives a compact low-frequency resonance projection
   ---
-  duration_ms: 0.219684
+  duration_ms: 0.504172
   type: 'test'
   ...
-# Subtest: README no longer presents the current product as the 0.1.0 baseline
-ok 181 - README no longer presents the current product as the 0.1.0 baseline
+# Subtest: J1B does not activate Overdrive yet
+not ok 21 - J1B does not activate Overdrive yet
   ---
-  duration_ms: 0.140667
+  duration_ms: 4.116009
+  type: 'test'
+  location: '/home/runner/work/orbi-energy.swarm/orbi-energy.swarm/tests/es-13j1b-live-resonance-adoption.test.mjs:110:1'
+  failureType: 'testCodeFailure'
+  error: |-
+
   type: 'test'
   ...
-# Subtest: release verifier enforces parity, blocker safety and explicit promotion
-ok 182 - release verifier enforces parity, blocker safety and explicit promotion
+# Subtest: J1B does not activate Overdrive yet
+not ok 21 - J1B does not activate Overdrive yet
   ---
-  duration_ms: 0.173736
+  duration_ms: 4.116009
+  type: 'test'
+  location: '/home/runner/work/orbi-energy.swarm/orbi-energy.swarm/tests/es-13j1b-live-resonance-adoption.test.mjs:110:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input was expected to not match the regular expression /activateOverdrive|startOverdrive|overdriveTimerRef/i. Input:
+    
+    'import React, { useEffect, useRef, useState, useCallback } from "react";\n' +
+      '\n' +
+      'import { \n' +
+      '  BiomeType, OrbiType, EnemyType, FormationType, ParticleType, \n' +
+      '  OrbiMember, Enemy, Projectile, Resource, Particle, GameStats, \n' +
+      '  DialogueMessage, QualityPreset, WaveConfig, type RunArchiveEntry,\n' +
+      '  type OrbiAffinity, type OrbiCombatRole, type OrbiEnergyId, type BossEncounterStage\n' +
+      '} from "./types";\n' +
+      '\n' +
+      'import { \n' +
+      '  CANVAS_WIDTH, CANVAS_HEIGHT, WORLD_WIDTH, WORLD_HEIGHT, MAX_ENEMIES, \n' +
+      '  MAX_PROJECTILES, MAX_RESOURCES, PLAYER_BASE_SPEED, \n' +
+      '  PLAYER_HIT_COOLDOWN, SHIELD_MAX, WORLD_BOUNDS, UPGRADE_REWARD_WAVES\n' +
+      '} from "./constants";\n' +
+      '\n' +
+      'import { \n' +
+      '  loadGameStats, saveGameStats, resetGameStats, DEFAULT_STATS \n' +
+      '} from "./storage";\n' +
+      '\n' +
+      'import { FORMATIONS, calculateSwarmOffset } from "./formations";\n' +
+      'import { getBiomeConfig, BIOME_ROTATION } from "./biomes";\n' +
+      'import { getQualityConfig } from "./quality";\n' +
+      'import { compactArrayInPlace } from "./arrayCompaction";\n' +
+      'import {\n' +
+      '  countActiveEvolvedEnemies,\n' +
+      '  countLivingEnemies,\n' +
+      '  countLivingStandardEnemies,\n' +
+      '  countMinionsOfType,\n' +
+      '} from "./enemyCounts";\n' +
+      'import {\n' +
+      '  ENEMY_SPATIAL_CELL_SIZE,\n' +
+      '  buildSpatialIndex,\n' +
+      '  findAllCollidingSpatialItems,\n' +
+      '  findFirstCollidingSpatialItem,\n' +
+      '  findNearestSpatialItem,\n' +
+      '  insertSpatialIndexEntry,\n' +
+
   type: 'test'
   ...
-# Subtest: readiness evaluator is machine-readable and fail-closed
-ok 183 - readiness evaluator is machine-readable and fail-closed
+# Subtest: J2A is not adopted into the live game yet
+not ok 25 - J2A is not adopted into the live game yet
   ---
-  duration_ms: 1.185631
+  duration_ms: 2.963365
+  type: 'test'
+  location: '/home/runner/work/orbi-energy.swarm/orbi-energy.swarm/tests/es-13j2a-overdrive-contract.test.mjs:43:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input was expected to not match the regular expression /combatOverdrive/. Input:
+    
+    'import React, { useEffect, useRef, useState, useCallback } from "react";\n' +
+      '\n' +
+      'import { \n' +
+      '  BiomeType, OrbiType, EnemyType, FormationType, ParticleType, \n' +
+      '  OrbiMember, Enemy, Projectile, Resource, Particle, GameStats, \n' +
+      '  DialogueMessage, QualityPreset, WaveConfig, type RunArchiveEntry,\n' +
+      '  type OrbiAffinity, type OrbiCombatRole, type OrbiEnergyId, type BossEncounterStage\n' +
+      '} from "./types";\n' +
+      '\n' +
+      'import { \n' +
+      '  CANVAS_WIDTH, CANVAS_HEIGHT, WORLD_WIDTH, WORLD_HEIGHT, MAX_ENEMIES, \n' +
+      '  MAX_PROJECTILES, MAX_RESOURCES, PLAYER_BASE_SPEED, \n' +
+      '  PLAYER_HIT_COOLDOWN, SHIELD_MAX, WORLD_BOUNDS, UPGRADE_REWARD_WAVES\n' +
+      '} from "./constants";\n' +
+      '\n' +
+      'import { \n' +
+      '  loadGameStats, saveGameStats, resetGameStats, DEFAULT_STATS \n' +
+      '} from "./storage";\n' +
+      '\n' +
+      'import { FORMATIONS, calculateSwarmOffset } from "./formations";\n' +
+      'import { getBiomeConfig, BIOME_ROTATION } from "./biomes";\n' +
+      'import { getQualityConfig } from "./quality";\n' +
+      'import { compactArrayInPlace } from "./arrayCompaction";\n' +
+      'import {\n' +
+      '  countActiveEvolvedEnemies,\n' +
+      '  countLivingEnemies,\n' +
+      '  countLivingStandardEnemies,\n' +
+      '  countMinionsOfType,\n' +
+      '} from "./enemyCounts";\n' +
+      'import {\n' +
+      '  ENEMY_SPATIAL_CELL_SIZE,\n' +
+      '  buildSpatialIndex,\n' +
+      '  findAllCollidingSpatialItems,\n' +
+      '  findFirstCollidingSpatialItem,\n' +
+      '  findNearestSpatialItem,\n' +
+      '  insertSpatialIndexEntry,\n' +
+
+=== ISOLATED J2B ADOPTION TEST ===
+TAP version 13
+# Subtest: J2B adopts the certified J2A state helpers without duplicating timing
+ok 1 - J2B adopts the certified J2A state helpers without duplicating timing
+  ---
+  duration_ms: 1.277206
   type: 'test'
   ...
-# Subtest: package exposes release gates and CI emits readiness evidence after build
-ok 184 - package exposes release gates and CI emits readiness evidence after build
+# Subtest: J2B activation is explicit, guarded, simulation-time based and consumes resonance once
+ok 2 - J2B activation is explicit, guarded, simulation-time based and consumes resonance once
   ---
-  duration_ms: 0.400779
+  duration_ms: 0.416829
   type: 'test'
   ...
-# Subtest: beta metadata does not claim stable or RC release readiness
-ok 185 - beta metadata does not claim stable or RC release readiness
+# Subtest: J2B exposes only explicit O/HUD activation and low-frequency simulation-time projection
+ok 3 - J2B exposes only explicit O/HUD activation and low-frequency simulation-time projection
   ---
-  duration_ms: 0.347745
+  duration_ms: 1.065951
   type: 'test'
   ...
-# Subtest: repository exposes the certified build gates
-ok 186 - repository exposes the certified build gates
+# Subtest: J2B resets Overdrive with a fresh run
+ok 4 - J2B resets Overdrive with a fresh run
   ---
-  duration_ms: 1.402872
+  duration_ms: 0.184916
   type: 'test'
   ...
-# Subtest: prototype viewport and world invariants remain intact
-ok 187 - prototype viewport and world invariants remain intact
+# Subtest: J2B HUD exposes READY, ACTIVE and RECHARGING with a disabled guarded action
+ok 5 - J2B HUD exposes READY, ACTIVE and RECHARGING with a disabled guarded action
   ---
-  duration_ms: 0.795149
+  duration_ms: 0.354012
   type: 'test'
   ...
-# Subtest: handcrafted campaign still contains ten sectors and the Devourer climax
-ok 188 - handcrafted campaign still contains ten sectors and the Devourer climax
-  ---
-  duration_ms: 0.4008
-  type: 'test'
-  ...
-# Subtest: all six original swarm formations remain represented
-ok 189 - all six original swarm formations remain represented
-  ---
-  duration_ms: 0.413695
-  type: 'test'
-  ...
-# Subtest: product evolution contracts are present
-ok 190 - product evolution contracts are present
-  ---
-  duration_ms: 0.64626
-  type: 'test'
-  ...
-# Subtest: workspace gives the battlefield first-class responsive placement
-ok 191 - workspace gives the battlefield first-class responsive placement
-  ---
-  duration_ms: 4.163749
-  type: 'test'
-  ...
-# Subtest: responsive CSS defines mobile, tablet and desktop workspace compositions
-ok 192 - responsive CSS defines mobile, tablet and desktop workspace compositions
-  ---
-  duration_ms: 3.46796
-  type: 'test'
-  ...
-# Subtest: HUD is allowed to reflow instead of remaining a fixed 42px row
-ok 193 - HUD is allowed to reflow instead of remaining a fixed 42px row
-  ---
-  duration_ms: 0.678717
-  type: 'test'
-  ...
-# Subtest: game stage no longer subtracts fixed pixels from 100vh
-ok 194 - game stage no longer subtracts fixed pixels from 100vh
-  ---
-  duration_ms: 0.504873
-  type: 'test'
-  ...
-# Subtest: boss HUD is extracted from the game monolith
-ok 195 - boss HUD is extracted from the game monolith
-  ---
-  duration_ms: 2.601085
-  type: 'test'
-  ...
-# Subtest: boss label accessibility modes remain supported
-ok 196 - boss label accessibility modes remain supported
-  ---
-  duration_ms: 0.2652
-  type: 'test'
-  ...
-# Subtest: small screens compact non-critical boss telemetry first
-ok 197 - small screens compact non-critical boss telemetry first
-  ---
-  duration_ms: 1.323386
-  type: 'test'
-  ...
-# Subtest: side decks are bounded on phone and tablet viewports
-ok 198 - side decks are bounded on phone and tablet viewports
-  ---
-  duration_ms: 2.060375
-  type: 'test'
-  ...
-# Subtest: TERMO splash keeps the certified 45-percent ratio while gaining profile-driven radius
-ok 199 - TERMO splash keeps the certified 45-percent ratio while gaining profile-driven radius
-  ---
-  duration_ms: 1.173654
-  type: 'test'
-  ...
-# Subtest: profile-driven splash uses one certified all-collision traversal
-ok 200 - profile-driven splash uses one certified all-collision traversal
-  ---
-  duration_ms: 0.317117
-  type: 'test'
-  ...
-# Subtest: splash excludes the primary hit and already-dead targets
-ok 201 - splash excludes the primary hit and already-dead targets
-  ---
-  duration_ms: 0.216095
-  type: 'test'
-  ...
-# Subtest: splash still avoids query-filter-sort intermediate arrays
-ok 202 - splash still avoids query-filter-sort intermediate arrays
-  ---
-  duration_ms: 1.615351
-  type: 'test'
-  ...
-# Subtest: splash still iterates deterministic spatial entries for damage
-ok 203 - splash still iterates deterministic spatial entries for damage
-  ---
-  duration_ms: 0.349025
-  type: 'test'
-  ...
-# Subtest: obsolete raw spatial query import remains removed from game runtime
-ok 204 - obsolete raw spatial query import remains removed from game runtime
-  ---
-  duration_ms: 0.379169
-  type: 'test'
-  ...
-# Subtest: viewport certification covers required representative classes
-ok 205 - viewport certification covers required representative classes
-  ---
-  duration_ms: 1.808109
-  type: 'test'
-  ...
-# Subtest: laptop class receives deliberate compact desktop treatment
-ok 206 - laptop class receives deliberate compact desktop treatment
-  ---
-  duration_ms: 2.144634
-  type: 'test'
-  ...
-# Subtest: standard large desktop class is explicit
-ok 207 - standard large desktop class is explicit
-  ---
-  duration_ms: 0.599567
-  type: 'test'
-  ...
-# Subtest: ultrawide class expands shell without unbounded battlefield growth
-ok 208 - ultrawide class expands shell without unbounded battlefield growth
-  ---
-  duration_ms: 0.678124
-  type: 'test'
-  ...
-# Subtest: short laptops prioritize battlefield height over auxiliary deck expansion
-ok 209 - short laptops prioritize battlefield height over auxiliary deck expansion
-  ---
-  duration_ms: 0.705019
-  type: 'test'
-  ...
-# Subtest: Vite keeps root hosting as the default
-ok 210 - Vite keeps root hosting as the default
-  ---
-  duration_ms: 1.152914
-  type: 'test'
-  ...
-# Subtest: Pages build uses the repository subpath without changing runtime code
-ok 211 - Pages build uses the repository subpath without changing runtime code
-  ---
-  duration_ms: 0.24781
-  type: 'test'
-  ...
-# Subtest: beta deployment only follows successful canonical CI or explicit manual dispatch
-ok 212 - beta deployment only follows successful canonical CI or explicit manual dispatch
-  ---
-  duration_ms: 1.086064
-  type: 'test'
-  ...
-# Subtest: deployment checks out the exact CI-tested revision
-ok 213 - deployment checks out the exact CI-tested revision
-  ---
-  duration_ms: 0.227826
-  type: 'test'
-  ...
-# Subtest: Pages artifact is gated by release verification before build
-ok 214 - Pages artifact is gated by release verification before build
-  ---
-  duration_ms: 0.285829
-  type: 'test'
-  ...
-# Subtest: Pages workflow uses least-purpose deployment permissions
-ok 215 - Pages workflow uses least-purpose deployment permissions
-  ---
-  duration_ms: 0.315713
-  type: 'test'
-  ...
-# Subtest: published artifact is dist only
-ok 216 - published artifact is dist only
-  ---
-  duration_ms: 0.182101
-  type: 'test'
-  ...
-# Subtest: documentation exposes the expected public beta URL and BETA boundary
-ok 217 - documentation exposes the expected public beta URL and BETA boundary
-  ---
-  duration_ms: 0.137528
-  type: 'test'
-  ...
-# Subtest: web document carries ORBI beta branding
-ok 218 - web document carries ORBI beta branding
-  ---
-  duration_ms: 0.761198
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 64.604091
+
+
+=== FULL REPOSITORY SMOKE SUMMARY ===
+  duration_ms: 0.907986
   type: 'test'
   ...
 # Subtest: web document exposes product description and dark theme hint
 ok 219 - web document exposes product description and dark theme hint
   ---
-  duration_ms: 0.135524
+  duration_ms: 0.164077
   type: 'test'
   ...
 1..219
@@ -257,4 +207,4 @@ ok 219 - web document exposes product description and dark theme hint
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 893.272831
+# duration_ms 975.042499
