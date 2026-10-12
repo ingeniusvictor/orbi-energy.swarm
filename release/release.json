@@ -16,7 +16,8 @@
     "androidPerformanceSoftwareMatrix": true,
     "pwaDistributionContracts": true,
     "androidPackagingContracts": true,
-    "rcReadinessGate": true
+    "rcReadinessGate": true,
+    "manualEvidenceStructure": true
   },
   "webDistribution": {
     "deploymentTarget": "github-pages",
@@ -62,5 +63,12 @@
     "promotionIsExplicit": true,
     "evidenceArtifactPattern": "orbi-energy-swarm-rc-readiness-{sha}",
     "rule": "Manual blockers must be zero before explicit RC promotion."
+  },
+  "manualCertification": {
+    "schemaVersion": 1,
+    "dossier": "release/manual-certification.json",
+    "verificationCommand": "npm run release:evidence:verify",
+    "expectedDecision": "DOSSIER_PENDING",
+    "promotionRequiresDossierPass": true
   }
 }
