@@ -1,0 +1,182 @@
+name: ES-13J1B Live Resonance Certification
+
+on:
+  push:
+    branches:
+      - feat/es-13j1b-live-combat-resonance
+
+permissions:
+  contents: write
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Materialize J1B live adoption
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const path = 'src/game/EnergySwarmGame.tsx';
+          let source = fs.readFileSync(path, 'utf8');
+
+          const replaceOnce = (label, before, after) => {
+            const first = source.indexOf(before);
+            if (first < 0) throw new Error(`J1B ${label}: anchor not found`);
+            if (source.indexOf(before, first + before.length) >= 0) {
+              throw new Error(`J1B ${label}: anchor is not unique`);
+            }
+            source = source.slice(0, first) + after + source.slice(first + before.length);
+          };
+
+          if (!source.includes('from "./combatResonance"')) {
+            replaceOnce(
+              'combat resonance import',
+              'import {\n  PERFORMANCE_EVIDENCE_TARGET_SAMPLES,',
+              'import {\n  applyCombatResonanceDamageBreak,\n  createCombatResonanceState,\n  expireCombatChain,\n  projectCombatResonance,\n  registerCombatResonanceDefeat,\n} from "./combatResonance";\nimport {\n  PERFORMANCE_EVIDENCE_TARGET_SAMPLES,',
+            );
+          }
+
+          if (!source.includes('const [combatResonanceView, setCombatResonanceView]')) {
+            replaceOnce(
+              'React view state',
+              '  const [audioMuted, setAudioMuted] = useState(false);',
+              `  const [audioMuted, setAudioMuted] = useState(false);\n  const [combatResonanceView, setCombatResonanceView] = useState(() => {\n    const initialState = createCombatResonanceState();\n    return {\n      chain: initialState.chain,\n      resonance: initialState.resonance,\n      ...projectCombatResonance(initialState),\n    };\n  });`,
+            );
+          }
+
+          if (!source.includes('const combatResonanceRef = useRef(createCombatResonanceState())')) {
+            replaceOnce(
+              'high frequency ref',
+              '  const fusionEnergyRef = useRef(0);',
+              '  const fusionEnergyRef = useRef(0);\n  const combatResonanceRef = useRef(createCombatResonanceState());',
+            );
+          }
+
+          if (!source.includes('const registerCombatDefeat =')) {
+            replaceOnce(
+              'defeat helper',
+              `    return Math.round(\n      baseReward *\n        (enemy.milestoneRewardMultiplier ?? 1) *\n        (enemy.evolvedRewardMultiplier ?? 1),\n    );\n  };\n\n  // --- DETECT SINGLE-IMPACT COLLISION SWEEPS ---`,
+              `    return Math.round(\n      baseReward *\n        (enemy.milestoneRewardMultiplier ?? 1) *\n        (enemy.evolvedRewardMultiplier ?? 1),\n    );\n  };\n\n  const isCombatResonanceElite = (enemy: Enemy) =>\n    enemy.type === EnemyType.BLACKOUT_ELITE ||\n    Boolean(enemy.evolvedVariantId) ||\n    enemy.milestoneKind === "MINIBOSS";\n\n  const registerCombatDefeat = (enemy: Enemy, affinity?: OrbiAffinity) => {\n    const resolution = registerCombatResonanceDefeat(\n      combatResonanceRef.current,\n      {\n        occurredAtMs: timeElapsedRef.current,\n        baseScore: getEnemyScoreReward(enemy),\n        affinity,\n        isElite: isCombatResonanceElite(enemy),\n        isBoss: enemy.isBoss,\n      },\n    );\n    combatResonanceRef.current = resolution.state;\n    scoreRef.current += resolution.awardedScore;\n  };\n\n  // --- DETECT SINGLE-IMPACT COLLISION SWEEPS ---`,
+            );
+          }
+
+          if (!source.includes('registerCombatDefeat(otherEnemy, proj.affinity);')) {
+            const pattern = /\s*const scoreReward =\s*\n\s*getEnemyScoreReward\(otherEnemy\);\s*\n\s*scoreRef\.current \+= scoreReward;/;
+            const matches = source.match(new RegExp(pattern.source, 'g')) ?? [];
+            if (matches.length !== 1) throw new Error(`J1B splash defeat: expected 1 legacy score seam, found ${matches.length}`);
+            source = source.replace(pattern, '\n                    registerCombatDefeat(otherEnemy, proj.affinity);');
+          }
+
+          if (!source.includes('registerCombatDefeat(enemy, proj.affinity);')) {
+            const pattern = /\s*const scoreReward =\s*\n\s*getEnemyScoreReward\(enemy\);\s*\n\s*scoreRef\.current \+= scoreReward;/;
+            const matches = source.match(new RegExp(pattern.source, 'g')) ?? [];
+            if (matches.length !== 1) throw new Error(`J1B direct defeat: expected 1 legacy score seam, found ${matches.length}`);
+            source = source.replace(pattern, '\n              registerCombatDefeat(enemy, proj.affinity);');
+          }
+
+          if (!source.includes('combatResonanceRef.current = applyCombatResonanceDamageBreak(')) {
+            replaceOnce(
+              'damage break',
+              `    const finalDamage =\n      dmg * multiplier * gaiaDefenseMultiplier;\n\n    shieldRef.current = Math.max(0, shieldRef.current - finalDamage);`,
+              `    const finalDamage =\n      dmg * multiplier * gaiaDefenseMultiplier;\n\n    combatResonanceRef.current = applyCombatResonanceDamageBreak(\n      combatResonanceRef.current,\n    );\n    shieldRef.current = Math.max(0, shieldRef.current - finalDamage);`,
+            );
+          }
+
+          if (!source.includes('const resetResonanceState = createCombatResonanceState();')) {
+            replaceOnce(
+              'new run reset',
+              `    scoreRef.current = 0;\n    fusionEnergyRef.current = 0;`,
+              `    scoreRef.current = 0;\n    fusionEnergyRef.current = 0;\n    const resetResonanceState = createCombatResonanceState();\n    combatResonanceRef.current = resetResonanceState;\n    setCombatResonanceView({\n      chain: resetResonanceState.chain,\n      resonance: resetResonanceState.resonance,\n      ...projectCombatResonance(resetResonanceState),\n    });`,
+            );
+          }
+
+          if (!source.includes('const liveResonanceProjection = projectCombatResonance(')) {
+            replaceOnce(
+              'HUD cadence expiry',
+              `    if (hudCadence.shouldFlush) {\n      setScore(scoreRef.current);`,
+              `    if (hudCadence.shouldFlush) {\n      combatResonanceRef.current = expireCombatChain(\n        combatResonanceRef.current,\n        timeElapsedRef.current,\n      );\n      const liveResonanceProjection = projectCombatResonance(\n        combatResonanceRef.current,\n      );\n      setCombatResonanceView({\n        chain: combatResonanceRef.current.chain,\n        resonance: combatResonanceRef.current.resonance,\n        ...liveResonanceProjection,\n      });\n      setScore(scoreRef.current);`,
+            );
+          }
+
+          if (!source.includes('combatChain={combatResonanceView.chain}')) {
+            replaceOnce(
+              'GameHud projection props',
+              `                nanoCredits={nanoCredits}\n                onTogglePause={togglePause}`,
+              `                nanoCredits={nanoCredits}\n                combatChain={combatResonanceView.chain}\n                combatResonance={combatResonanceView.resonance}\n                combatResonanceTier={combatResonanceView.tier}\n                combatScoreMultiplier={combatResonanceView.scoreMultiplier}\n                onTogglePause={togglePause}`,
+            );
+          }
+
+          fs.writeFileSync(path, source);
+          NODE
+
+      - name: Repository smoke
+        run: npm run test:repo
+
+      - name: Gameplay regression
+        run: npm run test:gameplay
+
+      - name: Platform regression
+        run: npm run test:platform
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Release contract
+        run: npm run release:verify
+
+      - name: Manual certification dossier
+        run: npm run release:evidence:verify
+
+      - name: Production build
+        run: npm run build
+
+      - name: RC readiness remains fail-closed
+        env:
+          ORBI_RELEASE_SHA: ${{ github.sha }}
+        run: npm run release:readiness -- --output release-readiness.json
+
+      - name: J1B scope guard
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --name-only feb263957b52839d35a7cb1249762c223ba22595...HEAD > /tmp/j1b-committed.txt
+          git diff --name-only >> /tmp/j1b-committed.txt
+          sort -u /tmp/j1b-committed.txt > /tmp/j1b-files.txt
+          cat /tmp/j1b-files.txt
+          while IFS= read -r file; do
+            [ -z "$file" ] && continue
+            case "$file" in
+              src/game/EnergySwarmGame.tsx|src/components/GameHud.tsx|tests/es-13j1b-live-resonance-adoption.test.mjs|.github/workflows/es-13j1b-certify.yml) ;;
+              *) echo "Unexpected J1B scope: $file" >&2; exit 1 ;;
+            esac
+          done < /tmp/j1b-files.txt
+
+      - name: Commit certified materialization
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- src/game/EnergySwarmGame.tsx; then
+            echo "No materialization changes to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/game/EnergySwarmGame.tsx
+          git commit -m "ES-13J1B materialize live combat resonance adoption"
+          git push origin HEAD:feat/es-13j1b-live-combat-resonance
