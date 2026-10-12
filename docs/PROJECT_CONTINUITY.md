@@ -18,53 +18,60 @@ Never infer deployment/certification from conversation text alone.
 
 ## Current certified gameplay canonical
 
-`0fd337e3a0efe96fd52d5f5686e3f110e1b361d8`
+`5c345672b5365dbcc983403f73da62555489a98f`
 
-Phase: **ES-13J3C-A — Pure Advanced Enemy Formation Vocabulary**  
+Phase: **ES-13J3C-B — Controlled Live Advanced Formation Adoption**  
 Status: **DEPLOYED / FROZEN**  
-Issue: #302 — CLOSED  
-PR: #303 — squash merged
+Issue: #306 — CLOSED  
+PR: #307 — squash merged
 
-Single parent: `31de2cd5bb89ae3032902c09ace881119c04dfec` — ES-13DOC11 documentation canonical.
+Single parent: `f85e2432934454da191dea9bd0c9da43bbce86ca` — ES-13DOC12 documentation canonical.
 
 Version remains `0.2.0-beta.1`. Full RC/manual certification remains intentionally deferred while ES-13 materially expands gameplay.
 
-## J3C-A implementation summary
-J3C-A expanded the existing pure enemy route projection authority without changing live runtime adoption.
+## J3C-B implementation summary
+J3C-B selectively adopted the certified J3C-A advanced routes through the existing J3B live director without changing the game runtime seam.
 
 Final files:
-- `src/game/enemyFormationRoutes.ts`;
-- `tests/gameplay/enemy-formation-routes.test.ts`;
+- `src/game/liveEnemyFormationDirector.ts`;
+- `tests/gameplay/live-enemy-formation-director.test.ts`;
+- `tests/es-13j3c-b-controlled-live-adoption.test.mjs`;
 - `tests/es-13j3c-a-advanced-route-vocabulary.test.mjs`.
 
-Certified pure vocabulary now contains six routes:
-- `PINCER`, `X_CROSS`, `SERPENTINE` — J3A preserved;
-- `WEDGE` — center denial / choose a flank or commit through the point;
-- `ORBIT` — rotating exclusion ring / inside-vs-outside timing;
-- `SPIRAL` — rotating compression corridor / time the tightening gap.
+Certified live plans:
+- PINCER → 2 members;
+- X_CROSS → 2 members;
+- SERPENTINE → 2 live members;
+- WEDGE → 3 members;
+- ORBIT → 3 members;
+- SPIRAL → 2 members.
 
-Pure-contract guarantees:
-- caller owns route/member slot/count/progress/mirror;
-- max route members remains 8;
-- normalized extent remains ±1.25;
-- exact ENTRY/PRESSURE/EXIT/COMPLETE phase boundaries remain caller-progress driven;
-- all valid slots/progress/mirrors remain finite, bounded and deterministic;
-- WEDGE/ORBIT require at least 3 slots; SPIRAL requires at least 2;
-- route-specific roles, telegraph kinds, severity, laneCount and safeIntent are explicit;
-- no imports, renderer, React, audio, storage, network, RNG, wall clock, RAF, timers, entity/projectile ownership or Campaign/Infinite selection;
-- J3B live `ROUTE_CYCLE` intentionally remained PINCER/X_CROSS/SERPENTINE only;
-- no `EnergySwarmGame.tsx`, live director, player/FOTON formations, caps, budgets, score/economy/damage/projectiles, J1/J2, GAIA or FOTON GLB changes.
+Certified live guarantees:
+- legacy pair routes remain pairs; only WEDGE/ORBIT use the bounded advanced size 3;
+- route planning is deterministic and route-aware rather than globally increasing density;
+- every formation member consumes an existing ordinary CRAWLER/SPLITTER spawn opportunity;
+- no extra/burst spawn event is created;
+- a route starts only when current remaining capacity can satisfy its planned member count;
+- pending assembly refuses capacity overcommit and expires safely without replacement spawns;
+- one active or assembling group remains authoritative at a time;
+- advanced-route adoption is independently configurable across Campaign and Infinite;
+- existing `enemiesRef.current` plus per-enemy assignment metadata remain authoritative;
+- `EnergySwarmGame.tsx`, `types.ts`, player/FOTON formations and global constants were untouched;
+- route movement continues through the existing J3B movement seam and simulation time;
+- pause/photo behavior, Hydro cancellation, fresh-run/wave/boss reset and legacy fallback remain intact;
+- milestones/evolved/random elites/minibosses/bosses remain excluded from this slice;
+- no new full-array scan, entity/projectile ownership, cap/budget increase, score/economy/damage/projectile/J1/J2/GAIA/FOTON GLB change.
 
-## J3C-A exact evidence
-- pre-PR certified head `51a6bb26fd0aabb9400de921ef0351d4deb8afe8`;
-- pre-PR certification run `38315199129`, job `115030050802` — GREEN across repository/gameplay/platform/typecheck/release/dossier/build/readiness/Android/APK/J3C-A purity guard;
-- final clean PR head `71eaccdd4682e53ee13006b7fe1b70f5033e3bc6`;
-- PR CI `38315423545` — GREEN on exact final PR head;
-- PR Android `38315423642` — GREEN on exact final PR head;
-- squash canonical `0fd337e3a0efe96fd52d5f5686e3f110e1b361d8`;
-- main CI `38315550962` — GREEN on exact canonical;
-- main Android `38315550956` — GREEN on exact canonical;
-- Pages `38315617546` — build + deploy GREEN on exact canonical.
+## J3C-B exact evidence
+- pre-PR certified head `2e1c69580443273911358383800f6e324f0ba77f`;
+- pre-PR certification run `38317062905`, job `115036102323` — GREEN across repository/gameplay/platform/typecheck/release/dossier/build/readiness/Android/APK/J3C-B scope/adoption guard;
+- final clean PR head `eba0d94663c217ee56986f0d7ca86c4d873f08f3`;
+- PR CI `38317340298` — GREEN on exact final PR head;
+- PR Android `38317340308` — GREEN on exact final PR head;
+- squash canonical `5c345672b5365dbcc983403f73da62555489a98f`;
+- main CI `38317440415` — GREEN on exact canonical;
+- main Android `38317440420` — GREEN on exact canonical;
+- Pages `38317520671` — build + deploy GREEN on exact canonical.
 
 Temporary certification workflow was branch-only and removed before the final PR diff.
 
@@ -129,39 +136,39 @@ Temporary J3B patch/reset/certification workflows were branch-only and removed b
 - J2E — Overdrive Integration Certification: `bf0e6a858e3c96091c002ea623b29eb5c260c6ea`;
 - J3A — Pure Enemy Formation Route Contract: `3c5ece8d8e59bc38de468b4d0d9644953fa6a8be`;
 - J3B — Live Enemy Formation Director Adoption: `0fcf08dc59558619da61e1120eef2e957465f9a1`;
-- J3C-A — Pure Advanced Enemy Formation Vocabulary: `0fd337e3a0efe96fd52d5f5686e3f110e1b361d8`.
+- J3C-A — Pure Advanced Enemy Formation Vocabulary: `0fd337e3a0efe96fd52d5f5686e3f110e1b361d8`;
+- J3C-B — Controlled Live Advanced Formation Adoption: `5c345672b5365dbcc983403f73da62555489a98f`.
 
 ## Resolved diagnostics
 - #254 CLOSED / NOT PLANNED: historical platform failure was not an I5 pause regression; no product merge.
 - #283 CLOSED / NOT PLANNED: stale-chat false start; no branch/product work.
 
 ## Current administrative work
-Issue #304 — `ES-13DOC12 — J3C-A Closure Ledger & J3C-B Activation`  
-Branch: `docs/es-13-j3c-a-closure-j3c-b-activation`  
-Baseline gameplay canonical: `0fd337e3a0efe96fd52d5f5686e3f110e1b361d8`  
+Issue #308 — `ES-13DOC13 — J3C-B Closure & J3D Certification Activation`  
+Branch: `docs/es-13-j3c-b-closure-j3d-activation`  
+Baseline gameplay canonical: `5c345672b5365dbcc983403f73da62555489a98f`  
 Scope: documentation only.
 
 ## Next gameplay phase
 
-### ES-13J3C-B — Controlled Live Adoption
-Status: **NEXT ENGINEERING TARGET AFTER DOC12 CLOSURE**
+### ES-13J3D — Telegraph / Fairness / Integration Certification
+Status: **NEXT ENGINEERING TARGET AFTER DOC13 CLOSURE**
 
-Purpose: selectively expose the certified WEDGE/ORBIT/SPIRAL vocabulary through the existing J3B live director without creating new entity ownership, spawn events, scans or movement authority.
+Purpose: certify the complete six-route J3 formation system before adding more enemy-formation state or moving to J4.
 
-Critical adoption constraints:
-- current J3B group size 2 cannot satisfy WEDGE/ORBIT minimum 3;
-- group size must be route-aware and bounded rather than globally increased;
-- every member consumes an existing regular spawn opportunity and current remaining capacity;
-- no route may reserve or spawn more members than available capacity/budget;
-- incomplete assembly fails safely back to legacy behavior without stale ownership;
-- one live formation group remains active/assembling at a time;
-- route selection/group sizing are deterministic after assignment and use simulation time only;
-- Campaign and Infinite eligibility remain explicit and independently configurable;
-- milestones/evolved/random elites/minibosses/bosses remain excluded unless separately scoped;
-- no additional full-array scan or parallel movement engine;
-- player/FOTON formation authority stays separate and untouched.
+Certification priorities:
+- prove route-specific telegraph metadata exists before severe crossing/compression pressure;
+- certify lead-in and recovery timing for both 2- and 3-member live plans;
+- prove WEDGE/ORBIT assembly cannot overcommit current capacity or create hidden density;
+- certify incomplete assembly, Hydro cancellation, fresh-run/wave/boss reset and pause/photo safety;
+- certify deterministic replay boundaries and explicit Campaign/Infinite policy;
+- prove no cap/budget/entity/projectile/score/economy/J1/J2 regression;
+- prove player/FOTON formation authority remains separate;
+- repeat desktop + Android automated certification and exact-SHA deployment evidence.
 
-J3C-C remains a later optional slice for stateful convoy/fake-retreat/portal/encirclement patterns. J3D remains Telegraph/Fairness/Integration Certification.
+J3C-C is **DEFERRED / NOT CURRENTLY JUSTIFIED**, not cancelled. Stateful convoy/leader-follower, fake-retreat, portal-ambush, encirclement or staggered-artillery patterns may return only through a dedicated issue that demonstrates a distinct tactical need and bounded extra state.
+
+J3D is certification-first: prefer tests/contracts and make runtime corrections only when evidence demonstrates a fairness or integration defect. Existing manual/physical blockers remain open; CI must not fabricate their PASS.
 
 ## Frozen manual/physical blockers
 Still OPEN and intentionally deferred while ES-13 changes gameplay:

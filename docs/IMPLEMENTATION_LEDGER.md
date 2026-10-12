@@ -31,6 +31,7 @@ Rules:
 | ES-13J3A — Pure Enemy Formation Route Contract | DEPLOYED / FROZEN | `3c5ece8d8e59bc38de468b4d0d9644953fa6a8be` | #294 | #295 |
 | ES-13J3B — Live Enemy Formation Director Adoption | DEPLOYED / FROZEN | `0fcf08dc59558619da61e1120eef2e957465f9a1` | #298 | #299 |
 | ES-13J3C-A — Pure Advanced Enemy Formation Vocabulary | DEPLOYED / FROZEN | `0fd337e3a0efe96fd52d5f5686e3f110e1b361d8` | #302 | #303 |
+| ES-13J3C-B — Controlled Live Advanced Formation Adoption | DEPLOYED / FROZEN | `5c345672b5365dbcc983403f73da62555489a98f` | #306 | #307 |
 
 ## ES-12 evidence anchors
 
@@ -143,6 +144,28 @@ Evidence:
 
 No live runtime/director/player-formation/cap/budget/score/economy/damage/projectile/J1/J2/GAIA/FOTON GLB changes. Temporary certification workflow was removed before PR.
 
+### J3C-B — Controlled Live Advanced Formation Adoption
+Adopted WEDGE/ORBIT/SPIRAL through the existing J3B live director using route-aware bounded plans. Legacy routes and SPIRAL remain 2-member live groups; WEDGE/ORBIT use 3. Members consume ordinary eligible spawn opportunities one by one and current remaining capacity remains authoritative. No second runtime, extra spawn event, full-array formation scan, cap/budget increase or player-formation contamination was introduced.
+
+Final files:
+- `src/game/liveEnemyFormationDirector.ts`;
+- `tests/gameplay/live-enemy-formation-director.test.ts`;
+- `tests/es-13j3c-b-controlled-live-adoption.test.mjs`;
+- `tests/es-13j3c-a-advanced-route-vocabulary.test.mjs`.
+
+Evidence:
+- pre-PR certified head `2e1c69580443273911358383800f6e324f0ba77f`;
+- pre-PR run `38317062905`, job `115036102323` GREEN;
+- final PR head `eba0d94663c217ee56986f0d7ca86c4d873f08f3`;
+- PR CI `38317340298` GREEN;
+- PR Android `38317340308` GREEN;
+- canonical `5c345672b5365dbcc983403f73da62555489a98f`, single parent `f85e2432934454da191dea9bd0c9da43bbce86ca`;
+- main CI `38317440415` GREEN;
+- main Android `38317440420` GREEN;
+- Pages `38317520671` build + deploy GREEN.
+
+Advanced-route Campaign/Infinite controls are explicit and independent. `EnergySwarmGame.tsx`, `types.ts`, constants/caps, player/FOTON formations, score/economy/damage/projectiles, J1/J2, GAIA and FOTON GLB were untouched. Temporary certification workflow was removed before PR.
+
 ## Documentation continuity milestones
 - ES-13DOC — #255 / PR #256: persistent roadmap/continuity policy.
 - DOC2 — #258 / PR #259: J1B closure + J2 activation; successor `113842b3747827585fa32f90db4c2759828e302c`.
@@ -155,29 +178,21 @@ No live runtime/director/player-formation/cap/budget/score/economy/damage/projec
 - DOC9 — #292 / PR #293: J2E closure + J3 activation; successor `40bff2cb7b2d109cb13bf1142c76e0238e1d0d19`.
 - DOC10 — #296 / PR #297: J3A closure + J3B activation; successor `b3584ddfef56623a353d6188f8deb5589760eb8e`.
 - DOC11 — #300 / PR #301: J3B closure + J3C activation; successor `31de2cd5bb89ae3032902c09ace881119c04dfec`.
-- DOC12 — #304: ACTIVE documentation closure at this ledger update; baseline J3C-A gameplay canonical `0fd337e3a0efe96fd52d5f5686e3f110e1b361d8`; activates J3C-B after merge.
+- DOC12 — #304 / PR #305: J3C-A closure + J3C-B activation; successor `f85e2432934454da191dea9bd0c9da43bbce86ca`.
+- DOC13 — #308: ACTIVE documentation closure at this ledger update; baseline J3C-B gameplay canonical `5c345672b5365dbcc983403f73da62555489a98f`; activates J3D after merge.
 
 Resolved stale/diagnostic issues: #254 CLOSED NOT_PLANNED; #283 CLOSED NOT_PLANNED; neither produced a product merge.
 
 ## Next gameplay phase
 
-### ES-13J3C-B — Controlled Live Adoption
-Status: NEXT ENGINEERING TARGET AFTER DOC12 CLOSURE
+### ES-13J3D — Telegraph / Fairness / Integration Certification
+Status: NEXT ENGINEERING TARGET AFTER DOC13 CLOSURE
 
-Adopt certified WEDGE/ORBIT/SPIRAL selectively through the existing J3B live director. Route-aware member counts are required: WEDGE/ORBIT minimum 3, SPIRAL minimum 2. Do not solve this by globally increasing every formation group.
+Certification-first closure of the six-route J3 system. Required evidence includes route-specific telegraph metadata, bounded lead-in/recovery timing, 2/3-member density and capacity safety, incomplete-assembly fallback, Hydro/reset/pause safety, deterministic replay/mode policy, no cap/budget/J1/J2 regression, player/FOTON separation, and desktop + Android exact-SHA certification.
 
-Required boundaries:
-- existing regular spawn opportunities/capacity only;
-- no extra entity arrays/maps/full-array scans;
-- one movement authority;
-- deterministic caller-owned assignment/progress;
-- simulation-time pause safety;
-- explicit Campaign/Infinite eligibility;
-- bounded assembly and safe legacy fallback;
-- no milestone/boss/evolved adoption unless separately scoped;
-- no cap/budget/score/economy/damage/projectile/J1/J2/GAIA/FOTON GLB change.
+J3C-C is DEFERRED / NOT CURRENTLY JUSTIFIED. Stateful convoy/fake-retreat/portal/encirclement/artillery patterns require a later dedicated issue proving a distinct tactical need and bounded extra state; they are not silently folded into J3D.
 
-J3C-C stateful patterns and J3D fairness/integration remain later phases.
+J3D should prefer tests/contracts. Runtime changes are admitted only for a demonstrated fairness or integration defect. Manual/physical blockers remain open and cannot be auto-certified.
 
 ## Remaining ES-13 chronology
 J3C Advanced Vocabulary → J3D Telegraph/Fairness/Integration → J4 Tactical Enemy Families → J5 Priority Targets/Chain Reactions → J6 Dynamic Events → J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance.
