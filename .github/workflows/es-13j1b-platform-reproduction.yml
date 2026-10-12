@@ -1,0 +1,106 @@
+name: ES-13J1B Platform Reproduction
+
+on:
+  push:
+    branches:
+      - diag/es-13j1b-platform-reproduction
+
+permissions:
+  contents: write
+
+jobs:
+  reproduce:
+    if: ${{ !contains(github.event.head_commit.message, '[j1b-diagnostic]') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout diagnostic branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Reconstruct historical J1B working tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin feat/es-13j1b-live-combat-resonance:refs/remotes/origin/j1b-old
+          git show origin/j1b-old:src/components/GameHud.tsx > src/components/GameHud.tsx
+          git show origin/j1b-old:tests/es-13j1b-live-resonance-adoption.test.mjs > tests/es-13j1b-live-resonance-adoption.test.mjs
+          git show origin/j1b-old:.github/workflows/es-13j1b-certify.yml > /tmp/j1b-old-workflow.yml
+          node <<'NODE'
+          const fs = require('node:fs');
+          const text = fs.readFileSync('/tmp/j1b-old-workflow.yml', 'utf8');
+          const startMarker = "          node <<'NODE'\n";
+          const endMarker = "\n          NODE\n";
+          const start = text.indexOf(startMarker);
+          if (start < 0) throw new Error('historical materializer start marker not found');
+          const bodyStart = start + startMarker.length;
+          const end = text.indexOf(endMarker, bodyStart);
+          if (end < 0) throw new Error('historical materializer end marker not found');
+          const body = text
+            .slice(bodyStart, end)
+            .split('\n')
+            .map((line) => line.startsWith('          ') ? line.slice(10) : line)
+            .join('\n');
+          fs.writeFileSync('/tmp/j1b-materialize.cjs', body + '\n');
+          NODE
+          node /tmp/j1b-materialize.cjs
+          printf '%s\n' '--- working tree ---'
+          git diff --name-only
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Repository smoke
+        run: npm run test:repo
+
+      - name: Gameplay regression
+        run: npm run test:gameplay
+
+      - name: Platform regression with persistent transcript
+        id: platform
+        shell: bash
+        run: |
+          set +e
+          npm run test:platform 2>&1 | tee /tmp/j1b-platform.log
+          code=${PIPESTATUS[0]}
+          echo "exit_code=${code}" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Persist exact platform transcript
+        shell: bash
+        env:
+          PLATFORM_EXIT: ${{ steps.platform.outputs.exit_code }}
+        run: |
+          set -euo pipefail
+          mkdir -p diagnostics
+          {
+            echo '# ES-13J1B platform reproduction'
+            echo
+            echo "baseline: 622a75805a2228546737a5cf65a8e3b20f7f9c7d"
+            echo "historical branch: feat/es-13j1b-live-combat-resonance"
+            echo "historical head: 11bd8c54ce88283549169b5fe903c27194b2b075"
+            echo "platform exit: ${PLATFORM_EXIT}"
+            echo
+            echo '## Working-tree files before tests'
+            git diff --name-only
+            echo
+            echo '## npm run test:platform'
+            echo '```text'
+            cat /tmp/j1b-platform.log
+            echo '```'
+          } > diagnostics/j1b-platform-reproduction.md
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add diagnostics/j1b-platform-reproduction.md
+          git commit -m 'diag(j1b): persist exact platform reproduction [j1b-diagnostic]'
+          git push origin HEAD:diag/es-13j1b-platform-reproduction
+          if [ "${PLATFORM_EXIT}" != "0" ]; then
+            exit 1
+          fi
