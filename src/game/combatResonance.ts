@@ -1,3 +1,10 @@
+/**
+ * Pure ES-13 combat-resonance contract.
+ *
+ * This module deliberately owns no clocks, rendering, audio, storage, React state,
+ * random numbers or entity scans. Live gameplay supplies defeat/damage events and
+ * decides when to render the projected chain, tier and multiplier.
+ */
 import type { OrbiAffinity } from "./types";
 
 export const COMBAT_CHAIN_WINDOW_MS = 2200;
