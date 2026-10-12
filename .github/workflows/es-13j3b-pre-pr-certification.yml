@@ -88,10 +88,11 @@ jobs:
             'tests/es-13j3b-live-enemy-formation-adoption.test.mjs' \
             'tests/gameplay/live-enemy-formation-director.test.ts' | sort)"
           test "$changed" = "$expected"
-          test "$(grep -c 'enemiesRef.current.forEach((enemy)' src/game/EnergySwarmGame.tsx)" -ge 1
+          test "$(grep -F -c 'enemiesRef.current.forEach((enemy)' src/game/EnergySwarmGame.tsx)" -ge 1
           ! grep -Eq 'enemyFormation(Map|Array|List)Ref' src/game/EnergySwarmGame.tsx
           ! grep -Eq 'Date\.now|performance\.now|requestAnimationFrame|setInterval|setTimeout' src/game/liveEnemyFormationDirector.ts
-          ! grep -Eq 'from ["'"']\./(formations|formationCycle)["'"']' src/game/liveEnemyFormationDirector.ts
-          grep -q 'nowMs: timeElapsedRef.current' src/game/EnergySwarmGame.tsx
-          grep -q 'enemyFormationDirectorRef.current' src/game/EnergySwarmGame.tsx
-          grep -q 'enemyFormation?: LiveEnemyFormationAssignment' src/game/types.ts
+          ! grep -Fq 'from "./formations"' src/game/liveEnemyFormationDirector.ts
+          ! grep -Fq 'from "./formationCycle"' src/game/liveEnemyFormationDirector.ts
+          grep -Fq 'nowMs: timeElapsedRef.current' src/game/EnergySwarmGame.tsx
+          grep -Fq 'enemyFormationDirectorRef.current' src/game/EnergySwarmGame.tsx
+          grep -Fq 'enemyFormation?: LiveEnemyFormationAssignment' src/game/types.ts
