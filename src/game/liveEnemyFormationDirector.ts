@@ -175,10 +175,10 @@ const isModeEnabled = (
 };
 
 const areAdvancedRoutesEnabled = (
-  request: LiveEnemyFormationSpawnRequest,
+  sourceMode: RuntimeWaveSourceMode,
   policy: Readonly<LiveEnemyFormationPolicy>,
 ) =>
-  request.sourceMode === "INFINITE"
+  sourceMode === "INFINITE"
     ? policy.infiniteAdvancedRoutesEnabled
     : policy.campaignAdvancedRoutesEnabled;
 
@@ -191,11 +191,7 @@ export const resolveLiveEnemyFormationRoutePlan = (
     throw new RangeError("groupOrdinal must be a non-negative integer.");
   }
 
-  const advancedRoutesEnabled =
-    sourceMode === "INFINITE"
-      ? policy.infiniteAdvancedRoutesEnabled
-      : policy.campaignAdvancedRoutesEnabled;
-  const routeCycle = advancedRoutesEnabled
+  const routeCycle = areAdvancedRoutesEnabled(sourceMode, policy)
     ? FULL_ROUTE_CYCLE
     : LEGACY_ROUTE_CYCLE;
   const route = routeCycle[groupOrdinal % routeCycle.length];
