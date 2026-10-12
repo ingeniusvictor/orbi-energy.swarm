@@ -14,7 +14,7 @@ const eclipse = readFileSync(
 test("runtime adopts the pure Eclipse helpers at the existing hot-path seams", () => {
   assert.match(
     game,
-    /getEclipseSolarCooldownRecoveryMultiplier\(\s*simulationMutatorEffects,\s*member\.affinity,?\s*\)/s,
+    /getEclipseSolarCooldownRecoveryMultiplier\(\s*frameMutatorEffects,\s*member\.affinity,?\s*\)/s,
   );
   assert.match(
     game,
