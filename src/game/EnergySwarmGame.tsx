@@ -302,6 +302,7 @@ export const EnergySwarmGame: React.FC = () => {
   // --- HIGH-FREQUENCY GAME ENGINE REF BUFFERS (Avoid re-renders) ---
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const loopActiveRef = useRef(false);
+  const suspendedFrameRenderedRef = useRef(false);
   const lastTimeRef = useRef(0);
   const timeElapsedRef = useRef(0);
   const performanceDiagnosticsEnabledRef = useRef(false);
@@ -706,7 +707,10 @@ export const EnergySwarmGame: React.FC = () => {
     setStats(loaded);
     setHighScore(loaded.highScore);
     setAudioMuted(loaded.audioMuted);
-    setMuteState(loaded.audioMuted);
+    // Restore persisted mute state without starting BGM before a user gesture.
+    if (loaded.audioMuted) {
+      setMuteState(true);
+    }
 
     // Load level states
     const levels: Record<string, number> = {};
@@ -1246,6 +1250,7 @@ export const EnergySwarmGame: React.FC = () => {
     runEndTimeRef.current = 0;
     runCommitLedgerRef.current = createRunCommitLedger();
     frameHealthRef.current = createFrameHealthState();
+    suspendedFrameRenderedRef.current = false;
     frameHealthRecommendationShownRef.current = null;
     fotonThreatAccumulatorMsRef.current = 0;
     fotonThreatTargetRef.current = null;
@@ -3711,10 +3716,17 @@ export const EnergySwarmGame: React.FC = () => {
       frameHealthRef.current = resetFrameHealthState(
         frameHealthRef.current,
       );
+      // Lifecycle suspension may win the race before the first active frame.
+      // Draw one frozen frame once the canvas exists; never advance simulation.
+      if (!suspendedFrameRenderedRef.current && canvasRef.current) {
+        renderCanvasScene();
+        suspendedFrameRenderedRef.current = true;
+      }
       requestAnimationFrame(gameLoop);
       return;
     }
 
+    suspendedFrameRenderedRef.current = false;
     let delta = timestamp - lastTimeRef.current;
     lastTimeRef.current = timestamp;
 
@@ -4405,7 +4417,7 @@ export const EnergySwarmGame: React.FC = () => {
       member.shootCooldown -=
         (delta / 16.6) *
         getEclipseSolarCooldownRecoveryMultiplier(
-          simulationMutatorEffects,
+          frameMutatorEffects,
           member.affinity,
         );
       if (member.shootCooldown <= 0) {
