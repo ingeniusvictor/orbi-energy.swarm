@@ -56,10 +56,10 @@ Status: **DEPLOYED / FROZEN**
 Canonical: `466242e91fa927bc4d996d09efdbb87f8f572d44`  
 Issue #264 / PR #267
 
-Live J2A adoption with ref-owned high-frequency state, simulation-time lifecycle, explicit `O` + HUD activation, gameplay guards, one-shot Resonance consumption, fresh-run reset and compact READY/ACTIVE/RECHARGING HUD. No combat benefit yet.
+Live J2A adoption with ref-owned high-frequency state, simulation-time lifecycle, explicit `O` + HUD activation, gameplay guards, one-shot Resonance consumption, fresh-run reset and compact READY/ACTIVE/RECHARGING HUD.
 
 ### J2C — Bounded Overdrive Combat Expression
-Status: **ACTIVE PROGRAM**
+Status: **DEPLOYED / FROZEN PROGRAM SLICE**
 
 #### J2C-A — Pure Bounded Combat Expression Contract
 Status: **DEPLOYED / FROZEN**  
@@ -73,43 +73,48 @@ Implemented:
 - active player-damage multiplier exactly `1.20`;
 - contract ceiling `1.25`;
 - deterministic, immutable, non-stacking;
-- no score/economy, fire-rate, projectile-count/speed, crit, defense or entity-budget mutation;
-- no live runtime adoption.
+- no score/economy, fire-rate, projectile-count/speed, crit, defense or entity-budget mutation.
 
-Evidence:
-- first cert `38295319991` failed only on a new-test false positive where raw `/React/` matched documentation prose;
-- corrected full pre-PR `38295483032`, job `114965401785` GREEN;
-- PR CI `38295901224` GREEN;
-- PR Android `38295901194` GREEN;
-- main CI `38296053435` GREEN;
-- main Android `38296053642` GREEN;
-- Pages `38296151229` build + deploy GREEN.
+Evidence: corrected full pre-PR `38295483032`, job `114965401785`; PR CI `38295901224`; PR Android `38295901194`; main CI `38296053435`; main Android `38296053642`; Pages `38296151229` — GREEN.
 
 #### J2C-B — Live Bounded Damage Adoption
-Status: **ACTIVE / NEXT IMPLEMENTATION TARGET**
+Status: **DEPLOYED / FROZEN**  
+Canonical: `7e15ee1e79ee9ae8903891a66b0b1031b0600bca`  
+Issue #276 / PR #278
 
-Adoption contract:
-- import/use `projectCombatOverdriveEffects()`; live runtime must not duplicate the `1.20` tuning literal;
-- wire only into the centralized player-projectile damage resolution inside `shootFromSwarm()`;
-- resolve existing base/profile/GAIA/critical damage first, then apply the certified Overdrive multiplier exactly once before projectile damage assignment;
-- inactive Overdrive remains neutral;
-- active Overdrive adds only +20% player projectile damage;
-- preserve `MAX_PROJECTILES` and all existing quantum/mitosis guards;
-- preserve cooldown/fire-rate, projectile velocity, score/economy, crit chance, splash ratios, Campaign/Infinite recipes, FOTON and GAIA;
-- no entity-array scan or per-frame React state;
-- no VFX/audio identity here; that remains J2D.
+Implemented:
+- `projectCombatOverdriveEffects()` adopted only at `shootFromSwarm()` player-projectile damage resolution;
+- authoritative signal is `combatOverdriveRef.current.active`;
+- base/profile/GAIA/critical damage resolves before Overdrive;
+- certified player-damage multiplier applies exactly once before projectile assignment;
+- inactive remains neutral and runtime does not duplicate J2C-A tuning literals;
+- quantum/mitosis variants retain their existing ratios from adjusted primary damage;
+- no timer/state, fire-rate/cooldown, projectile speed/count, score/economy, crit/splash, cap/budget, Campaign/Infinite, FOTON or GAIA change.
 
-Verification should prove one authoritative multiplier application, neutrality when inactive, the exact active multiplier source, no duplicate literal tuning and unchanged projectile/cooldown budgets.
+Evidence:
+- pre-PR cert `38297477355`, job `114971948257` GREEN;
+- PR CI `38297915036` GREEN;
+- PR Android `38297913596` GREEN;
+- main CI `38298120771` GREEN;
+- main Android `38298120436` GREEN;
+- Pages `38298206493` build + deploy GREEN.
 
 ### J2D — Reactive VFX / Audio / Safety
-Status: PLANNED
+Status: **ACTIVE / NEXT IMPLEMENTATION TARGET**
 
-Add Overdrive identity only after combat expression is stable:
-- reactive swarm/canvas treatment;
-- HUD/audio stingers and tactical mix response;
-- accessibility/readability safeguards;
-- pause/photo/lifecycle/reset correctness;
-- avoid expensive continuous effects on low presets.
+Goal: give certified Overdrive a strong ORBI identity without altering its gameplay authority or budgets.
+
+Contract direction:
+- presentation only; do not change J2A duration/re-entry, J2B activation/consumption or J2C damage tuning;
+- consume already-certified Overdrive active/projection state; no second clock/timer;
+- bounded activation stinger and active-state canvas/swarm treatment;
+- audio must respect mute and user-gesture/autoplay constraints; no mount-time playback;
+- pause/photo/lifecycle/reset behavior must remain consistent with simulation-time Overdrive state;
+- low-quality/mobile presets must avoid expensive continuous full-screen or entity-heavy effects;
+- preserve objective/boss/threat/HUD readability and accessibility;
+- preserve all global entity/projectile budgets and Campaign/Infinite isolation;
+- no FOTON GLB or GAIA tuning changes;
+- add adoption regressions proving presentation uses certified state and contains no duplicate duration/damage tuning.
 
 ### J2E — Integration Certification
 Status: PLANNED
