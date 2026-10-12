@@ -62,7 +62,11 @@ jobs:
                   text=True,
               ).splitlines()
           )
-          expected = {"src/game/EnergySwarmGame.tsx"}
+          expected = {
+              "src/game/EnergySwarmGame.tsx",
+              "src/game/affinityFusionDirector.ts",
+              "tests/recent-run-archive-adoption.test.ts",
+          }
           if changed != expected:
               raise SystemExit(
                   f"Unexpected pre-cleanup H12 diff: {sorted(changed)}; expected {sorted(expected)}"
@@ -85,6 +89,8 @@ jobs:
           )
           expected = {
               "src/game/EnergySwarmGame.tsx",
+              "src/game/affinityFusionDirector.ts",
+              "tests/recent-run-archive-adoption.test.ts",
               "scripts/es12h12-apply.py",
               ".github/workflows/es12h12-gates.yml",
           }
@@ -96,6 +102,11 @@ jobs:
 
           git config user.name "ingeniusvictor"
           git config user.email "ingeniusvictor@users.noreply.github.com"
-          git add src/game/EnergySwarmGame.tsx scripts/es12h12-apply.py .github/workflows/es12h12-gates.yml
+          git add \
+            src/game/EnergySwarmGame.tsx \
+            src/game/affinityFusionDirector.ts \
+            tests/recent-run-archive-adoption.test.ts \
+            scripts/es12h12-apply.py \
+            .github/workflows/es12h12-gates.yml
           git commit -m "feat(h12): integrate deterministic affinity fusions"
           git push origin HEAD:feat/es-12h12-affinity-fusions
