@@ -28,7 +28,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Materialize J1B live adoption from certified historical patch
+      - name: Materialize J1B live adoption
         shell: bash
         run: |
           set -euo pipefail
@@ -40,102 +40,19 @@ jobs:
           const startMarker = "          node <<'NODE'\n";
           const endMarker = "\n          NODE\n";
           const start = text.indexOf(startMarker);
-          if (start < 0) throw new Error('J1B historical materializer start marker not found');
+          if (start < 0) throw new Error('materializer start marker not found');
           const bodyStart = start + startMarker.length;
           const end = text.indexOf(endMarker, bodyStart);
-          if (end < 0) throw new Error('J1B historical materializer end marker not found');
-          const body = text
-            .slice(bodyStart, end)
-            .split('\n')
+          if (end < 0) throw new Error('materializer end marker not found');
+          const body = text.slice(bodyStart, end).split('\n')
             .map((line) => line.startsWith('          ') ? line.slice(10) : line)
             .join('\n');
           fs.writeFileSync('/tmp/j1b-materialize.cjs', body + '\n');
           NODE
           node /tmp/j1b-materialize.cjs
 
-      - name: Align inherited reward-routing contracts with J1B authority
-        shell: bash
-        run: |
-          node <<'NODE'
-          const fs = require('node:fs');
-
-          const replaceOnce = (path, before, after) => {
-            let source = fs.readFileSync(path, 'utf8');
-            const first = source.indexOf(before);
-            if (first < 0) throw new Error(`${path}: expected legacy reward-routing assertion not found`);
-            if (source.indexOf(before, first + before.length) >= 0) {
-              throw new Error(`${path}: legacy reward-routing assertion is not unique`);
-            }
-            source = source.slice(0, first) + after + source.slice(first + before.length);
-            fs.writeFileSync(path, source);
-          };
-
-          replaceOnce(
-            'tests/runtime-enemy-evolution-adoption.test.ts',
-`  const uses =
-    collisions.match(/getEnemyScoreReward\\(/g) ?? [];
-  assert.equal(
-    uses.length,
-    2,
-    "direct and splash kills must share evolved-aware rewards",
-  );`,
-`  const defeatHelper = section(
-    game,
-    "const registerCombatDefeat =",
-    "// --- DETECT SINGLE-IMPACT COLLISION SWEEPS ---",
-  );
-  assert.match(
-    defeatHelper,
-    /baseScore:\\s*getEnemyScoreReward\\(enemy\\)/,
-  );
-  assert.match(
-    collisions,
-    /registerCombatDefeat\\(otherEnemy, proj\\.affinity\\);/,
-  );
-  assert.match(
-    collisions,
-    /registerCombatDefeat\\(enemy, proj\\.affinity\\);/,
-  );
-  assert.equal(
-    (collisions.match(/getEnemyScoreReward\\(/g) ?? []).length,
-    0,
-    "direct and splash kills must route through the single evolved-aware reward authority",
-  );`,
-          );
-
-          replaceOnce(
-            'tests/runtime-miniboss-adoption.test.ts',
-`  const rewardCalls =
-    collisions.match(/getEnemyScoreReward\\(/g) ?? [];
-  assert.equal(
-    rewardCalls.length,
-    2,
-    "both direct and splash kill paths must use milestone-aware score rewards",
-  );`,
-`  const defeatHelper = section(
-    game,
-    "const registerCombatDefeat =",
-    "// --- DETECT SINGLE-IMPACT COLLISION SWEEPS ---",
-  );
-  assert.match(
-    defeatHelper,
-    /baseScore:\\s*getEnemyScoreReward\\(enemy\\)/,
-  );
-  assert.match(
-    collisions,
-    /registerCombatDefeat\\(otherEnemy, proj\\.affinity\\);/,
-  );
-  assert.match(
-    collisions,
-    /registerCombatDefeat\\(enemy, proj\\.affinity\\);/,
-  );
-  assert.equal(
-    (collisions.match(/getEnemyScoreReward\\(/g) ?? []).length,
-    0,
-    "direct and splash kills must route through the single milestone-aware reward authority",
-  );`,
-          );
-          NODE
+      - name: Align inherited reward-routing contracts
+        run: node scripts/j1b-align-reward-contracts.cjs
 
       - name: Repository smoke
         run: npm run test:repo
@@ -143,7 +60,7 @@ jobs:
       - name: Gameplay regression
         run: npm run test:gameplay
 
-      - name: Platform regression with persistent failure transcript
+      - name: Platform regression
         id: platform
         shell: bash
         run: |
@@ -153,7 +70,7 @@ jobs:
           echo "exit_code=${code}" >> "$GITHUB_OUTPUT"
           exit 0
 
-      - name: Persist platform failure if any
+      - name: Persist platform failure
         if: steps.platform.outputs.exit_code != '0'
         shell: bash
         env:
@@ -230,7 +147,7 @@ jobs:
           while IFS= read -r file; do
             [ -z "$file" ] && continue
             case "$file" in
-              .github/workflows/es-13j1b-certify-v2.yml|src/components/GameHud.tsx|src/game/EnergySwarmGame.tsx|tests/es-13j1b-live-resonance-adoption.test.mjs|tests/runtime-enemy-evolution-adoption.test.ts|tests/runtime-miniboss-adoption.test.ts) ;;
+              .github/workflows/es-13j1b-certify-v2.yml|scripts/j1b-align-reward-contracts.cjs|src/components/GameHud.tsx|src/game/EnergySwarmGame.tsx|tests/es-13j1b-live-resonance-adoption.test.mjs|tests/runtime-enemy-evolution-adoption.test.ts|tests/runtime-miniboss-adoption.test.ts) ;;
               *) echo "Unexpected J1B scope: $file" >&2; exit 1 ;;
             esac
           done < /tmp/j1b-files.txt
@@ -241,10 +158,7 @@ jobs:
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add \
-            src/game/EnergySwarmGame.tsx \
-            tests/runtime-enemy-evolution-adoption.test.ts \
-            tests/runtime-miniboss-adoption.test.ts
+          git add src/game/EnergySwarmGame.tsx tests/runtime-enemy-evolution-adoption.test.ts tests/runtime-miniboss-adoption.test.ts
           if git diff --cached --quiet; then
             echo 'No materialized changes to commit.'
             exit 0
