@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">ORBI Energy Swarm</string>
+    <string name="title_activity_main">ORBI Energy Swarm</string>
+    <string name="package_name">com.orbiecosystem.energyswarm</string>
+    <string name="custom_url_scheme">com.orbiecosystem.energyswarm</string>
+</resources>
