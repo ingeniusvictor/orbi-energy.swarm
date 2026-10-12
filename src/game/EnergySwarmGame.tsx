@@ -222,6 +222,7 @@ import {
   createCombatOverdriveState,
   projectCombatOverdrive,
 } from "./combatOverdrive";
+import { projectCombatOverdriveEffects } from "./combatOverdriveEffects";
 import {
   PERFORMANCE_EVIDENCE_TARGET_SAMPLES,
   appendPerformanceEvidenceSample,
@@ -5318,6 +5319,11 @@ export const EnergySwarmGame: React.FC = () => {
       profile.damageMultiplier *
       (gaiaScale?.damageMultiplier ?? 1) *
       (critical ? profile.criticalDamageMultiplier : 1);
+    const overdriveEffects = projectCombatOverdriveEffects({
+      active: combatOverdriveRef.current.active,
+    });
+    const overdriveAdjustedDamage =
+      primaryDamage * overdriveEffects.playerDamageMultiplier;
 
     const makeProjectile = (
       angle: number,
@@ -5331,7 +5337,7 @@ export const EnergySwarmGame: React.FC = () => {
       y: member.y,
       vx: Math.cos(angle) * baseSpeed * speedMultiplier,
       vy: Math.sin(angle) * baseSpeed * speedMultiplier,
-      damage: primaryDamage * damageMultiplier,
+      damage: overdriveAdjustedDamage * damageMultiplier,
       color: member.color,
       size: profile.projectileSize * sizeMultiplier,
       fromPlayer: true,
