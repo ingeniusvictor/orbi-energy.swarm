@@ -18,39 +18,40 @@ Never infer deployment/certification from conversation text alone.
 
 ## Current certified gameplay canonical
 
-`39f9b33c9a229c7c8d991aecd81ea695510c82a0`
+`9743890d98b33d365cbc18a048015f3815b144e5`
 
-Phase: **ES-13J2D-A — Pure Overdrive Presentation Profile Contract**  
+Phase: **ES-13J2D-B — Live Reactive Overdrive Presentation Adoption**  
 Status: **DEPLOYED / FROZEN**  
-Issue: #281 — CLOSED  
-PR: #282 — squash merged
+Issue: #286 — CLOSED  
+PR: #287 — squash merged
 
-Parent: `efd212c7ea2a93e166d719721680fd5d88df402d` — ES-13DOC6.
+Parent: `51fff02e687a2ce88a9c3e727edfb4de2c42f4b6` — ES-13DOC7.
 
 Version remains `0.2.0-beta.1`. Full RC/manual certification remains intentionally deferred while ES-13 materially expands gameplay.
 
-## J2D-A implementation summary
-- added pure `src/game/combatOverdrivePresentation.ts` projection;
-- consumes only certified Overdrive `active`, `remainingRatio` and existing `QualityPreset`;
-- inactive projection is exactly neutral;
-- LOW/MEDIUM/HIGH/ULTRA scale bounded presentation intensity;
-- maximum direct canvas ring count is 3;
-- activation pulse derives only from the certified remaining-ratio window and owns no timer/clock;
-- finite ratios clamp to `[0,1]`; non-finite ratios fail closed;
-- no runtime/render/audio adoption yet;
-- no React/DOM/canvas/WebAudio/storage/random/entity scans;
-- no J2A timing or J2C damage tuning duplication;
-- no cap/budget/Campaign/Infinite/FOTON/GAIA changes.
+## J2D-B implementation summary
+- live runtime consumes certified `projectCombatOverdrivePresentation()`;
+- presentation derives from authoritative Overdrive state + simulation time + existing quality preset;
+- direct bounded Canvas2D field tint and collective FOTON/swarm halo/rings;
+- no new particle/entity arrays or entity scans;
+- renderer uses certified J2D-A `ringCount` and projection instead of duplicating tuning constants;
+- activation stinger is invoked only after successful explicit Overdrive activation;
+- stinger uses existing WebAudio engine / TACTICAL lane and respects mute/user-gesture constraints;
+- no mount-time/autoplay activation path;
+- no new timer/clock/RAF authority;
+- pause/photo/lifecycle inherit existing simulation-time Overdrive authority;
+- no duration/re-entry/damage/score/fire-rate/projectile-count/speed/crit changes;
+- no cap/budget/Campaign/Infinite/FOTON GLB/GAIA tuning changes.
 
-## J2D-A exact evidence
-- pre-PR certification `38299553187`, job `114978848191` — GREEN;
-- final clean PR head `5a70b0d55122ddf95b9af303dd24624f57b2f216`;
-- PR CI `38299974128` — GREEN;
-- PR Android `38299974261` — GREEN;
-- squash canonical `39f9b33c9a229c7c8d991aecd81ea695510c82a0`;
-- main CI `38300161662` — GREEN;
-- main Android `38300161573` — GREEN;
-- Pages `38300237659` — build + deploy GREEN.
+## J2D-B exact evidence
+- pre-PR certification `38302074362`, job `114987146051` — GREEN;
+- final clean PR head `c96954ffabc1c6330bbbe2736b90456537878c10`;
+- PR CI `38302405528` — GREEN;
+- PR Android `38302405569` — GREEN;
+- squash canonical `9743890d98b33d365cbc18a048015f3815b144e5`;
+- main CI `38302618451` — GREEN;
+- main Android `38302618447` — GREEN;
+- Pages `38302704724` — build + deploy GREEN.
 
 ## ES-13 gameplay canonicals
 - J1A — Combat Chain & Resonance Core: `feb263957b52839d35a7cb1249762c223ba22595`;
@@ -59,37 +60,40 @@ Version remains `0.2.0-beta.1`. Full RC/manual certification remains intentional
 - J2B — Live Overdrive Activation & HUD: `466242e91fa927bc4d996d09efdbb87f8f572d44`;
 - J2C-A — Pure Bounded Overdrive Combat Expression: `eca68cce510cf506053fd6d9121b501db7cd1f64`;
 - J2C-B — Live Bounded Overdrive Damage Adoption: `7e15ee1e79ee9ae8903891a66b0b1031b0600bca`;
-- J2D-A — Pure Overdrive Presentation Profile: `39f9b33c9a229c7c8d991aecd81ea695510c82a0`.
+- J2D-A — Pure Overdrive Presentation Profile: `39f9b33c9a229c7c8d991aecd81ea695510c82a0`;
+- J2D-B — Live Reactive Overdrive Presentation: `9743890d98b33d365cbc18a048015f3815b144e5`.
 
-## Resolved diagnostic note
-Issue #254 (`ES-12I5R1`) is CLOSED / NOT PLANNED. Forensic reproduction proved the historical platform failure was not an I5 pause regression. #254 produced no product merge.
-
-Issue #283 is also CLOSED / NOT PLANNED: it was opened from stale chat state after a UI interruption and created no branch/product work.
+## Resolved diagnostics
+- #254 CLOSED / NOT PLANNED: forensic reproduction proved the historical platform failure was not an I5 pause regression; no product merge.
+- #283 CLOSED / NOT PLANNED: opened from stale chat state after a UI interruption; no branch/product work.
 
 ## Current administrative work
-Issue #284 — `ES-13DOC7 — J2D-A Closure Ledger & J2D-B Activation`  
-Branch: `docs/es-13-j2da-closure-j2db-activation`  
+Issue #288 — `ES-13DOC8 — J2D-B Closure Ledger & J2E Activation`  
+Branch: `docs/es-13-j2db-closure-j2e-activation`  
 Scope: documentation only.
 
 ## Next gameplay phase
 
-### ES-13J2D-B — Live Reactive Overdrive Presentation Adoption
+### ES-13J2E — Overdrive Integration Certification
 Status: **NEXT / NOT YET IMPLEMENTED**
 
-Recommended contract:
-- adopt the certified J2D-A presentation projection into the existing canvas/HUD/audio paths only;
-- no new gameplay multiplier, score, duration, re-entry, cadence, cap or budget tuning;
-- J2A/J2B remain activation/timing authority; J2C remains combat-expression authority; J2D-A remains presentation-profile authority;
-- no second clock/timer and no per-frame React authority;
-- bounded activation stinger and active-state identity with no uncontrolled particle/entity growth;
-- audio must respect mute and browser/user-gesture constraints; no mount-time playback;
-- pause/photo/lifecycle/reset must follow certified simulation-time Overdrive state;
-- LOW/mobile presets must avoid expensive continuous full-screen effects;
-- preserve objective/boss/threat/HUD readability and accessibility;
-- no Campaign/Infinite recipe, FOTON GLB or GAIA tuning change;
-- add adoption regressions proving live presentation consumes J2D-A projection instead of duplicating its constants.
+Purpose: certify the complete J1/J2 stack before starting J3.
 
-After J2D-B: **J2E — Overdrive Integration Certification**. Do not start J3 until J2 is fully deployed/frozen unless a dedicated corrective issue requires otherwise.
+Recommended contract:
+- add deterministic integration regressions spanning J1 Resonance → J2 activation → J2C bounded damage → J2D presentation;
+- verify full readiness/activation/consumption/expiry/re-entry sequence at exact simulation-time boundaries;
+- prove taking accepted damage still breaks Resonance correctly without mutating active Overdrive authority;
+- prove pause/photo/lifecycle cannot consume Overdrive time outside simulation time;
+- prove fresh run/restart resets both Resonance and Overdrive;
+- prove score multiplier remains J1-owned and Overdrive never adds a second score multiplier;
+- prove J2C damage remains exactly one bounded multiplier and does not stack;
+- prove J2D presentation remains projection-only with no gameplay side effects;
+- exercise long deterministic sequences for no NaN/unbounded state;
+- no gameplay tuning changes unless a demonstrated defect requires a dedicated correction;
+- full repo/gameplay/platform/typecheck/release/dossier/build/readiness + Android + scope guard;
+- exact-SHA PR/main/Android/Pages certification.
+
+After J2E is deployed/frozen, proceed to **J3 — Advanced Enemy Formation Director**.
 
 ## Frozen manual/physical blockers
 Still OPEN and intentionally deferred while ES-13 changes gameplay:
@@ -101,7 +105,7 @@ Still OPEN and intentionally deferred while ES-13 changes gameplay:
 CI is never a substitute for required human/device evidence.
 
 ## Mandatory workflow
-`Issue → branch from exact live main → implementation → repo/gameplay/platform/typecheck/release/dossier/build/readiness → PR → PR CI GREEN + Android GREEN → squash merge → exact-SHA main CI GREEN + Android GREEN + Pages GREEN`
+`Issue → branch from exact live main → implementation/tests → repo/gameplay/platform/typecheck/release/dossier/build/readiness → PR → PR CI GREEN + Android GREEN → squash merge → exact-SHA main CI GREEN + Android GREEN + Pages GREEN`
 
 Rules:
 - never modify `main` directly;
@@ -114,7 +118,7 @@ Rules:
 - no phase is declared deployed before exact-SHA main + Pages evidence.
 
 ## Gameplay chronology
-`J2D-B Live VFX/Audio Adoption → J2E Integration Certification → J3 Advanced Formations → J4 Tactical Enemy Families → J5 Priority Targets/Chain Reactions → J6 Dynamic Events → J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance`
+`J2E Integration Certification → J3 Advanced Formations → J4 Tactical Enemy Families → J5 Priority Targets/Chain Reactions → J6 Dynamic Events → J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance`
 
 Post-J15 direction: **ES-14 — Living Warfront**.
 
