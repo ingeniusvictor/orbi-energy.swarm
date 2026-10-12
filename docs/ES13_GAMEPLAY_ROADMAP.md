@@ -28,14 +28,10 @@ Authoritative continuity lives in GitHub + `PROJECT_CONTINUITY.md` + `IMPLEMENTA
 Status: **DEPLOYED / FROZEN**  
 Canonical: `feb263957b52839d35a7cb1249762c223ba22595`
 
-Deterministic chain window, affinity diversity, resonance tiers, capped score multiplier, elite/boss weighting, damage/expiry semantics and `OVERDRIVE_READY` producer.
-
 ### J1B — Live Resonance Adoption & HUD
 Status: **DEPLOYED / FROZEN**  
 Canonical: `91564e365d0a2220e4db2999e38372809ec397f3`  
 Issue #253 / PR #257
-
-Direct+splash defeats feed J1A, accepted damage breaks resonance, simulation-time expiry is live, fresh runs reset state and HUD shows chain/resonance/tier/multiplier.
 
 ---
 
@@ -66,55 +62,60 @@ Status: **DEPLOYED / FROZEN**
 Canonical: `eca68cce510cf506053fd6d9121b501db7cd1f64`  
 Issue #271 / PR #272
 
-Implemented:
-- pure `combatOverdriveEffects.ts` projection;
-- J2A/J2B remain activation/timing authority;
-- inactive damage multiplier exactly `1.0`;
-- active player-damage multiplier exactly `1.20`;
-- contract ceiling `1.25`;
-- deterministic, immutable, non-stacking;
-- no score/economy, fire-rate, projectile-count/speed, crit, defense or entity-budget mutation.
-
-Evidence: corrected full pre-PR `38295483032`, job `114965401785`; PR CI `38295901224`; PR Android `38295901194`; main CI `38296053435`; main Android `38296053642`; Pages `38296151229` — GREEN.
+Inactive player-damage multiplier `1.0`, active `1.20`, hard ceiling `1.25`, deterministic/non-stacking and isolated from score/economy/fire-rate/projectile-count/speed/crit/defense/entity budgets.
 
 #### J2C-B — Live Bounded Damage Adoption
 Status: **DEPLOYED / FROZEN**  
 Canonical: `7e15ee1e79ee9ae8903891a66b0b1031b0600bca`  
 Issue #276 / PR #278
 
-Implemented:
-- `projectCombatOverdriveEffects()` adopted only at `shootFromSwarm()` player-projectile damage resolution;
-- authoritative signal is `combatOverdriveRef.current.active`;
-- base/profile/GAIA/critical damage resolves before Overdrive;
-- certified player-damage multiplier applies exactly once before projectile assignment;
-- inactive remains neutral and runtime does not duplicate J2C-A tuning literals;
-- quantum/mitosis variants retain their existing ratios from adjusted primary damage;
-- no timer/state, fire-rate/cooldown, projectile speed/count, score/economy, crit/splash, cap/budget, Campaign/Infinite, FOTON or GAIA change.
-
-Evidence:
-- pre-PR cert `38297477355`, job `114971948257` GREEN;
-- PR CI `38297915036` GREEN;
-- PR Android `38297913596` GREEN;
-- main CI `38298120771` GREEN;
-- main Android `38298120436` GREEN;
-- Pages `38298206493` build + deploy GREEN.
+`projectCombatOverdriveEffects()` is adopted exactly once at centralized player-projectile damage resolution while preserving base/profile/GAIA/critical ordering and existing projectile variant ratios.
 
 ### J2D — Reactive VFX / Audio / Safety
-Status: **ACTIVE / NEXT IMPLEMENTATION TARGET**
+Status: **ACTIVE PROGRAM SLICE**
 
 Goal: give certified Overdrive a strong ORBI identity without altering its gameplay authority or budgets.
 
+#### J2D-A — Pure Overdrive Presentation Profile Contract
+Status: **DEPLOYED / FROZEN**  
+Canonical: `39f9b33c9a229c7c8d991aecd81ea695510c82a0`  
+Issue #281 / PR #282
+
+Implemented:
+- pure `combatOverdrivePresentation.ts` projection;
+- consumes only certified Overdrive `active`, `remainingRatio` and existing `QualityPreset`;
+- inactive projection exactly neutral;
+- LOW/MEDIUM/HIGH/ULTRA progressively scale bounded direct-draw presentation;
+- maximum direct canvas ring count = 3;
+- activation pulse derives only from certified remaining ratio; no second clock/timer;
+- finite ratios clamp to `[0,1]`; non-finite ratios fail closed;
+- immutable caller input;
+- no live renderer/audio adoption, entity scans, particle growth or tuning duplication.
+
+Evidence:
+- pre-PR `38299553187`, job `114978848191` GREEN;
+- PR CI `38299974128` GREEN;
+- PR Android `38299974261` GREEN;
+- main CI `38300161662` GREEN;
+- main Android `38300161573` GREEN;
+- Pages `38300237659` GREEN.
+
+#### J2D-B — Live Reactive Overdrive Presentation Adoption
+Status: **ACTIVE / NEXT IMPLEMENTATION TARGET**
+
 Contract direction:
-- presentation only; do not change J2A duration/re-entry, J2B activation/consumption or J2C damage tuning;
-- consume already-certified Overdrive active/projection state; no second clock/timer;
-- bounded activation stinger and active-state canvas/swarm treatment;
+- consume J2D-A projection in existing canvas/HUD/audio paths only;
+- no change to J2A duration/re-entry, J2B activation/consumption or J2C damage tuning;
+- no duplicated J2D-A presentation constants in runtime;
+- bounded activation stinger plus active-state swarm/canvas treatment;
+- no independent wall-clock/RAF/timer authority;
 - audio must respect mute and user-gesture/autoplay constraints; no mount-time playback;
-- pause/photo/lifecycle/reset behavior must remain consistent with simulation-time Overdrive state;
-- low-quality/mobile presets must avoid expensive continuous full-screen or entity-heavy effects;
-- preserve objective/boss/threat/HUD readability and accessibility;
+- pause/photo/lifecycle/reset must follow existing simulation-time Overdrive state;
+- LOW/mobile presets must avoid expensive continuous full-screen effects and entity-heavy presentation;
+- preserve objective/boss/threat/HUD readability/accessibility;
 - preserve all global entity/projectile budgets and Campaign/Infinite isolation;
 - no FOTON GLB or GAIA tuning changes;
-- add adoption regressions proving presentation uses certified state and contains no duplicate duration/damage tuning.
+- adoption regressions must prove runtime consumes certified projection instead of duplicating tuning.
 
 ### J2E — Integration Certification
 Status: PLANNED
