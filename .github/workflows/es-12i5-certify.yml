@@ -126,6 +126,22 @@ jobs:
 
           game.write_text(source)
 
+          eclipse_test = Path('tests/eclipse-runtime-adoption.test.ts')
+          eclipse_source = eclipse_test.read_text()
+          old_eclipse_contract = r'getEclipseSolarCooldownRecoveryMultiplier\(\s*simulationMutatorEffects'
+          new_eclipse_contract = r'getEclipseSolarCooldownRecoveryMultiplier\(\s*frameMutatorEffects'
+          if eclipse_source.count(old_eclipse_contract) != 1:
+              raise SystemExit(
+                  'Expected exactly one legacy Eclipse solar cooldown adoption contract'
+              )
+          eclipse_test.write_text(
+              eclipse_source.replace(
+                  old_eclipse_contract,
+                  new_eclipse_contract,
+                  1,
+              )
+          )
+
           Path('tests/es-12i5-runtime-startup.test.mjs').write_text(r'''import assert from "node:assert/strict";
           import { readFile } from "node:fs/promises";
           import test from "node:test";
@@ -217,7 +233,7 @@ jobs:
           printf '%s\n' "${changed[@]}"
           for path in "${changed[@]}"; do
             case "$path" in
-              .github/workflows/es-12i5-certify.yml|src/game/EnergySwarmGame.tsx|tests/es-12i5-runtime-startup.test.mjs) ;;
+              .github/workflows/es-12i5-certify.yml|src/game/EnergySwarmGame.tsx|tests/es-12i5-runtime-startup.test.mjs|tests/eclipse-runtime-adoption.test.ts) ;;
               *) echo "Unexpected I5 scope: $path" >&2; exit 1 ;;
             esac
           done
@@ -227,6 +243,6 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add src/game/EnergySwarmGame.tsx tests/es-12i5-runtime-startup.test.mjs
+          git add src/game/EnergySwarmGame.tsx tests/es-12i5-runtime-startup.test.mjs tests/eclipse-runtime-adoption.test.ts
           git commit -m 'fix(i5): restore first-frame runtime startup [i5-materialized]'
           git push origin HEAD:${GITHUB_REF_NAME}
