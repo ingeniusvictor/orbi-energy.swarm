@@ -47,13 +47,20 @@ test("manual release blockers remain explicit and machine-readable", () => {
 
 test("pending ES-12 release engineering work is explicit", () => {
   assert.deepEqual(release.pendingReleaseEngineering, [
-    "android-packaging-pipeline",
     "release-candidate-certification",
   ]);
   assert.equal(release.webDistribution.deploymentTarget, "github-pages");
   assert.equal(release.webDistribution.installability, "pwa");
-  assert.equal(release.androidDistribution.strategy, "pwa-first");
-  assert.equal(release.androidDistribution.nativePackaging, "deferred");
+  assert.equal(release.androidDistribution.strategy, "capacitor-8");
+  assert.equal(
+    release.androidDistribution.nativePackaging,
+    "capacitor-local-bundle",
+  );
+  assert.equal(release.androidDistribution.targetSdk, 36);
+  assert.equal(
+    release.androidDistribution.signing,
+    "external-secrets-required-for-release",
+  );
 });
 
 test("changelog contains current beta and preserves recovery baseline history", () => {

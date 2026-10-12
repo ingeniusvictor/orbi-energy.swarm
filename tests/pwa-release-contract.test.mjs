@@ -45,7 +45,7 @@ test("I1 index advertises manifest and install icons with relative URLs", async 
   assert.match(index, /href="\.\/icons\/orbi-192\.png"/);
 });
 
-test("I1 release metadata locks Pages and resolves the PWA decision", async () => {
+test("I1 web distribution remains locked while I2 advances Android packaging", async () => {
   const release = await readJson("release/release.json");
   assert.equal(release.version, "0.2.0-beta.1");
   assert.equal(release.channel, "beta");
@@ -53,12 +53,22 @@ test("I1 release metadata locks Pages and resolves the PWA decision", async () =
   assert.equal(release.webDistribution.deploymentTarget, "github-pages");
   assert.equal(release.webDistribution.installability, "pwa");
   assert.equal(release.webDistribution.basePath, "/orbi-energy.swarm/");
-  assert.equal(release.androidDistribution.strategy, "pwa-first");
-  assert.equal(release.androidDistribution.nativePackaging, "deferred");
+  assert.equal(release.androidDistribution.strategy, "capacitor-8");
+  assert.equal(
+    release.androidDistribution.nativePackaging,
+    "capacitor-local-bundle",
+  );
+  assert.equal(release.androidDistribution.targetSdk, 36);
+  assert.equal(
+    release.androidDistribution.signing,
+    "external-secrets-required-for-release",
+  );
   assert.ok(!release.pendingReleaseEngineering.includes("web-deployment-target"));
   assert.ok(!release.pendingReleaseEngineering.includes("pwa-or-native-wrapper-decision"));
-  assert.ok(release.pendingReleaseEngineering.includes("android-packaging-pipeline"));
-  assert.ok(release.pendingReleaseEngineering.includes("release-candidate-certification"));
+  assert.ok(!release.pendingReleaseEngineering.includes("android-packaging-pipeline"));
+  assert.deepEqual(release.pendingReleaseEngineering, [
+    "release-candidate-certification",
+  ]);
 });
 
 test("Pages retains the canonical base-path and release gate", async () => {
