@@ -1,0 +1,60 @@
+name: ES-12I5R1 Paused Render Contract Certification
+
+on:
+  push:
+    branches:
+      - fix/es-12i5r1-paused-render-contract
+
+permissions:
+  contents: write
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Prove baseline contract location
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "HEAD=$(git rev-parse HEAD)"
+          echo "BASE=feb263957b52839d35a7cb1249762c223ba22595"
+          echo "Tracked professionalization candidates:"
+          git ls-files | grep -i 'professionalization' || true
+          FILE=$(grep -RIl --include='*.test.ts' 'Game loop advances live simulation only when not paused' tests | head -1)
+          if [ -z "$FILE" ]; then
+            echo "Unable to locate paused-loop contract test" >&2
+            exit 1
+          fi
+          echo "CONTRACT_FILE=$FILE"
+          node - "$FILE" <<'NODE'
+          const fs = require('node:fs');
+          const file = process.argv[2];
+          const source = fs.readFileSync(file, 'utf8');
+          const needle = 'Game loop advances live simulation only when not paused';
+          const start = source.indexOf(needle);
+          if (start < 0) throw new Error('contract title not found');
+          const from = Math.max(0, source.lastIndexOf('test(', start));
+          const next = source.indexOf('\ntest(', start + needle.length);
+          const to = next >= 0 ? next : Math.min(source.length, start + 3500);
+          console.log('--- PAUSED LOOP CONTRACT BLOCK ---');
+          console.log(source.slice(from, to));
+          console.log('--- END CONTRACT BLOCK ---');
+          NODE
+
+      - name: Reproduce baseline platform regression
+        run: npm run test:platform
