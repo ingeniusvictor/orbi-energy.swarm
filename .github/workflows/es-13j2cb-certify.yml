@@ -27,72 +27,8 @@ jobs:
           cache: npm
 
       - name: Materialize exact J2C-B runtime adoption
-        shell: bash
         run: |
-          set -euo pipefail
-          node <<'NODE'
-          const fs = require('node:fs');
-          const path = 'src/game/EnergySwarmGame.tsx';
-          let source = fs.readFileSync(path, 'utf8');
-
-          const replaceExactlyOnce = (from, to, label) => {
-            const first = source.indexOf(from);
-            const last = source.lastIndexOf(from);
-            if (first < 0 || first !== last) {
-              throw new Error(`${label}: expected exactly one source anchor`);
-            }
-            source = source.replace(from, to);
-          };
-
-          replaceExactlyOnce(
-`import {
-  activateCombatOverdrive,
-  advanceCombatOverdrive,
-  createCombatOverdriveState,
-  projectCombatOverdrive,
-} from "./combatOverdrive";`,
-`import {
-  activateCombatOverdrive,
-  advanceCombatOverdrive,
-  createCombatOverdriveState,
-  projectCombatOverdrive,
-} from "./combatOverdrive";
-import { projectCombatOverdriveEffects } from "./combatOverdriveEffects";`,
-            'Overdrive import',
-          );
-
-          replaceExactlyOnce(
-`    const primaryDamage =
-      baseDamage *
-      profile.damageMultiplier *
-      (gaiaScale?.damageMultiplier ?? 1) *
-      (critical ? profile.criticalDamageMultiplier : 1);
-
-    const makeProjectile = (`,
-`    const primaryDamage =
-      baseDamage *
-      profile.damageMultiplier *
-      (gaiaScale?.damageMultiplier ?? 1) *
-      (critical ? profile.criticalDamageMultiplier : 1);
-    const overdriveEffects = projectCombatOverdriveEffects({
-      active: combatOverdriveRef.current.active,
-    });
-    const overdriveAdjustedDamage =
-      primaryDamage * overdriveEffects.playerDamageMultiplier;
-
-    const makeProjectile = (`,
-            'primary damage seam',
-          );
-
-          replaceExactlyOnce(
-            '      damage: primaryDamage * damageMultiplier,',
-            '      damage: overdriveAdjustedDamage * damageMultiplier,',
-            'projectile damage assignment',
-          );
-
-          fs.writeFileSync(path, source);
-          NODE
-
+          node scripts/j2cb-materialize.mjs
           git diff --check
           git diff -- src/game/EnergySwarmGame.tsx
 
@@ -160,7 +96,7 @@ import { projectCombatOverdriveEffects } from "./combatOverdriveEffects";`,
           while IFS= read -r file; do
             [ -z "$file" ] && continue
             case "$file" in
-              .github/workflows/es-13j2cb-certify.yml|src/game/EnergySwarmGame.tsx|tests/es-13j2ca-overdrive-effects-contract.test.mjs|tests/es-13j2cb-live-overdrive-damage-adoption.test.mjs) ;;
+              .github/workflows/es-13j2cb-certify.yml|scripts/j2cb-materialize.mjs|src/game/EnergySwarmGame.tsx|tests/es-13j2ca-overdrive-effects-contract.test.mjs|tests/es-13j2cb-live-overdrive-damage-adoption.test.mjs) ;;
               *) echo "Unexpected J2C-B scope: $file" >&2; exit 1 ;;
             esac
           done < /tmp/j2cb-files.txt
