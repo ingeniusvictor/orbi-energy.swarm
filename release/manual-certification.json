@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "product": "ORBI Energy Swarm",
+  "version": "0.2.0-beta.1",
+  "policy": "orbi-es12-manual-certification-v1",
+  "rule": "No manual blocker may be reconciled from release metadata until its dossier entry is PASS with real SHA-bound human/device evidence.",
+  "blockers": [
+    {
+      "id": "issue-4-visual-certification",
+      "category": "visual-responsive",
+      "status": "PENDING",
+      "testedSha": null,
+      "testedAt": null,
+      "reviewer": null,
+      "evidence": [],
+      "criteria": [
+        { "id": "desktop-1920x1080", "status": "PENDING", "notes": null },
+        { "id": "laptop-1440x900", "status": "PENDING", "notes": null },
+        { "id": "short-laptop-1366x768", "status": "PENDING", "notes": null },
+        { "id": "ultrawide-2560x1080", "status": "PENDING", "notes": null },
+        { "id": "tablet-landscape", "status": "PENDING", "notes": null },
+        { "id": "tablet-portrait", "status": "PENDING", "notes": null },
+        { "id": "android-landscape", "status": "PENDING", "notes": null },
+        { "id": "android-portrait", "status": "PENDING", "notes": null },
+        { "id": "compact-android-landscape", "status": "PENDING", "notes": null }
+      ]
+    },
+    {
+      "id": "issue-5-infinite-playfeel",
+      "category": "gameplay-balance",
+      "status": "PENDING",
+      "testedSha": null,
+      "testedAt": null,
+      "reviewer": null,
+      "evidence": [],
+      "criteria": [
+        { "id": "sectors-11-25-system-mastery", "status": "PENDING", "notes": null },
+        { "id": "sectors-26-50-advanced-combinations", "status": "PENDING", "notes": null },
+        { "id": "sectors-51-100-high-pressure", "status": "PENDING", "notes": null },
+        { "id": "sectors-101-plus-seeded-endless", "status": "PENDING", "notes": null },
+        { "id": "telegraph-spawn-recovery-fairness", "status": "PENDING", "notes": null },
+        { "id": "challenge-not-pure-stat-scaling", "status": "PENDING", "notes": null }
+      ]
+    },
+    {
+      "id": "es-11-real-device",
+      "category": "android-hardware",
+      "status": "PENDING",
+      "testedSha": null,
+      "testedAt": null,
+      "reviewer": null,
+      "evidence": [],
+      "criteria": [
+        { "id": "thermal-sustained-session", "status": "PENDING", "notes": null },
+        { "id": "battery-sustained-session", "status": "PENDING", "notes": null },
+        { "id": "browser-system-chrome", "status": "PENDING", "notes": null },
+        { "id": "thumb-hand-ergonomics", "status": "PENDING", "notes": null },
+        { "id": "oem-gpu-driver-behavior", "status": "PENDING", "notes": null },
+        { "id": "gaia-runtime-physical-review-issue-202", "status": "PENDING", "notes": null }
+      ]
+    }
+  ]
+}
