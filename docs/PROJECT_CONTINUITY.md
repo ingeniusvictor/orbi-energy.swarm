@@ -18,16 +18,55 @@ Never infer deployment/certification from conversation text alone.
 
 ## Current certified gameplay canonical
 
-`0fcf08dc59558619da61e1120eef2e957465f9a1`
+`0fd337e3a0efe96fd52d5f5686e3f110e1b361d8`
 
-Phase: **ES-13J3B — Live Enemy Formation Director Adoption**  
+Phase: **ES-13J3C-A — Pure Advanced Enemy Formation Vocabulary**  
 Status: **DEPLOYED / FROZEN**  
-Issue: #298 — CLOSED  
-PR: #299 — squash merged
+Issue: #302 — CLOSED  
+PR: #303 — squash merged
 
-Single parent: `b3584ddfef56623a353d6188f8deb5589760eb8e` — ES-13DOC10 documentation canonical.
+Single parent: `31de2cd5bb89ae3032902c09ace881119c04dfec` — ES-13DOC11 documentation canonical.
 
 Version remains `0.2.0-beta.1`. Full RC/manual certification remains intentionally deferred while ES-13 materially expands gameplay.
+
+## J3C-A implementation summary
+J3C-A expanded the existing pure enemy route projection authority without changing live runtime adoption.
+
+Final files:
+- `src/game/enemyFormationRoutes.ts`;
+- `tests/gameplay/enemy-formation-routes.test.ts`;
+- `tests/es-13j3c-a-advanced-route-vocabulary.test.mjs`.
+
+Certified pure vocabulary now contains six routes:
+- `PINCER`, `X_CROSS`, `SERPENTINE` — J3A preserved;
+- `WEDGE` — center denial / choose a flank or commit through the point;
+- `ORBIT` — rotating exclusion ring / inside-vs-outside timing;
+- `SPIRAL` — rotating compression corridor / time the tightening gap.
+
+Pure-contract guarantees:
+- caller owns route/member slot/count/progress/mirror;
+- max route members remains 8;
+- normalized extent remains ±1.25;
+- exact ENTRY/PRESSURE/EXIT/COMPLETE phase boundaries remain caller-progress driven;
+- all valid slots/progress/mirrors remain finite, bounded and deterministic;
+- WEDGE/ORBIT require at least 3 slots; SPIRAL requires at least 2;
+- route-specific roles, telegraph kinds, severity, laneCount and safeIntent are explicit;
+- no imports, renderer, React, audio, storage, network, RNG, wall clock, RAF, timers, entity/projectile ownership or Campaign/Infinite selection;
+- J3B live `ROUTE_CYCLE` intentionally remained PINCER/X_CROSS/SERPENTINE only;
+- no `EnergySwarmGame.tsx`, live director, player/FOTON formations, caps, budgets, score/economy/damage/projectiles, J1/J2, GAIA or FOTON GLB changes.
+
+## J3C-A exact evidence
+- pre-PR certified head `51a6bb26fd0aabb9400de921ef0351d4deb8afe8`;
+- pre-PR certification run `38315199129`, job `115030050802` — GREEN across repository/gameplay/platform/typecheck/release/dossier/build/readiness/Android/APK/J3C-A purity guard;
+- final clean PR head `71eaccdd4682e53ee13006b7fe1b70f5033e3bc6`;
+- PR CI `38315423545` — GREEN on exact final PR head;
+- PR Android `38315423642` — GREEN on exact final PR head;
+- squash canonical `0fd337e3a0efe96fd52d5f5686e3f110e1b361d8`;
+- main CI `38315550962` — GREEN on exact canonical;
+- main Android `38315550956` — GREEN on exact canonical;
+- Pages `38315617546` — build + deploy GREEN on exact canonical.
+
+Temporary certification workflow was branch-only and removed before the final PR diff.
 
 ## J3B implementation summary
 J3B adopted the certified J3A enemy-route contract into the existing live regular-enemy spawn/movement authority without creating a second enemy runtime.
@@ -89,48 +128,40 @@ Temporary J3B patch/reset/certification workflows were branch-only and removed b
 - J2D-B — Live Reactive Overdrive Presentation: `9743890d98b33d365cbc18a048015f3815b144e5`;
 - J2E — Overdrive Integration Certification: `bf0e6a858e3c96091c002ea623b29eb5c260c6ea`;
 - J3A — Pure Enemy Formation Route Contract: `3c5ece8d8e59bc38de468b4d0d9644953fa6a8be`;
-- J3B — Live Enemy Formation Director Adoption: `0fcf08dc59558619da61e1120eef2e957465f9a1`.
+- J3B — Live Enemy Formation Director Adoption: `0fcf08dc59558619da61e1120eef2e957465f9a1`;
+- J3C-A — Pure Advanced Enemy Formation Vocabulary: `0fd337e3a0efe96fd52d5f5686e3f110e1b361d8`.
 
 ## Resolved diagnostics
 - #254 CLOSED / NOT PLANNED: historical platform failure was not an I5 pause regression; no product merge.
 - #283 CLOSED / NOT PLANNED: stale-chat false start; no branch/product work.
 
 ## Current administrative work
-Issue #300 — `ES-13DOC11 — J3B Closure Ledger & J3C Activation`  
-Branch: `docs/es-13-j3b-closure-j3c-activation`  
-Baseline gameplay canonical: `0fcf08dc59558619da61e1120eef2e957465f9a1`  
+Issue #304 — `ES-13DOC12 — J3C-A Closure Ledger & J3C-B Activation`  
+Branch: `docs/es-13-j3c-a-closure-j3c-b-activation`  
+Baseline gameplay canonical: `0fd337e3a0efe96fd52d5f5686e3f110e1b361d8`  
 Scope: documentation only.
 
 ## Next gameplay phase
 
-### ES-13J3C — Advanced Tactical Formation Vocabulary
-Status: **NEXT ENGINEERING TARGET AFTER DOC11 CLOSURE**
+### ES-13J3C-B — Controlled Live Adoption
+Status: **NEXT ENGINEERING TARGET AFTER DOC12 CLOSURE**
 
-Purpose: expand enemy-route vocabulary only when a pattern creates a genuinely new player decision, while preserving the J3A/J3B deterministic/cap-safe architecture.
+Purpose: selectively expose the certified WEDGE/ORBIT/SPIRAL vocabulary through the existing J3B live director without creating new entity ownership, spawn events, scans or movement authority.
 
-Recommended decomposition:
+Critical adoption constraints:
+- current J3B group size 2 cannot satisfy WEDGE/ORBIT minimum 3;
+- group size must be route-aware and bounded rather than globally increased;
+- every member consumes an existing regular spawn opportunity and current remaining capacity;
+- no route may reserve or spawn more members than available capacity/budget;
+- incomplete assembly fails safely back to legacy behavior without stale ownership;
+- one live formation group remains active/assembling at a time;
+- route selection/group sizing are deterministic after assignment and use simulation time only;
+- Campaign and Infinite eligibility remain explicit and independently configurable;
+- milestones/evolved/random elites/minibosses/bosses remain excluded unless separately scoped;
+- no additional full-array scan or parallel movement engine;
+- player/FOTON formation authority stays separate and untouched.
 
-#### J3C-A — Pure Advanced Route Vocabulary
-Add a small first set to the pure `enemyFormationRoutes.ts` contract only. Preferred candidates:
-- `WEDGE` — center denial; commit to a flank or break through the point;
-- `ORBIT` / `RING` — rotating exclusion zone; decide inside/outside lane and timing;
-- `SPIRAL` / `CORKSCREW` — moving compression corridor; time entry/escape rather than follow a simple sine lane.
-
-Guardrails:
-- caller-owned normalized progress/mirror/member slots;
-- no live runtime adoption in J3C-A;
-- no entity/projectile ownership, RNG, wall clock, renderer, audio or storage;
-- preserve J3A local member cap unless a dedicated proof requires change;
-- every route must remain finite, bounded and deterministic;
-- every new route must state its distinct tactical question.
-
-#### J3C-B — Controlled Live Adoption
-Only after J3C-A is certified, selectively add new routes to the existing J3B director cycle. Preserve one movement authority, existing spawn opportunities/capacity and explicit Campaign/Infinite eligibility.
-
-#### J3C-C — Stateful Tactical Patterns if justified
-Richer patterns such as convoy/leader-follower, fake retreat, portal ambush, encirclement or staggered artillery should be separate because they may need extra state or telegraph contracts. Do not force them into the simple normalized-route model if that would create hidden parallel authority.
-
-J3D remains the later Telegraph / Fairness / Integration Certification phase.
+J3C-C remains a later optional slice for stateful convoy/fake-retreat/portal/encirclement patterns. J3D remains Telegraph/Fairness/Integration Certification.
 
 ## Frozen manual/physical blockers
 Still OPEN and intentionally deferred while ES-13 changes gameplay:

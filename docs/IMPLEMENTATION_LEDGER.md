@@ -30,6 +30,7 @@ Rules:
 | ES-13J2E — Overdrive Integration Certification | DEPLOYED / FROZEN | `bf0e6a858e3c96091c002ea623b29eb5c260c6ea` | #290 | #291 |
 | ES-13J3A — Pure Enemy Formation Route Contract | DEPLOYED / FROZEN | `3c5ece8d8e59bc38de468b4d0d9644953fa6a8be` | #294 | #295 |
 | ES-13J3B — Live Enemy Formation Director Adoption | DEPLOYED / FROZEN | `0fcf08dc59558619da61e1120eef2e957465f9a1` | #298 | #299 |
+| ES-13J3C-A — Pure Advanced Enemy Formation Vocabulary | DEPLOYED / FROZEN | `0fd337e3a0efe96fd52d5f5686e3f110e1b361d8` | #302 | #303 |
 
 ## ES-12 evidence anchors
 
@@ -121,6 +122,27 @@ Evidence:
 
 Temporary patch/reset/certification workflows were removed before PR. Earlier temporary workflow/guard failures were infrastructure-only; the accepted certification is the fully GREEN run above.
 
+### J3C-A — Pure Advanced Enemy Formation Vocabulary
+Expanded the existing pure J3A route projection authority with WEDGE, ORBIT and SPIRAL while preserving PINCER/X_CROSS/SERPENTINE behavior. Max local route members remains 8 and normalized extent remains ±1.25. New routes have explicit minimum counts, roles, telegraphs and safe intents. J3B live selection was intentionally not changed.
+
+Final files:
+- `src/game/enemyFormationRoutes.ts`;
+- `tests/gameplay/enemy-formation-routes.test.ts`;
+- `tests/es-13j3c-a-advanced-route-vocabulary.test.mjs`.
+
+Evidence:
+- pre-PR certified head `51a6bb26fd0aabb9400de921ef0351d4deb8afe8`;
+- pre-PR run `38315199129`, job `115030050802` GREEN;
+- final PR head `71eaccdd4682e53ee13006b7fe1b70f5033e3bc6`;
+- PR CI `38315423545` GREEN;
+- PR Android `38315423642` GREEN;
+- canonical `0fd337e3a0efe96fd52d5f5686e3f110e1b361d8`, single parent `31de2cd5bb89ae3032902c09ace881119c04dfec`;
+- main CI `38315550962` GREEN;
+- main Android `38315550956` GREEN;
+- Pages `38315617546` build + deploy GREEN.
+
+No live runtime/director/player-formation/cap/budget/score/economy/damage/projectile/J1/J2/GAIA/FOTON GLB changes. Temporary certification workflow was removed before PR.
+
 ## Documentation continuity milestones
 - ES-13DOC — #255 / PR #256: persistent roadmap/continuity policy.
 - DOC2 — #258 / PR #259: J1B closure + J2 activation; successor `113842b3747827585fa32f90db4c2759828e302c`.
@@ -132,21 +154,30 @@ Temporary patch/reset/certification workflows were removed before PR. Earlier te
 - DOC8 — #288 / PR #289: J2D-B closure + J2E activation; successor `95beb172e845794d03484e446128896a44428996`.
 - DOC9 — #292 / PR #293: J2E closure + J3 activation; successor `40bff2cb7b2d109cb13bf1142c76e0238e1d0d19`.
 - DOC10 — #296 / PR #297: J3A closure + J3B activation; successor `b3584ddfef56623a353d6188f8deb5589760eb8e`.
-- DOC11 — #300: ACTIVE documentation closure at this ledger update; baseline J3B gameplay canonical `0fcf08dc59558619da61e1120eef2e957465f9a1`; activates J3C after merge.
+- DOC11 — #300 / PR #301: J3B closure + J3C activation; successor `31de2cd5bb89ae3032902c09ace881119c04dfec`.
+- DOC12 — #304: ACTIVE documentation closure at this ledger update; baseline J3C-A gameplay canonical `0fd337e3a0efe96fd52d5f5686e3f110e1b361d8`; activates J3C-B after merge.
 
 Resolved stale/diagnostic issues: #254 CLOSED NOT_PLANNED; #283 CLOSED NOT_PLANNED; neither produced a product merge.
 
 ## Next gameplay phase
 
-### ES-13J3C — Advanced Tactical Formation Vocabulary
-Status: NEXT ENGINEERING TARGET AFTER DOC11 CLOSURE
+### ES-13J3C-B — Controlled Live Adoption
+Status: NEXT ENGINEERING TARGET AFTER DOC12 CLOSURE
 
-Recommended decomposition:
-- **J3C-A — Pure Advanced Route Vocabulary:** add a small pure set such as WEDGE, ORBIT/RING and SPIRAL/CORKSCREW with explicit tactical questions, bounded normalized projections and no runtime adoption;
-- **J3C-B — Controlled Live Adoption:** after J3C-A certification, selectively expose those routes through the existing J3B director without extra entity ownership, scans, spawns or budgets;
-- **J3C-C — Stateful Tactical Patterns if justified:** convoy/leader-follower, fake retreat, portal ambush, encirclement or staggered artillery only if their extra state/telegraph authority is isolated and certified rather than hidden inside the simple route model.
+Adopt certified WEDGE/ORBIT/SPIRAL selectively through the existing J3B live director. Route-aware member counts are required: WEDGE/ORBIT minimum 3, SPIRAL minimum 2. Do not solve this by globally increasing every formation group.
 
-Admission rule: every pattern must create a distinct decision such as center denial, flank choice, moving-lane timing, inside/outside positioning, leader priority or chase discipline. More HP/enemies/projectiles is not formation variety.
+Required boundaries:
+- existing regular spawn opportunities/capacity only;
+- no extra entity arrays/maps/full-array scans;
+- one movement authority;
+- deterministic caller-owned assignment/progress;
+- simulation-time pause safety;
+- explicit Campaign/Infinite eligibility;
+- bounded assembly and safe legacy fallback;
+- no milestone/boss/evolved adoption unless separately scoped;
+- no cap/budget/score/economy/damage/projectile/J1/J2/GAIA/FOTON GLB change.
+
+J3C-C stateful patterns and J3D fairness/integration remain later phases.
 
 ## Remaining ES-13 chronology
 J3C Advanced Vocabulary → J3D Telegraph/Fairness/Integration → J4 Tactical Enemy Families → J5 Priority Targets/Chain Reactions → J6 Dynamic Events → J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance.
