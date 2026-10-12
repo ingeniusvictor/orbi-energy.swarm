@@ -1,83 +1,108 @@
 # ES-13 — Arcade Evolution & Dynamic Warfront
 
 Status: ACTIVE PROGRAM  
-Repository: `ingeniusvictor/orbi-energy.swarm`  
-Baseline canonical at roadmap creation: `feb263957b52839d35a7cb1249762c223ba22595`  
+Repository: `ingeniusvictor/orbi-energy.swarm`
 
 ## Purpose
 
-ES-13 turns the technically stable ORBI Energy Swarm foundation into a deeper, more replayable arcade combat game. The design goal is not to copy any specific title, but to adapt proven fixed-shooter / arcade-shooter principles into ORBI's own systems: Energy Swarm, affinities, formations, FOTON, GAIA, Dyson Halo, Blackout, Campaign and Infinite.
+ES-13 turns the stable technical foundation into a deeper, more replayable arcade combat game. Proven fixed-shooter/arcade-shooter principles are reinterpreted through ORBI systems: Energy Swarm, affinities, formations, FOTON, GAIA, Dyson Halo, Blackout, Campaign and Infinite.
 
-This file is the persistent gameplay roadmap. Chat history is supplemental only and must never be the sole source of future implementation intent.
+Chat history is supplemental only. This roadmap plus `PROJECT_CONTINUITY.md`, `IMPLEMENTATION_LEDGER.md`, exact GitHub history and active Issues/PRs are authoritative.
 
 ## Core design rules
 
-1. Preserve ORBI identity: all borrowed design principles must be reinterpreted through ORBI systems and lore.
-2. Add decisions, not just statistics: new enemies and events must force different player responses rather than merely adding HP/damage.
-3. Reward mastery: score, chains, resonance, formation choice, affinity choice, routing and risk/reward should create a high skill ceiling.
-4. Preserve accessibility: a new player must still be able to understand the basic game loop without mastering advanced systems.
-5. Keep Campaign and Infinite isolated where intended.
-6. Do not solve variety by uncontrolled entity growth. Prefer patterns, formations, state, behavior, objectives and modifiers while preserving global caps/budgets.
-7. No silent tuning changes. Damage, caps, budgets, FOTON assets and frozen historical systems must only change under explicit scoped work.
-8. Every phase follows: Issue → Branch → implementation → gates → PR → PR CI GREEN → squash merge → exact-SHA main CI/Android/Pages verification.
-9. A phase is not considered closed until `PROJECT_CONTINUITY.md` and `IMPLEMENTATION_LEDGER.md` are updated.
+1. Preserve ORBI identity; do not copy characters/art/assets from other games.
+2. Add decisions, not just HP/damage.
+3. Reward mastery through chain, resonance, affinity, formation, routing and risk/reward.
+4. Preserve accessibility for new players.
+5. Keep Campaign/Infinite isolation where intended.
+6. Prefer patterns/state/objectives/behavior over uncontrolled entity growth.
+7. Preserve global caps and budgets unless an explicit dedicated issue proves a change is needed.
+8. No silent tuning changes.
+9. Every product phase follows Issue → Branch → gates → PR → PR CI/Android GREEN → squash merge → exact-SHA main CI/Android/Pages GREEN.
+10. A phase is not administratively closed until continuity and ledger are updated.
 
 ---
 
-## Chronology
+## J1 — Combat Chain & Energy Resonance
 
-### J1 — Combat Chain & Energy Resonance
-
-#### J1A — Combat Chain & Resonance Core Contract
-Status: DEPLOYED / FROZEN  
+### J1A — Combat Chain & Resonance Core Contract
+Status: **DEPLOYED / FROZEN**  
 Canonical: `feb263957b52839d35a7cb1249762c223ba22595`
 
-Implemented as a pure deterministic core:
-- bounded defeat-chain window;
+Implemented:
+- deterministic chain window;
 - affinity-diversity progression;
 - resonance tiers;
 - capped score multiplier;
-- bounded elite/boss weighting;
-- damage/expiry break semantics;
-- `OVERDRIVE_READY` state only, with no active Overdrive yet;
-- invalid inputs fail closed;
-- no DOM, React, audio, storage, timers or entity scans.
+- elite/boss weighting;
+- damage/expiry semantics;
+- `OVERDRIVE_READY` state only;
+- no React/audio/storage/timers/entity scans in the pure core.
 
-#### J1B — Live Combat Resonance Adoption & HUD
-Status: ACTIVE / NOT MERGED  
-Issue: #253
+### J1B — Live Combat Resonance Adoption & HUD
+Status: **DEPLOYED / FROZEN**  
+Canonical: `91564e365d0a2220e4db2999e38372809ec397f3`  
+Issue: #253  
+PR: #257
 
-Planned live adoption:
-- register actual player-caused kills, including splash kills;
-- derive defeat affinity from the projectile when available;
-- route existing enemy score through J1A `awardedScore`;
-- apply bounded boss/elite/miniboss resonance weighting;
-- break the active chain only on accepted player damage, after invincibility rejection;
-- expire presentation using simulation time so pause/photo/lifecycle suspension cannot consume the chain window;
-- reset state on every fresh run/restart;
-- display chain, resonance, tier/progress and multiplier in the existing HUD cadence;
-- no Overdrive activation in this phase;
-- no new entity scans or cap changes.
+Implemented:
+- actual direct + splash defeat routing through one combat-defeat authority;
+- projectile affinity attribution;
+- existing base enemy reward preserved;
+- J1A awarded-score projection used live;
+- accepted-damage chain break after invincibility guard;
+- simulation-time chain expiry;
+- fresh-run reset;
+- low-frequency HUD chain/resonance/tier/multiplier projection;
+- no active Overdrive yet;
+- no new entity scans or cap/budget changes.
 
-### J2 — ORBI Overdrive
-Status: PLANNED
+Exact deployment evidence:
+- pre-PR cert `38285523692` GREEN;
+- PR CI `38287053826` GREEN;
+- PR Android `38287053915` GREEN;
+- main CI `38287238136` GREEN;
+- main Android `38287238150` GREEN;
+- Pages `38287336600` build + deploy GREEN.
 
-Goal: turn full resonance into a spectacular, temporary mastery state rather than a simple damage buff.
+---
 
-Planned elements:
-- explicit player-earned activation;
-- bounded duration and cooldown/re-entry rules;
+## J2 — ORBI Overdrive
+Status: **NEXT / ACTIVE DESIGN TARGET**
+
+Goal: turn full Resonance into a spectacular, temporary mastery state rather than a simple damage buff.
+
+Planned contract:
+- explicit earned activation from `OVERDRIVE_READY`;
+- bounded duration;
+- deterministic re-entry/cooldown rules;
 - reactive visual and audio layer;
-- high-value target opportunities;
-- affinity-aware bonuses/behaviors;
-- safe cancellation/reset semantics;
+- high-value combat opportunities during the state;
+- affinity-aware behavior where safe;
+- clear activation/expiration/reset feedback;
+- pause/photo/lifecycle suspension must not consume unintended time;
+- safe reset on run restart/game over;
 - no unlimited damage amplification;
-- compatibility with pause, photo mode, Campaign and Infinite.
+- no uncontrolled entity spawning;
+- Campaign and Infinite remain compatible;
+- existing caps/budgets remain authoritative.
 
-### J3 — Advanced Enemy Formation Director
+Recommended J2 slices:
+1. **J2A — Overdrive State Contract**: pure deterministic activation/duration/re-entry/reset state machine.
+2. **J2B — Live Activation & HUD**: connect `OVERDRIVE_READY`, input/action, countdown and presentation state.
+3. **J2C — Combat Expression Layer**: bounded combat benefits, affinity-aware expression and score opportunities.
+4. **J2D — Reactive VFX/Audio & Safety**: visual/audio identity, pause/photo/lifecycle/reset integration and accessibility.
+5. **J2E — Integration Certification**: gameplay/platform/Android/Pages evidence and no regression to J1.
+
+Do not implement J3 until J2 is deployed/frozen unless a corrective issue explicitly requires otherwise.
+
+---
+
+## J3 — Advanced Enemy Formation Director
 Status: PLANNED
 
-Add tactical route/formation vocabulary such as:
+Add tactical route/formation vocabulary:
 - pincer attacks;
 - wedges;
 - X-cross routes;
@@ -92,9 +117,9 @@ Add tactical route/formation vocabulary such as:
 - convoy assaults;
 - leader/follower formations.
 
-Telegraphs must make dangerous patterns readable and fair.
+Dangerous routes require readable telegraphs and bounded simultaneous pressure.
 
-### J4 — Tactical Enemy Families
+## J4 — Tactical Enemy Families
 Status: PLANNED
 
 Candidate archetypes:
@@ -114,22 +139,19 @@ Candidate archetypes:
 - Parasite Queen;
 - Mirror Drone.
 
-Acceptance rule: every new family must create a distinct tactical question, not only a stat variant.
+Rule: each family must create a distinct tactical question, not merely different stats.
 
-### J5 — Priority Targets & Chain-Reaction Combat
+## J5 — Priority Targets & Chain-Reaction Combat
 Status: PLANNED
 
-Introduce tactical weak-point logic:
 - Command Cores;
 - linked formations;
 - destructible priority nodes;
 - chain-reaction kills;
-- formation collapse when key units are destroyed;
-- bounded score/resonance bonuses for solving encounters efficiently.
+- formation collapse after key-unit destruction;
+- bounded score/resonance rewards for efficient tactical solutions.
 
-Goal: sometimes the correct decision is target selection rather than maximum fire rate.
-
-### J6 — Dynamic Mid-Sector Events
+## J6 — Dynamic Mid-Sector Events
 Status: PLANNED
 
 Candidate events:
@@ -143,16 +165,16 @@ Candidate events:
 - Void Hunt;
 - Elite Incursion;
 - Mirror Swarm;
-- Meteor / Debris Field;
+- Meteor/Debris Field;
 - Singularity Event.
 
-Events must be director-compatible, budget-aware and readable before punishment.
+Events must be director-compatible, budget-aware and telegraphed before severe punishment.
 
-### J7 — Bonus Challenge Rounds
+## J7 — Bonus Challenge Rounds
 Status: PLANNED
 
-Short 20–40 s rhythm breakers:
-- precision challenges;
+20–40 s rhythm breakers:
+- precision;
 - rescue;
 - collection;
 - evasive corridors;
@@ -162,9 +184,7 @@ Short 20–40 s rhythm breakers:
 - timed survival;
 - survival without firing.
 
-These rounds should create pacing variety without invalidating normal progression.
-
-### J8 — Additional Game Modes
+## J8 — Additional Game Modes
 Status: PLANNED
 
 Candidate modes:
@@ -178,9 +198,9 @@ Candidate modes:
 - Endless Crisis;
 - Perfect Sector.
 
-Modes should reuse the certified simulation/core where possible instead of forking the game engine.
+Reuse the certified engine/core; avoid mode-specific engine forks where possible.
 
-### J9 — Boss & Miniboss Expansion
+## J9 — Boss & Miniboss Expansion
 Status: PLANNED
 
 Candidate encounters:
@@ -192,134 +212,124 @@ Candidate encounters:
 - Swarm Sovereign;
 - The Singularity Engine.
 
-Boss design targets:
-- multiple phases;
-- destructible zones where appropriate;
-- formation-specific pressure;
-- affinity adaptation/counters;
+Boss targets:
+- phases;
+- destructible zones where useful;
+- affinity/formation pressure;
 - battlefield manipulation;
 - telegraphed vulnerability windows;
-- Infinite rematches with compatible mutators.
+- compatible Infinite rematches/mutators.
 
-### J10 — Expert Risk / Reward Mechanics
+## J10 — Expert Risk / Reward
 Status: PLANNED
 
-Candidate mastery mechanics:
 - Resonance Graze;
 - Quantum Slip;
 - near-miss chains;
-- optional danger proximity bonuses;
-- score/resonance acceleration for expert play.
+- optional danger-proximity bonuses;
+- expert score/resonance acceleration.
 
-These mechanics must never be mandatory for baseline survival.
+Never mandatory for baseline survival.
 
-### J11 — Build & Synergy Expansion
+## J11 — Build & Synergy Expansion
 Status: PLANNED
 
-Deepen run identity around energy archetypes:
-- Solar — direct damage / burst;
-- Hydro — control / slow / sustain;
-- Wind — speed / chaining / evasion;
-- Thermal — damage-over-time / zones;
+Run identities around:
+- Solar — burst/direct damage;
+- Hydro — control/sustain;
+- Wind — speed/chaining/evasion;
+- Thermal — DoT/zones;
 - Magnetic — projectile/space control;
-- Quantum — displacement / crit / probability-style mechanics.
+- Quantum — displacement/crit/probability-like effects.
 
-Then add controlled dual/triple synergy combinations such as Solar+Wind, Hydro+Magnetic and Thermal+Quantum.
+Then controlled dual/triple synergies such as Solar+Wind, Hydro+Magnetic and Thermal+Quantum.
 
-Goal: two successful runs can feel materially different because of player decisions.
-
-### J12 — Rare Events & Secret Encounters
+## J12 — Rare Events & Secret Encounters
 Status: PLANNED
 
-Ultra-low-frequency discoveries:
 - Golden Rift;
 - Ancient ORBI Signal;
 - Blackout Armada;
 - Unknown Energy Signature;
 - Titan-class Intruder;
-- hidden encounter variants.
+- hidden variants.
 
-Rare events should create surprise and conversation without becoming required progression blockers.
+Rare events create surprise without becoming required progression blockers.
 
-### J13 — Score, Rank & Mastery Layer
+## J13 — Score, Rank & Mastery
 Status: PLANNED
 
-Planned systems:
 - C / B / A / S / S+ ranks;
 - optional sector objectives;
-- perfect-sector conditions;
-- no-damage / swarm-preservation goals;
-- affinity efficiency goals;
+- perfect-sector goals;
+- no-damage/swarm-preservation targets;
+- affinity efficiency;
 - formation mastery;
-- time and chain targets;
+- time/chain targets;
 - mode-specific mastery.
 
-Goal: provide meaningful reasons to replay content beyond survival.
-
-### J14 — Procedural Interaction Matrix
+## J14 — Procedural Interaction Matrix
 Status: PLANNED
 
 Combine compatible dimensions under explicit safety rules:
 
 `enemy archetype + evolved trait + formation + biome + mutator + event`
 
-Objectives:
-- large effective variety without hundreds of bespoke assets;
-- compatibility matrix preventing unfair/broken combinations;
-- director budgets and global caps remain authoritative;
-- deterministic seeded reproduction for debugging and challenges.
+Requirements:
+- deterministic seed reproduction;
+- compatibility matrix to reject unfair combinations;
+- global caps/budgets remain authoritative;
+- variety comes from interaction, not uncontrolled asset/entity multiplication.
 
-### J15 — Gameplay Integration & Long-Range Balance Certification
+## J15 — Gameplay Integration & Long-Range Balance Certification
 Status: PLANNED
 
-Final ES-13 integration pass:
-- long runs across all difficulty bands;
-- telegraph fairness;
-- spawn/recovery fairness;
-- challenge must not collapse into pure stat scaling;
-- score/resonance economy balance;
+Final ES-13 integration:
+- long runs across difficulty bands;
+- telegraph and spawn/recovery fairness;
+- challenge must not collapse into pure stat inflation;
+- score/resonance/Overdrive economy balance;
 - boss/event/mode interaction review;
-- Android and desktop performance regression;
-- visual/readability validation;
-- replayability and pacing review;
+- desktop + Android performance regression;
+- readability/pacing/replayability validation;
 - deterministic evidence for reproducible failures.
 
-Only after the ES-13 feature set stabilizes should full RC manual certification be repeated on the final candidate.
+Only after ES-13 stabilizes should the full RC manual campaign be repeated.
 
 ---
 
-## ES-14 — Living Warfront (post-J15 direction)
-Status: FUTURE PROGRAM / NOT YET COMMITTED IMPLEMENTATION
+## ES-14 — Living Warfront
+Status: FUTURE PROGRAM / NOT YET COMMITTED
 
-Candidate expansion themes:
-- new biomes and sectors;
+Candidate directions:
+- new biomes/sectors;
 - thematic campaign/event arcs;
-- contracts and missions;
-- deeper codex/discovery systems;
+- contracts/missions;
+- deeper codex/discovery;
 - persistent mastery/meta-progression;
 - gradual mode unlocks;
 - daily/weekly challenges;
-- leaderboards only when a secure backend model is justified;
+- secure leaderboards only when justified;
 - evolving warfront state between runs.
 
-ES-14 details may change based on lessons from ES-13 and must not pre-empt J1–J15 certification.
-
 ---
 
-## Manual RC certification strategy
+## Manual RC strategy
 
-Current manual blockers (#4 visual, #5 Infinite play-feel, #202 GAIA physical runtime, #248 Android real-device) remain valid but full final certification is intentionally deferred while ES-13 is materially changing gameplay. Evidence must never be fabricated from CI.
+Manual blockers remain valid and open:
+- #4 visual/responsive;
+- #5 Infinite play-feel;
+- #202 GAIA physical runtime;
+- #248 Android real-device.
 
-The preferred timing is after J15, unless a specific intermediate phase requires targeted human evidence for safety or usability.
+Full final evidence collection is deferred while ES-13 changes gameplay. CI must never fabricate human/device PASS.
 
----
+## Recovery discipline
 
-## Reference discipline for future chats
-
-A new chat/session should read, in order:
+A new session should read, in order:
 1. `docs/PROJECT_CONTINUITY.md`
 2. `docs/IMPLEMENTATION_LEDGER.md`
 3. this roadmap
-4. active GitHub issues/PRs named in `PROJECT_CONTINUITY.md`
+4. active Issues/PRs
 
-If chat memory conflicts with repository state, the repository and exact GitHub SHA/CI evidence win.
+Then verify live `main` SHA before writing anything.
