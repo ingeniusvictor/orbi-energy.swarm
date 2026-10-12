@@ -29,68 +29,60 @@ jobs:
           node-version: 22
           cache: npm
 
-      - name: Setup Java 21
-        uses: actions/setup-java@v5
-        with:
-          distribution: temurin
-          java-version: '21'
-          cache: gradle
-
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-        with:
-          packages: platform-tools
-
-      - name: Install Android 16 SDK
-        run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0' >/dev/null
-
       - name: Materialize I5 runtime fix and regression contract
         shell: bash
         run: |
           python <<'PY'
           from pathlib import Path
+          import re
 
           game = Path('src/game/EnergySwarmGame.tsx')
           source = game.read_text()
 
-          old = '''      member.shootCooldown -=
-                (delta / 16.6) *
-                getEclipseSolarCooldownRecoveryMultiplier(
-                  simulationMutatorEffects,
-                  member.affinity,
-                );'''
-          new = '''      member.shootCooldown -=
-                (delta / 16.6) *
-                getEclipseSolarCooldownRecoveryMultiplier(
-                  frameMutatorEffects,
-                  member.affinity,
-                );'''
-          if source.count(old) != 1:
-              raise SystemExit(f'Expected one TDZ follower cooldown block, found {source.count(old)}')
-          source = source.replace(old, new, 1)
+          # Root-cause fix: the follower loop was reading simulationMutatorEffects
+          # before that const was initialized later in updateEnginePhysics().
+          tdz_pattern = re.compile(
+              r'(getEclipseSolarCooldownRecoveryMultiplier\(\s*)'
+              r'simulationMutatorEffects'
+              r'(\s*,\s*member\.affinity\s*,\s*\);)'
+          )
+          source, count = tdz_pattern.subn(r'\1frameMutatorEffects\2', source, count=1)
+          if count != 1:
+              raise SystemExit(f'Expected one TDZ follower cooldown reference, found {count}')
 
-          old = '''    setAudioMuted(loaded.audioMuted);
-              setMuteState(loaded.audioMuted);'''
-          new = '''    setAudioMuted(loaded.audioMuted);
-              // Restore persisted mute state without starting Web Audio/BGM before a user gesture.
-              // The module defaults to unmuted, so only the persisted muted=true case needs action.
-              if (loaded.audioMuted) {
-                setMuteState(true);
-              }'''
-          if source.count(old) != 1:
-              raise SystemExit(f'Expected one startup mute restore block, found {source.count(old)}')
-          source = source.replace(old, new, 1)
+          # Mount must restore mute state without autoplaying Web Audio/BGM.
+          audio_pattern = re.compile(
+              r'(?m)^([ \t]*)setAudioMuted\(loaded\.audioMuted\);\n'
+              r'\1setMuteState\(loaded\.audioMuted\);'
+          )
+          def audio_replacement(match):
+              indent = match.group(1)
+              return (
+                  f'{indent}setAudioMuted(loaded.audioMuted);\n'
+                  f'{indent}// Restore persisted mute state without starting Web Audio/BGM before a user gesture.\n'
+                  f'{indent}// The audio module defaults to unmuted, so only persisted muted=true needs action.\n'
+                  f'{indent}if (loaded.audioMuted) {{\n'
+                  f'{indent}  setMuteState(true);\n'
+                  f'{indent}}}'
+              )
+          source, count = audio_pattern.subn(audio_replacement, source, count=1)
+          if count != 1:
+              raise SystemExit(f'Expected one startup mute restore block, found {count}')
 
-          old = '''  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-            const loopActiveRef = useRef(false);'''
-          new = '''  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-            const loopActiveRef = useRef(false);
-            const suspendedFrameRenderedRef = useRef(false);'''
-          if source.count(old) != 1:
-              raise SystemExit(f'Expected one loop ref block, found {source.count(old)}')
-          source = source.replace(old, new, 1)
+          # Track whether a frozen frame has already been materialized.
+          ref_pattern = re.compile(
+              r'(const canvasRef = useRef<HTMLCanvasElement \| null>\(null\);\n'
+              r'\s*const loopActiveRef = useRef\(false\);)'
+          )
+          source, count = ref_pattern.subn(
+              r'\1\n  const suspendedFrameRenderedRef = useRef(false);',
+              source,
+              count=1,
+          )
+          if count != 1:
+              raise SystemExit(f'Expected one loop ref block, found {count}')
 
-          old = '''    if (isPausedRef.current || isUpgradeSelectionOpenRef.current) {
+          old_pause = '''    if (isPausedRef.current || isUpgradeSelectionOpenRef.current) {
               lastTimeRef.current = timestamp;
               frameHealthRef.current = resetFrameHealthState(
                 frameHealthRef.current,
@@ -100,7 +92,11 @@ jobs:
             }
 
             let delta = timestamp - lastTimeRef.current;'''
-          new = '''    if (isPausedRef.current || isUpgradeSelectionOpenRef.current) {
+          # Dedent the literal independently of workflow YAML indentation.
+          import textwrap
+          old_pause = textwrap.dedent(old_pause)
+          new_pause = textwrap.dedent('''
+            if (isPausedRef.current || isUpgradeSelectionOpenRef.current) {
               lastTimeRef.current = timestamp;
               frameHealthRef.current = resetFrameHealthState(
                 frameHealthRef.current,
@@ -116,19 +112,23 @@ jobs:
             }
 
             suspendedFrameRenderedRef.current = false;
-            let delta = timestamp - lastTimeRef.current;'''
-          if source.count(old) != 1:
-              raise SystemExit(f'Expected one paused gameLoop branch, found {source.count(old)}')
-          source = source.replace(old, new, 1)
+            let delta = timestamp - lastTimeRef.current;
+          ''').lstrip('\n').rstrip('\n')
+          if source.count(old_pause) != 1:
+              raise SystemExit(f'Expected one paused gameLoop branch, found {source.count(old_pause)}')
+          source = source.replace(old_pause, new_pause, 1)
 
-          old = '''    frameHealthRef.current = createFrameHealthState();
-            frameHealthRecommendationShownRef.current = null;'''
-          new = '''    frameHealthRef.current = createFrameHealthState();
-            suspendedFrameRenderedRef.current = false;
-            frameHealthRecommendationShownRef.current = null;'''
-          if source.count(old) != 1:
-              raise SystemExit(f'Expected one startGame frame health reset block, found {source.count(old)}')
-          source = source.replace(old, new, 1)
+          start_pattern = re.compile(
+              r'(frameHealthRef\.current = createFrameHealthState\(\);\n)'
+              r'([ \t]*frameHealthRecommendationShownRef\.current = null;)'
+          )
+          source, count = start_pattern.subn(
+              r'\1    suspendedFrameRenderedRef.current = false;\n\2',
+              source,
+              count=1,
+          )
+          if count != 1:
+              raise SystemExit(f'Expected one startGame frame health reset block, found {count}')
 
           game.write_text(source)
 
@@ -141,28 +141,17 @@ jobs:
 
           test("I5 follower cooldown uses initialized frame mutator projection", () => {
             const frameDeclaration = source.indexOf("const frameMutatorEffects =");
-            const followerUse = source.indexOf("getEclipseSolarCooldownRecoveryMultiplier(\n          frameMutatorEffects,\n          member.affinity,");
+            const followerUse = source.search(/getEclipseSolarCooldownRecoveryMultiplier\(\s*frameMutatorEffects,\s*member\.affinity,/);
             const simulationDeclaration = source.indexOf("const simulationMutatorEffects =");
-
             assert.ok(frameDeclaration >= 0, "frame mutator projection must exist");
-            assert.ok(followerUse > frameDeclaration, "follower cooldown must use the already initialized frame projection");
-            assert.ok(simulationDeclaration > followerUse, "later simulation projection may remain for post-follower runtime work");
-            assert.doesNotMatch(
-              source,
-              /getEclipseSolarCooldownRecoveryMultiplier\(\s*simulationMutatorEffects,\s*member\.affinity,/,
-              "follower cooldown must never read the later simulationMutatorEffects binding",
-            );
+            assert.ok(followerUse > frameDeclaration, "follower cooldown must use initialized frame projection");
+            assert.ok(simulationDeclaration > followerUse, "later simulation projection remains post-follower");
+            assert.doesNotMatch(source, /getEclipseSolarCooldownRecoveryMultiplier\(\s*simulationMutatorEffects,\s*member\.affinity,/);
           });
 
           test("I5 persisted unmuted profile does not autoplay BGM on mount", () => {
-            assert.doesNotMatch(
-              source,
-              /setAudioMuted\(loaded\.audioMuted\);\s*setMuteState\(loaded\.audioMuted\);/,
-            );
-            assert.match(
-              source,
-              /setAudioMuted\(loaded\.audioMuted\);[\s\S]*?if \(loaded\.audioMuted\) \{\s*setMuteState\(true\);\s*\}/,
-            );
+            assert.doesNotMatch(source, /setAudioMuted\(loaded\.audioMuted\);\s*setMuteState\(loaded\.audioMuted\);/);
+            assert.match(source, /setAudioMuted\(loaded\.audioMuted\);[\s\S]*?if \(loaded\.audioMuted\) \{\s*setMuteState\(true\);\s*\}/);
           });
 
           test("I5 suspended loop materializes at most one frame without advancing simulation", () => {
@@ -206,6 +195,21 @@ jobs:
 
       - name: RC readiness remains blocked
         run: npm run release:readiness
+
+      - name: Setup Java 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+
+      - name: Install Android 16 SDK
+        run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0' >/dev/null
 
       - name: Android debug regression
         run: npm run android:debug
