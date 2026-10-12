@@ -210,6 +210,13 @@ import {
   registerSwarmDoctrineMember,
 } from "./swarmDoctrine";
 import {
+  applyCombatResonanceDamageBreak,
+  createCombatResonanceState,
+  expireCombatChain,
+  projectCombatResonance,
+  registerCombatResonanceDefeat,
+} from "./combatResonance";
+import {
   PERFORMANCE_EVIDENCE_TARGET_SAMPLES,
   appendPerformanceEvidenceSample,
   buildPerformanceEvidenceCapture,
@@ -261,6 +268,14 @@ export const EnergySwarmGame: React.FC = () => {
   const [activeBiome, setActiveBiome] = useState<BiomeType>(BiomeType.SOLAR_PLAINS);
   const [activeFormation, setActiveFormation] = useState<FormationType>(FormationType.LINE);
   const [audioMuted, setAudioMuted] = useState(false);
+  const [combatResonanceView, setCombatResonanceView] = useState(() => {
+    const initialState = createCombatResonanceState();
+    return {
+      chain: initialState.chain,
+      resonance: initialState.resonance,
+      ...projectCombatResonance(initialState),
+    };
+  });
 
   // Stats persisting
   const [stats, setStats] = useState<GameStats>({ ...DEFAULT_STATS });
@@ -332,6 +347,7 @@ export const EnergySwarmGame: React.FC = () => {
   const scoreRef = useRef(0);
   const nanoCreditsRef = useRef(0);
   const fusionEnergyRef = useRef(0);
+  const combatResonanceRef = useRef(createCombatResonanceState());
 
   const keysPressedRef = useRef<Record<string, boolean>>({});
   const activeFormationRef = useRef<FormationType>(FormationType.LINE);
@@ -1294,6 +1310,13 @@ export const EnergySwarmGame: React.FC = () => {
     shieldRef.current = SHIELD_MAX + (upgradesLevel.hydrogen_deflector || 0) * 15;
     scoreRef.current = 0;
     fusionEnergyRef.current = 0;
+    const resetResonanceState = createCombatResonanceState();
+    combatResonanceRef.current = resetResonanceState;
+    setCombatResonanceView({
+      chain: resetResonanceState.chain,
+      resonance: resetResonanceState.resonance,
+      ...projectCombatResonance(resetResonanceState),
+    });
     playerFlashRef.current = 0;
     invincibilityTimerRef.current = 0;
 
@@ -3816,6 +3839,18 @@ export const EnergySwarmGame: React.FC = () => {
     reactUpdateAccumulatorMsRef.current =
       hudCadence.nextAccumulatorMs;
     if (hudCadence.shouldFlush) {
+      combatResonanceRef.current = expireCombatChain(
+        combatResonanceRef.current,
+        timeElapsedRef.current,
+      );
+      const liveResonanceProjection = projectCombatResonance(
+        combatResonanceRef.current,
+      );
+      setCombatResonanceView({
+        chain: combatResonanceRef.current.chain,
+        resonance: combatResonanceRef.current.resonance,
+        ...liveResonanceProjection,
+      });
       setScore(scoreRef.current);
       setShield(shieldRef.current);
       setSwarmSize(swarmRef.current.length + 1);
@@ -5403,6 +5438,26 @@ export const EnergySwarmGame: React.FC = () => {
     );
   };
 
+  const isCombatResonanceElite = (enemy: Enemy) =>
+    enemy.type === EnemyType.BLACKOUT_ELITE ||
+    Boolean(enemy.evolvedVariantId) ||
+    enemy.milestoneKind === "MINIBOSS";
+
+  const registerCombatDefeat = (enemy: Enemy, affinity?: OrbiAffinity) => {
+    const resolution = registerCombatResonanceDefeat(
+      combatResonanceRef.current,
+      {
+        occurredAtMs: timeElapsedRef.current,
+        baseScore: getEnemyScoreReward(enemy),
+        affinity,
+        isElite: isCombatResonanceElite(enemy),
+        isBoss: enemy.isBoss,
+      },
+    );
+    combatResonanceRef.current = resolution.state;
+    scoreRef.current += resolution.awardedScore;
+  };
+
   // --- DETECT SINGLE-IMPACT COLLISION SWEEPS ---
   const detectAndResolveCollisions = () => {
     const quality = getQualityConfig(stats.qualityPreset);
@@ -5766,10 +5821,7 @@ export const EnergySwarmGame: React.FC = () => {
                         otherEnemy,
                       );
                     }
-                    
-                    const scoreReward =
-                      getEnemyScoreReward(otherEnemy);
-                    scoreRef.current += scoreReward;
+                    registerCombatDefeat(otherEnemy, proj.affinity);
                     
                     playEnemyExplodeSound(otherEnemy.isBoss || otherEnemy.size > 14);
 
@@ -5825,10 +5877,7 @@ export const EnergySwarmGame: React.FC = () => {
               ) {
                 persistInfiniteMilestoneDefeat(enemy);
               }
-              
-              const scoreReward =
-                getEnemyScoreReward(enemy);
-              scoreRef.current += scoreReward;
+              registerCombatDefeat(enemy, proj.affinity);
 
               playEnemyExplodeSound(enemy.isBoss || enemy.size > 14);
 
@@ -6066,6 +6115,9 @@ export const EnergySwarmGame: React.FC = () => {
     const finalDamage =
       dmg * multiplier * gaiaDefenseMultiplier;
 
+    combatResonanceRef.current = applyCombatResonanceDamageBreak(
+      combatResonanceRef.current,
+    );
     shieldRef.current = Math.max(0, shieldRef.current - finalDamage);
     setShield(shieldRef.current);
 
@@ -7203,6 +7255,10 @@ export const EnergySwarmGame: React.FC = () => {
                 audioMuted={audioMuted}
                 isPaused={isPaused}
                 nanoCredits={nanoCredits}
+                combatChain={combatResonanceView.chain}
+                combatResonance={combatResonanceView.resonance}
+                combatResonanceTier={combatResonanceView.tier}
+                combatScoreMultiplier={combatResonanceView.scoreMultiplier}
                 onTogglePause={togglePause}
                 onToggleMute={toggleMute}
               />
