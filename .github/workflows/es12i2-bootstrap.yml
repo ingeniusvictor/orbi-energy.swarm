@@ -10,6 +10,7 @@ permissions:
 
 jobs:
   bootstrap:
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     timeout-minutes: 35
     steps:
@@ -86,23 +87,34 @@ jobs:
       - name: Verify debug APK
         run: test -s android/app/build/outputs/apk/debug/app-debug.apk
 
-      - name: Verify I2 scope and materialize clean branch
+      - name: Verify I2 scope and commit materialized product tree
         shell: bash
         run: |
           set -euo pipefail
           BASE=c9ab02b10383a666df2b317d2b2e9cd534a90356
 
-          if git diff --name-only "$BASE"...HEAD | grep -E '^src/game/|^src/components/|^public/assets/orbi-foton\.glb$'; then
+          git diff --check
+          git add -A
+
+          # GITHUB_TOKEN materializes product/native files only. The permanent
+          # workflow is installed afterward through the repository connector,
+          # which has explicit workflows:write permission.
+          git reset -- .github/workflows/android.yml
+
+          if git diff --cached --name-only | grep -E '^src/game/|^src/components/|^public/assets/orbi-foton\.glb$'; then
             echo 'I2 scope violation: gameplay, components or FOTON asset changed'
             exit 1
           fi
 
-          rm .github/workflows/es12i2-bootstrap.yml
-          rm scripts/es12i2-materialize.mjs
-          git diff --check
+          if git diff --name-only "$BASE"...HEAD | grep -E '^src/game/|^src/components/|^public/assets/orbi-foton\.glb$'; then
+            echo 'I2 committed scope violation: gameplay, components or FOTON asset changed'
+            exit 1
+          fi
+
+          git status --short
+          git diff --cached --name-only
 
           git config user.name 'ingeniusvictor'
           git config user.email 'ingeniusvictor@users.noreply.github.com'
-          git add -A
           git commit -m 'feat(i2): materialize Capacitor 8 Android packaging pipeline'
           git push origin HEAD:feat/es-12i2-android-packaging
