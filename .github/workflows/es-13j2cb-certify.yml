@@ -1,0 +1,177 @@
+name: ES-13J2C-B Live Overdrive Damage Certification
+
+on:
+  push:
+    branches:
+      - feat/es-13j2cb-live-overdrive-damage
+
+permissions:
+  contents: write
+
+jobs:
+  certify:
+    if: ${{ !contains(github.event.head_commit.message, '[j2cb-materialized]') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Materialize exact J2C-B runtime adoption
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('node:fs');
+          const path = 'src/game/EnergySwarmGame.tsx';
+          let source = fs.readFileSync(path, 'utf8');
+
+          const replaceExactlyOnce = (from, to, label) => {
+            const first = source.indexOf(from);
+            const last = source.lastIndexOf(from);
+            if (first < 0 || first !== last) {
+              throw new Error(`${label}: expected exactly one source anchor`);
+            }
+            source = source.replace(from, to);
+          };
+
+          replaceExactlyOnce(
+`import {
+  activateCombatOverdrive,
+  advanceCombatOverdrive,
+  createCombatOverdriveState,
+  projectCombatOverdrive,
+} from "./combatOverdrive";`,
+`import {
+  activateCombatOverdrive,
+  advanceCombatOverdrive,
+  createCombatOverdriveState,
+  projectCombatOverdrive,
+} from "./combatOverdrive";
+import { projectCombatOverdriveEffects } from "./combatOverdriveEffects";`,
+            'Overdrive import',
+          );
+
+          replaceExactlyOnce(
+`    const primaryDamage =
+      baseDamage *
+      profile.damageMultiplier *
+      (gaiaScale?.damageMultiplier ?? 1) *
+      (critical ? profile.criticalDamageMultiplier : 1);
+
+    const makeProjectile = (`,
+`    const primaryDamage =
+      baseDamage *
+      profile.damageMultiplier *
+      (gaiaScale?.damageMultiplier ?? 1) *
+      (critical ? profile.criticalDamageMultiplier : 1);
+    const overdriveEffects = projectCombatOverdriveEffects({
+      active: combatOverdriveRef.current.active,
+    });
+    const overdriveAdjustedDamage =
+      primaryDamage * overdriveEffects.playerDamageMultiplier;
+
+    const makeProjectile = (`,
+            'primary damage seam',
+          );
+
+          replaceExactlyOnce(
+            '      damage: primaryDamage * damageMultiplier,',
+            '      damage: overdriveAdjustedDamage * damageMultiplier,',
+            'projectile damage assignment',
+          );
+
+          fs.writeFileSync(path, source);
+          NODE
+
+          git diff --check
+          git diff -- src/game/EnergySwarmGame.tsx
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Repository smoke
+        run: npm run test:repo
+
+      - name: Gameplay regression
+        run: npm run test:gameplay
+
+      - name: Platform regression
+        run: npm run test:platform
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Release contract
+        run: npm run release:verify
+
+      - name: Manual certification dossier
+        run: npm run release:evidence:verify
+
+      - name: Production build
+        run: npm run build
+
+      - name: RC readiness remains fail-closed
+        env:
+          ORBI_RELEASE_SHA: ${{ github.sha }}
+        run: npm run release:readiness -- --output release-readiness.json
+
+      - name: Setup Java 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+
+      - name: Install Android 16 SDK
+        run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0' >/dev/null
+
+      - name: Build Android debug APK
+        env:
+          ORBI_BUILD_SHA: ${{ github.sha }}
+        run: npm run android:debug
+
+      - name: Verify Android APK
+        run: test -s android/app/build/outputs/apk/debug/app-debug.apk
+
+      - name: J2C-B exact scope guard
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            git diff --name-only 5d80833c71f8fe0c31f58945ed5cabb5f40b85b4...HEAD
+            git diff --name-only
+          } | sort -u > /tmp/j2cb-files.txt
+          cat /tmp/j2cb-files.txt
+          while IFS= read -r file; do
+            [ -z "$file" ] && continue
+            case "$file" in
+              .github/workflows/es-13j2cb-certify.yml|src/game/EnergySwarmGame.tsx|tests/es-13j2ca-overdrive-effects-contract.test.mjs|tests/es-13j2cb-live-overdrive-damage-adoption.test.mjs) ;;
+              *) echo "Unexpected J2C-B scope: $file" >&2; exit 1 ;;
+            esac
+          done < /tmp/j2cb-files.txt
+
+      - name: Commit certified J2C-B materialization
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "ingeniusvictor"
+          git config user.email "ingenius.victor@gmail.com"
+          git add src/game/EnergySwarmGame.tsx
+          git diff --cached --quiet && { echo "No runtime materialization to commit"; exit 1; }
+          git commit -m "feat(j2cb): adopt bounded Overdrive damage [j2cb-materialized]"
+          git push origin HEAD:feat/es-13j2cb-live-overdrive-damage
