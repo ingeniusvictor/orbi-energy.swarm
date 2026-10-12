@@ -22,6 +22,7 @@ Rules:
 | ES-13J1A — Combat Chain & Resonance Core | DEPLOYED / FROZEN | `feb263957b52839d35a7cb1249762c223ba22595` | #251 | #252 |
 | ES-13J1B — Live Combat Resonance Adoption & HUD | DEPLOYED / FROZEN | `91564e365d0a2220e4db2999e38372809ec397f3` | #253 | #257 |
 | ES-13J2A — ORBI Overdrive Pure State Contract | DEPLOYED / FROZEN | `6adfb7cc4785c5238c78821e6e67fdac3c0f4eb7` | #260 | #261 |
+| ES-13J2B — Live Overdrive Activation & HUD | DEPLOYED / FROZEN | `466242e91fa927bc4d996d09efdbb87f8f572d44` | #264 | #267 |
 
 ## ES-12 evidence anchors
 
@@ -70,12 +71,7 @@ Implemented:
 - damage break post-invincibility guard;
 - simulation-time chain expiry;
 - fresh-run reset;
-- low-frequency HUD chain/resonance/tier/multiplier;
-- no active Overdrive yet.
-
-Diagnostic note:
-- exact reproduction proved two historical reward-routing assertions were stale;
-- Issue #254 pause hypothesis was closed NOT PLANNED with no product merge.
+- low-frequency HUD chain/resonance/tier/multiplier.
 
 Evidence:
 - pre-PR `38285523692`, job `114932841692`;
@@ -88,73 +84,101 @@ Evidence:
 - Pages `38287336600` — GREEN.
 
 ### J2A — ORBI Overdrive Pure State Contract
-Implemented new pure module `src/game/combatOverdrive.ts`:
-- `OVERDRIVE_DURATION_MS = 8000`;
-- `OVERDRIVE_REENTRY_LOCK_MS = 4000`;
-- activation requires explicit Resonance readiness;
-- successful activation emits one-shot `consumeResonance` signal;
-- J1 Resonance core remains untouched;
-- repeated activation while active cannot stack/refresh/extend;
-- exact simulation-time expiry at `nowMs >= endsAtMs`;
-- exact re-entry boundary;
-- projection for active/remaining/lock state;
-- fresh reset, invalid-time rejection and immutable transitions;
-- no live runtime/HUD, combat buffs, VFX/audio, entities/scans, caps/budgets or tuning.
+Implemented `src/game/combatOverdrive.ts`:
+- 8 s active duration;
+- 4 s post-window re-entry lock;
+- explicit Resonance readiness;
+- one-shot `consumeResonance` signal;
+- no stacking/refresh/extension;
+- deterministic simulation-time expiry/re-entry boundary;
+- reset, invalid-time rejection and immutable transitions;
+- no runtime/HUD/buffs/VFX/audio/entity work.
 
 Evidence:
 - pre-PR `38288374752`, job `114942126186` GREEN;
-- PR #261 head `565b94bf9bf873a9280ef2ca123e3dcbd88d98ad`;
 - PR CI `38288795483` GREEN;
 - PR Android `38288795462` GREEN;
 - canonical `6adfb7cc4785c5238c78821e6e67fdac3c0f4eb7`;
 - main CI `38288929402` GREEN;
 - main Android `38288929417` GREEN;
-- Pages `38289009730`, build `114944244748`, deploy `114944343151` GREEN.
+- Pages `38289009730` GREEN.
+
+### J2B — Live Overdrive Activation & HUD
+Implemented:
+- live adoption of J2A state/timing helpers with no duplicate clock;
+- high-frequency Overdrive state in a ref;
+- low-frequency HUD projection on existing cadence;
+- simulation-time activation/expiry/re-entry;
+- explicit `O` hotkey + HUD pointer/touch action;
+- guards for not-playing, game-over, pause, Photo Mode and upgrade selection;
+- readiness rechecked from J1 Resonance plus J2A `canActivate`;
+- successful activation consumes Resonance once while preserving chain/best-chain/affinity state;
+- fresh-run/restart reset;
+- compact `READY / ACTIVE / RECHARGING / CHARGE` HUD states;
+- no buff, VFX/audio, scans, cap/budget, Campaign/Infinite, FOTON or GAIA change.
+
+Regression-contract chronology:
+- repository-smoke diagnostics showed exactly three historical assertions became stale after legitimate live adoption;
+- J1B publication coverage was tightened to only reset + HUD cadence + accepted activation consumption;
+- J1B remains readiness-only;
+- J2A remains timing/state authority, and live code is prohibited from importing/duplicating duration/re-entry constants.
+
+Evidence:
+- pre-PR `38293627094`, job `114959353674` GREEN;
+- clean PR head `e43a1d3f4f4a7801fb836055cbf23176992dc74b`;
+- PR CI `38294148486` GREEN;
+- PR Android `38294148448` GREEN;
+- canonical `466242e91fa927bc4d996d09efdbb87f8f572d44`;
+- main CI `38294331547` GREEN;
+- main Android `38294331726` GREEN;
+- Pages `38294411795` build + deploy GREEN.
 
 ## Documentation continuity milestones
 
 ### ES-13DOC — Persistent Gameplay Roadmap & Continuity Ledger
-Issue #255 / PR #256 — established continuity files, handoff template, roadmap status, traceability policy and closure checklist.
+Issue #255 / PR #256 — established repository-native continuity, roadmap, traceability and closure rules.
 
 ### ES-13DOC2 — J1B Closure Ledger & J2 Activation
-Issue #258 / PR #259 — CLOSED / MERGED. Documentation-only main successor `113842b3747827585fa32f90db4c2759828e302c`; main CI `38287807460` GREEN; Pages `38287871927` GREEN.
+Issue #258 / PR #259 — documentation-only main successor `113842b3747827585fa32f90db4c2759828e302c`; main CI `38287807460` GREEN; Pages `38287871927` GREEN.
 
 ### ES-13DOC3 — J2A Closure Ledger & J2B Activation
-Issue #262 — ACTIVE DOCUMENTATION at this ledger update. Baseline gameplay canonical `6adfb7cc4785c5238c78821e6e67fdac3c0f4eb7`.
+Issue #262 / PR #263 — CLOSED / MERGED. Documentation-only main successor `a485e52542b3d097511789c15f1a7afcb6ba5cb0`.
+
+### ES-13DOC4 — J2B Closure Ledger & J2C Activation
+Issue #268 — ACTIVE DOCUMENTATION at this ledger update. Baseline gameplay canonical `466242e91fa927bc4d996d09efdbb87f8f572d44`.
 
 ## Next gameplay phase
 
-### ES-13J2B — Live Overdrive Activation & HUD
+### ES-13J2C — Bounded Overdrive Combat Expression
 Status: NEXT / NOT YET IMPLEMENTED
 
 Target:
-- adopt J2A state into live runtime using simulation time;
-- explicit player activation only when certified readiness + J2A permission allow it;
-- consume Resonance exactly once on successful activation;
-- low-frequency HUD active/countdown/lock projection;
-- reset on new run/restart;
-- pause/photo/lifecycle must not consume wall-clock time;
-- no combat benefit yet (J2C);
+- preserve J2A/J2B as authoritative activation/timing state;
+- define bounded combat-effect projection with no second timer;
+- apply benefit only during certified active Overdrive;
+- prefer modest offensive expression over unrestricted amplification;
+- keep score/economy effects bounded and explicit if introduced;
+- no entity scans or cap/projectile-budget bypass;
+- preserve pause/photo/lifecycle simulation-time behavior;
 - no VFX/audio identity yet (J2D).
 
 ## Remaining ES-13 chronology
-1. J2B — Live Activation & HUD
-2. J2C — Combat Expression Layer
-3. J2D — Reactive VFX/Audio & Safety
-4. J2E — Overdrive Integration Certification
-5. J3 — Advanced Enemy Formation Director
-6. J4 — Tactical Enemy Families
-7. J5 — Priority Targets & Chain Reactions
-8. J6 — Dynamic Mid-Sector Events
-9. J7 — Bonus Challenge Rounds
-10. J8 — Additional Game Modes
-11. J9 — Boss & Miniboss Expansion
-12. J10 — Expert Risk/Reward
-13. J11 — Build & Synergy Expansion
-14. J12 — Rare Events & Secret Encounters
-15. J13 — Score, Rank & Mastery
-16. J14 — Procedural Interaction Matrix
-17. J15 — Integration & Long-Range Balance Certification
+1. J2C — Bounded Combat Expression
+2. J2D — Reactive VFX/Audio & Safety
+3. J2E — Overdrive Integration Certification
+4. J3 — Advanced Enemy Formation Director
+5. J4 — Tactical Enemy Families
+6. J5 — Priority Targets & Chain Reactions
+7. J6 — Dynamic Mid-Sector Events
+8. J7 — Bonus Challenge Rounds
+9. J8 — Additional Game Modes
+10. J9 — Boss & Miniboss Expansion
+11. J10 — Expert Risk/Reward
+12. J11 — Build & Synergy Expansion
+13. J12 — Rare Events & Secret Encounters
+14. J13 — Score, Rank & Mastery
+15. J14 — Procedural Interaction Matrix
+16. J15 — Integration & Long-Range Balance Certification
 
 Post-J15: ES-14 — Living Warfront.
 
