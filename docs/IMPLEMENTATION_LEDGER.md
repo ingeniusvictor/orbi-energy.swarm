@@ -29,6 +29,7 @@ Rules:
 | ES-13J2D-B — Live Reactive Presentation | DEPLOYED / FROZEN | `9743890d98b33d365cbc18a048015f3815b144e5` | #286 | #287 |
 | ES-13J2E — Overdrive Integration Certification | DEPLOYED / FROZEN | `bf0e6a858e3c96091c002ea623b29eb5c260c6ea` | #290 | #291 |
 | ES-13J3A — Pure Enemy Formation Route Contract | DEPLOYED / FROZEN | `3c5ece8d8e59bc38de468b4d0d9644953fa6a8be` | #294 | #295 |
+| ES-13J3B — Live Enemy Formation Director Adoption | DEPLOYED / FROZEN | `0fcf08dc59558619da61e1120eef2e957465f9a1` | #298 | #299 |
 
 ## ES-12 evidence anchors
 
@@ -86,25 +87,39 @@ Certification-only closure of J1/J2. Final gameplay diff added two tests and cha
 Evidence: pre-PR head `eba9a30f627875103f53a49e27069eff2a3c3861`; run `38303651696`, job `114992339524`; final PR head `0dcd9b4533976a43f872d6b070607076c6336b48`; PR CI `38308946054`; PR Android `38309446296`; canonical `bf0e6a858e3c96091c002ea623b29eb5c260c6ea`; main CI `38309074528`; main Android `38309218634`; Pages `38309135916` — GREEN.
 
 ### J3A — Pure Enemy Formation Route Contract
-Added a new pure enemy-only route projection authority, separate from the existing player/FOTON `formations.ts` system. Initial vocabulary is `PINCER`, `X_CROSS`, `SERPENTINE`. Caller supplies route/member slot/count/normalized progress/mirror; output is finite bounded normalized position plus phase/role/telegraph metadata. Local member cap is 8; route extent ±1.25. Invalid inputs fail closed. No runtime adoption, entity ownership, RNG/time authority, Campaign/Infinite logic, caps/budgets, projectile tuning, player formations, J1/J2, GAIA or FOTON GLB changes.
+Added a pure enemy-only route projection authority, separate from player/FOTON `formations.ts`. Initial vocabulary: `PINCER`, `X_CROSS`, `SERPENTINE`; caller supplies route/member slot/count/normalized progress/mirror and receives bounded normalized position plus phase/role/telegraph metadata. Local member cap 8; route extent ±1.25; invalid inputs fail closed. No runtime adoption, entity ownership, RNG/time authority, Campaign/Infinite logic, caps/budgets, projectile tuning, player formations, J1/J2, GAIA or FOTON GLB changes.
 
 Files:
 - `src/game/enemyFormationRoutes.ts`;
 - `tests/gameplay/enemy-formation-routes.test.ts`;
 - `tests/es-13j3a-enemy-formation-route-contract.test.mjs`.
 
-Evidence:
-- pre-PR certified head `685d0c498615a35f659cf8f7c8b231c85a8e6e0e`;
-- pre-PR run `38310490857`, job `115014740153` GREEN across repo/gameplay/platform/typecheck/release/dossier/build/readiness/Android/APK/scope;
-- final PR head `5e01e4d21bf1cdc185a8755e16006a2ee70ca89c`;
-- PR CI `38310847060` GREEN;
-- PR Android `38310847054` GREEN;
-- canonical `3c5ece8d8e59bc38de468b4d0d9644953fa6a8be`, single parent `40bff2cb7b2d109cb13bf1142c76e0238e1d0d19`;
-- main CI `38310975108` GREEN;
-- main Android `38310975021` GREEN;
-- Pages `38311040652` GREEN.
+Evidence: pre-PR head `685d0c498615a35f659cf8f7c8b231c85a8e6e0e`; run `38310490857`, job `115014740153`; final PR head `5e01e4d21bf1cdc185a8755e16006a2ee70ca89c`; PR CI `38310847060`; PR Android `38310847054`; canonical `3c5ece8d8e59bc38de468b4d0d9644953fa6a8be`, parent `40bff2cb7b2d109cb13bf1142c76e0238e1d0d19`; main CI `38310975108`; main Android `38310975021`; Pages `38311040652` — GREEN.
 
-Temporary certification workflow was removed before PR and never merged to `main`.
+### J3B — Live Enemy Formation Director Adoption
+Adopted J3A through the existing regular-enemy spawn/movement seam. The live director owns no entity array: one `useRef` state plus optional per-enemy assignment metadata is sufficient. First slice uses ordinary CRAWLER/SPLITTER pairs only, consumes existing spawn opportunities/capacity, and cycles PINCER/X_CROSS/SERPENTINE. Simulation time owns progress; pause/photo is safe. Assigned motion replaces legacy direct slither rather than stacking a second movement engine. Hydro slow cancels assignment. Fresh run, wave start and boss transitions reset ownership. Campaign/Infinite policy is explicit. Player/FOTON formation code remains separate.
+
+Final files:
+- `src/game/EnergySwarmGame.tsx`;
+- `src/game/liveEnemyFormationDirector.ts`;
+- `src/game/types.ts`;
+- `tests/gameplay/live-enemy-formation-director.test.ts`;
+- `tests/es-13j3b-live-enemy-formation-adoption.test.mjs`.
+
+No extra enemy scan, extra spawn event, global cap/budget increase, score/economy/damage/projectile tuning, J1/J2 change, GAIA change or FOTON GLB change.
+
+Evidence:
+- pre-PR certified head `5085ee44e92c2bb5e020d268a0e502606309856a`;
+- pre-PR run `38313865225`, job `115025740383` GREEN across repository/gameplay/platform/typecheck/release/dossier/build/readiness/Android/APK/J3B scope guard;
+- final PR head `6ff07665f7245b56e9d83c6fcb882f6badbe7f59`;
+- PR CI `38314059155` GREEN;
+- PR Android `38314059702` GREEN;
+- canonical `0fcf08dc59558619da61e1120eef2e957465f9a1`, single parent `b3584ddfef56623a353d6188f8deb5589760eb8e`;
+- main CI `38314198181` GREEN;
+- main Android `38314198069` GREEN;
+- Pages `38314280642` build + deploy GREEN.
+
+Temporary patch/reset/certification workflows were removed before PR. Earlier temporary workflow/guard failures were infrastructure-only; the accepted certification is the fully GREEN run above.
 
 ## Documentation continuity milestones
 - ES-13DOC — #255 / PR #256: persistent roadmap/continuity policy.
@@ -116,29 +131,25 @@ Temporary certification workflow was removed before PR and never merged to `main
 - DOC7 — #284 / PR #285: J2D-A closure + J2D-B activation; successor `51fff02e687a2ce88a9c3e727edfb4de2c42f4b6`.
 - DOC8 — #288 / PR #289: J2D-B closure + J2E activation; successor `95beb172e845794d03484e446128896a44428996`.
 - DOC9 — #292 / PR #293: J2E closure + J3 activation; successor `40bff2cb7b2d109cb13bf1142c76e0238e1d0d19`.
-- DOC10 — #296: ACTIVE documentation closure at this ledger update; baseline J3A gameplay canonical `3c5ece8d8e59bc38de468b4d0d9644953fa6a8be`; activates J3B after merge.
+- DOC10 — #296 / PR #297: J3A closure + J3B activation; successor `b3584ddfef56623a353d6188f8deb5589760eb8e`.
+- DOC11 — #300: ACTIVE documentation closure at this ledger update; baseline J3B gameplay canonical `0fcf08dc59558619da61e1120eef2e957465f9a1`; activates J3C after merge.
 
 Resolved stale/diagnostic issues: #254 CLOSED NOT_PLANNED; #283 CLOSED NOT_PLANNED; neither produced a product merge.
 
 ## Next gameplay phase
 
-### ES-13J3B — Live Enemy Formation Director Adoption
-Status: ACTIVE / NEXT ENGINEERING TARGET AFTER DOC10 CLOSURE
+### ES-13J3C — Advanced Tactical Formation Vocabulary
+Status: NEXT ENGINEERING TARGET AFTER DOC11 CLOSURE
 
-Adopt J3A into the existing enemy spawn/movement authority with the smallest live surface:
-- retain `enemiesRef.current` as the only enemy entity array;
-- no additional full-array scan solely for formations;
-- no increase to `MAX_ENEMIES`, `MAX_PROJECTILES`, descriptor concurrency or simulation budgets;
-- explicit Campaign/Infinite adoption; no silent recipe changes;
-- regular-enemy first slice only unless existing architecture proves another class shares the same safe seam;
-- deterministic route evolution after assignment, using existing simulation ownership;
-- safe fallback/cancel when group capacity is unavailable;
-- minimum necessary per-enemy formation metadata or an equally bounded caller-owned map;
-- player/FOTON formations remain separate;
-- no J1/J2, GAIA, FOTON GLB, score/economy/damage/projectile changes.
+Recommended decomposition:
+- **J3C-A — Pure Advanced Route Vocabulary:** add a small pure set such as WEDGE, ORBIT/RING and SPIRAL/CORKSCREW with explicit tactical questions, bounded normalized projections and no runtime adoption;
+- **J3C-B — Controlled Live Adoption:** after J3C-A certification, selectively expose those routes through the existing J3B director without extra entity ownership, scans, spawns or budgets;
+- **J3C-C — Stateful Tactical Patterns if justified:** convoy/leader-follower, fake retreat, portal ambush, encirclement or staggered artillery only if their extra state/telegraph authority is isolated and certified rather than hidden inside the simple route model.
+
+Admission rule: every pattern must create a distinct decision such as center denial, flank choice, moving-lane timing, inside/outside positioning, leader priority or chase discipline. More HP/enemies/projectiles is not formation variety.
 
 ## Remaining ES-13 chronology
-J3B Live Adoption → J3C Advanced Vocabulary → J3D Telegraph/Fairness/Integration → J4 Tactical Enemy Families → J5 Priority Targets/Chain Reactions → J6 Dynamic Events → J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance.
+J3C Advanced Vocabulary → J3D Telegraph/Fairness/Integration → J4 Tactical Enemy Families → J5 Priority Targets/Chain Reactions → J6 Dynamic Events → J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance.
 
 Post-J15: ES-14 Living Warfront.
 

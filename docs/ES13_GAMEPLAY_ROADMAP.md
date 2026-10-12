@@ -94,82 +94,92 @@ Canonical: `3c5ece8d8e59bc38de468b4d0d9644953fa6a8be`
 Issue #294 / PR #295
 
 Implemented:
-- new standalone pure module `src/game/enemyFormationRoutes.ts`;
+- standalone pure module `src/game/enemyFormationRoutes.ts`;
 - initial route vocabulary: `PINCER`, `X_CROSS`, `SERPENTINE`;
-- caller-owned `route`, member slot/count, normalized progress and mirror;
-- finite bounded normalized route positions with phase/role/telegraph/safe-intent metadata;
-- local member cap 8 and route extent ±1.25;
+- caller-owned route/member slot/count/progress/mirror;
+- finite bounded normalized positions plus phase/role/telegraph metadata;
+- local member cap 8 and normalized route extent ±1.25;
 - exact phase projection from caller progress only;
-- fail-closed validation for unknown route, invalid count/slot/progress/mirror;
-- caller input immutability;
+- fail-closed validation and caller immutability;
 - no renderer, React, audio, storage, wall clock, RAF, random, network, entity-array or projectile ownership;
-- no Campaign/Infinite selection inside the pure contract;
-- no runtime adoption yet;
-- no changes to global caps, simulation budgets, J1/J2, GAIA, FOTON GLB or player-swarm formations.
+- no Campaign/Infinite selection and no live runtime adoption in J3A;
+- no global cap/budget, J1/J2, GAIA, FOTON GLB or player-formation changes.
 
-Tactical decisions already encoded:
+Tactical decisions:
 - PINCER → escape converging flanks before closure;
 - X_CROSS → time diagonal crossing lanes;
 - SERPENTINE → track a moving gap/corridor.
 
-Evidence:
-- pre-PR certified head `685d0c498615a35f659cf8f7c8b231c85a8e6e0e`;
-- pre-PR run `38310490857`, job `115014740153` GREEN;
-- final PR head `5e01e4d21bf1cdc185a8755e16006a2ee70ca89c`;
-- PR CI `38310847060` GREEN;
-- PR Android `38310847054` GREEN;
-- main CI `38310975108` GREEN;
-- main Android `38310975021` GREEN;
-- Pages `38311040652` GREEN.
-
-Temporary certification workflow was removed before PR and was never merged.
+Evidence: pre-PR `38310490857` / job `115014740153`; PR CI `38310847060`; PR Android `38310847054`; main CI `38310975108`; main Android `38310975021`; Pages `38311040652` — GREEN.
 
 ### J3B — Live Enemy Formation Director Adoption
-Status: **ACTIVE / NEXT ENGINEERING SLICE AFTER DOC10 CLOSURE**
+Status: **DEPLOYED / FROZEN**  
+Canonical: `0fcf08dc59558619da61e1120eef2e957465f9a1`  
+Issue #298 / PR #299
 
-Purpose: adopt J3A into the live enemy runtime through the smallest safe spawn/movement seam without creating a parallel entity or movement engine.
+Implemented:
+- one caller-owned live formation director ref; no parallel enemy array/map;
+- optional per-enemy route assignment metadata;
+- first live slice limited to ordinary CRAWLER/SPLITTER pairs;
+- group size 2 and existing spawn opportunities/capacity only;
+- certified route cycle remains PINCER/X_CROSS/SERPENTINE;
+- Campaign and Infinite eligibility are explicit and separately configurable;
+- milestones/evolved/random elites/minibosses/bosses are excluded from the first slice;
+- simulation time owns route progress; pause/photo mode does not advance formations;
+- formation motion replaces the legacy direct-slither branch for opted-in enemies and never stacks a parallel movement engine;
+- Hydro slow clears route ownership so status control remains effective;
+- fresh run, wave start and boss transition reset route/director ownership;
+- non-formation enemies retain legacy movement;
+- no new full-array formation scan, extra spawn event or entity/projectile budget;
+- player/FOTON formations remain a separate untouched authority;
+- no score/economy/damage/projectile/J1/J2/GAIA/FOTON GLB tuning changes.
 
-Required live-adoption constraints:
-- `enemiesRef.current` remains the single enemy entity array;
-- no extra full-array scan solely for formation behavior;
-- preserve `MAX_ENEMIES`, `MAX_PROJECTILES`, descriptor `maxConcurrentEnemies`, entity arrays and simulation budgets;
-- a formation group consumes existing spawn capacity rather than adding reserved entities;
-- first live slice targets ordinary enemies only; bosses/minibosses/special systems remain out unless a demonstrated shared seam makes them safe;
-- explicit Campaign/Infinite eligibility and no silent wave/recipe drift;
-- once assigned, route evolution is deterministic and based on caller-owned simulation progress;
-- no wall-clock or secondary RAF/timer authority;
-- normalized J3A coordinates are materialized through the current playfield/camera coordinate authority;
-- movement must be shaped/replaced for opted-in enemies rather than applied as a second velocity stack;
-- safe fallback if remaining enemy capacity is insufficient to form a valid group;
-- reset/restart/pause cannot leave stale route/group ownership;
-- use the minimum per-enemy metadata required to identify group, route, slot and progress origin, or an equally bounded caller-owned map if that is architecturally cleaner;
-- no score/economy/damage/projectile/J1/J2/GAIA/FOTON GLB changes;
-- player/FOTON formation code remains untouched.
+Evidence:
+- pre-PR certified head `5085ee44e92c2bb5e020d268a0e502606309856a`;
+- pre-PR run `38313865225`, job `115025740383` GREEN;
+- final PR head `6ff07665f7245b56e9d83c6fcb882f6badbe7f59`;
+- PR CI `38314059155` GREEN;
+- PR Android `38314059702` GREEN;
+- main CI `38314198181` GREEN;
+- main Android `38314198069` GREEN;
+- Pages `38314280642` build + deploy GREEN.
 
-Recommended narrow first slice:
-- at most one live formation group at a time;
-- bounded regular-enemy group size within the existing J3A max of 8 and actual remaining runtime capacity;
-- deterministic route assignment after an existing spawn opportunity chooses formation eligibility;
-- start with the three certified J3A routes only;
-- no presentation-polish expansion beyond what is minimally necessary for route fairness.
-
-Tests for J3B must prove:
-- no cap/concurrency regression;
-- no duplicate entity ownership;
-- correct opt-in/opt-out fallback;
-- deterministic movement given the same assignment/progress;
-- reset/restart cleanup;
-- pause does not advance route progress;
-- ordinary non-formation enemies retain existing movement behavior;
-- Campaign and Infinite remain independently controllable;
-- J1/J2 behavior is unchanged.
+Temporary patch/reset/certification workflows were removed before PR. The accepted evidence is the final fully GREEN certification path above.
 
 ### J3C — Advanced Tactical Formation Vocabulary
-Status: PLANNED
+Status: **NEXT ENGINEERING SLICE AFTER DOC11 CLOSURE**
 
-Candidate vocabulary after J3B stabilizes: wedges, rings, spirals/corkscrews, convoy attacks, orbit attacks, encirclement, staggered artillery routes, fake retreats, portal ambushes and leader/follower formations.
+Purpose: expand enemy route vocabulary only where a new pattern creates a distinct tactical question. J3C must build on the certified J3A/J3B authority instead of creating a second route or movement engine.
 
-Admission rule: add a formation only if it creates a distinct tactical question such as lane commitment, center denial, timing a gap, choosing a flank, tracking a leader or deciding whether to chase a retreat. Variety must not come from simply raising HP, enemy count or projectile count.
+#### J3C-A — Pure Advanced Route Vocabulary
+Recommended first pure set:
+- `WEDGE` — center denial; choose a flank or commit through the point;
+- `ORBIT` / `RING` — rotating exclusion zone; choose inside/outside lane and timing;
+- `SPIRAL` / `CORKSCREW` — moving compression corridor; time entry/escape rather than merely follow a sine lane.
+
+J3C-A constraints:
+- pure `enemyFormationRoutes.ts` expansion only;
+- caller-owned normalized progress/mirror/member slot/count;
+- finite deterministic bounded positions;
+- preserve J3A member cap unless a separate proof justifies change;
+- explicit route phase/role/telegraph/safe-intent metadata;
+- no renderer, audio, storage, RNG, wall clock, RAF, timers, entity/projectile ownership or live selection;
+- no runtime adoption, caps, budgets, score/economy/damage/J1/J2/GAIA/FOTON changes;
+- each route must state the player decision it introduces and prove it is not redundant with PINCER/X_CROSS/SERPENTINE.
+
+#### J3C-B — Controlled Live Adoption
+After J3C-A certification, selectively add certified routes to the existing J3B live director. Preserve:
+- one movement authority;
+- existing spawn opportunities/capacity;
+- no additional enemy scan or entity array;
+- explicit Campaign/Infinite eligibility;
+- simulation-time ownership and reset/pause safety;
+- safe legacy fallback.
+
+#### J3C-C — Stateful Tactical Patterns if justified
+Candidate later patterns: convoy/leader-follower, fake retreats, portal ambushes, encirclement, staggered artillery routes. These should not be forced into the simple normalized-route model if they require independent state or telegraph authority. Any richer contract must remain bounded and must not increase entities/projectiles merely to create difficulty.
+
+Admission rule for all J3C work: add a formation only if it creates a distinct tactical question such as lane commitment, center denial, timing a moving gap, choosing inside/outside space, tracking a leader or deciding whether to chase a retreat.
 
 ### J3D — Telegraph / Fairness / Integration Certification
 Status: PLANNED
@@ -257,4 +267,4 @@ Potential: new biomes/sectors, thematic arcs, contracts/missions, codex/discover
 Manual blockers remain open: #4 visual/responsive, #5 Infinite play-feel, #202 GAIA physical runtime, #248 Android real-device. Full final evidence is deferred while ES-13 changes gameplay. CI must never fabricate human/device PASS.
 
 ## Recovery discipline
-Read `PROJECT_CONTINUITY.md`, `IMPLEMENTATION_LEDGER.md`, this roadmap and referenced active Issues/PRs; then verify live `main` before writing anything.
+Read `PROJECT_CONTINUITY.md`, `IMPLEMENTATION_LEDGER.md`, this roadmap, `TRACEABILITY_POLICY.md`, `ES13_PHASE_CHECKLIST.md` and referenced active Issues/PRs; then verify live `main` before writing anything.
