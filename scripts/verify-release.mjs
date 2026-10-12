@@ -1,7 +1,6 @@
 import { readFile } from "node:fs/promises";
 
-const readJson = async (path) =>
-  JSON.parse(await readFile(path, "utf8"));
+const readJson = async (path) => JSON.parse(await readFile(path, "utf8"));
 
 const fail = (message) => {
   console.error(`RELEASE VERIFY: FAIL — ${message}`);
@@ -37,34 +36,42 @@ if (!Array.isArray(release.manualBlockers)) {
   fail("manualBlockers must be an array");
 }
 
-if (
-  release.releaseCandidateEligible === true &&
-  release.manualBlockers.length > 0
-) {
-  fail("RC eligibility cannot be true while manual blockers remain");
+if (!Array.isArray(release.pendingReleaseEngineering)) {
+  fail("pendingReleaseEngineering must be an array");
+}
+
+const blockerCount =
+  (Array.isArray(release.manualBlockers) ? release.manualBlockers.length : 0) +
+  (Array.isArray(release.pendingReleaseEngineering)
+    ? release.pendingReleaseEngineering.length
+    : 0);
+
+if (release.releaseCandidateEligible === true && blockerCount > 0) {
+  fail("RC eligibility cannot be true while release blockers remain");
 }
 
 if (
-  release.channel === "rc" &&
+  (release.channel === "rc" || release.channel === "stable") &&
   release.releaseCandidateEligible !== true
 ) {
-  fail("RC channel requires releaseCandidateEligible=true");
+  fail(`${release.channel} channel requires releaseCandidateEligible=true`);
 }
 
 if (
-  release.channel === "stable" &&
-  (release.releaseCandidateEligible !== true ||
-    release.manualBlockers.length > 0)
+  (release.channel === "alpha" || release.channel === "beta") &&
+  release.releaseCandidateEligible === true
 ) {
-  fail("stable channel requires RC eligibility and zero blockers");
+  fail(`${release.channel} channel cannot claim RC eligibility`);
 }
 
-if (!pkg.version.includes("-beta.") || release.channel !== "beta") {
-  fail("0.2 beta contract requires matching beta SemVer and channel");
+const prerelease = pkg.version.match(/-(alpha|beta|rc)\.\d+$/);
+const semverChannel = prerelease?.[1] ?? "stable";
+if (semverChannel !== release.channel) {
+  fail(`SemVer channel ${semverChannel} != release channel ${release.channel}`);
 }
 
 if (process.exitCode) process.exit();
 
 console.log(
-  `RELEASE VERIFY: PASS — ${release.product} ${release.version} [${release.channel.toUpperCase()}], blockers=${release.manualBlockers.length}`,
+  `RELEASE VERIFY: PASS — ${release.product} ${release.version} [${release.channel.toUpperCase()}], blockers=${blockerCount}`,
 );
