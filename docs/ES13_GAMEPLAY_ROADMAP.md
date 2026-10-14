@@ -275,27 +275,45 @@ Exact deployment anchors:
 - Pages `38569726643`, build `115871441654` + deploy `115871606433` GREEN.
 
 ### J5C — Live Command-Core Priority Presentation
-Status: **NEXT ACTIVE ENGINEERING SLICE AFTER DOC21 CLOSURE**
+Status: **DEPLOYED / FROZEN**
+Canonical: `55d824d2b9cfaf6bb8cd97a032866b1fbcfa92fb`
+Issue #343 / PR #344
 
-Discovery confirms the safest first live adoption is presentation-only:
-- active J3 members already carry optional `enemyFormation` metadata;
-- J3 clears it on Hydro slow cancellation or route completion;
-- `drawEnemiesList` already owns one living-enemy render pass;
-- J5C can therefore derive J5B binding on demand without persistent duplicated state.
+Certified behavior:
+- current active J5B binding is derived on demand from `enemy.enemyFormation` inside the existing Canvas enemy pass;
+- only current valid `COMMAND_CORE` gets one bounded static ring + top chevron;
+- linked/invalid/no-formation members receive no marker;
+- J3 lifecycle clearing automatically removes the marker;
+- no text, cross-entity linked line, second enemy scan or collection;
+- no new EnemyType/Enemy field/runtime state;
+- no spawn/progression, damage, defeat, score, reward, timer/RNG or chain-reaction authority;
+- existing enemy body/telegraphs remain before the marker and damaged health bar remains after it.
+
+Exact deployment anchors:
+- pre-PR `8b493a1e09c03620df9f5d2785fd8e16d062a062`, run `38573138443` / job `115883247207` GREEN including scope guard + Android APK;
+- final PR #344 head `36f4895119d5642624135d5a6af072236faf76d2`;
+- PR CI `38573643779` / `115884993730` GREEN; Android `38573643737` / `115884991853` GREEN;
+- canonical `55d824d2b9cfaf6bb8cd97a032866b1fbcfa92fb`, parent `8a1e17b87cdd8508453814454175ef7f0b95c6ce`, tree `442611df6707d609c73637da48ef70096feb902d`;
+- main CI `38573884299` / `115885813621` GREEN; Android `38573884191` / `115885814664` GREEN;
+- Pages `38574014576`, build `115886257262` + deploy `115886451208` GREEN.
+
+### J5D — Pure Command-Link Break Resolution Contract
+Status: **NEXT ACTIVE ENGINEERING SLICE AFTER DOC22 CLOSURE**
+
+Post-J5C discovery found that direct and splash defeats already converge through `registerCombatDefeat(...)`, but the runtime has no safe durable mapping from J3 `groupId` to linked live enemy ids. J5D therefore defines only the bounded semantic resolution required before any live application.
 
 Design constraints:
-- pure presentation projection + existing canvas renderer only;
-- only current valid `COMMAND_CORE` role receives a core marker;
-- no linked-member line/cross-entity lookup;
-- no marker for absent/invalid formation data or linked-member role;
-- marker automatically disappears when J3 clears formation metadata;
-- render after enemy body and before damaged-health bar;
-- renderer `time` may drive bounded animation as input only; no timer/RNG ownership;
-- no `EnergySwarmGame.tsx`, `types.ts`, J3, J5A or J5B contract changes;
-- no spawn/progression, damage, defeat, score, reward, chain reaction, cap/budget or entity collection changes;
-- preserve existing tactical telegraphs, accessibility flash behavior, Campaign/Infinite isolation, FOTON GLB and player/FOTON formations.
+- pure contract only; no `EnergySwarmGame.tsx` or entity-schema adoption;
+- consume current J5B formation/binding facts;
+- require a valid `COMMAND_CORE` binding; linked/invalid input returns null;
+- reuse J5A `COMMAND_LINK_BROKEN` signal;
+- output bounded linked member indices `[1]` or `[1,2]` and intent `DETACH_LINKED_MEMBERS`;
+- effect mode `INTENT_ONLY` / non-mutating;
+- no live enemy ids, group lookup, enemy scan, collection or entity mutation;
+- no damage/kill/score/reward/economy, spawn/progression, clock/RNG or cap/budget authority;
+- preserve J3/J5A/J5B/J5C and all J1–J4/FOTON/player authorities.
 
-Command Core defeat effects / chain reactions remain deferred to J5D+ after J5C certification.
+A later J5E+ slice must independently prove a bounded safe live lookup/application strategy before detach/chain-reaction effects are adopted.
 
 ## J6 — Dynamic Mid-Sector Events
 Status: PLANNED

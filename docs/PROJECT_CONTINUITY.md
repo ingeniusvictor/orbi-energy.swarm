@@ -18,16 +18,16 @@ Never infer deployment/certification from conversation text alone.
 
 ## Current certified gameplay canonical
 
-`f868058889b24fecbd97f968e932890248ca2b33`
+`55d824d2b9cfaf6bb8cd97a032866b1fbcfa92fb`
 
-Phase: **ES-13J5B — Pure Command-Link Binding Contract**
+Phase: **ES-13J5C — Live Command-Core Priority Presentation**
 Status: **DEPLOYED / FROZEN**
-Issue: #339 — CLOSED / completed
-Delivery: PR #340 — squash merged
+Issue: #343 — CLOSED / completed
+Delivery: PR #344 — squash merged
 
-Single parent: `efe68202b4046c7f4b2df3cae951908b9e012d3b` — DOC20 documentation canonical.
+Single parent: `8a1e17b87cdd8508453814454175ef7f0b95c6ce` — DOC21 documentation canonical.
 
-Canonical tree: `336ef4e31a59aea1890154f9b853b84e1409711a`, exactly equal to final PR-head tree.
+Canonical tree: `442611df6707d609c73637da48ef70096feb902d`, exactly equal to final PR-head tree.
 
 Version remains `0.2.0-beta.1`. Full RC/manual certification remains intentionally deferred while ES-13 materially expands gameplay.
 
@@ -134,6 +134,40 @@ Final product scope exactly:
 
 Issue #339 CLOSED / completed. J5B is **DEPLOYED / FROZEN**.
 
+## J5C result
+J5C delivered the first live Command Core adoption as presentation only, reusing current J3/J5B facts without adding entity state or combat authority.
+
+Certified live behavior:
+- current active formation facts are projected through J5B on demand inside the existing Canvas enemy pass;
+- only a valid current `COMMAND_CORE` receives one bounded static priority ring plus top chevron;
+- linked/invalid/no-formation members receive no marker;
+- J3 remains authoritative for formation lifetime, so the marker disappears naturally when `enemyFormation` is cleared;
+- existing enemy body/telegraphs render before the marker and the damaged-health bar remains after it;
+- no text label, linked-member line, cross-entity lookup, second enemy scan or collection;
+- no new `EnemyType`, `Enemy` field, runtime state, timer or RNG authority;
+- no spawn/progression, damage, defeat, score, reward, economy, cap/budget or chain-reaction effect;
+- J3, J4, J5A and J5B contracts remain unchanged.
+
+Final product scope exactly:
+- `src/game/EnergySwarmCanvas.tsx`;
+- `src/game/liveCommandCorePresentation.ts`;
+- `tests/es-13j5c-live-command-core-presentation.test.mjs`;
+- `tests/gameplay/live-command-core-presentation.test.ts`.
+
+## J5C exact evidence
+- DOC21 baseline `8a1e17b87cdd8508453814454175ef7f0b95c6ce`;
+- pre-PR SHA `8b493a1e09c03620df9f5d2785fd8e16d062a062`, run `38573138443` / job `115883247207` GREEN including repo/gameplay/platform/typecheck/release/dossier/build/readiness, exact product-scope guard and Android APK build/verify/upload;
+- final PR #344 head `36f4895119d5642624135d5a6af072236faf76d2`;
+- PR CI `38573643779` / `115884993730` GREEN;
+- PR Android `38573643737` / `115884991853` GREEN including Build/Verify/Upload APK;
+- canonical `55d824d2b9cfaf6bb8cd97a032866b1fbcfa92fb`, single parent `8a1e17b87cdd8508453814454175ef7f0b95c6ce`, tree `442611df6707d609c73637da48ef70096feb902d` equal to final PR-head tree;
+- canonical diff exactly four certified product files;
+- main CI `38573884299` / `115885813621` GREEN;
+- main Android `38573884191` / `115885814664` GREEN including Build/Verify/Upload APK;
+- Pages `38574014576`: build `115886257262` + deploy `115886451208` GREEN.
+
+Issue #343 CLOSED / completed. J5C is **DEPLOYED / FROZEN**.
+
 ## ES-13 gameplay canonicals
 - J1A — Combat Chain & Resonance Core: `feb263957b52839d35a7cb1249762c223ba22595`;
 - J1B — Live Combat Resonance Adoption & HUD: `91564e365d0a2220e4db2999e38372809ec397f3`;
@@ -156,6 +190,7 @@ Issue #339 CLOSED / completed. J5B is **DEPLOYED / FROZEN**.
 - J4C-C — Controlled Normal-Progression Siege Adoption: `1131c06db406ca0170d5dad33ecb7f4610a06b96`.
 - J5A — Pure Priority-Target Contract: `df60f62565a1d3cdf6058d2e1a4049f5870f27b7`.
 - J5B — Pure Command-Link Binding Contract: `f868058889b24fecbd97f968e932890248ca2b33`.
+- J5C — Live Command-Core Priority Presentation: `55d824d2b9cfaf6bb8cd97a032866b1fbcfa92fb`.
 
 J3C-C stateful formation patterns remain **DEFERRED / NOT CURRENTLY JUSTIFIED**, not cancelled.
 
@@ -170,34 +205,26 @@ J3C-C stateful formation patterns remain **DEFERRED / NOT CURRENTLY JUSTIFIED**,
 - DOC18 — J4C-B closure & J4C-C activation: `72c4359af106d6f955e9932c6c72a836b2922ab8` — Issue #329 / PR #330.
 - DOC19 — J4C-C closure & J5A activation: `907bce8c494a5c7b9a4965e09dca677d919560f4` — Issue #333 / PR #334.
 - DOC20 — J5A closure & J5B activation: `efe68202b4046c7f4b2df3cae951908b9e012d3b` — Issue #337 / PR #338.
-- DOC21 — J5B closure & J5C activation: Issue #341, branch `docs/es-13-j5b-closure-j5c-activation`, documentation-only closure in progress from gameplay canonical `f868058889b24fecbd97f968e932890248ca2b33`.
+- DOC21 — J5B closure & J5C activation: `8a1e17b87cdd8508453814454175ef7f0b95c6ce` — Issue #341 / PR #342.
+- DOC22 — J5C closure & J5D activation: Issue #345, branch `docs/es-13-j5c-closure-j5d-activation`, documentation-only closure in progress from gameplay canonical `55d824d2b9cfaf6bb8cd97a032866b1fbcfa92fb`.
 
 ## Next gameplay phase
 
-### ES-13J5C — Live Command-Core Priority Presentation
-Status: **NEXT ENGINEERING TARGET AFTER DOC21 CLOSURE**
+### ES-13J5D — Pure Command-Link Break Resolution Contract
+Status: **NEXT ENGINEERING TARGET AFTER DOC22 CLOSURE**
 
-J5C is the first bounded live adoption of the already-certified J5A/J5B semantics, but presentation only.
-
-Discovery confirms:
-- J3 attaches `enemyFormation` directly to active formation members at spawn;
-- J3 clears that metadata when Hydro slow cancels formation ownership or when formation motion completes;
-- `drawEnemiesList(...)` already iterates every living enemy exactly once;
-- therefore J5C can derive current J5B binding on demand inside the existing renderer pass with no new Enemy field, collection, scan or duplicated state.
+J5D remains pure because post-J5C discovery proved that live defeat routing is centralized but the runtime has no safe durable `groupId → live linked enemy ids` index. A live detach today would require a new collection or an enemy-array scan, neither of which is justified yet.
 
 Required direction:
-- pure presentation projection + existing Canvas enemy pass as the only live adapter;
-- only active valid J5B bindings with `memberRole === COMMAND_CORE` receive a bounded visual marker;
-- linked members receive no cross-entity line or lookup;
-- absent/invalid formation data produces no marker;
-- marker disappears automatically when J3 clears `enemyFormation`;
-- insert presentation after enemy body and before the existing damaged-health bar so enemy telegraphs/body remain authoritative;
-- use existing renderer `time` only as presentation input if animation is desired; no owned clock/timer/RNG;
-- do not modify `EnergySwarmGame.tsx`, `types.ts`, J3 director, J5A or J5B contracts;
-- no damage, defeat, score, reward, spawn, progression, chain reaction, cap or budget change;
-- preserve accessibility flash behavior, Siege telegraph, Campaign/Infinite isolation, FOTON GLB and player/FOTON formation ownership.
-
-Actual Command Core defeat effects and chain reactions remain deferred to a later J5 slice after J5C is certified.
+- consume current J5B formation/binding facts only;
+- require a valid current `COMMAND_CORE` binding; linked or invalid members fail closed;
+- reuse J5A `COMMAND_LINK_BROKEN` rather than invent another defeat signal;
+- project bounded linked member indices `[1]` or `[1,2]` plus intent `DETACH_LINKED_MEMBERS`;
+- effect mode is `INTENT_ONLY` and non-mutating;
+- output contains no live enemy ids and performs no lookup/scan/collection work;
+- no J3/J5A/J5B mutation and no `EnergySwarmGame.tsx` or entity-schema adoption;
+- no damage, kill, score, reward, economy, spawn, progression, timer/RNG, cap or budget authority;
+- actual live application must wait for a later J5 slice that independently proves a bounded safe lookup/application strategy.
 
 J4D+ additional tactical families remain **DEFERRED / NOT CURRENTLY JUSTIFIED**. J3C-C remains deferred, not cancelled.
 
@@ -228,7 +255,7 @@ Rules:
 - no gameplay phase is declared deployed before exact-SHA required evidence.
 
 ## Gameplay chronology
-`J5C Live Command-Core Priority Presentation → J5D+ Controlled Command-Core Defeat/Chain Reactions → J6 Dynamic Events → J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance`
+`J5D Pure Command-Link Break Resolution Contract → J5E+ Controlled Live Command-Link Application/Chain Reactions → J6 Dynamic Events → J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance`
 
 Post-J15 direction: **ES-14 — Living Warfront**.
 
@@ -236,7 +263,7 @@ Post-J15 direction: **ES-14 — Living Warfront**.
 Read this file, `IMPLEMENTATION_LEDGER.md`, `ES13_GAMEPLAY_ROADMAP.md`, `TRACEABILITY_POLICY.md` and `ES13_PHASE_CHECKLIST.md`, then active Issues/PRs. Verify live `main` before any write.
 
 Suggested handoff:
-> Continue ORBI Energy Swarm autonomously. Repository `ingeniusvictor/orbi-energy.swarm`. J5B gameplay canonical is `f868058889b24fecbd97f968e932890248ca2b33`, fully DEPLOYED / FROZEN via Issue #339 / PR #340 with exact three-file product scope. Complete DOC21 if still open, then implement J5C Live Command-Core Priority Presentation as presentation-only derivation from active `enemy.enemyFormation` inside the existing enemy render pass; do not add an Enemy field, second scan, combat effect or chain reaction. Keep J4D+ families and J3C-C deferred until prerequisites are proven. Follow Issue → Branch → full gates → PR → exact-SHA post-merge evidence. Never touch `main` directly or weaken tests.
+> Continue ORBI Energy Swarm autonomously. Repository `ingeniusvictor/orbi-energy.swarm`. J5C gameplay canonical is `55d824d2b9cfaf6bb8cd97a032866b1fbcfa92fb`, fully DEPLOYED / FROZEN via Issue #343 / PR #344 with exact four-file product scope. Complete DOC22 if still open, then implement J5D Pure Command-Link Break Resolution Contract only: reuse J5A `COMMAND_LINK_BROKEN` + J5B bounded linked indices, emit `DETACH_LINKED_MEMBERS` as `INTENT_ONLY`, and do not add live enemy lookup, scans, collections, runtime mutation or chain reaction. Keep J4D+ families and J3C-C deferred until prerequisites are proven. Follow Issue → Branch → full gates → PR → exact-SHA post-merge evidence. Never touch `main` directly or weaken tests.
 
 ## Update obligation
 Every merged gameplay phase must record exact gameplay canonical, Issue/PR, final head, pre-PR certification, PR CI/Android, main CI/Android/Pages, implementation result, unresolved follow-ups and next roadmap phase. A gameplay phase is not administratively closed until these records are current.
