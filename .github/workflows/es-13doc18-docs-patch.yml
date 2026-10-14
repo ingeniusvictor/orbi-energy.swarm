@@ -74,3 +74,5 @@ jobs:
           grep -Fq '### J4C-B — Live Siege Volley Telegraph Integration' docs/ES13_GAMEPLAY_ROADMAP.md
           grep -Fq '### J4C-C — Controlled Normal-Progression Siege Adoption' docs/ES13_GAMEPLAY_ROADMAP.md
           git diff --quiet 2e16ff9a577128ffb06211b612116553928c8cda...HEAD -- src tests android public package.json package-lock.json
+
+# recertification trigger after helper whitespace cleanup
