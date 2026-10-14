@@ -27,37 +27,38 @@ jobs:
           python - <<'PY'
           from pathlib import Path
 
-          path = Path('src/game/EnergySwarmGame.tsx')
+          path = Path("src/game/EnergySwarmGame.tsx")
           source = path.read_text()
-          old = '''      const enemyAttackRateStep =
-                (delta / 16.6) *
-                simulationCombatPressure.enemyAttackRateMultiplier *
-                (enemy.evolvedAttackRateMultiplier ?? 1);
 
-              if (
-                enemy.type !== EnemyType.SIEGE_PRISM ||
-                enemy.siegeVolleyTelegraph === undefined
-              ) {
-                enemy.shootCooldown -= enemyAttackRateStep;
-              }
-          '''
-          new = '''      if (
-                enemy.type !== EnemyType.SIEGE_PRISM ||
-                enemy.siegeVolleyTelegraph === undefined
-              ) {
-                enemy.shootCooldown -=
-                  (delta / 16.6) *
-                  simulationCombatPressure.enemyAttackRateMultiplier *
-                  (enemy.evolvedAttackRateMultiplier ?? 1);
-              }
-          '''
-          # The workflow YAML strips six leading spaces from each heredoc line,
-          # so normalize the embedded continuation indentation back to source form.
-          old = old.replace('\n              ', '\n        ').replace('\n            ', '\n      ')
-          new = new.replace('\n              ', '\n        ').replace('\n                ', '\n          ').replace('\n            ', '\n      ')
+          old = "\n".join([
+              "      const enemyAttackRateStep =",
+              "        (delta / 16.6) *",
+              "        simulationCombatPressure.enemyAttackRateMultiplier *",
+              "        (enemy.evolvedAttackRateMultiplier ?? 1);",
+              "",
+              "      if (",
+              "        enemy.type !== EnemyType.SIEGE_PRISM ||",
+              "        enemy.siegeVolleyTelegraph === undefined",
+              "      ) {",
+              "        enemy.shootCooldown -= enemyAttackRateStep;",
+              "      }",
+          ]) + "\n"
+
+          new = "\n".join([
+              "      if (",
+              "        enemy.type !== EnemyType.SIEGE_PRISM ||",
+              "        enemy.siegeVolleyTelegraph === undefined",
+              "      ) {",
+              "        enemy.shootCooldown -=",
+              "          (delta / 16.6) *",
+              "          simulationCombatPressure.enemyAttackRateMultiplier *",
+              "          (enemy.evolvedAttackRateMultiplier ?? 1);",
+              "      }",
+          ]) + "\n"
+
           count = source.count(old)
           if count != 1:
-              raise SystemExit(f'expected exactly one cooldown block, found {count}')
+              raise SystemExit(f"expected exactly one cooldown block, found {count}")
           path.write_text(source.replace(old, new, 1))
           PY
 
