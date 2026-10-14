@@ -5,6 +5,7 @@ import {
 } from "./types";
 import { CANVAS_WIDTH, CANVAS_HEIGHT } from "./constants";
 import { getCanvasBackingStoreSize } from "./canvasResolution";
+import { projectSiegeVolleyTelegraph } from "./siegeVolleyTelegraph";
 import {
   projectFlashAccessibility,
   type FlashAccessibilityProfile,
@@ -922,7 +923,82 @@ export function drawEnemiesList(
     }
 
     // DRAW WEAPONS CHARGING TELEGRAPHS (drawn behind the enemy body)
-    if (enemy.type === EnemyType.DRONE && enemy.shootCooldown !== undefined && enemy.shootCooldown <= 35 && enemy.shootCooldown > 0) {
+    const siegeVolleyProjection =
+      enemy.type === EnemyType.SIEGE_PRISM &&
+      enemy.siegeVolleyTelegraph
+        ? projectSiegeVolleyTelegraph(
+            enemy.siegeVolleyTelegraph,
+          )
+        : null;
+
+    if (
+      enemy.type === EnemyType.SIEGE_PRISM &&
+      siegeVolleyProjection &&
+      (siegeVolleyProjection.telegraphActive ||
+        siegeVolleyProjection.commitReady) &&
+      siegeVolleyProjection.targetX !== null &&
+      siegeVolleyProjection.targetY !== null
+    ) {
+      const targetDx =
+        siegeVolleyProjection.targetX - enemy.x;
+      const targetDy =
+        siegeVolleyProjection.targetY - enemy.y;
+      const targetPulse =
+        1 + Math.sin(time * 0.018) * 0.12;
+
+      ctx.save();
+      ctx.strokeStyle = siegeVolleyProjection.commitReady
+        ? "rgba(244, 114, 182, 0.95)"
+        : "rgba(244, 114, 182, 0.68)";
+      ctx.lineWidth = siegeVolleyProjection.commitReady ? 2.2 : 1.5;
+      ctx.setLineDash([7, 5]);
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(targetDx, targetDy);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.strokeStyle = "rgba(103, 232, 249, 0.9)";
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.arc(
+        targetDx,
+        targetDy,
+        16 * targetPulse,
+        0,
+        Math.PI * 2,
+      );
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(targetDx - 22, targetDy);
+      ctx.lineTo(targetDx + 22, targetDy);
+      ctx.moveTo(targetDx, targetDy - 22);
+      ctx.lineTo(targetDx, targetDy + 22);
+      ctx.stroke();
+
+      ctx.strokeStyle = "rgba(244, 114, 182, 0.95)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(
+        0,
+        0,
+        enemy.size * 1.65,
+        -Math.PI / 2,
+        -Math.PI / 2 +
+          Math.PI * 2 * siegeVolleyProjection.progress,
+      );
+      ctx.stroke();
+
+      ctx.fillStyle = "rgba(253, 242, 248, 0.96)";
+      ctx.font = "bold 7px monospace";
+      ctx.textAlign = "center";
+      ctx.fillText(
+        "SIEGE VOLLEY",
+        targetDx,
+        targetDy - 28,
+      );
+      ctx.restore();
+    } else if (enemy.type === EnemyType.DRONE && enemy.shootCooldown !== undefined && enemy.shootCooldown <= 35 && enemy.shootCooldown > 0) {
       // Fine target line to Foton leader (Section 3.1)
       ctx.save();
       const pdx = playerPos.x - enemy.x;
@@ -1190,6 +1266,58 @@ export function drawEnemiesList(
         }
         ctx.closePath();
         ctx.fill();
+        break;
+      }
+
+      case EnemyType.SIEGE_PRISM: {
+        const prismRotation = time * 0.0015;
+        const volleyProjection = enemy.siegeVolleyTelegraph
+          ? projectSiegeVolleyTelegraph(
+              enemy.siegeVolleyTelegraph,
+            )
+          : null;
+        const chargeScale =
+          volleyProjection?.telegraphActive ||
+          volleyProjection?.commitReady
+            ? 1.08 +
+              Math.sin(time * 0.016) * 0.06
+            : 1;
+
+        ctx.save();
+        ctx.rotate(prismRotation);
+        ctx.scale(chargeScale, chargeScale);
+        ctx.shadowColor = "#f472b6";
+        ctx.shadowBlur = 14;
+
+        ctx.fillStyle = "#3b1647";
+        ctx.strokeStyle = "#f9a8d4";
+        ctx.lineWidth = 1.8;
+        ctx.beginPath();
+        ctx.moveTo(0, -enemy.size * 1.25);
+        ctx.lineTo(enemy.size * 0.9, 0);
+        ctx.lineTo(0, enemy.size * 1.25);
+        ctx.lineTo(-enemy.size * 0.9, 0);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.strokeStyle = "#67e8f9";
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        ctx.moveTo(0, -enemy.size * 0.92);
+        ctx.lineTo(enemy.size * 0.62, 0);
+        ctx.lineTo(0, enemy.size * 0.92);
+        ctx.lineTo(-enemy.size * 0.62, 0);
+        ctx.closePath();
+        ctx.stroke();
+
+        ctx.fillStyle = volleyProjection?.commitReady
+          ? "#ffffff"
+          : "#f472b6";
+        ctx.beginPath();
+        ctx.arc(0, 0, enemy.size * 0.26, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
         break;
       }
 
