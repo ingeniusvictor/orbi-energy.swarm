@@ -41,7 +41,6 @@ jobs:
                 enemy.shootCooldown -= enemyAttackRateStep;
               }
           '''
-          old = old.replace('              ', '      ')
           new = '''      if (
                 enemy.type !== EnemyType.SIEGE_PRISM ||
                 enemy.siegeVolleyTelegraph === undefined
@@ -52,7 +51,10 @@ jobs:
                   (enemy.evolvedAttackRateMultiplier ?? 1);
               }
           '''
-          new = new.replace('              ', '      ')
+          # The workflow YAML strips six leading spaces from each heredoc line,
+          # so normalize the embedded continuation indentation back to source form.
+          old = old.replace('\n              ', '\n        ').replace('\n            ', '\n      ')
+          new = new.replace('\n              ', '\n        ').replace('\n                ', '\n          ').replace('\n            ', '\n      ')
           count = source.count(old)
           if count != 1:
               raise SystemExit(f'expected exactly one cooldown block, found {count}')
