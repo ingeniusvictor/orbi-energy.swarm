@@ -1,0 +1,47 @@
+name: ES-13J5E Live Patch
+
+on:
+  push:
+    branches:
+      - es-13j5e-controlled-live-command-link-detach
+    paths:
+      - '.github/es13j5e_patch.py'
+      - '.github/workflows/es-13j5e-live-patch.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact branch head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: es-13j5e-controlled-live-command-link-detach
+
+      - name: Apply guarded J5E live adapter patch
+        run: python .github/es13j5e_patch.py
+
+      - name: Validate product diff
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --check
+          mapfile -t changed < <(git diff --name-only | LC_ALL=C sort)
+          expected=("src/game/EnergySwarmGame.tsx")
+          mapfile -t expected_sorted < <(printf '%s\n' "${expected[@]}" | LC_ALL=C sort)
+          [[ "${#changed[@]}" -eq 1 ]]
+          [[ "${changed[0]}" == "${expected_sorted[0]}" ]]
+
+      - name: Commit live adapter patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/game/EnergySwarmGame.tsx
+          git commit -m "ES-13J5E: adopt bounded live command-link detach"
+          git push origin HEAD:es-13j5e-controlled-live-command-link-detach
