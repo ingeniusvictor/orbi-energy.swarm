@@ -1,4 +1,4 @@
-name: ES-13DOC18 Guarded Docs Patch
+name: ES-13DOC18 Documentation Certification
 
 on:
   push:
@@ -8,59 +8,69 @@ on:
       - '.github/workflows/es-13doc18-docs-patch.yml'
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  patch:
+  certify:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
+    env:
+      ORBI_BUILD_SHA: ${{ github.sha }}
+      ORBI_RELEASE_SHA: ${{ github.sha }}
     steps:
-      - name: Checkout exact branch
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Guard canonical base
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Repository Smoke
+        run: npm run test:repo
+
+      - name: Gameplay
+        run: npm run test:gameplay
+
+      - name: Platform
+        run: npm run test:platform
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Release Contract
+        run: npm run release:verify
+
+      - name: Manual dossier
+        run: npm run release:evidence:verify
+
+      - name: Production Build
+        run: npm run build
+
+      - name: RC readiness fail-closed
+        run: npm run release:readiness -- --output release-readiness.json
+
+      - name: DOC18 docs-only scope guard
         shell: bash
         run: |
           set -euo pipefail
-          test "$(git branch --show-current)" = 'docs/es-13-j4c-b-closure-j4c-c-activation'
           git fetch origin main
           test "$(git rev-parse origin/main)" = '2e16ff9a577128ffb06211b612116553928c8cda'
-
-      - name: Apply guarded DOC18 patch
-        run: python .github/es13doc18_patch.py
-
-      - name: Normalize newly inserted Markdown lines
-        shell: bash
-        run: |
-          set -euo pipefail
-          sed -i 's/^Phase: \*\*ES-13J4C-B — Live Siege Volley Telegraph Integration\*\*  $/Phase: **ES-13J4C-B — Live Siege Volley Telegraph Integration**/' docs/PROJECT_CONTINUITY.md
-          sed -i 's/^Issue: #326 — CLOSED \/ completed  $/Issue: #326 — CLOSED \/ completed/' docs/PROJECT_CONTINUITY.md
-          sed -i 's/^Status: \*\*DEPLOYED \/ FROZEN\*\*  $/Status: **DEPLOYED \/ FROZEN**/' docs/ES13_GAMEPLAY_ROADMAP.md
-          sed -i 's/^Canonical: `2e16ff9a577128ffb06211b612116553928c8cda`  $/Canonical: `2e16ff9a577128ffb06211b612116553928c8cda`/' docs/ES13_GAMEPLAY_ROADMAP.md
-
-      - name: Scope and content guard
-        shell: bash
-        run: |
-          set -euo pipefail
-          git diff --check
-          changed="$(git diff --name-only | sort)"
-          expected="$(printf '%s\n' 'docs/ES13_GAMEPLAY_ROADMAP.md' 'docs/IMPLEMENTATION_LEDGER.md' 'docs/PROJECT_CONTINUITY.md' | sort)"
-          printf 'DOC18 changed:\n%s\nexpected:\n%s\n' "$changed" "$expected"
+          git diff --check 2e16ff9a577128ffb06211b612116553928c8cda...HEAD
+          changed="$(git diff --name-only 2e16ff9a577128ffb06211b612116553928c8cda...HEAD | sort)"
+          expected="$(printf '%s\n' '.github/es13doc18_patch.py' '.github/workflows/es-13doc18-docs-patch.yml' 'docs/ES13_GAMEPLAY_ROADMAP.md' 'docs/IMPLEMENTATION_LEDGER.md' 'docs/PROJECT_CONTINUITY.md' | sort)"
+          printf 'DOC18 pre-cert changed:\n%s\nexpected:\n%s\n' "$changed" "$expected"
           test "$changed" = "$expected"
+          grep -Fq 'ES-13J4C-B — Live Siege Volley Telegraph Integration' docs/PROJECT_CONTINUITY.md
           grep -Fq '2e16ff9a577128ffb06211b612116553928c8cda' docs/PROJECT_CONTINUITY.md
           grep -Fq 'ES-13J4C-C — Controlled Normal-Progression Siege Adoption' docs/PROJECT_CONTINUITY.md
-          grep -Fq 'ES-13J4C-B — Live Siege Volley Telegraph Integration | DEPLOYED / FROZEN' docs/IMPLEMENTATION_LEDGER.md
+          grep -Fq '| ES-13J4C-B — Live Siege Volley Telegraph Integration | DEPLOYED / FROZEN | `2e16ff9a577128ffb06211b612116553928c8cda` | #326 | #327 + #328 |' docs/IMPLEMENTATION_LEDGER.md
+          grep -Fq '### J4C-B — Live Siege Volley Telegraph Integration' docs/ES13_GAMEPLAY_ROADMAP.md
           grep -Fq '### J4C-C — Controlled Normal-Progression Siege Adoption' docs/ES13_GAMEPLAY_ROADMAP.md
-
-      - name: Commit exactly three docs
-        shell: bash
-        run: |
-          set -euo pipefail
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add docs/PROJECT_CONTINUITY.md docs/IMPLEMENTATION_LEDGER.md docs/ES13_GAMEPLAY_ROADMAP.md
-          git commit -m 'docs(doc18): close J4C-B and activate J4C-C'
-          test "$(git branch --show-current)" = 'docs/es-13-j4c-b-closure-j4c-c-activation'
-          git push origin HEAD:docs/es-13-j4c-b-closure-j4c-c-activation
+          git diff --quiet 2e16ff9a577128ffb06211b612116553928c8cda...HEAD -- src tests android public package.json package-lock.json
