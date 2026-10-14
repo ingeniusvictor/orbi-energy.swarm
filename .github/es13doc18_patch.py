@@ -19,9 +19,9 @@ project_head = f"""## Current certified gameplay canonical
 
 `{CANON}`
 
-Phase: **ES-13J4C-B — Live Siege Volley Telegraph Integration**  
-Status: **DEPLOYED / FROZEN**  
-Issue: #326 — CLOSED / completed  
+Phase: **ES-13J4C-B — Live Siege Volley Telegraph Integration**
+Status: **DEPLOYED / FROZEN**
+Issue: #326 — CLOSED / completed
 Delivery: PR #327 + exact-scope remediation PR #328 — squash merged
 
 Single parent: `8dec7945338e0152e83536605b18da63879818fe` — initial J4C-B merge prior to exact-scope remediation.
@@ -51,7 +51,7 @@ PR #327 initially carried one historical certification-file adaptation beyond th
 - initial merge `8dec7945338e0152e83536605b18da63879818fe` was not accepted as final frozen canonical because its permanent diff had seven files;
 - remediation pre-PR SHA `b5a768e919b9a75fb71a1a627bc521f74661a13b`, run `38506960989` / job `115666560063` GREEN including Platform, Android/APK and six-file scope guard;
 - remediation PR #328 final head `bba0fa7a94cd45084c55149f80714dd1155a5baa`;
-- PR #328 CI `38507157523` / `115667172988` GREEN; Android `38507157492` / `115667172667` GREEN including Build/Verify/Upload APK;
+- PR #328 CI `38507157523` / `115667172988` GREEN; Android `38507157492` / `115642582029` GREEN including Build/Verify/Upload APK;
 - canonical `{CANON}`, parent `8dec7945338e0152e83536605b18da63879818fe`, tree `8435b068908d82225b5442c8865578c46fedc243` equal to final PR head tree;
 - main CI `38507278577` / `115667552196` GREEN;
 - main Android `38507278528` / `115667552109` GREEN including Build/Verify/Upload APK;
@@ -133,8 +133,8 @@ p.write_text(s)
 p = Path("docs/ES13_GAMEPLAY_ROADMAP.md")
 s = p.read_text()
 roadmap = f"""### J4C-B — Live Siege Volley Telegraph Integration
-Status: **DEPLOYED / FROZEN**  
-Canonical: `{CANON}`  
+Status: **DEPLOYED / FROZEN**
+Canonical: `{CANON}`
 Issue #326 / delivery PR #327 + exact-scope remediation PR #328
 
 Certified live policy:
