@@ -41,6 +41,7 @@ Rules:
 | ES-13J5A — Pure Priority-Target Contract | DEPLOYED / FROZEN | `df60f62565a1d3cdf6058d2e1a4049f5870f27b7` | #335 | #336 |
 | ES-13J5B — Pure Command-Link Binding Contract | DEPLOYED / FROZEN | `f868058889b24fecbd97f968e932890248ca2b33` | #339 | #340 |
 | ES-13J5C — Live Command-Core Priority Presentation | DEPLOYED / FROZEN | `55d824d2b9cfaf6bb8cd97a032866b1fbcfa92fb` | #343 | #344 |
+| ES-13J5D — Pure Command-Link Break Resolution Contract | DEPLOYED / FROZEN | `99410123a8f20d15a88cd20ada34523ce4497006` | #347 | #348 |
 
 ## Evidence anchors
 
@@ -245,6 +246,25 @@ Exact evidence:
 
 Issue #343 CLOSED / completed. J5C is **DEPLOYED / FROZEN**.
 
+### J5D — Pure Command-Link Break Resolution Contract
+J5D established the immutable `COMMAND_LINK_BROKEN` → `DETACH_LINKED_MEMBERS` intent contract before any live application. Valid current core facts resolve bounded linked member indices `[1]` or `[1,2]` with `INTENT_ONLY`; linked/invalid input fails closed. The slice owns no live ids, lookup, scan, collection, mutation, combat/economy, timing or cap authority.
+
+Final product diff exactly:
+- `src/game/commandLinkBreakResolution.ts`;
+- `tests/es-13j5d-command-link-break-resolution.test.mjs`;
+- `tests/gameplay/command-link-break-resolution.test.ts`.
+
+Exact evidence:
+- baseline `025bc875a4b3a9dc5d1e690591b6ae0f5af6a6ec`;
+- pre-PR `68d5c269f62415605c6265a1acef572f92438fa0`, run `38612549835` / job `116019315964` GREEN including exact scope + Android APK;
+- final PR #348 head `8739313a605ccf33ddfdf69ae5e73d04f26f5957`;
+- PR CI `38613042191` / `116020992856` GREEN; Android `38613042036` / `116020992132` GREEN;
+- canonical `99410123a8f20d15a88cd20ada34523ce4497006`, parent `025bc875a4b3a9dc5d1e690591b6ae0f5af6a6ec`, tree `1240e692acb4622389748c9328b5b88e8563560b` equal to final PR tree;
+- main CI `38613516322` / `116022626176` GREEN; Android `38613516479` / `116022628100` GREEN;
+- Pages `38613648878`, build `116023067863` + deploy `116023290302` GREEN.
+
+Issue #347 CLOSED / completed. J5D is **DEPLOYED / FROZEN**.
+
 ## Documentation canonicals
 - DOC11 `31de2cd5bb89ae3032902c09ace881119c04dfec`;
 - DOC12 `f85e2432934454da191dea9bd0c9da43bbce86ca`;
@@ -257,7 +277,8 @@ Issue #343 CLOSED / completed. J5C is **DEPLOYED / FROZEN**.
 - DOC19 — J4C-C closure & J5A activation: `907bce8c494a5c7b9a4965e09dca677d919560f4` — Issue #333 / PR #334.
 - DOC20 — J5A closure & J5B activation: `efe68202b4046c7f4b2df3cae951908b9e012d3b` — Issue #337 / PR #338.
 - DOC21 — J5B closure & J5C activation: `8a1e17b87cdd8508453814454175ef7f0b95c6ce` — Issue #341 / PR #342.
-- DOC22 — J5C closure & J5D activation: Issue #345, branch `docs/es-13-j5c-closure-j5d-activation`, in progress from gameplay canonical `55d824d2b9cfaf6bb8cd97a032866b1fbcfa92fb`.
+- DOC22 — J5C closure & J5D activation: `025bc875a4b3a9dc5d1e690591b6ae0f5af6a6ec` — Issue #345 / PR #346.
+- DOC23 — J5D closure & J5E activation: Issue #349, branch `docs/es-13-j5d-closure-j5e-activation`, in progress from gameplay canonical `99410123a8f20d15a88cd20ada34523ce4497006`.
 
 ## Frozen manual/physical blockers
 Remain OPEN and deferred while ES-13 materially changes gameplay:
@@ -270,12 +291,12 @@ Automated CI never substitutes for required human/device evidence.
 
 ## Next planned gameplay
 
-### ES-13J5D — Pure Command-Link Break Resolution Contract
-Status: **NEXT ENGINEERING TARGET AFTER DOC22 CLOSURE**.
+### ES-13J5E — Controlled Live Command-Link Detach Application
+Status: **NEXT ENGINEERING TARGET AFTER DOC23 CLOSURE**.
 
-The direct-hit and splash death paths already converge through existing `registerCombatDefeat(...)`, but there is no safe durable `groupId` lookup for linked live enemies. J5D therefore remains pure: combine J5A defeat semantics with current J5B binding, require `COMMAND_CORE`, return `COMMAND_LINK_BROKEN` + bounded linked indices + `DETACH_LINKED_MEMBERS` as `INTENT_ONLY`, and fail closed otherwise. Add no live ids, scans, collections, runtime mutation, damage/kill/score/reward or timing/cap authority.
+J3's `activeUntilMs` serializes live formation groups, so one bounded pending J5D intent slot is sufficient and no group/entity index is needed. Existing direct+splash defeat routing can raise the intent in `registerCombatDefeat`, and the already-existing enemy logic iteration can consume it by clearing only matching linked members' `enemy.enemyFormation`. The pending slot must reset wherever the J3 director resets and must be consumed without erasing a newer intent.
 
-A later J5 slice must prove live lookup/application separately before chain-reaction behavior.
+J5E may not add a second enemy scan/collection, Enemy field, damage/kill, score/reward/economy, spawn/progression, timing/RNG, cap/budget or chain-reaction authority. Detached members immediately fall back to existing legacy movement. True combat chain reactions remain deferred beyond J5E.
 
 J4D+ additional tactical families remain deferred: FORMATION_BREAKER/JAMMER require hard-control spacing/recovery proof; MINE_WEAVER/MIRROR_WARDEN require genuine mine/mirror mechanics. J3C-C remains deferred, not cancelled.
 
