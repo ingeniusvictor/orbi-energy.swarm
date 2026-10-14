@@ -251,22 +251,51 @@ Exact deployment anchors:
 - Pages `38559959364`, build `115838294773` + deploy `115838455401` GREEN.
 
 ### J5B — Pure Command-Link Binding Contract
-Status: **NEXT ACTIVE ENGINEERING SLICE AFTER DOC20 CLOSURE**
+Status: **DEPLOYED / FROZEN**
+Canonical: `f868058889b24fecbd97f968e932890248ca2b33`
+Issue #339 / PR #340
 
-Discovery after J5A confirmed that existing enemies already expose optional J3 `enemyFormation` assignment metadata (`groupId`, `memberIndex`, `memberCount`, route/mirror/timing/anchor facts). J5B will reuse those bounded facts as pure input rather than introduce a Commander type or second formation authority.
+Certified contract:
+- supported bounded J3 group sizes exactly 2 and 3;
+- deterministic core index 0 from existing J3 member order;
+- member 0 = semantic `COMMAND_CORE`; remaining valid members = `LINKED_MEMBER`;
+- J5A identity referenced type-only;
+- binding mode `BINDING_ONLY`;
+- linked metadata `[1]` or `[1,2]` only;
+- invalid group ids/counts/indices fail closed;
+- no new EnemyType/Enemy field/live adoption;
+- no J3/J5A mutation, damage/defeat/score/reward, collection/scan, clock/RNG or cap authority.
+
+Exact deployment anchors:
+- pre-PR `66b6e6276d6229f74476a541c220e203a0f3dc8b`, run `38568941468` / job `115868727522` GREEN including scope guard + Android APK;
+- final PR #340 head `7d59c94bd7fb79ec9b577d47712ebba751488efb`;
+- PR CI `38569355540` / `115870150075` GREEN; Android `38569355236` / `115870147877` GREEN;
+- canonical `f868058889b24fecbd97f968e932890248ca2b33`, parent `efe68202b4046c7f4b2df3cae951908b9e012d3b`, tree `336ef4e31a59aea1890154f9b853b84e1409711a`;
+- main CI `38569599501` / `115870991101` GREEN; Android `38569599482` / `115870990530` GREEN;
+- Pages `38569726643`, build `115871441654` + deploy `115871606433` GREEN.
+
+### J5C — Live Command-Core Priority Presentation
+Status: **NEXT ACTIVE ENGINEERING SLICE AFTER DOC21 CLOSURE**
+
+Discovery confirms the safest first live adoption is presentation-only:
+- active J3 members already carry optional `enemyFormation` metadata;
+- J3 clears it on Hydro slow cancellation or route completion;
+- `drawEnemiesList` already owns one living-enemy render pass;
+- J5C can therefore derive J5B binding on demand without persistent duplicated state.
 
 Design constraints:
-- pure contract only; no live adoption in J5B;
-- support only certified live group sizes 2 and 3;
-- exactly one deterministic `COMMAND_CORE` member per supported group;
-- linked-member output is bounded metadata only;
-- empty/invalid group IDs, unsupported sizes and out-of-range indices fail closed;
-- do not mutate or own J3 director/formation state;
-- no new `EnemyType`, `Enemy` field, collection, entity scan, clock/RNG or cap authority;
-- no damage, defeat, score, reward or formation mutation;
-- preserve J5A `SIGNAL_ONLY` semantics;
-- preserve Campaign/Infinite isolation, J1/J2, frozen J3/J4 behavior, FOTON GLB and player/FOTON formation ownership;
-- live Command Core binding and chain-reaction effects remain deferred to a later J5 slice after this pure contract is certified.
+- pure presentation projection + existing canvas renderer only;
+- only current valid `COMMAND_CORE` role receives a core marker;
+- no linked-member line/cross-entity lookup;
+- no marker for absent/invalid formation data or linked-member role;
+- marker automatically disappears when J3 clears formation metadata;
+- render after enemy body and before damaged-health bar;
+- renderer `time` may drive bounded animation as input only; no timer/RNG ownership;
+- no `EnergySwarmGame.tsx`, `types.ts`, J3, J5A or J5B contract changes;
+- no spawn/progression, damage, defeat, score, reward, chain reaction, cap/budget or entity collection changes;
+- preserve existing tactical telegraphs, accessibility flash behavior, Campaign/Infinite isolation, FOTON GLB and player/FOTON formations.
+
+Command Core defeat effects / chain reactions remain deferred to J5D+ after J5C certification.
 
 ## J6 — Dynamic Mid-Sector Events
 Status: PLANNED
