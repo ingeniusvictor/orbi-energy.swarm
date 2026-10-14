@@ -148,11 +148,11 @@ test("enemy attack timer consumes projected attack-rate pressure", () => {
 
   assert.match(
     physics,
-    /simulationCombatPressure\.enemyAttackRateMultiplier/,
+    /const enemyAttackRateStep =[\s\S]*simulationCombatPressure\.enemyAttackRateMultiplier[\s\S]*enemy\.evolvedAttackRateMultiplier/,
   );
   assert.match(
     physics,
-    /enemy\.shootCooldown -=[\s\S]*simulationCombatPressure\.enemyAttackRateMultiplier/,
+    /enemy\.shootCooldown -= enemyAttackRateStep/,
   );
 });
 

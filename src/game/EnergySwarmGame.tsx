@@ -231,6 +231,11 @@ import {
   requestLiveEnemyFormationSpawn,
 } from "./liveEnemyFormationDirector";
 import {
+  LIVE_SIEGE_VOLLEY_FIRE_RANGE,
+  acknowledgeLiveSiegeVolleyShot,
+  stepLiveSiegeVolley,
+} from "./liveSiegeVolleyIntegration";
+import {
   drawCombatOverdriveFieldOverlay,
   drawCombatOverdriveSwarmHalo,
 } from "./combatOverdrivePresentationRenderer";
@@ -5130,20 +5135,80 @@ export const EnergySwarmGame: React.FC = () => {
       enemy.speed = originalSpeed;
 
       // Shoot & pulse attack timers
-      enemy.shootCooldown -=
+      const enemyAttackRateStep =
         (delta / 16.6) *
         simulationCombatPressure.enemyAttackRateMultiplier *
         (enemy.evolvedAttackRateMultiplier ?? 1);
-      if (enemy.shootCooldown <= 0) {
+
+      if (
+        enemy.type !== EnemyType.SIEGE_PRISM ||
+        enemy.siegeVolleyTelegraph === undefined
+      ) {
+        enemy.shootCooldown -= enemyAttackRateStep;
+      }
+
+      if (enemy.type === EnemyType.SIEGE_PRISM) {
+        const siegeTargetDx = playerPosRef.current.x - enemy.x;
+        const siegeTargetDy = playerPosRef.current.y - enemy.y;
+        const siegeTargetDistanceSquared =
+          siegeTargetDx * siegeTargetDx +
+          siegeTargetDy * siegeTargetDy;
+        const siegeVolley = stepLiveSiegeVolley({
+          state: enemy.siegeVolleyTelegraph,
+          deltaMs: delta,
+          cooldownReady: enemy.shootCooldown <= 0,
+          targetX: playerPosRef.current.x,
+          targetY: playerPosRef.current.y,
+          targetInRange:
+            siegeTargetDistanceSquared > 0 &&
+            siegeTargetDistanceSquared <
+              LIVE_SIEGE_VOLLEY_FIRE_RANGE *
+                LIVE_SIEGE_VOLLEY_FIRE_RANGE,
+        });
+        enemy.siegeVolleyTelegraph = siegeVolley.state;
+
+        if (siegeVolley.telegraphStarted) {
+          playEliteChargeSound();
+          addFloatingText(
+            "SIEGE VOLLEY",
+            enemy.x,
+            enemy.y - enemy.size - 14,
+            "#f472b6",
+          );
+        }
+
+        const lockedTargetX = siegeVolley.state?.targetX;
+        const lockedTargetY = siegeVolley.state?.targetY;
+        if (
+          siegeVolley.commitReady &&
+          lockedTargetX !== null &&
+          lockedTargetX !== undefined &&
+          lockedTargetY !== null &&
+          lockedTargetY !== undefined
+        ) {
+          const shotCommitted = shootFromEnemy(
+            enemy,
+            hostileProjectileBudgetState,
+            { x: lockedTargetX, y: lockedTargetY },
+          );
+          const acknowledgement =
+            acknowledgeLiveSiegeVolleyShot(
+              siegeVolley.state,
+              shotCommitted,
+            );
+          enemy.siegeVolleyTelegraph = acknowledgement.state;
+          if (acknowledgement.acknowledged) {
+            enemy.shootCooldown = 150 + Math.random() * 70;
+          }
+        }
+      } else if (enemy.shootCooldown <= 0) {
         if (
           enemy.type === EnemyType.DRONE ||
-          enemy.type === EnemyType.SIEGE_PRISM ||
           enemy.type === EnemyType.MINE_WEAVER ||
           enemy.type === EnemyType.MIRROR_WARDEN ||
           enemy.type === EnemyType.VOID_ANCHOR
         ) {
           enemy.shootCooldown =
-            enemy.type === EnemyType.SIEGE_PRISM ? 150 + Math.random() * 70 :
             enemy.type === EnemyType.MINE_WEAVER ? 120 + Math.random() * 60 :
             enemy.type === EnemyType.VOID_ANCHOR ? 160 + Math.random() * 80 :
             100 + Math.random() * 70;
@@ -5525,7 +5590,8 @@ export const EnergySwarmGame: React.FC = () => {
   const shootFromEnemy = (
     enemy: Enemy,
     hostileBudgetState: { count: number },
-  ) => {
+    targetOverride?: { readonly x: number; readonly y: number },
+  ): boolean => {
     const combatPressure = getCurrentCombatPressure();
     const signatureBehavior =
       enemySignatureBehaviorCacheRef.current.get(enemy);
@@ -5541,7 +5607,7 @@ export const EnergySwarmGame: React.FC = () => {
       ),
     );
 
-    if (availableProjectileSlots <= 0) return;
+    if (availableProjectileSlots <= 0) return false;
 
     if (
       enemy.type === EnemyType.DRONE ||
@@ -5551,13 +5617,15 @@ export const EnergySwarmGame: React.FC = () => {
       enemy.type === EnemyType.MIRROR_WARDEN ||
       enemy.type === EnemyType.VOID_ANCHOR
     ) {
-      const dx = playerPosRef.current.x - enemy.x;
-      const dy = playerPosRef.current.y - enemy.y;
+      const targetX = targetOverride?.x ?? playerPosRef.current.x;
+      const targetY = targetOverride?.y ?? playerPosRef.current.y;
+      const dx = targetX - enemy.x;
+      const dy = targetY - enemy.y;
       const distanceSquared = dx * dx + dy * dy;
 
       if (
-        distanceSquared > 0 &&
-        distanceSquared < 320 * 320
+        targetOverride !== undefined ||
+        (distanceSquared > 0 && distanceSquared < 320 * 320)
       ) {
         const projectileSpeed =
           (enemy.type === EnemyType.SIEGE_PRISM ? 4.0 :
@@ -5614,8 +5682,11 @@ export const EnergySwarmGame: React.FC = () => {
 
         hostileBudgetState.count += projectileCount;
         playEnemyShootSound();
+        return projectileCount > 0;
       }
     }
+
+    return false;
   };
 
   const getEnemyScoreReward = (enemy: Enemy) => {

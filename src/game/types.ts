@@ -1,4 +1,5 @@
 import type { LiveEnemyFormationAssignment } from "./liveEnemyFormationDirector";
+import type { SiegeVolleyTelegraphState } from "./siegeVolleyTelegraph";
 
 export enum BiomeType {
   SOLAR_PLAINS = "SOLAR_PLAINS",
@@ -219,6 +220,7 @@ export interface Enemy {
   evolvedRewardMultiplier?: number;
   evolvedSpecialIntensity?: number;
   enemyFormation?: LiveEnemyFormationAssignment;
+  siegeVolleyTelegraph?: SiegeVolleyTelegraphState;
 }
 
 export interface Projectile {
