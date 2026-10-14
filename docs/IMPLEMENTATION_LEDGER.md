@@ -37,6 +37,7 @@ Rules:
 | ES-13J4B — Narrow Live Warp Ambusher Adoption | DEPLOYED / FROZEN | `1023cee74d1c32a379bf542551397ae134f43573` | #318 | #319 |
 | ES-13J4C-A — Pure Siege Volley Telegraph Contract | DEPLOYED / FROZEN | `4cb5fb320c4bed4fa884ede312c4f3c323cdc5c6` | #322 | #323 |
 | ES-13J4C-B — Live Siege Volley Telegraph Integration | DEPLOYED / FROZEN | `2e16ff9a577128ffb06211b612116553928c8cda` | #326 | #327 + #328 |
+| ES-13J4C-C — Controlled Normal-Progression Siege Adoption | DEPLOYED / FROZEN | `1131c06db406ca0170d5dad33ecb7f4610a06b96` | #331 | #332 |
 
 ## Evidence anchors
 
@@ -152,6 +153,37 @@ Exact final evidence:
 
 Issue #326 CLOSED / completed. J4C-B is **DEPLOYED / FROZEN**.
 
+### J4C-C — Controlled Normal-Progression Siege Adoption
+J4C-C extended the existing pure tactical replacement seam with the certified `ARTILLERY_CARRIER / SIEGE_PRISM` family while preserving J4B RIFT behavior and all frozen Siege Volley authority boundaries.
+
+Certified policy:
+- Campaign disabled; Infinite HIGH_PRESSURE minimum sector 51;
+- cadence `(sector - 52) % 8 === 0` with milestone/recovery exclusion and final-wave-only gating;
+- exactly one existing budget ordinal replacement at `Math.floor(enemyBudget / 2)`;
+- first reachable normal SIEGE sectors 52, 68, 84, 92, 108, 116, 124, 132...;
+- RIFT/SIEGE cadence intersection is empty;
+- J4C-B target-lock/COMMIT/ACK, projectile count/speed/spread/cooldown and SIEGE_CATHEDRAL support remain unchanged;
+- no new type, collection, director, scan, timer/RNG authority, density, cap or budget increase.
+
+Final product diff exactly:
+- `src/game/runtimeTacticalEnemyAdoption.ts`;
+- `tests/es-13j4b-live-tactical-adoption.test.mjs`;
+- `tests/es-13j4c-b-live-siege-volley-integration.test.mjs`;
+- `tests/es-13j4c-c-controlled-siege-adoption.test.mjs`;
+- `tests/gameplay/runtime-tactical-enemy-adoption.test.ts`.
+
+Exact evidence:
+- baseline `72c4359af106d6f955e9932c6c72a836b2922ab8`;
+- pre-PR `c6dc7dc48dd8028dd6de1f6f9fae79a2d20b6301`, run `38556345439` / job `115826341912` GREEN including exact scope + Android APK;
+- final PR #332 head `e80a54c9823939862beba6a620e4ed363535b61e`;
+- PR CI `38556750449` / `115827692257` GREEN; Android `38556750462` / `115827691810` GREEN;
+- canonical `1131c06db406ca0170d5dad33ecb7f4610a06b96`, parent `72c4359af106d6f955e9932c6c72a836b2922ab8`, tree `ff27ceedc5460d98fefe373850d1fe20e3272098` equal to final PR-head tree;
+- main CI `38556901537` / `115828194301` GREEN;
+- main Android `38556901696` / `115828194800` GREEN including Build/Verify/Upload APK;
+- Pages `38557000846`, build `115828516452` + deploy `115828677107` GREEN.
+
+Issue #331 CLOSED / completed. J4C-C is **DEPLOYED / FROZEN**.
+
 ## Documentation canonicals
 - DOC11 `31de2cd5bb89ae3032902c09ace881119c04dfec`;
 - DOC12 `f85e2432934454da191dea9bd0c9da43bbce86ca`;
@@ -160,7 +192,8 @@ Issue #326 CLOSED / completed. J4C-B is **DEPLOYED / FROZEN**.
 - DOC15 — J4A closure & J4B activation: `096b2c9fe53551664b56baf6e382368f8b4078da` — Issue #316 / PR #317;
 - DOC16 — J4B closure & J4C activation: `56aca8a129be9310f64bb04a99fb19560b52b2e3` — Issue #320 / PR #321;
 - DOC17 — J4C-A closure & J4C-B activation: `19beb0abf2b17d391834cb6336419ed4ead6819c` — Issue #324 / PR #325;
-- DOC18 — J4C-B closure & J4C-C activation: Issue #329, branch `docs/es-13-j4c-b-closure-j4c-c-activation`, in progress from gameplay canonical `2e16ff9a577128ffb06211b612116553928c8cda`.
+- DOC18 — J4C-B closure & J4C-C activation: `72c4359af106d6f955e9932c6c72a836b2922ab8` — Issue #329 / PR #330.
+- DOC19 — J4C-C closure & J5A activation: Issue #333, branch `docs/es-13-j4c-c-closure-j5a-activation`, in progress from gameplay canonical `1131c06db406ca0170d5dad33ecb7f4610a06b96`.
 
 ## Frozen manual/physical blockers
 Remain OPEN and deferred while ES-13 materially changes gameplay:
@@ -173,10 +206,12 @@ Automated CI never substitutes for required human/device evidence.
 
 ## Next planned gameplay
 
-### ES-13J4C-C — Controlled Normal-Progression Siege Adoption
-Status: **NEXT ENGINEERING TARGET AFTER DOC18 CLOSURE**.
+### ES-13J5A — Pure Priority-Target Contract
+Status: **NEXT ENGINEERING TARGET AFTER DOC19 CLOSURE**.
 
-Broaden `SIEGE_PRISM / ARTILLERY_CARRIER` only through a bounded policy proved from current Campaign/Infinite selection seams. Prefer narrow Infinite-only deterministic replacement; do not add density, caps, budgets, collections or a second director. J4C-B 700 ms target-lock/COMMIT/ACK behavior and `SIEGE_CATHEDRAL` support policy remain frozen. Hard-control families and mine/mirror semantics remain deferred.
+Begin J5 with a pure zero-live-authority contract because the current runtime has no explicit Commander/priority-node EnemyType or dedicated priority-target authority. Define bounded tactical/objective semantics first; do not add live spawns, chain reactions or a parallel entity system in J5A. Future effects must route through existing damage/defeat/cap authorities.
+
+J4D+ additional tactical families remain deferred: FORMATION_BREAKER/JAMMER require hard-control spacing/recovery proof; MINE_WEAVER/MIRROR_WARDEN require genuine mine/mirror mechanics. J3C-C remains deferred, not cancelled.
 
 ## Program sequence
-`J4C-C Controlled Siege Progression → J4D+ Additional Tactical Families → J5 Priority Targets/Chain Reactions → J6 Dynamic Events → J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance → ES-14 Living Warfront`
+`J5A Pure Priority-Target Contract → J5B+ Controlled Priority Targets/Chain Reactions → J6 Dynamic Events → J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance → ES-14 Living Warfront`
