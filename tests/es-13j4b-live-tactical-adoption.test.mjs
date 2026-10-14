@@ -10,14 +10,13 @@ const evolutionSource = readFileSync("src/game/runtimeEnemyEvolution.ts", "utf8"
 const formationDirectorSource = readFileSync("src/game/liveEnemyFormationDirector.ts", "utf8");
 const familySource = readFileSync("src/game/tacticalEnemyFamilies.ts", "utf8");
 
-test("J4B live policy adopts only the J4A Warp Ambusher contract", () => {
+test("J4B live policy retains the certified J4A Warp Ambusher contract", () => {
   assert.match(adoptionSource, /J4B_LIVE_FAMILY_ID = "WARP_AMBUSHER"/);
   assert.match(adoptionSource, /EnemyType\.RIFT_HUNTER/);
   assert.match(familySource, /"WARP_AMBUSHER"/);
   assert.match(familySource, /EnemyType\.RIFT_HUNTER/);
 
   for (const forbidden of [
-    /EnemyType\.SIEGE_PRISM/,
     /EnemyType\.SWARM_REAVER/,
     /EnemyType\.VOID_ANCHOR/,
     /EnemyType\.MINE_WEAVER/,
@@ -27,7 +26,7 @@ test("J4B live policy adopts only the J4A Warp Ambusher contract", () => {
   }
 });
 
-test("J4B policy is pure and owns no clock, RNG, collection, scan, spawn loop or cap authority", () => {
+test("J4B/J4C tactical policy is pure and owns no clock, RNG, collection, scan, spawn loop or cap authority", () => {
   for (const forbidden of [
     /Math\.random/,
     /Date\.now/,
@@ -50,7 +49,7 @@ test("J4B policy is pure and owns no clock, RNG, collection, scan, spawn loop or
   }
 });
 
-test("Campaign remains disabled and Infinite policy is sparse/final-wave only", () => {
+test("Campaign remains disabled and J4B Infinite policy remains sparse/final-wave only", () => {
   assert.match(adoptionSource, /descriptor\.sourceMode !== "INFINITE"/);
   assert.match(adoptionSource, /J4B_TACTICAL_MIN_INFINITE_SECTOR = 26/);
   assert.match(adoptionSource, /J4B_TACTICAL_SECTOR_CADENCE = 4/);
@@ -80,11 +79,8 @@ test("normal Infinite recipes and waves keep their existing base enemy compositi
   assert.match(infiniteWaveSource, /sectorRecipe\.enemyComposition/);
 });
 
-test("J4B uses the existing spawn seam and gives milestone/forced types precedence", () => {
-  assert.match(
-    gameSource,
-    /resolveRuntimeTacticalEnemySpawn/,
-  );
+test("J4B/J4C uses the existing spawn seam and gives milestone/forced types precedence", () => {
+  assert.match(gameSource, /resolveRuntimeTacticalEnemySpawn/);
   assert.match(
     gameSource,
     /const tacticalType =\s*!spawningMiniboss && !forcedType/,
@@ -99,6 +95,7 @@ test("J4B uses the existing spawn seam and gives milestone/forced types preceden
 
 test("tactical replacement cannot stack generic evolved, elite or J3 formation pressure", () => {
   assert.doesNotMatch(evolutionSource, /EnemyType\.RIFT_HUNTER/);
+  assert.doesNotMatch(evolutionSource, /EnemyType\.SIEGE_PRISM/);
   assert.match(
     gameSource,
     /const isElite =\s*!spawningMiniboss &&\s*!evolvedProfile &&\s*!tacticalType &&/,
@@ -107,6 +104,7 @@ test("tactical replacement cannot stack generic evolved, elite or J3 formation p
   assert.match(formationDirectorSource, /EnemyType\.CRAWLER/);
   assert.match(formationDirectorSource, /EnemyType\.SPLITTER/);
   assert.doesNotMatch(formationDirectorSource, /EnemyType\.RIFT_HUNTER/);
+  assert.doesNotMatch(formationDirectorSource, /EnemyType\.SIEGE_PRISM/);
 });
 
 test("existing Warp Ambusher runtime retains the readable RIFT LOCK telegraph", () => {
@@ -115,7 +113,7 @@ test("existing Warp Ambusher runtime retains the readable RIFT LOCK telegraph", 
   assert.match(gameSource, /enemy\.chargeTimer = 420/);
 });
 
-test("J4B changes no sector budget, cadence, projectile budget or tactical-family catalog", () => {
+test("J4B/J4C changes no sector budget, cadence, projectile budget or tactical-family catalog", () => {
   for (const forbidden of [
     /enemyBudget\s*[+*-]=/,
     /maxConcurrentEnemies\s*[+*-]=/,
@@ -127,4 +125,6 @@ test("J4B changes no sector budget, cadence, projectile budget or tactical-famil
 
   assert.doesNotMatch(gameSource, /J4B_TACTICAL_MIN_INFINITE_SECTOR/);
   assert.doesNotMatch(gameSource, /J4B_TACTICAL_SECTOR_CADENCE/);
+  assert.doesNotMatch(gameSource, /J4C_C_SIEGE_MIN_INFINITE_SECTOR/);
+  assert.doesNotMatch(gameSource, /J4C_C_SIEGE_SECTOR_CADENCE/);
 });
