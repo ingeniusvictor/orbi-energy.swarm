@@ -55,7 +55,10 @@ test("J4C-B reuses the exact J4C-A 700 ms target-lock state machine", () => {
 });
 
 test("Enemy owns only one optional bounded Siege Volley state", () => {
-  assert.match(typesSource, /type SiegeVolleyTelegraphState/);
+  assert.match(
+    typesSource,
+    /import\s+type\s*\{\s*SiegeVolleyTelegraphState\s*\}\s*from\s*["']\.\/siegeVolleyTelegraph["']/,
+  );
   assert.match(
     typesSource,
     /siegeVolleyTelegraph\?:\s*SiegeVolleyTelegraphState/,
