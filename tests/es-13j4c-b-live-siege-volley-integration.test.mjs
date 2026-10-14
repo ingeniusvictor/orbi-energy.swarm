@@ -121,10 +121,21 @@ test("Siege Cathedral support policy remains unchanged and shares the same SIEGE
   assert.match(gameSource, /isMinion:\s*true/);
 });
 
-test("J4C-B does not broaden normal tactical progression", () => {
-  assert.doesNotMatch(
-    tacticalAdoptionSource,
-    /EnemyType\.SIEGE_PRISM/,
-  );
+test("later tactical progression may select SIEGE without acquiring J4C-B projectile authority", () => {
   assert.match(tacticalAdoptionSource, /EnemyType\.RIFT_HUNTER/);
+  assert.match(tacticalAdoptionSource, /EnemyType\.SIEGE_PRISM/);
+
+  for (const forbidden of [
+    /liveSiegeVolleyIntegration/,
+    /siegeVolleyTelegraph/,
+    /stepLiveSiegeVolley/,
+    /acknowledgeLiveSiegeVolleyShot/,
+    /shootFromEnemy/,
+    /shootCooldown/,
+    /projectilesRef/,
+    /MAX_PROJECTILES/,
+    /Math\.random/,
+  ]) {
+    assert.doesNotMatch(tacticalAdoptionSource, forbidden);
+  }
 });
