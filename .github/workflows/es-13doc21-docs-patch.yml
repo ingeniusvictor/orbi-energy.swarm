@@ -1,53 +1,78 @@
-name: ES-13DOC21 Docs Patch
+name: ES-13DOC21 Pre-PR Certification
 
 on:
   push:
     branches:
       - docs/es-13-j5b-closure-j5c-activation
     paths:
-      - '.github/es13doc21_patch.py'
       - '.github/workflows/es-13doc21-docs-patch.yml'
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  patch:
+  certify:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
+    env:
+      BASE_SHA: f868058889b24fecbd97f968e932890248ca2b33
+      ORBI_RELEASE_SHA: ${{ github.sha }}
+      ORBI_BUILD_SHA: ${{ github.sha }}
     steps:
       - name: Checkout exact branch head
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: docs/es-13-j5b-closure-j5c-activation
 
-      - name: Apply guarded DOC21 patch
-        run: python .github/es13doc21_patch.py
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
 
-      - name: Validate diff and scope
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Repository Smoke
+        run: npm run test:repo
+
+      - name: Gameplay
+        run: npm run test:gameplay
+
+      - name: Platform
+        run: npm run test:platform
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Release Contract
+        run: npm run release:verify
+
+      - name: Manual dossier
+        run: npm run release:evidence:verify
+
+      - name: Production Build
+        run: npm run build
+
+      - name: RC readiness fail-closed
+        run: npm run release:readiness -- --output release-readiness.json
+
+      - name: DOC21 docs-only scope guard
         shell: bash
         run: |
           set -euo pipefail
-          git diff --check
-          mapfile -t changed < <(git diff --name-only | LC_ALL=C sort)
+          git diff --check "$BASE_SHA" HEAD
+          mapfile -t actual < <(git diff --name-only "$BASE_SHA" HEAD | LC_ALL=C sort)
           expected=(
+            ".github/es13doc21_patch.py"
+            ".github/workflows/es-13doc21-docs-patch.yml"
             "docs/ES13_GAMEPLAY_ROADMAP.md"
             "docs/IMPLEMENTATION_LEDGER.md"
             "docs/PROJECT_CONTINUITY.md"
           )
           mapfile -t expected_sorted < <(printf '%s\n' "${expected[@]}" | LC_ALL=C sort)
-          [[ "${#changed[@]}" -eq "${#expected_sorted[@]}" ]]
+          [[ "${#actual[@]}" -eq "${#expected_sorted[@]}" ]]
           for i in "${!expected_sorted[@]}"; do
-            [[ "${changed[$i]}" == "${expected_sorted[$i]}" ]]
+            [[ "${actual[$i]}" == "${expected_sorted[$i]}" ]]
           done
-
-      - name: Commit documentation patch
-        shell: bash
-        run: |
-          set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add docs/PROJECT_CONTINUITY.md docs/IMPLEMENTATION_LEDGER.md docs/ES13_GAMEPLAY_ROADMAP.md
-          git commit -m "ES-13DOC21: close J5B and activate J5C"
-          git push origin HEAD:docs/es-13-j5b-closure-j5c-activation
+          git diff --quiet "$BASE_SHA" HEAD -- src tests android public package.json package-lock.json
