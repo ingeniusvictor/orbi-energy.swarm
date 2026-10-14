@@ -25,13 +25,8 @@ Authoritative continuity lives in GitHub + `PROJECT_CONTINUITY.md` + `IMPLEMENTA
 ## J1 — Combat Chain & Energy Resonance
 Status: **DEPLOYED / FROZEN PROGRAM**
 
-### J1A — Combat Chain & Resonance Core
-Canonical: `feb263957b52839d35a7cb1249762c223ba22595`  
-Issue #251 / PR #252
-
-### J1B — Live Resonance Adoption & HUD
-Canonical: `91564e365d0a2220e4db2999e38372809ec397f3`  
-Issue #253 / PR #257
+- J1A — Combat Chain & Resonance Core — `feb263957b52839d35a7cb1249762c223ba22595` — Issue #251 / PR #252.
+- J1B — Live Resonance Adoption & HUD — `91564e365d0a2220e4db2999e38372809ec397f3` — Issue #253 / PR #257.
 
 J1 established the earned combat-chain/Resonance loop, affinity diversity, bounded score projection, damage break and live HUD/runtime adoption.
 
@@ -39,8 +34,6 @@ J1 established the earned combat-chain/Resonance loop, affinity diversity, bound
 
 ## J2 — ORBI Overdrive
 Status: **DEPLOYED / FROZEN PROGRAM**
-
-Goal: convert earned full Resonance into a temporary mastery state with bounded gameplay value, readable presentation and no uncontrolled amplification.
 
 - J2A — Pure State Contract — `6adfb7cc4785c5238c78821e6e67fdac3c0f4eb7` — Issue #260 / PR #261.
 - J2B — Live Activation & HUD — `466242e91fa927bc4d996d09efdbb87f8f572d44` — Issue #264 / PR #267.
@@ -50,138 +43,99 @@ Goal: convert earned full Resonance into a temporary mastery state with bounded 
 - J2D-B — Live Reactive Presentation — `9743890d98b33d365cbc18a048015f3815b144e5` — Issue #286 / PR #287.
 - J2E — Integration Certification — `bf0e6a858e3c96091c002ea623b29eb5c260c6ea` — Issue #290 / PR #291.
 
-J2E certified one-shot readiness consumption, 8 s active + 4 s re-entry lock, bounded damage/presentation, pause safety, fresh-run reset and deterministic long-sequence integration.
+J2E certified one-shot readiness consumption, exact 8 s active + 4 s re-entry lock, bounded damage/presentation, pause safety, reset and deterministic long-sequence integration.
 
 ---
 
 ## J3 — Advanced Enemy Formation Director
 Status: **DEPLOYED / FROZEN PROGRAM**
 
-Goal: create spatially tactical enemy movement that forces route/positioning decisions while keeping existing enemy/projectile caps and simulation budgets authoritative.
+Architecture boundary: `src/game/formations.ts` and `formationCycle.ts` are the player/FOTON swarm formation authority. J3 remains an enemy-routing authority.
 
-Architecture boundary: `src/game/formations.ts` and `formationCycle.ts` are the **player/FOTON swarm** formation authority. J3 remains an enemy-routing authority and never merges ownership with those files.
+- J3A — Pure Enemy Formation Route Contract — `3c5ece8d8e59bc38de468b4d0d9644953fa6a8be` — Issue #294 / PR #295.
+- J3B — Live Enemy Formation Director Adoption — `0fcf08dc59558619da61e1120eef2e957465f9a1` — Issue #298 / PR #299.
+- J3C-A — Pure Advanced Route Vocabulary — `0fd337e3a0efe96fd52d5f5686e3f110e1b361d8` — Issue #302 / PR #303.
+- J3C-B — Controlled Live Advanced Adoption — `5c345672b5365dbcc983403f73da62555489a98f` — Issue #306 / PR #307.
+- J3D — Telegraph/Fairness/Integration Certification — `7273d447bbdcb084499fb121122aac6d34928d41` — Issue #310 / PR #311.
 
-### J3A — Pure Enemy Formation Route Contract
-Status: **DEPLOYED / FROZEN**  
-Canonical: `3c5ece8d8e59bc38de468b4d0d9644953fa6a8be`  
-Issue #294 / PR #295
+Certified live route sizes remain PINCER 2, X_CROSS 2, SERPENTINE 2, WEDGE 3, ORBIT 3, SPIRAL 2. Existing spawn opportunities/current capacity remain authoritative; simulation time owns route progress; player/FOTON formation ownership stays separate.
 
-Introduced pure deterministic PINCER, X_CROSS and SERPENTINE route projection with bounded normalized geometry, roles and telegraphs; no runtime adoption.
-
-### J3B — Live Enemy Formation Director Adoption
-Status: **DEPLOYED / FROZEN**  
-Canonical: `0fcf08dc59558619da61e1120eef2e957465f9a1`  
-Issue #298 / PR #299
-
-Adopted ordinary CRAWLER/SPLITTER pairs through one caller-owned live director, normal spawn opportunities/capacity, simulation-time movement, Hydro cancellation and reset seams. No parallel enemy array/map, extra spawn authority or formation-only full scan.
-
-### J3C-A — Pure Advanced Route Vocabulary
-Status: **DEPLOYED / FROZEN**  
-Canonical: `0fd337e3a0efe96fd52d5f5686e3f110e1b361d8`  
-Issue #302 / PR #303
-
-Added WEDGE, ORBIT and SPIRAL with explicit minimum counts, tactical roles, telegraphs and safe intents while preserving the original three routes.
-
-### J3C-B — Controlled Live Advanced Adoption
-Status: **DEPLOYED / FROZEN**  
-Canonical: `5c345672b5365dbcc983403f73da62555489a98f`  
-Issue #306 / PR #307
-
-Live plan sizes remain bounded:
-- PINCER 2;
-- X_CROSS 2;
-- SERPENTINE 2;
-- WEDGE 3;
-- ORBIT 3;
-- SPIRAL 2.
-
-Advanced route adoption is independently configurable for Campaign and Infinite. Existing spawn opportunities/current capacity remain authoritative and pending assembly cannot overcommit.
-
-### J3C-C — Stateful Tactical Patterns if justified
-Status: **DEFERRED / NOT CURRENTLY JUSTIFIED**
-
-Convoy/leader-follower, fake retreat, portal ambush, encirclement and staggered-artillery patterns remain future candidates only. Any activation requires a dedicated issue proving a distinct tactical question, explicit bounded state ownership and no entity/projectile budget inflation.
-
-### J3D — Telegraph / Fairness / Integration Certification
-Status: **DEPLOYED / FROZEN**  
-Canonical: `7273d447bbdcb084499fb121122aac6d34928d41`  
-Issue #310 / PR #311
-
-Certification-only closure of the complete six-route J3 system. Final PR changed exactly two tests and zero runtime/gameplay source files.
-
-Certified:
-- route-specific telegraph kind, severity, lane count and safe intent for all six routes;
-- lead-in progress = 0 before start;
-- exact route completion and recovery boundaries;
-- finite in-bounds trajectories for all live 2/3-member plans;
-- WEDGE/ORBIT capacity safety and pending assembly non-overcommit;
-- safe incomplete-assembly expiry;
-- one active/assembling formation group;
-- explicit Campaign/Infinite base + advanced policy independence;
-- excluded milestone/evolved/elite/miniboss/boss paths;
-- simulation-time ownership, pause/photo safety, Hydro cancellation and reset seams;
-- formation motion replaces rather than stacks legacy movement;
-- no second runtime/array/map/full scan/spawn authority;
-- player/FOTON formation isolation;
-- deterministic bounded long route-plan sequences;
-- no cap/budget/score/economy/damage/projectile/J1/J2/GAIA/FOTON GLB regression.
-
-Exact deployment anchors:
-- pre-PR `38320496667` / job `115047172319` GREEN;
-- final PR head `09d0f355acc2e93487cfa5d641b7c642820abcd6`;
-- PR CI `38320727930` GREEN;
-- exact-head Android `38486336058` / job `115600790747` GREEN;
-- canonical `7273d447bbdcb084499fb121122aac6d34928d41`;
-- main CI `38320885204` GREEN;
-- exact-canonical Android `38485843331` / job `115599171557` GREEN;
-- Pages `38320970197` build + deploy GREEN.
-
-J3 is therefore closed as a deployed/frozen program. More formation complexity must now justify itself against J4+ tactical needs rather than being added for vocabulary size alone.
+J3C-C convoy/leader-follower, fake retreat, portal ambush, encirclement and staggered-artillery patterns remain **DEFERRED / NOT CURRENTLY JUSTIFIED**. They are not cancelled, but require a future dedicated issue proving distinct tactical value and bounded extra state.
 
 ---
 
 ## J4 — Tactical Enemy Families
-Status: **NEXT ACTIVE ENGINEERING PROGRAM AFTER DOC14 CLOSURE**
+Status: **ACTIVE PROGRAM**
 
-Goal: add enemies whose behavior creates a new tactical decision. J4 must not become a catalog of HP/damage reskins.
+Goal: add enemies whose behavior creates a new tactical decision. J4 must not become a catalog of HP/damage reskins or uncontrolled density.
 
-Candidate family vocabulary:
-- Shield Phalanx — positional protection / flank decision;
-- Reflector Drone — firing-angle / timing discipline;
-- Jammer — disrupts a bounded player system and creates priority-target pressure;
-- Mine Layer — changes safe-space geometry over time without uncontrolled projectile growth;
-- Artillery Carrier — telegraphed long-range zone denial;
-- Warp Ambusher — readable relocation/ambush timing;
-- Swarm Leech — pressure on swarm integrity rather than raw hull damage;
-- Energy Vampire — drains a bounded earned resource and creates interrupt priority;
-- Formation Breaker — attacks formation cohesion/spacing rather than simply health;
-- Commander — bounded support authority that changes nearby enemy behavior;
-- Repair Drone — target-priority healing/support with strict limits;
-- Stealth Hunter — readable conceal/reveal timing rather than invisible damage;
-- Siege Fortress — slow telegraphed area-control anchor;
-- Parasite Queen — bounded spawned/support interaction only if budgets prove safe;
-- Mirror Drone — reflects/copies a narrow readable player pattern without cloning full systems.
+Candidate long-range vocabulary remains: Shield Phalanx, Reflector Drone, Jammer, Mine Layer, Artillery Carrier, Warp Ambusher, Swarm Leech, Energy Vampire, Formation Breaker, Commander, Repair Drone, Stealth Hunter, Siege Fortress, Parasite Queen and Mirror Drone.
 
-### Recommended decomposition
+### J4A — Pure Tactical Enemy Family Contract
+Status: **DEPLOYED / FROZEN**  
+Canonical: `0c3f5c668926130f7ac8044cff8b619302949225`  
+Issue #314 / PR #315
 
-#### J4A — Pure Tactical Enemy Contract
-First engineering slice. Define a deterministic, runtime-independent tactical-enemy vocabulary and projection/decision contract. Prefer a small subset of families whose mechanics can be expressed without new entity ownership.
+Architecture discovery showed that the repo already contained six advanced `EnemyType` values with runtime behavior seams but absent from normal Campaign/Infinite enemy composition. J4A therefore reused the existing catalog instead of adding a parallel type system.
 
-Required qualities:
-- pure TypeScript module;
-- caller-owned state/time;
-- no React/Canvas/audio/storage/network/RNG/time side effects;
-- explicit tactical role and player-facing counterplay metadata;
-- bounded outputs;
-- no cap/projectile/entity-budget mutation;
-- no Campaign/Infinite routing yet unless explicitly required by the pure contract;
-- tests prove determinism, immutability, invalid-input fail-closed behavior and tactical distinctness.
+Certified first-family mapping:
+- `RIFT_HUNTER` → `WARP_AMBUSHER` — timing pressure / `RIFT_LOCK` / dodge after commit;
+- `SIEGE_PRISM` → `ARTILLERY_CARRIER` — range control / `SIEGE_VOLLEY` / break artillery envelope;
+- `SWARM_REAVER` → `FORMATION_BREAKER` — swarm cohesion pressure / `REAVER_APPROACH` / intercept before disruption;
+- `VOID_ANCHOR` → `JAMMER` — control-source pressure / `ANCHOR_FIELD` / exit or destroy source.
 
-#### J4B — Narrow Live Adoption
-Adopt only the certified J4A subset through existing enemy runtime seams. One live authority, no parallel enemy collection, no extra full-array scans, no uncontrolled support/spawn/projectile multiplication.
+J4A properties:
+- exactly four immutable 1:1 family ↔ existing type profiles;
+- deterministic lookup and fail-closed unsupported types;
+- explicit tactical question, telegraph, counterplay, priority and control-pressure metadata;
+- shared zero-authority contract: no spawn authority, entity/projectile collections, full-array scans, cap mutation or support-entity creation;
+- no live spawn/progression adoption;
+- no `EnergySwarmGame.tsx`, `types.ts`, Campaign/Infinite descriptor, stat tuning, cap/budget, J1/J2/GAIA/FOTON GLB or player/FOTON formation change.
 
-#### J4C+ — Additional Families in bounded slices
-Add families only when each creates a demonstrably distinct decision and reuses the certified architecture. Split offensive/support/mobility/stateful families when necessary rather than growing one PR.
+`MINE_WEAVER` and `MIRROR_WARDEN` remain intentionally **DEFERRED** from the tactical-family contract because the current runtime does not yet implement the mine/mirror semantics their names promise.
+
+Exact deployment anchors:
+- pre-PR head `8bbce75c6bbd6e1fbcb7205ed7bcb80d9121f767`, run `38488019246` / job `115606272019` GREEN;
+- final PR head `55a8abe0de9063b3d937ffca2f52ec9ec283309f`;
+- PR CI `38488256442` / job `115607044338` GREEN;
+- PR Android `38488256429` / job `115607044509` GREEN;
+- canonical `0c3f5c668926130f7ac8044cff8b619302949225`;
+- main CI `38488402612` / job `115607525382` GREEN;
+- main Android `38488402647` / job `115607525424` GREEN;
+- Pages `38488489012` build + deploy GREEN.
+
+### J4B — Narrow Live Tactical Enemy Adoption
+Status: **NEXT ACTIVE ENGINEERING SLICE AFTER DOC15 CLOSURE**
+
+Purpose: make a deliberately small subset of the J4A certified families actually reachable through live progression while reusing all existing enemy/spawn/capacity/runtime authority.
+
+J4B is not permitted to “turn on all four everywhere”. Before implementation it must inspect the current Campaign/Infinite selection model and choose the smallest mode-isolated adoption that creates meaningful tactical variety without unfair control stacking.
+
+Required J4B decisions:
+- which certified families enter the first live slice;
+- whether the first slice belongs to Campaign, Infinite, or explicitly different policies for each;
+- minimum progression boundary before each family becomes eligible;
+- whether hard-control families (`FORMATION_BREAKER`, `JAMMER`) are excluded from the first live slice or given stricter spacing/cooldown rules;
+- how tactical types consume **existing** spawn opportunities rather than creating extra enemies;
+- how existing `maxConcurrentEnemies`, global `MAX_ENEMIES`, projectile budget and current descriptor capacity remain authoritative;
+- how family selection avoids conflicting with Infinite evolved-enemy selection and J3 formation assignment;
+- how severe pressure remains telegraphed and how back-to-back hard-control pressure is prevented.
+
+Hard constraints:
+- no new `EnemyType` in J4B;
+- no parallel enemy array or tactical-family runtime collection;
+- no new full-array scan solely for family selection;
+- no cap/budget increase;
+- no uncontrolled projectile/support spawning;
+- no silent score/economy/J1/J2/GAIA changes;
+- no FOTON GLB change;
+- preserve J3 enemy-formation and player/FOTON formation authority separation;
+- `MINE_WEAVER` / `MIRROR_WARDEN` remain outside scope unless a later pure contract first specifies their real mechanics.
+
+### J4C+ — Additional Tactical Families
+Status: PLANNED / BOUNDED SLICES ONLY
+
+Add further families only when each creates a demonstrably distinct decision and reuses certified architecture. Offensive, support, mobility and stateful families should be separated when necessary rather than collected into one large PR.
 
 ### J4 design gate
 Every proposed family must answer:
@@ -189,17 +143,6 @@ Every proposed family must answer:
 **“What new decision does this force the player to make?”**
 
 Reject or redesign a family if its only answer is “shoot it longer,” “avoid more bullets,” or “deal with more enemies.”
-
-### J4 hard constraints
-- preserve `MAX_ENEMIES`, `MAX_PROJECTILES` and simulation budgets unless a dedicated measured issue proves a safe change;
-- preserve Campaign/Infinite isolation where scoped;
-- no FOTON GLB change without explicit scope;
-- no silent score/economy/J1/J2/GAIA changes;
-- keep J3 enemy formation and player/FOTON formation ownership separate;
-- prefer deterministic pure contracts before live runtime work;
-- telegraph every severe denial/ambush/support mechanic;
-- use existing spawn opportunities/capacity whenever possible;
-- avoid support-chain recursion and unbounded enemy-to-enemy spawning.
 
 ---
 
