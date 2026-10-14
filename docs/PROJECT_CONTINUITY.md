@@ -18,16 +18,16 @@ Never infer deployment/certification from conversation text alone.
 
 ## Current certified gameplay canonical
 
-`1131c06db406ca0170d5dad33ecb7f4610a06b96`
+`df60f62565a1d3cdf6058d2e1a4049f5870f27b7`
 
-Phase: **ES-13J4C-C — Controlled Normal-Progression Siege Adoption**
+Phase: **ES-13J5A — Pure Priority-Target Contract**
 Status: **DEPLOYED / FROZEN**
-Issue: #331 — CLOSED / completed
-Delivery: PR #332 — squash merged
+Issue: #335 — CLOSED / completed
+Delivery: PR #336 — squash merged
 
-Single parent: `72c4359af106d6f955e9932c6c72a836b2922ab8` — DOC18 documentation canonical.
+Single parent: `907bce8c494a5c7b9a4965e09dca677d919560f4` — DOC19 documentation canonical.
 
-Canonical tree: `ff27ceedc5460d98fefe373850d1fe20e3272098`, exactly equal to final PR-head tree.
+Canonical tree: `8296313607b688bef5412fcb046341e609852ce4`, exactly equal to final PR-head tree.
 
 Version remains `0.2.0-beta.1`. Full RC/manual certification remains intentionally deferred while ES-13 materially expands gameplay.
 
@@ -66,6 +66,40 @@ The first pre-certification exposed one historical J4C-B static assertion that c
 
 Issue #331 CLOSED / completed. J4C-C is **DEPLOYED / FROZEN**.
 
+## J5A result
+J5A established the first pure Priority Target contract without creating a new live enemy authority.
+
+Certified contract:
+- exactly one immutable semantic profile: `COMMAND_CORE` / `Command Core`;
+- tactical intent `FOCUS_CORE_TO_BREAK_LINK` with priority `HIGH`;
+- objective `BREAK_COMMAND_LINK`;
+- deterministic defeat projection `COMMAND_LINK_BROKEN`;
+- effect mode `SIGNAL_ONLY`;
+- unsupported profile identifiers fail closed;
+- objective explicitly applies no damage, kills no linked targets, awards no score/reward and mutates no formation;
+- shared authority contract owns no spawn, entity/projectile collection, damage, defeat, score, reward, formation, clock, RNG, full-array scan, cap mutation or entity creation;
+- no new `EnemyType`, no runtime field and no live import/adoption in `EnergySwarmGame.tsx`;
+- J3 formation authority, J4 tactical families, FOTON GLB and player/FOTON formations remain isolated.
+
+Final product scope exactly:
+- `src/game/priorityTargetContract.ts`;
+- `tests/es-13j5a-priority-target-contract.test.mjs`;
+- `tests/gameplay/priority-target-contract.test.ts`.
+
+## J5A exact evidence
+- DOC19 baseline `907bce8c494a5c7b9a4965e09dca677d919560f4`;
+- pre-PR SHA `257cfb8dd7a21a046cf87c2c2af9b501e462f3ad`, run `38559123546` / job `115835528447` GREEN including repo/gameplay/platform/typecheck/release/dossier/build/readiness, exact product-scope guard and Android APK build/verify/upload;
+- final PR #336 head `72ea40a2935df0d3bbf7b4db45be5a8647380524`;
+- PR CI `38559564286` / `115836993908` GREEN;
+- PR Android `38559564155` / `115836993731` GREEN including Build/Verify/Upload APK;
+- canonical `df60f62565a1d3cdf6058d2e1a4049f5870f27b7`, single parent `907bce8c494a5c7b9a4965e09dca677d919560f4`, tree `8296313607b688bef5412fcb046341e609852ce4` equal to final PR-head tree;
+- canonical diff exactly three certified product files;
+- main CI `38559826229` / `115837852423` GREEN;
+- main Android `38559826354` / `115837852853` GREEN including Build/Verify/Upload APK;
+- Pages `38559959364`: build `115838294773` + deploy `115838455401` GREEN.
+
+Issue #335 CLOSED / completed. J5A is **DEPLOYED / FROZEN**.
+
 ## ES-13 gameplay canonicals
 - J1A — Combat Chain & Resonance Core: `feb263957b52839d35a7cb1249762c223ba22595`;
 - J1B — Live Combat Resonance Adoption & HUD: `91564e365d0a2220e4db2999e38372809ec397f3`;
@@ -86,6 +120,7 @@ Issue #331 CLOSED / completed. J4C-C is **DEPLOYED / FROZEN**.
 - J4C-A — Pure Siege Volley Telegraph Contract: `4cb5fb320c4bed4fa884ede312c4f3c323cdc5c6`.
 - J4C-B — Live Siege Volley Telegraph Integration: `2e16ff9a577128ffb06211b612116553928c8cda`.
 - J4C-C — Controlled Normal-Progression Siege Adoption: `1131c06db406ca0170d5dad33ecb7f4610a06b96`.
+- J5A — Pure Priority-Target Contract: `df60f62565a1d3cdf6058d2e1a4049f5870f27b7`.
 
 J3C-C stateful formation patterns remain **DEFERRED / NOT CURRENTLY JUSTIFIED**, not cancelled.
 
@@ -98,23 +133,26 @@ J3C-C stateful formation patterns remain **DEFERRED / NOT CURRENTLY JUSTIFIED**,
 - DOC16 — J4B closure & J4C activation: `56aca8a129be9310f64bb04a99fb19560b52b2e3` — Issue #320 / PR #321;
 - DOC17 — J4C-A closure & J4C-B activation: `19beb0abf2b17d391834cb6336419ed4ead6819c` — Issue #324 / PR #325;
 - DOC18 — J4C-B closure & J4C-C activation: `72c4359af106d6f955e9932c6c72a836b2922ab8` — Issue #329 / PR #330.
-- DOC19 — J4C-C closure & J5A activation: Issue #333, branch `docs/es-13-j4c-c-closure-j5a-activation`, documentation-only closure in progress from gameplay canonical `1131c06db406ca0170d5dad33ecb7f4610a06b96`.
+- DOC19 — J4C-C closure & J5A activation: `907bce8c494a5c7b9a4965e09dca677d919560f4` — Issue #333 / PR #334.
+- DOC20 — J5A closure & J5B activation: Issue #337, branch `docs/es-13-j5a-closure-j5b-activation`, documentation-only closure in progress from gameplay canonical `df60f62565a1d3cdf6058d2e1a4049f5870f27b7`.
 
 ## Next gameplay phase
 
-### ES-13J5A — Pure Priority-Target Contract
-Status: **NEXT ENGINEERING TARGET AFTER DOC19 CLOSURE**
+### ES-13J5B — Pure Command-Link Binding Contract
+Status: **NEXT ENGINEERING TARGET AFTER DOC20 CLOSURE**
 
-J5A begins the Priority Targets & Chain-Reaction Combat program with a pure, zero-live-authority contract. Read-only discovery found no existing `Commander` / priority-node `EnemyType` and no explicit priority-target runtime authority, so J5A must define semantics before any live spawn or chain-reaction adoption.
+J5B remains pure and zero-live-authority. Discovery after J5A confirmed that every live enemy may already carry the optional J3 `enemyFormation` assignment with bounded `groupId`, `memberIndex` and `memberCount`, while J3 remains the sole formation assignment/motion authority.
 
 Required direction:
-- pure contract first; no live spawn/progression adoption in J5A;
-- no new `EnemyType` unless dedicated discovery proves existing representation cannot satisfy the contract and the phase explicitly approves it;
-- priority targets must force a tactical/objective decision, not merely add HP;
-- define bounded target identity, tactical question, vulnerability/objective semantics and fail-closed lookup/projection;
-- future chain reactions must route through existing damage/defeat authorities and may not bypass caps or create uncontrolled AoE authority;
-- no second entity/projectile collection, uncontrolled full-array scan, independent timer/RNG authority or silent score/economy tuning;
-- preserve Campaign/Infinite isolation, J1/J2, J3 enemy formations, frozen J4 family behavior, FOTON GLB and player/FOTON formation ownership.
+- consume already-existing bounded formation facts as data; do not own or mutate J3 director state;
+- support only currently certified live group sizes 2 and 3;
+- select exactly one deterministic `COMMAND_CORE` member per supported group;
+- expose bounded linked-member metadata only;
+- invalid/empty group ids, unsupported group sizes and out-of-range member indices fail closed;
+- no new `EnemyType`, runtime field, live spawn/progression adoption, collection, scan, timer/RNG or cap authority;
+- no damage, death, score, reward or formation mutation;
+- preserve J5A `SIGNAL_ONLY` semantics and all J1/J2/J3/J4/FOTON/player authorities;
+- actual live binding/adoption and chain-reaction behavior remain for a later J5 slice after J5B certification.
 
 J4D+ additional tactical families remain **DEFERRED / NOT CURRENTLY JUSTIFIED**. `FORMATION_BREAKER` and `JAMMER` still require independent hard-control spacing/recovery proof; `MINE_WEAVER` and `MIRROR_WARDEN` still require genuine mine/mirror mechanics. J3C-C remains deferred, not cancelled.
 
@@ -145,7 +183,7 @@ Rules:
 - no gameplay phase is declared deployed before exact-SHA required evidence.
 
 ## Gameplay chronology
-`J5A Pure Priority-Target Contract → J5B+ Controlled Priority Targets/Chain Reactions → J6 Dynamic Events → J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance`
+`J5B Pure Command-Link Binding Contract → J5C+ Controlled Priority Targets/Chain Reactions → J6 Dynamic Events → J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance`
 
 Post-J15 direction: **ES-14 — Living Warfront**.
 
@@ -153,7 +191,7 @@ Post-J15 direction: **ES-14 — Living Warfront**.
 Read this file, `IMPLEMENTATION_LEDGER.md`, `ES13_GAMEPLAY_ROADMAP.md`, `TRACEABILITY_POLICY.md` and `ES13_PHASE_CHECKLIST.md`, then active Issues/PRs. Verify live `main` before any write.
 
 Suggested handoff:
-> Continue ORBI Energy Swarm autonomously. Repository `ingeniusvictor/orbi-energy.swarm`. J4C-C gameplay canonical is `1131c06db406ca0170d5dad33ecb7f4610a06b96`, fully DEPLOYED / FROZEN via Issue #331 / PR #332 with exact five-file product scope. Complete DOC19 if still open, then implement J5A Pure Priority-Target Contract only after discovery of existing damage/defeat/objective seams. Keep J4D+ families and J3C-C deferred until their prerequisites are proven. Follow Issue → Branch → full gates → PR → exact-SHA post-merge evidence. Never touch `main` directly or weaken tests.
+> Continue ORBI Energy Swarm autonomously. Repository `ingeniusvictor/orbi-energy.swarm`. J5A gameplay canonical is `df60f62565a1d3cdf6058d2e1a4049f5870f27b7`, fully DEPLOYED / FROZEN via Issue #335 / PR #336 with exact three-file product scope. Complete DOC20 if still open, then implement J5B Pure Command-Link Binding Contract only as a deterministic mapping over existing bounded J3 formation assignments; no live adoption yet. Keep J4D+ families and J3C-C deferred until their prerequisites are proven. Follow Issue → Branch → full gates → PR → exact-SHA post-merge evidence. Never touch `main` directly or weaken tests.
 
 ## Update obligation
 Every merged gameplay phase must record exact gameplay canonical, Issue/PR, final head, pre-PR certification, PR CI/Android, main CI/Android/Pages, implementation result, unresolved follow-ups and next roadmap phase. A gameplay phase is not administratively closed until these records are current.
