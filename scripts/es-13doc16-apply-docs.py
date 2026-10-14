@@ -1,0 +1,263 @@
+from pathlib import Path
+import re
+
+CANONICAL = "1023cee74d1c32a379bf542551397ae134f43573"
+PARENT = "096b2c9fe53551664b56baf6e382368f8b4078da"
+
+
+def replace_range(source: str, start_heading: str, end_heading: str, replacement: str, label: str) -> str:
+    pattern = re.compile(
+        rf"{re.escape(start_heading)}.*?(?={re.escape(end_heading)})",
+        re.S,
+    )
+    matches = list(pattern.finditer(source))
+    if len(matches) != 1:
+        raise RuntimeError(f"Expected one {label} block, found {len(matches)}")
+    return pattern.sub(replacement.rstrip() + "\n\n", source, count=1)
+
+
+# PROJECT_CONTINUITY.md
+path = Path("docs/PROJECT_CONTINUITY.md")
+source = path.read_text(encoding="utf-8")
+
+current_block = f'''## Current certified gameplay canonical
+
+`{CANONICAL}`
+
+Phase: **ES-13J4B — Narrow Live Warp Ambusher Adoption**  
+Status: **DEPLOYED / FROZEN**  
+Issue: #318 — CLOSED / completed  
+PR: #319 — squash merged
+
+Single parent: `{PARENT}` — ES-13DOC15 documentation canonical.
+
+Version remains `0.2.0-beta.1`. Full RC/manual certification remains intentionally deferred while ES-13 materially expands gameplay.
+
+## J4B result
+J4B adopted exactly one certified tactical family into live progression: `RIFT_HUNTER` → `WARP_AMBUSHER`.
+
+Live policy is deliberately sparse and mode-isolated:
+- Campaign remains disabled;
+- Infinite only, minimum sector 26;
+- milestone sectors and recovery sectors are excluded;
+- eligibility cadence is `(sector - 10) % 4 === 0`;
+- only the final wave of an eligible sector may select it;
+- exactly one deterministic existing spawn-budget ordinal is replaced;
+- first reachable live tactical sector is 34;
+- no enemy, spawn event, timer, collection, cap or budget was added.
+
+Fairness/isolation guarantees:
+- the tactical spawn cannot receive the generic random-elite overlay;
+- Infinite evolved-enemy selection already excludes `RIFT_HUNTER`;
+- J3 live formations remain limited to CRAWLER/SPLITTER, so tactical + formation stacking cannot occur;
+- the existing `RIFT LOCK` telegraph precedes the committed dash and preserves counterplay;
+- `SIEGE_PRISM`, `SWARM_REAVER`, `VOID_ANCHOR`, `MINE_WEAVER` and `MIRROR_WARDEN` were not activated by J4B.
+
+Final J4B product diff exactly:
+- `src/game/EnergySwarmGame.tsx` (+10 lines only);
+- `src/game/runtimeTacticalEnemyAdoption.ts`;
+- `tests/gameplay/runtime-tactical-enemy-adoption.test.ts`;
+- `tests/es-13j4b-live-tactical-adoption.test.mjs`.
+
+## J4B exact evidence
+- baseline/docs canonical: `{PARENT}`;
+- pre-PR certified head `d758c4a38575002b6a59242f2894fc4e8e235fb0`, run `38489976346`, job `115612611028` — GREEN including Android/APK/J4B scope guard;
+- final clean PR head `5a29b7af53b9f62b017c54cde7ed87e00c04216b`;
+- PR CI `38490183094`, job `115613270626` — GREEN on exact final head;
+- PR Android `38490183041`, job `115613270479` — GREEN on exact final head including Build/Verify/Upload APK;
+- squash gameplay canonical `{CANONICAL}`;
+- main CI `38490426895`, job `115614058362` — GREEN on exact canonical;
+- main Android `38490426903`, job `115614058464` — GREEN on exact canonical including Build/Verify/Upload APK;
+- Pages `38490505690` — build job `115614310963` + deploy job `115614421521`, both GREEN on exact canonical.
+
+The first temporary J4B runtime-patch attempt failed closed on an indentation-sensitive elite-guard matcher; it made no partial product write. The temporary matcher was corrected, the exact +10-line runtime seam was applied, and all temporary patch/certification workflows were removed before PR #319.'''
+source = replace_range(
+    source,
+    "## Current certified gameplay canonical",
+    "## ES-13 gameplay canonicals",
+    current_block,
+    "continuity current canonical",
+)
+
+old = "- J4A — Pure Tactical Enemy Family Contract: `0c3f5c668926130f7ac8044cff8b619302949225`."
+new = old + f"\n- J4B — Narrow Live Warp Ambusher Adoption: `{CANONICAL}`."
+if source.count(old) != 1:
+    raise RuntimeError("Expected one J4A canonical list anchor")
+source = source.replace(old, new, 1)
+
+docs_block = f'''## Documentation canonicals
+- DOC11: `31de2cd5bb89ae3032902c09ace881119c04dfec`;
+- DOC12: `f85e2432934454da191dea9bd0c9da43bbce86ca`;
+- DOC13: `03fbaefc45d065a5815e52cca6a6e67b0471949a`;
+- DOC14 — J3D closure & J4 activation: `998292cd40a3364aa7f22933b6312173956d3baa`;
+- DOC15 — J4A closure & J4B activation: `{PARENT}` — Issue #316 / PR #317;
+- DOC16 — J4B closure & J4C activation: Issue #320, branch `docs/es-13-j4b-closure-j4c-activation`, documentation-only closure in progress from J4B canonical `{CANONICAL}`.'''
+source = replace_range(
+    source,
+    "## Documentation canonicals",
+    "## Next gameplay phase",
+    docs_block,
+    "continuity documentation canonicals",
+)
+
+next_block = '''## Next gameplay phase
+
+### ES-13J4C — Next Bounded Tactical Family Slice
+Status: **NEXT ENGINEERING TARGET AFTER DOC16 CLOSURE**
+
+J4C must not simply enable the remaining J4A families. It must inspect live runtime semantics first and choose the smallest next family whose promised telegraph and counterplay are demonstrably real.
+
+Current direction:
+- `SIEGE_PRISM` / `ARTILLERY_CARRIER` is the leading candidate only if its runtime first gains or certifies the explicit readable artillery telegraph promised by J4A (`SIEGE_VOLLEY`);
+- `SWARM_REAVER` / `FORMATION_BREAKER` and `VOID_ANCHOR` / `JAMMER` remain deferred because they apply harder control pressure and require independent spacing/recovery fairness proof;
+- `MINE_WEAVER` / `MIRROR_WARDEN` remain outside the certified J4 family contract until dedicated pure contracts implement genuine mine/mirror semantics;
+- no new `EnemyType`, parallel enemy authority, density increase, cap/budget increase or FOTON GLB change is justified by J4C itself.
+
+The first J4C issue must prove the next family creates a distinct player decision and a readable pre-commit cue before any broader live adoption.'''
+source = replace_range(
+    source,
+    "## Next gameplay phase",
+    "## Resolved diagnostics",
+    next_block,
+    "continuity next gameplay",
+)
+
+chronology_old = "`J4B Narrow Live Tactical Adoption → J4C+ Additional Tactical Families → J5 Priority Targets/Chain Reactions"
+chronology_new = "`J4C Bounded Tactical Family Slice → J4D+ Additional Tactical Families → J5 Priority Targets/Chain Reactions"
+if source.count(chronology_old) != 1:
+    raise RuntimeError("Expected continuity chronology anchor")
+source = source.replace(chronology_old, chronology_new, 1)
+
+handoff_pattern = re.compile(r"Suggested handoff:\n> .*?(?=\n\n## Update obligation)", re.S)
+if len(list(handoff_pattern.finditer(source))) != 1:
+    raise RuntimeError("Expected one continuity handoff block")
+handoff = f'''Suggested handoff:
+> Continue ORBI Energy Swarm autonomously. Repository `ingeniusvictor/orbi-energy.swarm`. J4B gameplay canonical is `{CANONICAL}`, fully deployed/frozen. Complete DOC16 if still open, then inspect the actual SIEGE_PRISM/runtime telegraph path before opening J4C. Follow Issue → Branch → full gates → PR → exact-SHA post-merge evidence. Never touch `main` directly or weaken tests.'''
+source = handoff_pattern.sub(handoff, source, count=1)
+path.write_text(source, encoding="utf-8")
+
+
+# IMPLEMENTATION_LEDGER.md
+path = Path("docs/IMPLEMENTATION_LEDGER.md")
+source = path.read_text(encoding="utf-8")
+table_anchor = "| ES-13J4A — Pure Tactical Enemy Family Contract | DEPLOYED / FROZEN | `0c3f5c668926130f7ac8044cff8b619302949225` | #314 | #315 |"
+table_row = f"| ES-13J4B — Narrow Live Warp Ambusher Adoption | DEPLOYED / FROZEN | `{CANONICAL}` | #318 | #319 |"
+if source.count(table_anchor) != 1:
+    raise RuntimeError("Expected one J4A ledger row")
+source = source.replace(table_anchor, table_anchor + "\n" + table_row, 1)
+
+j4b_ledger = f'''### J4B — Narrow Live Warp Ambusher Adoption
+J4B adopted only `RIFT_HUNTER` / `WARP_AMBUSHER`, using one deterministic replacement of an existing Infinite spawn-budget slot. Campaign remained disabled. Eligible Infinite sectors are sparse, non-milestone, non-recovery cadence sectors from 26 onward, final wave only; first reachable sector is 34.
+
+Isolation/fairness: no density/cap/budget increase; no generic elite overlay on the tactical spawn; evolved-enemy authority excludes `RIFT_HUNTER`; J3 formation authority remains CRAWLER/SPLITTER-only; existing `RIFT LOCK` telegraph remains the counterplay cue. Hard-control families and mine/mirror semantics remain deferred.
+
+Final product diff exactly four files: `EnergySwarmGame.tsx` (+10), `runtimeTacticalEnemyAdoption.ts`, and two J4B test files. The first temporary exact-patch workflow failed closed on an indentation-sensitive elite matcher and wrote no partial runtime change; the matcher was corrected before certification.
+
+Exact evidence:
+- baseline `{PARENT}`;
+- pre-PR head `d758c4a38575002b6a59242f2894fc4e8e235fb0`, run `38489976346`, job `115612611028` — GREEN;
+- final PR head `5a29b7af53b9f62b017c54cde7ed87e00c04216b`;
+- PR CI `38490183094`, job `115613270626` — GREEN;
+- PR Android `38490183041`, job `115613270479` — GREEN including Build/Verify/Upload APK;
+- canonical `{CANONICAL}`, single parent `{PARENT}`;
+- main CI `38490426895`, job `115614058362` — GREEN;
+- main Android `38490426903`, job `115614058464` — GREEN including Build/Verify/Upload APK;
+- Pages `38490505690`, build `115614310963` + deploy `115614421521` — GREEN.
+
+Issue #318 CLOSED / completed. J4B is **DEPLOYED / FROZEN**.'''
+marker = "## Documentation canonicals"
+if source.count(marker) != 1:
+    raise RuntimeError("Expected ledger documentation marker")
+source = source.replace(marker, j4b_ledger + "\n\n" + marker, 1)
+
+ledger_docs = f'''## Documentation canonicals
+- DOC11 `31de2cd5bb89ae3032902c09ace881119c04dfec`;
+- DOC12 `f85e2432934454da191dea9bd0c9da43bbce86ca`;
+- DOC13 `03fbaefc45d065a5815e52cca6a6e67b0471949a`;
+- DOC14 — J3D closure & J4 activation: `998292cd40a3364aa7f22933b6312173956d3baa`;
+- DOC15 — J4A closure & J4B activation: `{PARENT}` — Issue #316 / PR #317;
+- DOC16 — J4B closure & J4C activation: Issue #320, branch `docs/es-13-j4b-closure-j4c-activation`, in progress from gameplay canonical `{CANONICAL}`.'''
+source = replace_range(
+    source,
+    "## Documentation canonicals",
+    "## Frozen manual/physical blockers",
+    ledger_docs,
+    "ledger docs canonicals",
+)
+
+ledger_next = '''## Next planned gameplay
+
+### ES-13J4C — Next Bounded Tactical Family Slice
+Status: **NEXT ENGINEERING TARGET AFTER DOC16 CLOSURE**.
+
+Inspect current live behavior before implementation. `SIEGE_PRISM` / `ARTILLERY_CARRIER` is the leading candidate only if the promised `SIEGE_VOLLEY` telegraph becomes demonstrably readable and certified. `FORMATION_BREAKER` and `JAMMER` remain deferred pending independent hard-control spacing/recovery proof. `MINE_WEAVER` / `MIRROR_WARDEN` remain outside the certified contract.'''
+source = replace_range(
+    source,
+    "## Next planned gameplay",
+    "## Program sequence",
+    ledger_next,
+    "ledger next gameplay",
+)
+seq_old = "`J4B Narrow Live Tactical Adoption → J4C+ Additional Tactical Families"
+seq_new = "`J4C Bounded Tactical Family Slice → J4D+ Additional Tactical Families"
+if source.count(seq_old) != 1:
+    raise RuntimeError("Expected ledger program sequence anchor")
+source = source.replace(seq_old, seq_new, 1)
+path.write_text(source, encoding="utf-8")
+
+
+# ES13_GAMEPLAY_ROADMAP.md
+path = Path("docs/ES13_GAMEPLAY_ROADMAP.md")
+source = path.read_text(encoding="utf-8")
+roadmap_j4b = f'''### J4B — Narrow Live Warp Ambusher Adoption
+Status: **DEPLOYED / FROZEN**  
+Canonical: `{CANONICAL}`  
+Issue #318 / PR #319
+
+J4B activated exactly one J4A family: `RIFT_HUNTER` → `WARP_AMBUSHER`.
+
+Certified live policy:
+- Campaign disabled;
+- Infinite minimum sector 26;
+- milestone and recovery sectors excluded;
+- sparse `(sector - 10) % 4 === 0` sector cadence;
+- final wave only;
+- exactly one deterministic replacement of an existing spawn-budget ordinal;
+- first reachable live sector 34;
+- tactical spawn excluded from generic random-elite overlay;
+- no density, cap, budget, timer, collection or second-director increase;
+- evolved-enemy and J3 formation authorities remain isolated;
+- existing `RIFT LOCK` gives the pre-commit cue/counterplay.
+
+Exact deployment anchors:
+- pre-PR head `d758c4a38575002b6a59242f2894fc4e8e235fb0`, run `38489976346` / job `115612611028` GREEN;
+- final PR head `5a29b7af53b9f62b017c54cde7ed87e00c04216b`;
+- PR CI `38490183094` / job `115613270626` GREEN;
+- PR Android `38490183041` / job `115613270479` GREEN;
+- canonical `{CANONICAL}`;
+- main CI `38490426895` / job `115614058362` GREEN;
+- main Android `38490426903` / job `115614058464` GREEN;
+- Pages `38490505690`, build `115614310963` + deploy `115614421521` GREEN.
+
+### J4C — Next Bounded Tactical Family Slice
+Status: **NEXT ACTIVE ENGINEERING SLICE AFTER DOC16 CLOSURE**
+
+J4C must select only one next distinct tactical family after inspecting the live runtime semantics. `SIEGE_PRISM` / `ARTILLERY_CARRIER` is the leading candidate, but it is not eligible for live adoption merely because the J4A contract names `SIEGE_VOLLEY`: the actual runtime must first implement or certify an explicit readable artillery telegraph and fair reaction window.
+
+Hard-control families remain deferred:
+- `SWARM_REAVER` / `FORMATION_BREAKER` requires independent spacing/recovery fairness proof;
+- `VOID_ANCHOR` / `JAMMER` requires independent spacing/recovery fairness proof.
+
+`MINE_WEAVER` / `MIRROR_WARDEN` remain outside the certified family contract until dedicated pure mechanics genuinely implement mine/mirror behavior.
+
+J4C hard constraints remain: no new `EnemyType`, no parallel enemy collection/director, no family-only full-array scan, no cap/budget increase, no uncontrolled projectiles/support entities, no silent score/economy/J1/J2/GAIA/FOTON changes, and no FOTON GLB change.'''
+source = replace_range(
+    source,
+    "### J4B — Narrow Live Tactical Enemy Adoption",
+    "### J4 design gate",
+    roadmap_j4b,
+    "roadmap J4B/J4C",
+)
+path.write_text(source, encoding="utf-8")
+
+print("DOC16 documentation patch applied successfully.")
