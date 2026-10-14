@@ -1,0 +1,53 @@
+name: ES-13DOC23 Docs Patch
+
+on:
+  push:
+    branches:
+      - docs/es-13-j5d-closure-j5e-activation
+    paths:
+      - '.github/es13doc23_patch.py'
+      - '.github/workflows/es-13doc23-docs-patch.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact branch head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: docs/es-13-j5d-closure-j5e-activation
+
+      - name: Apply guarded DOC23 patch
+        run: python .github/es13doc23_patch.py
+
+      - name: Validate diff and scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --check
+          mapfile -t changed < <(git diff --name-only | LC_ALL=C sort)
+          expected=(
+            "docs/ES13_GAMEPLAY_ROADMAP.md"
+            "docs/IMPLEMENTATION_LEDGER.md"
+            "docs/PROJECT_CONTINUITY.md"
+          )
+          mapfile -t expected_sorted < <(printf '%s\n' "${expected[@]}" | LC_ALL=C sort)
+          [[ "${#changed[@]}" -eq "${#expected_sorted[@]}" ]]
+          for i in "${!expected_sorted[@]}"; do
+            [[ "${changed[$i]}" == "${expected_sorted[$i]}" ]]
+          done
+
+      - name: Commit documentation patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/PROJECT_CONTINUITY.md docs/IMPLEMENTATION_LEDGER.md docs/ES13_GAMEPLAY_ROADMAP.md
+          git commit -m "ES-13DOC23: close J5D and activate J5E"
+          git push origin HEAD:docs/es-13-j5d-closure-j5e-activation
