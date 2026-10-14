@@ -120,3 +120,4 @@ if text.count("pendingCommandLinkBreakRef.current = null;") != 4:
 
 path.write_text(text, encoding="utf-8")
 print("ES-13J5E live adapter patch applied with exact anchors.")
+# Trigger commit after workflow exists on the branch.
