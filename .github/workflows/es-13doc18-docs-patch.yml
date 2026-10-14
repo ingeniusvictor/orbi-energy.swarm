@@ -31,6 +31,15 @@ jobs:
       - name: Apply guarded DOC18 patch
         run: python .github/es13doc18_patch.py
 
+      - name: Normalize newly inserted Markdown lines
+        shell: bash
+        run: |
+          set -euo pipefail
+          sed -i 's/^Phase: \*\*ES-13J4C-B — Live Siege Volley Telegraph Integration\*\*  $/Phase: **ES-13J4C-B — Live Siege Volley Telegraph Integration**/' docs/PROJECT_CONTINUITY.md
+          sed -i 's/^Issue: #326 — CLOSED \/ completed  $/Issue: #326 — CLOSED \/ completed/' docs/PROJECT_CONTINUITY.md
+          sed -i 's/^Status: \*\*DEPLOYED \/ FROZEN\*\*  $/Status: **DEPLOYED \/ FROZEN**/' docs/ES13_GAMEPLAY_ROADMAP.md
+          sed -i 's/^Canonical: `2e16ff9a577128ffb06211b612116553928c8cda`  $/Canonical: `2e16ff9a577128ffb06211b612116553928c8cda`/' docs/ES13_GAMEPLAY_ROADMAP.md
+
       - name: Scope and content guard
         shell: bash
         run: |
