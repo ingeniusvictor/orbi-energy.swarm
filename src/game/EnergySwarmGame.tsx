@@ -231,6 +231,11 @@ import {
   requestLiveEnemyFormationSpawn,
 } from "./liveEnemyFormationDirector";
 import {
+  resolveCommandLinkBreakResolution,
+  type CommandLinkBreakResolution,
+} from "./commandLinkBreakResolution";
+import { shouldDetachCommandLinkMember } from "./liveCommandLinkBreakApplication";
+import {
   LIVE_SIEGE_VOLLEY_FIRE_RANGE,
   acknowledgeLiveSiegeVolleyShot,
   stepLiveSiegeVolley,
@@ -399,6 +404,8 @@ export const EnergySwarmGame: React.FC = () => {
   const enemyFormationDirectorRef = useRef(
     createLiveEnemyFormationDirectorState(),
   );
+  const pendingCommandLinkBreakRef =
+    useRef<Readonly<CommandLinkBreakResolution> | null>(null);
 
   // Boss Refs
   const bossActiveRef = useRef(false);
@@ -1438,6 +1445,7 @@ export const EnergySwarmGame: React.FC = () => {
     waveActiveRef.current = false;
     enemyFormationDirectorRef.current =
       createLiveEnemyFormationDirectorState();
+    pendingCommandLinkBreakRef.current = null;
     waveBreakTimerRef.current = 2500; // 2.5 seconds visual preparation break
 
     // Reset mid-run upgrades
@@ -2495,6 +2503,7 @@ export const EnergySwarmGame: React.FC = () => {
         waveBudgetSpawnedRef.current = 0;
         enemyFormationDirectorRef.current =
           createLiveEnemyFormationDirectorState();
+        pendingCommandLinkBreakRef.current = null;
         setIsWaveBreak(false);
         setWaveName(descriptor.display.name);
 
@@ -2943,6 +2952,7 @@ export const EnergySwarmGame: React.FC = () => {
     enemiesRef.current = [];
     enemyFormationDirectorRef.current =
       createLiveEnemyFormationDirectorState();
+    pendingCommandLinkBreakRef.current = null;
     hazardZonesRef.current = [];
 
     const isRematch = rematchProfile !== null;
@@ -4884,8 +4894,19 @@ export const EnergySwarmGame: React.FC = () => {
       }
     }
 
+    const pendingCommandLinkBreak = pendingCommandLinkBreakRef.current;
+
     enemiesRef.current.forEach((enemy) => {
       if (enemy.isDead) return;
+
+      if (
+        shouldDetachCommandLinkMember(
+          pendingCommandLinkBreak,
+          enemy.enemyFormation,
+        )
+      ) {
+        enemy.enemyFormation = undefined;
+      }
 
       const signatureBehavior =
         enemySignatureBehaviorCacheRef.current.get(enemy);
@@ -5266,6 +5287,13 @@ export const EnergySwarmGame: React.FC = () => {
     // Accumulate gaze cadence in O(1); target lookup reuses the
     // collision spatial index later in this same frame.
     fotonThreatAccumulatorMsRef.current += delta;
+
+    if (
+      pendingCommandLinkBreak &&
+      pendingCommandLinkBreakRef.current === pendingCommandLinkBreak
+    ) {
+      pendingCommandLinkBreakRef.current = null;
+    }
 
     // 7. Projectiles coordinates
     projectilesRef.current.forEach((proj) => {
@@ -5709,6 +5737,13 @@ export const EnergySwarmGame: React.FC = () => {
     enemy.milestoneKind === "MINIBOSS";
 
   const registerCombatDefeat = (enemy: Enemy, affinity?: OrbiAffinity) => {
+    const commandLinkBreakResolution = enemy.enemyFormation
+      ? resolveCommandLinkBreakResolution(enemy.enemyFormation)
+      : null;
+    if (commandLinkBreakResolution) {
+      pendingCommandLinkBreakRef.current = commandLinkBreakResolution;
+    }
+
     const resolution = registerCombatResonanceDefeat(
       combatResonanceRef.current,
       {
