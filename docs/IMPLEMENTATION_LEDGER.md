@@ -38,6 +38,7 @@ Rules:
 | ES-13J4C-A — Pure Siege Volley Telegraph Contract | DEPLOYED / FROZEN | `4cb5fb320c4bed4fa884ede312c4f3c323cdc5c6` | #322 | #323 |
 | ES-13J4C-B — Live Siege Volley Telegraph Integration | DEPLOYED / FROZEN | `2e16ff9a577128ffb06211b612116553928c8cda` | #326 | #327 + #328 |
 | ES-13J4C-C — Controlled Normal-Progression Siege Adoption | DEPLOYED / FROZEN | `1131c06db406ca0170d5dad33ecb7f4610a06b96` | #331 | #332 |
+| ES-13J5A — Pure Priority-Target Contract | DEPLOYED / FROZEN | `df60f62565a1d3cdf6058d2e1a4049f5870f27b7` | #335 | #336 |
 
 ## Evidence anchors
 
@@ -184,6 +185,25 @@ Exact evidence:
 
 Issue #331 CLOSED / completed. J4C-C is **DEPLOYED / FROZEN**.
 
+### J5A — Pure Priority-Target Contract
+J5A established one immutable semantic `COMMAND_CORE` profile with tactical intent `FOCUS_CORE_TO_BREAK_LINK`, objective `BREAK_COMMAND_LINK`, defeat signal `COMMAND_LINK_BROKEN` and `SIGNAL_ONLY` effect mode. Unsupported profiles fail closed. The contract explicitly owns no spawn/entity/projectile collection, damage, defeat, score, reward, formation, clock, RNG, scan, cap mutation or entity-creation authority. No new `EnemyType` or live runtime adoption was introduced.
+
+Final product diff exactly:
+- `src/game/priorityTargetContract.ts`;
+- `tests/es-13j5a-priority-target-contract.test.mjs`;
+- `tests/gameplay/priority-target-contract.test.ts`.
+
+Exact evidence:
+- baseline `907bce8c494a5c7b9a4965e09dca677d919560f4`;
+- pre-PR `257cfb8dd7a21a046cf87c2c2af9b501e462f3ad`, run `38559123546` / job `115835528447` GREEN including exact scope + Android APK;
+- final PR #336 head `72ea40a2935df0d3bbf7b4db45be5a8647380524`;
+- PR CI `38559564286` / `115836993908` GREEN; Android `38559564155` / `115836993731` GREEN;
+- canonical `df60f62565a1d3cdf6058d2e1a4049f5870f27b7`, parent `907bce8c494a5c7b9a4965e09dca677d919560f4`, tree `8296313607b688bef5412fcb046341e609852ce4` equal to final PR tree;
+- main CI `38559826229` / `115837852423` GREEN; Android `38559826354` / `115837852853` GREEN;
+- Pages `38559959364`, build `115838294773` + deploy `115838455401` GREEN.
+
+Issue #335 CLOSED / completed. J5A is **DEPLOYED / FROZEN**.
+
 ## Documentation canonicals
 - DOC11 `31de2cd5bb89ae3032902c09ace881119c04dfec`;
 - DOC12 `f85e2432934454da191dea9bd0c9da43bbce86ca`;
@@ -193,7 +213,8 @@ Issue #331 CLOSED / completed. J4C-C is **DEPLOYED / FROZEN**.
 - DOC16 — J4B closure & J4C activation: `56aca8a129be9310f64bb04a99fb19560b52b2e3` — Issue #320 / PR #321;
 - DOC17 — J4C-A closure & J4C-B activation: `19beb0abf2b17d391834cb6336419ed4ead6819c` — Issue #324 / PR #325;
 - DOC18 — J4C-B closure & J4C-C activation: `72c4359af106d6f955e9932c6c72a836b2922ab8` — Issue #329 / PR #330.
-- DOC19 — J4C-C closure & J5A activation: Issue #333, branch `docs/es-13-j4c-c-closure-j5a-activation`, in progress from gameplay canonical `1131c06db406ca0170d5dad33ecb7f4610a06b96`.
+- DOC19 — J4C-C closure & J5A activation: `907bce8c494a5c7b9a4965e09dca677d919560f4` — Issue #333 / PR #334.
+- DOC20 — J5A closure & J5B activation: Issue #337, branch `docs/es-13-j5a-closure-j5b-activation`, in progress from gameplay canonical `df60f62565a1d3cdf6058d2e1a4049f5870f27b7`.
 
 ## Frozen manual/physical blockers
 Remain OPEN and deferred while ES-13 materially changes gameplay:
@@ -206,10 +227,10 @@ Automated CI never substitutes for required human/device evidence.
 
 ## Next planned gameplay
 
-### ES-13J5A — Pure Priority-Target Contract
-Status: **NEXT ENGINEERING TARGET AFTER DOC19 CLOSURE**.
+### ES-13J5B — Pure Command-Link Binding Contract
+Status: **NEXT ENGINEERING TARGET AFTER DOC20 CLOSURE**.
 
-Begin J5 with a pure zero-live-authority contract because the current runtime has no explicit Commander/priority-node EnemyType or dedicated priority-target authority. Define bounded tactical/objective semantics first; do not add live spawns, chain reactions or a parallel entity system in J5A. Future effects must route through existing damage/defeat/cap authorities.
+Use existing J3 `enemyFormation` facts as bounded input only. J5B must deterministically identify exactly one semantic `COMMAND_CORE` member and linked members for certified group sizes 2/3, fail closed on invalid group data, and output metadata only. It must not add an EnemyType/runtime field, mutate J3 formation state, adopt live spawns, apply damage/death/score/reward effects, scan live arrays, or own clocks/RNG/caps.
 
 J4D+ additional tactical families remain deferred: FORMATION_BREAKER/JAMMER require hard-control spacing/recovery proof; MINE_WEAVER/MIRROR_WARDEN require genuine mine/mirror mechanics. J3C-C remains deferred, not cancelled.
 

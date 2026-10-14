@@ -227,18 +227,46 @@ Status: **ACTIVE PROGRAM**
 Goal: Command Cores, linked formations, destructible priority nodes, tactical chain reactions and formation collapse after key-target destruction. Reward tactical solutions without bypassing caps.
 
 ### J5A — Pure Priority-Target Contract
-Status: **NEXT ACTIVE ENGINEERING SLICE AFTER DOC19 CLOSURE**
+Status: **DEPLOYED / FROZEN**
+Canonical: `df60f62565a1d3cdf6058d2e1a4049f5870f27b7`
+Issue #335 / PR #336
 
-Read-only activation discovery found no existing Commander/priority-node EnemyType and no explicit priority-target runtime authority. J5 therefore begins with a pure contract rather than a live spawn or chain-reaction implementation.
+Certified contract:
+- exactly one immutable semantic profile: `COMMAND_CORE` / `Command Core`;
+- tactical decision `FOCUS_CORE_TO_BREAK_LINK`, priority `HIGH`;
+- objective `BREAK_COMMAND_LINK`;
+- deterministic defeat signal `COMMAND_LINK_BROKEN`;
+- `SIGNAL_ONLY` effect mode;
+- unsupported profile IDs fail closed;
+- no damage, linked-target kill, score, reward or formation mutation;
+- zero spawn/entity/projectile collection, damage, defeat, score, reward, formation, clock, RNG, full-array scan, cap-mutation or entity-creation authority;
+- no new `EnemyType`, runtime field or live adoption.
+
+Exact deployment anchors:
+- pre-PR `257cfb8dd7a21a046cf87c2c2af9b501e462f3ad`, run `38559123546` / job `115835528447` GREEN including scope guard + Android APK;
+- final PR #336 head `72ea40a2935df0d3bbf7b4db45be5a8647380524`;
+- PR CI `38559564286` / `115836993908` GREEN; Android `38559564155` / `115836993731` GREEN;
+- canonical `df60f62565a1d3cdf6058d2e1a4049f5870f27b7`, parent `907bce8c494a5c7b9a4965e09dca677d919560f4`, tree `8296313607b688bef5412fcb046341e609852ce4`;
+- main CI `38559826229` / `115837852423` GREEN; Android `38559826354` / `115837852853` GREEN;
+- Pages `38559959364`, build `115838294773` + deploy `115838455401` GREEN.
+
+### J5B — Pure Command-Link Binding Contract
+Status: **NEXT ACTIVE ENGINEERING SLICE AFTER DOC20 CLOSURE**
+
+Discovery after J5A confirmed that existing enemies already expose optional J3 `enemyFormation` assignment metadata (`groupId`, `memberIndex`, `memberCount`, route/mirror/timing/anchor facts). J5B will reuse those bounded facts as pure input rather than introduce a Commander type or second formation authority.
 
 Design constraints:
-- zero live spawn/progression authority in J5A;
-- no new EnemyType unless dedicated discovery proves existing representation cannot satisfy the contract and the phase explicitly approves it;
-- priority targets must encode a tactical/objective decision, not an HP-only reskin;
-- define bounded identity, tactical question, vulnerability/objective semantics, counterplay and fail-closed lookup/projection;
-- future chain-reaction damage/defeat must route through existing authorities and global caps/budgets;
-- no parallel entity/projectile collection, uncontrolled AoE/full-array scan, independent timer/RNG authority or silent score/economy tuning;
-- preserve Campaign/Infinite isolation, J1/J2, J3 formations, frozen J4 tactical behavior, FOTON GLB and player/FOTON formation ownership.
+- pure contract only; no live adoption in J5B;
+- support only certified live group sizes 2 and 3;
+- exactly one deterministic `COMMAND_CORE` member per supported group;
+- linked-member output is bounded metadata only;
+- empty/invalid group IDs, unsupported sizes and out-of-range indices fail closed;
+- do not mutate or own J3 director/formation state;
+- no new `EnemyType`, `Enemy` field, collection, entity scan, clock/RNG or cap authority;
+- no damage, defeat, score, reward or formation mutation;
+- preserve J5A `SIGNAL_ONLY` semantics;
+- preserve Campaign/Infinite isolation, J1/J2, frozen J3/J4 behavior, FOTON GLB and player/FOTON formation ownership;
+- live Command Core binding and chain-reaction effects remain deferred to a later J5 slice after this pure contract is certified.
 
 ## J6 — Dynamic Mid-Sector Events
 Status: PLANNED
