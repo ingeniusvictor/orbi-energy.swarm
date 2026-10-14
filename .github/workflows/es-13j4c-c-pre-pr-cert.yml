@@ -68,6 +68,7 @@ jobs:
             ".github/workflows/es-13j4c-c-pre-pr-cert.yml"
             "src/game/runtimeTacticalEnemyAdoption.ts"
             "tests/es-13j4b-live-tactical-adoption.test.mjs"
+            "tests/es-13j4c-b-live-siege-volley-integration.test.mjs"
             "tests/es-13j4c-c-controlled-siege-adoption.test.mjs"
             "tests/gameplay/runtime-tactical-enemy-adoption.test.ts"
           )
