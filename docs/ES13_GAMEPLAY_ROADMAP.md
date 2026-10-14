@@ -65,7 +65,7 @@ J3C-C convoy/leader-follower, fake retreat, portal ambush, encirclement and stag
 ---
 
 ## J4 — Tactical Enemy Families
-Status: **ACTIVE PROGRAM**
+Status: **DEPLOYED / FROZEN CURRENT JUSTIFIED SCOPE**
 
 Goal: add enemies whose behavior creates a new tactical decision. J4 must not become a catalog of HP/damage reskins or uncontrolled density.
 
@@ -183,19 +183,34 @@ Exact final anchors:
 - Pages `38507354839`, build `115667791913` + deploy `115667881614` GREEN.
 
 ### J4C-C — Controlled Normal-Progression Siege Adoption
-Status: **NEXT ACTIVE ENGINEERING SLICE AFTER DOC18 CLOSURE**
+Status: **DEPLOYED / FROZEN**
+Canonical: `1131c06db406ca0170d5dad33ecb7f4610a06b96`
+Issue #331 / PR #332
 
-With SIEGE fairness certified live, J4C-C may broaden where `SIEGE_PRISM / ARTILLERY_CARRIER` appears in normal progression. The implementation issue must inspect current Campaign/Infinite selection first and prove a bounded policy rather than presume a sector cadence.
+Certified live policy:
+- Campaign disabled;
+- Infinite HIGH_PRESSURE minimum sector 51;
+- deterministic SIEGE cadence `(sector - 52) % 8 === 0`;
+- milestone/recovery excluded; final wave only; milestone descriptor null;
+- exactly one existing spawn-budget ordinal replaced at `Math.floor(enemyBudget / 2)`;
+- no density increase;
+- first reachable normal SIEGE sectors 52, 68, 84, 92, 108, 116, 124, 132...;
+- J4B RIFT cadence remains exact and disjoint;
+- J4C-B 700 ms target-lock/COMMIT/ACK behavior remains exact;
+- projectile count 3, speed 4.0, spread 0.12 and cooldown `150 + Math.random() * 70` unchanged;
+- `SIEGE_CATHEDRAL` support remains SIEGE_PRISM, max count 2, cooldown 8000 ms;
+- caps/budgets/entity arrays, evolution and J3 formation isolation remain authoritative;
+- no new EnemyType, collection, director, full-array family scan, independent timer or RNG authority.
 
-Design constraints:
-- prefer narrow Infinite-only adoption unless runtime evidence independently justifies Campaign;
-- deterministically replace an existing spawn opportunity/budget rather than add entities;
-- preserve J4C-B target-lock/COMMIT/ACK behavior and `SIEGE_CATHEDRAL` support policy exactly;
-- preserve projectile count/speed/spread/cooldown, global caps/budgets and entity arrays;
-- no new `EnemyType`, parallel collection/director, family-only full-array scan or independent timer/RNG authority;
-- preserve evolved-enemy and J3 enemy-formation authority isolation.
+Exact deployment anchors:
+- pre-PR `c6dc7dc48dd8028dd6de1f6f9fae79a2d20b6301`, run `38556345439` / job `115826341912` GREEN including scope guard + Android APK;
+- final PR #332 head `e80a54c9823939862beba6a620e4ed363535b61e`;
+- PR CI `38556750449` / `115827692257` GREEN; Android `38556750462` / `115827691810` GREEN;
+- canonical `1131c06db406ca0170d5dad33ecb7f4610a06b96`, parent `72c4359af106d6f955e9932c6c72a836b2922ab8`, tree `ff27ceedc5460d98fefe373850d1fe20e3272098`;
+- main CI `38556901537` / `115828194301` GREEN; Android `38556901696` / `115828194800` GREEN;
+- Pages `38557000846`, build `115828516452` + deploy `115828677107` GREEN.
 
-`FORMATION_BREAKER` and `JAMMER` remain deferred pending independent hard-control spacing/recovery proof. `MINE_WEAVER` / `MIRROR_WARDEN` remain deferred until genuine mine/mirror mechanics exist. J3C-C remains deferred, not cancelled.
+`FORMATION_BREAKER` and `JAMMER` remain **DEFERRED / NOT CURRENTLY JUSTIFIED** pending independent hard-control spacing/recovery proof. `MINE_WEAVER` / `MIRROR_WARDEN` remain deferred until genuine mine/mirror mechanics exist. No J4D slice is invented merely to keep sequence. J3C-C remains deferred, not cancelled.
 
 ### J4 design gate
 Every proposed family must answer:
@@ -207,9 +222,23 @@ Reject or redesign a family if its only answer is “shoot it longer,” “avoi
 ---
 
 ## J5 — Priority Targets & Chain-Reaction Combat
-Status: PLANNED
+Status: **ACTIVE PROGRAM**
 
-Command Cores, linked formations, destructible priority nodes, tactical chain reactions and formation collapse after key-target destruction. Reward tactical solutions without bypassing caps.
+Goal: Command Cores, linked formations, destructible priority nodes, tactical chain reactions and formation collapse after key-target destruction. Reward tactical solutions without bypassing caps.
+
+### J5A — Pure Priority-Target Contract
+Status: **NEXT ACTIVE ENGINEERING SLICE AFTER DOC19 CLOSURE**
+
+Read-only activation discovery found no existing Commander/priority-node EnemyType and no explicit priority-target runtime authority. J5 therefore begins with a pure contract rather than a live spawn or chain-reaction implementation.
+
+Design constraints:
+- zero live spawn/progression authority in J5A;
+- no new EnemyType unless dedicated discovery proves existing representation cannot satisfy the contract and the phase explicitly approves it;
+- priority targets must encode a tactical/objective decision, not an HP-only reskin;
+- define bounded identity, tactical question, vulnerability/objective semantics, counterplay and fail-closed lookup/projection;
+- future chain-reaction damage/defeat must route through existing authorities and global caps/budgets;
+- no parallel entity/projectile collection, uncontrolled AoE/full-array scan, independent timer/RNG authority or silent score/economy tuning;
+- preserve Campaign/Infinite isolation, J1/J2, J3 formations, frozen J4 tactical behavior, FOTON GLB and player/FOTON formation ownership.
 
 ## J6 — Dynamic Mid-Sector Events
 Status: PLANNED
