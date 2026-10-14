@@ -63,6 +63,7 @@ import {
   type RuntimeProjectionBundleCache,
 } from "./runtimeProjectionBundleCache";
 import { resolveEvolvedEnemySpawn } from "./runtimeEnemyEvolution";
+import { resolveRuntimeTacticalEnemySpawn } from "./runtimeTacticalEnemyAdoption";
 import { createEnemySignatureBehaviorCache } from "./enemySignatureBehaviorCache";
 import {
   getReducedVisibilityOverlayProfile,
@@ -2598,10 +2599,18 @@ export const EnergySwarmGame: React.FC = () => {
     // Pick a random enemy type or use the forced type.
     // The milestone champion owns the final budget slot.
     const comp = descriptor.spawn.enemyComposition;
+    const tacticalType =
+      !spawningMiniboss && !forcedType
+        ? resolveRuntimeTacticalEnemySpawn({
+            descriptor,
+            spawnOrdinal: waveBudgetSpawnedRef.current,
+          })
+        : null;
     const type =
       spawningMiniboss && minibossProfile
         ? minibossProfile.enemyType
         : forcedType ||
+          tacticalType ||
           (comp[Math.floor(Math.random() * comp.length)] ||
             EnemyType.CRAWLER);
     const activeEvolvedEnemies =
@@ -2764,6 +2773,7 @@ export const EnergySwarmGame: React.FC = () => {
     const isElite =
       !spawningMiniboss &&
       !evolvedProfile &&
+      !tacticalType &&
       Math.random() < effectiveEliteChance;
     if (isElite) {
       health *= 1.8;
