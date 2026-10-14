@@ -1,5 +1,5 @@
 name: ES-13J4C-B Pre-PR Certification
-# Retry after certifying the type-only Siege Volley state ownership.
+# Retry after preserving the combat-pressure cooldown certification.
 
 on:
   push:
@@ -90,7 +90,8 @@ jobs:
             'src/game/liveSiegeVolleyIntegration.ts' \
             'src/game/types.ts' \
             'tests/es-13j4c-b-live-siege-volley-integration.test.mjs' \
-            'tests/gameplay/live-siege-volley-integration.test.ts' | sort)"
+            'tests/gameplay/live-siege-volley-integration.test.ts' \
+            'tests/runtime-combat-pressure-adoption.test.ts' | sort)"
           printf 'changed:\n%s\nexpected:\n%s\n' "$changed" "$expected"
           test "$changed" = "$expected"
           git diff --quiet origin/main...HEAD -- \
