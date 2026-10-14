@@ -39,6 +39,7 @@ Rules:
 | ES-13J4C-B — Live Siege Volley Telegraph Integration | DEPLOYED / FROZEN | `2e16ff9a577128ffb06211b612116553928c8cda` | #326 | #327 + #328 |
 | ES-13J4C-C — Controlled Normal-Progression Siege Adoption | DEPLOYED / FROZEN | `1131c06db406ca0170d5dad33ecb7f4610a06b96` | #331 | #332 |
 | ES-13J5A — Pure Priority-Target Contract | DEPLOYED / FROZEN | `df60f62565a1d3cdf6058d2e1a4049f5870f27b7` | #335 | #336 |
+| ES-13J5B — Pure Command-Link Binding Contract | DEPLOYED / FROZEN | `f868058889b24fecbd97f968e932890248ca2b33` | #339 | #340 |
 
 ## Evidence anchors
 
@@ -204,6 +205,25 @@ Exact evidence:
 
 Issue #335 CLOSED / completed. J5A is **DEPLOYED / FROZEN**.
 
+### J5B — Pure Command-Link Binding Contract
+J5B established deterministic Command Link metadata over current J3 group facts only. Certified sizes are 2/3; member index 0 is the semantic `COMMAND_CORE`, remaining valid members are `LINKED_MEMBER`, and J5A identity remains authoritative through a type-only reference. `BINDING_ONLY` output contains bounded indices rather than live entity ids or effects. Invalid inputs fail closed. No EnemyType/Enemy field/live adoption or J3/J5A mutation was introduced.
+
+Final product diff exactly:
+- `src/game/commandLinkBinding.ts`;
+- `tests/es-13j5b-command-link-binding.test.mjs`;
+- `tests/gameplay/command-link-binding.test.ts`.
+
+Exact evidence:
+- baseline `efe68202b4046c7f4b2df3cae951908b9e012d3b`;
+- pre-PR `66b6e6276d6229f74476a541c220e203a0f3dc8b`, run `38568941468` / job `115868727522` GREEN including exact scope + Android APK;
+- final PR #340 head `7d59c94bd7fb79ec9b577d47712ebba751488efb`;
+- PR CI `38569355540` / `115870150075` GREEN; Android `38569355236` / `115870147877` GREEN;
+- canonical `f868058889b24fecbd97f968e932890248ca2b33`, parent `efe68202b4046c7f4b2df3cae951908b9e012d3b`, tree `336ef4e31a59aea1890154f9b853b84e1409711a` equal to final PR tree;
+- main CI `38569599501` / `115870991101` GREEN; Android `38569599482` / `115870990530` GREEN;
+- Pages `38569726643`, build `115871441654` + deploy `115871606433` GREEN.
+
+Issue #339 CLOSED / completed. J5B is **DEPLOYED / FROZEN**.
+
 ## Documentation canonicals
 - DOC11 `31de2cd5bb89ae3032902c09ace881119c04dfec`;
 - DOC12 `f85e2432934454da191dea9bd0c9da43bbce86ca`;
@@ -214,7 +234,8 @@ Issue #335 CLOSED / completed. J5A is **DEPLOYED / FROZEN**.
 - DOC17 — J4C-A closure & J4C-B activation: `19beb0abf2b17d391834cb6336419ed4ead6819c` — Issue #324 / PR #325;
 - DOC18 — J4C-B closure & J4C-C activation: `72c4359af106d6f955e9932c6c72a836b2922ab8` — Issue #329 / PR #330.
 - DOC19 — J4C-C closure & J5A activation: `907bce8c494a5c7b9a4965e09dca677d919560f4` — Issue #333 / PR #334.
-- DOC20 — J5A closure & J5B activation: Issue #337, branch `docs/es-13-j5a-closure-j5b-activation`, in progress from gameplay canonical `df60f62565a1d3cdf6058d2e1a4049f5870f27b7`.
+- DOC20 — J5A closure & J5B activation: `efe68202b4046c7f4b2df3cae951908b9e012d3b` — Issue #337 / PR #338.
+- DOC21 — J5B closure & J5C activation: Issue #341, branch `docs/es-13-j5b-closure-j5c-activation`, in progress from gameplay canonical `f868058889b24fecbd97f968e932890248ca2b33`.
 
 ## Frozen manual/physical blockers
 Remain OPEN and deferred while ES-13 materially changes gameplay:
@@ -227,10 +248,12 @@ Automated CI never substitutes for required human/device evidence.
 
 ## Next planned gameplay
 
-### ES-13J5B — Pure Command-Link Binding Contract
-Status: **NEXT ENGINEERING TARGET AFTER DOC20 CLOSURE**.
+### ES-13J5C — Live Command-Core Priority Presentation
+Status: **NEXT ENGINEERING TARGET AFTER DOC21 CLOSURE**.
 
-Use existing J3 `enemyFormation` facts as bounded input only. J5B must deterministically identify exactly one semantic `COMMAND_CORE` member and linked members for certified group sizes 2/3, fail closed on invalid group data, and output metadata only. It must not add an EnemyType/runtime field, mutate J3 formation state, adopt live spawns, apply damage/death/score/reward effects, scan live arrays, or own clocks/RNG/caps.
+Use J5B binding only as an on-demand presentation projection from current `enemy.enemyFormation` inside the existing `drawEnemiesList` pass. Only the active `COMMAND_CORE` member receives a bounded visual marker; linked/invalid/no-formation members receive none. Add no Enemy field, second scan/collection, spawn/progression change or combat effect. J3 clearing of `enemyFormation` must automatically remove the marker. Preserve telegraphs, health bars, accessibility and all frozen J1–J4/J5A/J5B authorities.
+
+Actual defeat/chain-reaction behavior remains deferred to a later J5 slice.
 
 J4D+ additional tactical families remain deferred: FORMATION_BREAKER/JAMMER require hard-control spacing/recovery proof; MINE_WEAVER/MIRROR_WARDEN require genuine mine/mirror mechanics. J3C-C remains deferred, not cancelled.
 
