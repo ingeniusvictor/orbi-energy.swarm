@@ -5135,16 +5135,14 @@ export const EnergySwarmGame: React.FC = () => {
       enemy.speed = originalSpeed;
 
       // Shoot & pulse attack timers
-      const enemyAttackRateStep =
-        (delta / 16.6) *
-        simulationCombatPressure.enemyAttackRateMultiplier *
-        (enemy.evolvedAttackRateMultiplier ?? 1);
-
       if (
         enemy.type !== EnemyType.SIEGE_PRISM ||
         enemy.siegeVolleyTelegraph === undefined
       ) {
-        enemy.shootCooldown -= enemyAttackRateStep;
+        enemy.shootCooldown -=
+          (delta / 16.6) *
+          simulationCombatPressure.enemyAttackRateMultiplier *
+          (enemy.evolvedAttackRateMultiplier ?? 1);
       }
 
       if (enemy.type === EnemyType.SIEGE_PRISM) {
