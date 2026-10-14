@@ -6,6 +6,7 @@ import {
 import { CANVAS_WIDTH, CANVAS_HEIGHT } from "./constants";
 import { getCanvasBackingStoreSize } from "./canvasResolution";
 import { projectLiveSiegeVolleyTelegraph } from "./liveSiegeVolleyIntegration";
+import { projectLiveCommandCorePresentation } from "./liveCommandCorePresentation";
 import {
   projectFlashAccessibility,
   type FlashAccessibilityProfile,
@@ -1515,6 +1516,34 @@ export function drawEnemiesList(
         ctx.fill();
         break;
       }
+    }
+
+    const commandCorePresentation = projectLiveCommandCorePresentation(
+      enemy.enemyFormation,
+      enemy.size,
+    );
+    if (commandCorePresentation) {
+      ctx.save();
+      ctx.globalAlpha = commandCorePresentation.alpha;
+      ctx.strokeStyle = commandCorePresentation.strokeColor;
+      ctx.fillStyle = commandCorePresentation.strokeColor;
+      ctx.lineWidth = commandCorePresentation.lineWidth;
+      ctx.shadowColor = commandCorePresentation.glowColor;
+      ctx.shadowBlur = commandCorePresentation.glowBlur;
+
+      ctx.beginPath();
+      ctx.arc(0, 0, commandCorePresentation.ringRadius, 0, Math.PI * 2);
+      ctx.stroke();
+
+      const chevronY = commandCorePresentation.chevronOffsetY;
+      const chevronHalfWidth = commandCorePresentation.chevronHalfWidth;
+      const chevronHalfHeight = commandCorePresentation.chevronHeight / 2;
+      ctx.beginPath();
+      ctx.moveTo(-chevronHalfWidth, chevronY - chevronHalfHeight);
+      ctx.lineTo(0, chevronY + chevronHalfHeight);
+      ctx.lineTo(chevronHalfWidth, chevronY - chevronHalfHeight);
+      ctx.stroke();
+      ctx.restore();
     }
 
     // HEALTH BAR OVERLAY (Only show if damaged)
