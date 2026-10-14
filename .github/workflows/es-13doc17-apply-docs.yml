@@ -1,0 +1,39 @@
+name: ES-13DOC17 Apply Documentation Closure
+
+on:
+  push:
+    branches:
+      - docs/es-13-j4c-a-closure-j4c-b-activation
+    paths:
+      - '.github/workflows/es-13doc17-apply-docs.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply fail-closed DOC17 patch
+        run: python scripts/es-13doc17-apply-docs.py
+
+      - name: Commit documentation only
+        shell: bash
+        run: |
+          changed="$(git diff --name-only | sort)"
+          expected="$(printf '%s\n' \
+            'docs/ES13_GAMEPLAY_ROADMAP.md' \
+            'docs/IMPLEMENTATION_LEDGER.md' \
+            'docs/PROJECT_CONTINUITY.md' | sort)"
+          printf 'changed:\n%s\nexpected:\n%s\n' "$changed" "$expected"
+          test "$changed" = "$expected"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add docs/PROJECT_CONTINUITY.md docs/IMPLEMENTATION_LEDGER.md docs/ES13_GAMEPLAY_ROADMAP.md
+          git commit -m 'ES-13DOC17 — close J4C-A and activate J4C-B'
+          git push origin HEAD:docs/es-13-j4c-a-closure-j4c-b-activation
