@@ -298,22 +298,47 @@ Exact deployment anchors:
 - Pages `38574014576`, build `115886257262` + deploy `115886451208` GREEN.
 
 ### J5D — Pure Command-Link Break Resolution Contract
-Status: **NEXT ACTIVE ENGINEERING SLICE AFTER DOC22 CLOSURE**
+Status: **DEPLOYED / FROZEN**
+Canonical: `99410123a8f20d15a88cd20ada34523ce4497006`
+Issue #347 / PR #348
 
-Post-J5C discovery found that direct and splash defeats already converge through `registerCombatDefeat(...)`, but the runtime has no safe durable mapping from J3 `groupId` to linked live enemy ids. J5D therefore defines only the bounded semantic resolution required before any live application.
+Certified behavior:
+- composes J5A `COMMAND_LINK_BROKEN` with current J5B binding;
+- only valid current `COMMAND_CORE` resolves;
+- size-2 linked indices `[1]`; size-3 linked indices `[1,2]`;
+- immutable intent `DETACH_LINKED_MEMBERS`, effect mode `INTENT_ONLY`;
+- linked/invalid facts fail closed;
+- no live enemy ids, lookup, scan, collection, entity/formation mutation, damage/kill, score/reward/economy, timing/RNG or cap/budget authority;
+- J3/J5A/J5B/J5C remain unchanged.
+
+Exact deployment anchors:
+- pre-PR `68d5c269f62415605c6265a1acef572f92438fa0`, run `38612549835` / job `116019315964` GREEN including scope guard + Android APK;
+- final PR #348 head `8739313a605ccf33ddfdf69ae5e73d04f26f5957`;
+- PR CI `38613042191` / `116020992856` GREEN; Android `38613042036` / `116020992132` GREEN;
+- canonical `99410123a8f20d15a88cd20ada34523ce4497006`, parent `025bc875a4b3a9dc5d1e690591b6ae0f5af6a6ec`, tree `1240e692acb4622389748c9328b5b88e8563560b`;
+- main CI `38613516322` / `116022626176` GREEN; Android `38613516479` / `116022628100` GREEN;
+- Pages `38613648878`, build `116023067863` + deploy `116023290302` GREEN.
+
+### J5E — Controlled Live Command-Link Detach Application
+Status: **NEXT ACTIVE ENGINEERING SLICE AFTER DOC23 CLOSURE**
+
+Post-J5D discovery proves a bounded live seam:
+- J3 prevents overlapping active formation groups via `activeUntilMs`;
+- one pending break-resolution slot is therefore sufficient;
+- direct and splash deaths already converge in `registerCombatDefeat(...)`;
+- the enemy logic pass already visits every living enemy once;
+- J3 already defines detach semantics as clearing `enemy.enemyFormation`, with legacy movement as fallback.
 
 Design constraints:
-- pure contract only; no `EnergySwarmGame.tsx` or entity-schema adoption;
-- consume current J5B formation/binding facts;
-- require a valid `COMMAND_CORE` binding; linked/invalid input returns null;
-- reuse J5A `COMMAND_LINK_BROKEN` signal;
-- output bounded linked member indices `[1]` or `[1,2]` and intent `DETACH_LINKED_MEMBERS`;
-- effect mode `INTENT_ONLY` / non-mutating;
-- no live enemy ids, group lookup, enemy scan, collection or entity mutation;
-- no damage/kill/score/reward/economy, spawn/progression, clock/RNG or cap/budget authority;
-- preserve J3/J5A/J5B/J5C and all J1–J4/FOTON/player authorities.
-
-A later J5E+ slice must independently prove a bounded safe live lookup/application strategy before detach/chain-reaction effects are adopted.
+- one scalar pending `CommandLinkBreakResolution | null`, never a collection/queue;
+- raise only from valid current core defeat through J5D;
+- capture before the existing enemy loop and apply only inside that loop;
+- same `groupId` + bounded linked-member index required for detach;
+- detach only formation ownership (`enemy.enemyFormation = undefined`);
+- consume captured intent exactly once without clobbering a newer intent;
+- reset pending intent at every J3 director reset boundary;
+- no second enemy scan, group/entity index, Enemy field, damage/kill, score/reward/economy, spawn/progression, clock/RNG, caps/budgets or entity create/remove;
+- true chain-reaction combat effects remain deferred to J5F+.
 
 ## J6 — Dynamic Mid-Sector Events
 Status: PLANNED
