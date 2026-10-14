@@ -3,7 +3,7 @@
 > START HERE after any new chat/session, context loss or handoff.
 
 Repository: `ingeniusvictor/orbi-energy.swarm`  
-Last continuity update: 2026-10-13
+Last continuity update: 2026-10-14
 
 ## Authority order
 1. live GitHub `main` + merged history;
@@ -18,75 +18,58 @@ Never infer deployment/certification from conversation text alone.
 
 ## Current certified gameplay canonical
 
-`7273d447bbdcb084499fb121122aac6d34928d41`
+`0c3f5c668926130f7ac8044cff8b619302949225`
 
-Phase: **ES-13J3D — Enemy Formation Telegraph, Fairness & Integration Certification**  
+Phase: **ES-13J4A — Pure Tactical Enemy Family Contract**  
 Status: **DEPLOYED / FROZEN**  
-Issue: #310 — CLOSED / completed  
-PR: #311 — squash merged
+Issue: #314 — CLOSED / completed  
+PR: #315 — squash merged
 
-Single parent: `03fbaefc45d065a5815e52cca6a6e67b0471949a` — ES-13DOC13 documentation canonical.
+Single parent: `998292cd40a3364aa7f22933b6312173956d3baa` — ES-13DOC14 documentation canonical.
 
 Version remains `0.2.0-beta.1`. Full RC/manual certification remains intentionally deferred while ES-13 materially expands gameplay.
 
-## J3D certification result
-J3D closed the complete six-route enemy-formation program as a certification-first slice with **zero runtime/gameplay source changes** in the final PR.
+## J4A result
+J4A established the first pure deterministic tactical-enemy vocabulary **without live adoption** and without introducing a parallel enemy catalog.
 
-Final diff:
-- `tests/gameplay/enemy-formation-integration-certification.test.ts`;
-- `tests/es-13j3d-formation-integration-certification.test.mjs`.
+The repository already had six advanced `EnemyType` values. J4A certified only the four whose existing semantics already support a distinct tactical decision:
+- `RIFT_HUNTER` → `WARP_AMBUSHER` — timing decision: read the lock/commit and dodge at the correct moment;
+- `SIEGE_PRISM` → `ARTILLERY_CARRIER` — range-control decision: close/flank before its firing envelope controls the lane;
+- `SWARM_REAVER` → `FORMATION_BREAKER` — priority decision: intercept before close-range disruption reaches swarm cohesion;
+- `VOID_ANCHOR` → `JAMMER` — control-source decision: leave the denial radius or destroy the source.
 
-Certified routes:
-- PINCER — 2 live members;
-- X_CROSS — 2 live members;
-- SERPENTINE — 2 live members;
-- WEDGE — 3 live members;
-- ORBIT — 3 live members;
-- SPIRAL — 2 live members.
+`MINE_WEAVER` and `MIRROR_WARDEN` remain deliberately **DEFERRED** from the certified family contract. Their current runtime behavior does not yet justify claiming true mine-layer or mirror/reflection mechanics.
 
-Certified guarantees:
-- all six routes expose deterministic route-specific telegraph metadata, severity, lane count and safe intent;
-- lead-in holds route progress at 0 before start;
-- exact duration reaches COMPLETE and recovery blocks immediate chaining until its exact boundary;
-- all 2/3-member live trajectories remain finite and inside world margins;
-- WEDGE/ORBIT cannot start without capacity for 3;
-- pending assembly cannot overcommit remaining capacity and incomplete assembly expires safely;
-- only one active/assembling group remains authoritative;
-- Campaign/Infinite base eligibility and advanced-route eligibility remain explicitly independent;
-- milestone/evolved/random-elite/miniboss/boss exclusions remain intact;
-- route progress remains simulation-time owned, preserving pause/photo behavior;
-- Hydro cancellation plus fresh-run/wave/boss reset ownership remain intact;
-- live formation motion replaces rather than stacks legacy movement;
-- no second director, movement engine, entity array/map, formation-only full scan or replacement spawn authority exists;
-- player/FOTON `formations.ts` / `formationCycle.ts` remain separate from enemy formations;
-- no `MAX_ENEMIES`, `MAX_PROJECTILES`, entity-array, simulation-budget, score, economy, damage, projectile, J1/J2, GAIA or FOTON GLB changes entered J3D;
-- deterministic long-sequence route planning remains bounded and reproducible.
+Final J4A files:
+- `src/game/tacticalEnemyFamilies.ts`;
+- `tests/gameplay/tactical-enemy-families.test.ts`;
+- `tests/es-13j4a-tactical-enemy-contract.test.mjs`.
 
-## J3D exact evidence
-- baseline/docs canonical: `03fbaefc45d065a5815e52cca6a6e67b0471949a`;
-- pre-PR corrected certified head: `04dc77aef159dfe3ea0b2c635fc8573353140b25`;
-- pre-PR certification run `38320496667`, job `115047172319` — GREEN including Android debug APK, APK verification and J3D scope guard;
-- final clean PR head: `09d0f355acc2e93487cfa5d641b7c642820abcd6`;
-- PR CI `38320727930` — GREEN on exact final PR head;
-- manual Android branch run `38486336058`, job `115600790747` — GREEN on exact final PR head, including Build APK, Verify APK and Upload APK;
-- branch artifact `orbi-energy-swarm-debug-09d0f355acc2e93487cfa5d641b7c642820abcd6`;
-- squash gameplay canonical: `7273d447bbdcb084499fb121122aac6d34928d41`;
-- main CI `38320885204` — GREEN on exact canonical;
-- manual Android main run `38485843331`, job `115599171557` — GREEN on exact canonical, including Build APK, Verify APK and Upload APK;
-- main artifact `orbi-energy-swarm-debug-7273d447bbdcb084499fb121122aac6d34928d41`;
-- Pages `38320970197` — build + deploy GREEN on exact canonical.
+J4A guarantees:
+- exactly four 1:1 family ↔ existing `EnemyType` mappings;
+- immutable/frozen profiles and deterministic lookup;
+- explicit tactical question, pressure class, telegraph, safe/counterplay intent, priority intent and control-pressure classification;
+- unsupported/base/boss/deferred advanced types fail closed;
+- no React/Canvas/audio/storage/network/RNG/wall-clock/timer authority;
+- no Campaign/Infinite selection or live spawn authority;
+- no entity/projectile collection ownership, full-array scan authority, support-entity creation or global-cap mutation;
+- no stat multiplier tuning in the family contract;
+- no `EnergySwarmGame.tsx`, `types.ts`, Campaign/Infinite descriptor, Android, package, public asset, score/economy/J1/J2/GAIA/FOTON GLB or player/FOTON formation change.
 
-Temporary certification workflow was branch-only and removed before the final PR diff. The first J3D pre-cert attempt failed only because a static test required an overly rigid source syntax shape; the test was corrected to assert the actual live replacement seam, with no runtime change.
+## J4A exact evidence
+- baseline/docs canonical: `998292cd40a3364aa7f22933b6312173956d3baa`;
+- pre-PR certified head: `8bbce75c6bbd6e1fbcb7205ed7bcb80d9121f767`;
+- pre-PR certification run `38488019246`, job `115606272019` — GREEN across repository/gameplay/platform/typecheck/release/dossier/build/readiness/Android/APK/J4A scope guard;
+- final clean PR head: `55a8abe0de9063b3d937ffca2f52ec9ec283309f`;
+- PR CI `38488256442`, job `115607044338` — GREEN on exact final head;
+- PR Android `38488256429`, job `115607044509` — GREEN on exact final head, including Build/Verify/Upload APK;
+- squash gameplay canonical: `0c3f5c668926130f7ac8044cff8b619302949225`;
+- main CI `38488402612`, job `115607525382` — GREEN on exact canonical;
+- main Android `38488402647`, job `115607525424` — GREEN on exact canonical, including Build/Verify/Upload APK;
+- main APK artifact `orbi-energy-swarm-debug-0c3f5c668926130f7ac8044cff8b619302949225`, artifact `11860492569`;
+- Pages `38488489012` — build + deploy GREEN on exact canonical.
 
-## J3 program status
-- J3A — Pure Enemy Formation Route Contract: **DEPLOYED / FROZEN** — `3c5ece8d8e59bc38de468b4d0d9644953fa6a8be`;
-- J3B — Live Enemy Formation Director Adoption: **DEPLOYED / FROZEN** — `0fcf08dc59558619da61e1120eef2e957465f9a1`;
-- J3C-A — Pure Advanced Enemy Formation Vocabulary: **DEPLOYED / FROZEN** — `0fd337e3a0efe96fd52d5f5686e3f110e1b361d8`;
-- J3C-B — Controlled Live Advanced Formation Adoption: **DEPLOYED / FROZEN** — `5c345672b5365dbcc983403f73da62555489a98f`;
-- J3C-C — stateful tactical patterns: **DEFERRED / NOT CURRENTLY JUSTIFIED**;
-- J3D — Telegraph/Fairness/Integration Certification: **DEPLOYED / FROZEN** — `7273d447bbdcb084499fb121122aac6d34928d41`.
-
-J3C-C is not cancelled. Convoy/leader-follower, fake retreat, portal ambush, encirclement or staggered-artillery patterns may return only through a dedicated issue proving a distinct tactical need, explicit bounded state ownership and no cap/budget inflation.
+Temporary J4A certification workflow was branch-only and removed before the final PR diff.
 
 ## ES-13 gameplay canonicals
 - J1A — Combat Chain & Resonance Core: `feb263957b52839d35a7cb1249762c223ba22595`;
@@ -102,53 +85,43 @@ J3C-C is not cancelled. Convoy/leader-follower, fake retreat, portal ambush, enc
 - J3B — Live Enemy Formation Director Adoption: `0fcf08dc59558619da61e1120eef2e957465f9a1`;
 - J3C-A — Pure Advanced Enemy Formation Vocabulary: `0fd337e3a0efe96fd52d5f5686e3f110e1b361d8`;
 - J3C-B — Controlled Live Advanced Formation Adoption: `5c345672b5365dbcc983403f73da62555489a98f`;
-- J3D — Formation Telegraph/Fairness/Integration Certification: `7273d447bbdcb084499fb121122aac6d34928d41`.
+- J3D — Formation Telegraph/Fairness/Integration Certification: `7273d447bbdcb084499fb121122aac6d34928d41`;
+- J4A — Pure Tactical Enemy Family Contract: `0c3f5c668926130f7ac8044cff8b619302949225`.
+
+J3C-C stateful formation patterns remain **DEFERRED / NOT CURRENTLY JUSTIFIED**, not cancelled.
+
+## Documentation canonicals
+- DOC11: `31de2cd5bb89ae3032902c09ace881119c04dfec`;
+- DOC12: `f85e2432934454da191dea9bd0c9da43bbce86ca`;
+- DOC13: `03fbaefc45d065a5815e52cca6a6e67b0471949a`;
+- DOC14 — J3D closure & J4 activation: `998292cd40a3364aa7f22933b6312173956d3baa`;
+- DOC15 — J4A closure & J4B activation: Issue #316, branch `docs/es-13-j4a-closure-j4b-activation`, documentation-only closure in progress from J4A canonical `0c3f5c668926130f7ac8044cff8b619302949225`.
+
+## Next gameplay phase
+
+### ES-13J4B — Narrow Live Tactical Enemy Adoption
+Status: **NEXT ENGINEERING TARGET AFTER DOC15 CLOSURE**
+
+Purpose: expose a deliberately bounded subset of the certified J4A tactical families through existing live enemy-selection/spawn/runtime seams without creating a second enemy authority or inflating density.
+
+J4B must be designed from current runtime evidence before implementation. Required boundaries:
+- reuse existing `EnemyType` values and their existing runtime behavior seams;
+- reuse existing enemy array and standard spawn/capacity authority;
+- no parallel enemy collection/director solely for tactical families;
+- no new global caps or simulation-budget increase;
+- no uncontrolled projectile or support-entity multiplication;
+- explicit Campaign/Infinite policy — never silently enable the same tactical pressure in both modes;
+- hard-control families (`FORMATION_BREAKER` / `JAMMER`) require especially conservative eligibility and fairness;
+- preserve existing Infinite evolved-enemy authority as a separate system;
+- preserve J3 enemy-formation ownership and player/FOTON formation ownership separation;
+- severe pressure must remain telegraphed and counterable;
+- `MINE_WEAVER` / `MIRROR_WARDEN` remain outside J4B unless a later dedicated contract genuinely implements their promised mechanics.
+
+The next issue should choose the smallest live subset and prove what new decision it creates in actual progression before broader family adoption.
 
 ## Resolved diagnostics
 - #254 CLOSED / NOT PLANNED: historical platform failure was not an I5 pause regression; no product merge.
 - #283 CLOSED / NOT PLANNED: stale-chat false start; no branch/product work.
-
-## Administrative closure
-ES-13DOC14 — J3D Closure & J4 Tactical Enemy Families Activation  
-Issue: #312  
-Branch: `docs/es-13-j3d-closure-j4-activation`  
-Baseline gameplay canonical: `7273d447bbdcb084499fb121122aac6d34928d41`  
-Scope: documentation only.
-
-## Next gameplay phase
-
-### ES-13J4 — Tactical Enemy Families
-Status: **NEXT ENGINEERING TARGET AFTER DOC14 CLOSURE**
-
-Purpose: add enemy families that create new combat decisions through behavior and interaction, not merely higher HP/damage or uncontrolled entity/projectile growth.
-
-Candidate tactical families:
-- Shield Phalanx;
-- Reflector Drone;
-- Jammer;
-- Mine Layer;
-- Artillery Carrier;
-- Warp Ambusher;
-- Swarm Leech;
-- Energy Vampire;
-- Formation Breaker;
-- Commander;
-- Repair Drone;
-- Stealth Hunter;
-- Siege Fortress;
-- Parasite Queen;
-- Mirror Drone.
-
-J4 must be decomposed into bounded slices. The first slice should establish a pure deterministic tactical-enemy contract before any broad live adoption. Every family must answer: **what new decision does this force the player to make?**
-
-Constraints entering J4:
-- preserve existing global caps and simulation budgets;
-- no extra full-array scans unless a dedicated measured need is demonstrated;
-- no uncontrolled projectile/entity amplification;
-- preserve Campaign/Infinite isolation where applicable;
-- keep J3 enemy-formation ownership separate from player/FOTON formations;
-- do not alter score/economy/J1/J2/GAIA/FOTON GLB unless explicitly scoped;
-- favor pure deterministic contracts before live runtime adoption.
 
 ## Frozen manual/physical blockers
 Still OPEN and intentionally deferred while ES-13 changes gameplay:
@@ -173,7 +146,7 @@ Rules:
 - no gameplay phase is declared deployed before exact-SHA required evidence.
 
 ## Gameplay chronology
-`J4 Tactical Enemy Families → J5 Priority Targets/Chain Reactions → J6 Dynamic Events → J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance`
+`J4B Narrow Live Tactical Adoption → J4C+ Additional Tactical Families → J5 Priority Targets/Chain Reactions → J6 Dynamic Events → J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance`
 
 Post-J15 direction: **ES-14 — Living Warfront**.
 
@@ -181,7 +154,7 @@ Post-J15 direction: **ES-14 — Living Warfront**.
 Read this file, `IMPLEMENTATION_LEDGER.md`, `ES13_GAMEPLAY_ROADMAP.md`, `TRACEABILITY_POLICY.md` and `ES13_PHASE_CHECKLIST.md`, then active Issues/PRs. Verify live `main` before any write.
 
 Suggested handoff:
-> Continue ORBI Energy Swarm autonomously. Repository `ingeniusvictor/orbi-energy.swarm`. Verify live `main`, read continuity/ledger/roadmap/policy/checklist and active Issues/PRs. J3D gameplay canonical is `7273d447bbdcb084499fb121122aac6d34928d41`, fully deployed/frozen. Complete DOC14 if still open, then begin bounded J4 Tactical Enemy Families work. Follow Issue → Branch → gates → PR → exact-SHA deployment evidence. Never touch `main` directly or weaken tests.
+> Continue ORBI Energy Swarm autonomously. Repository `ingeniusvictor/orbi-energy.swarm`. J4A gameplay canonical is `0c3f5c668926130f7ac8044cff8b619302949225`, fully deployed/frozen. Complete DOC15 if still open, then design J4B from the actual live spawn/runtime architecture before changing code. Follow Issue → Branch → full gates → PR → exact-SHA post-merge evidence. Never touch `main` directly or weaken tests.
 
 ## Update obligation
 Every merged gameplay phase must record exact gameplay canonical, Issue/PR, final head, pre-PR certification, PR CI/Android, main CI/Android/Pages, implementation result, unresolved follow-ups and next roadmap phase. A gameplay phase is not administratively closed until these records are current.
