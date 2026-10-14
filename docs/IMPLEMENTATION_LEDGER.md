@@ -34,6 +34,7 @@ Rules:
 | ES-13J3C-B — Controlled Live Advanced Formation Adoption | DEPLOYED / FROZEN | `5c345672b5365dbcc983403f73da62555489a98f` | #306 | #307 |
 | ES-13J3D — Formation Telegraph/Fairness/Integration Certification | DEPLOYED / FROZEN | `7273d447bbdcb084499fb121122aac6d34928d41` | #310 | #311 |
 | ES-13J4A — Pure Tactical Enemy Family Contract | DEPLOYED / FROZEN | `0c3f5c668926130f7ac8044cff8b619302949225` | #314 | #315 |
+| ES-13J4B — Narrow Live Warp Ambusher Adoption | DEPLOYED / FROZEN | `1023cee74d1c32a379bf542551397ae134f43573` | #318 | #319 |
 
 ## Evidence anchors
 
@@ -92,12 +93,33 @@ Exact evidence:
 
 Issue #314 CLOSED / completed. J4A is **DEPLOYED / FROZEN**.
 
+### J4B — Narrow Live Warp Ambusher Adoption
+J4B adopted only `RIFT_HUNTER` / `WARP_AMBUSHER`, using one deterministic replacement of an existing Infinite spawn-budget slot. Campaign remained disabled. Eligible Infinite sectors are sparse, non-milestone, non-recovery cadence sectors from 26 onward, final wave only; first reachable sector is 34.
+
+Isolation/fairness: no density/cap/budget increase; no generic elite overlay on the tactical spawn; evolved-enemy authority excludes `RIFT_HUNTER`; J3 formation authority remains CRAWLER/SPLITTER-only; existing `RIFT LOCK` telegraph remains the counterplay cue. Hard-control families and mine/mirror semantics remain deferred.
+
+Final product diff exactly four files: `EnergySwarmGame.tsx` (+10), `runtimeTacticalEnemyAdoption.ts`, and two J4B test files. The first temporary exact-patch workflow failed closed on an indentation-sensitive elite matcher and wrote no partial runtime change; the matcher was corrected before certification.
+
+Exact evidence:
+- baseline `096b2c9fe53551664b56baf6e382368f8b4078da`;
+- pre-PR head `d758c4a38575002b6a59242f2894fc4e8e235fb0`, run `38489976346`, job `115612611028` — GREEN;
+- final PR head `5a29b7af53b9f62b017c54cde7ed87e00c04216b`;
+- PR CI `38490183094`, job `115613270626` — GREEN;
+- PR Android `38490183041`, job `115613270479` — GREEN including Build/Verify/Upload APK;
+- canonical `1023cee74d1c32a379bf542551397ae134f43573`, single parent `096b2c9fe53551664b56baf6e382368f8b4078da`;
+- main CI `38490426895`, job `115614058362` — GREEN;
+- main Android `38490426903`, job `115614058464` — GREEN including Build/Verify/Upload APK;
+- Pages `38490505690`, build `115614310963` + deploy `115614421521` — GREEN.
+
+Issue #318 CLOSED / completed. J4B is **DEPLOYED / FROZEN**.
+
 ## Documentation canonicals
 - DOC11 `31de2cd5bb89ae3032902c09ace881119c04dfec`;
 - DOC12 `f85e2432934454da191dea9bd0c9da43bbce86ca`;
 - DOC13 `03fbaefc45d065a5815e52cca6a6e67b0471949a`;
 - DOC14 — J3D closure & J4 activation: `998292cd40a3364aa7f22933b6312173956d3baa`;
-- DOC15 — J4A closure & J4B activation: Issue #316, branch `docs/es-13-j4a-closure-j4b-activation`, in progress from gameplay canonical `0c3f5c668926130f7ac8044cff8b619302949225`.
+- DOC15 — J4A closure & J4B activation: `096b2c9fe53551664b56baf6e382368f8b4078da` — Issue #316 / PR #317;
+- DOC16 — J4B closure & J4C activation: Issue #320, branch `docs/es-13-j4b-closure-j4c-activation`, in progress from gameplay canonical `1023cee74d1c32a379bf542551397ae134f43573`.
 
 ## Frozen manual/physical blockers
 Remain OPEN and deferred while ES-13 materially changes gameplay:
@@ -110,10 +132,10 @@ Automated CI never substitutes for required human/device evidence.
 
 ## Next planned gameplay
 
-### ES-13J4B — Narrow Live Tactical Enemy Adoption
-Status: **NEXT ENGINEERING TARGET AFTER DOC15 CLOSURE**.
+### ES-13J4C — Next Bounded Tactical Family Slice
+Status: **NEXT ENGINEERING TARGET AFTER DOC16 CLOSURE**.
 
-J4B must activate only the smallest justified subset of J4A families through existing progression/spawn/runtime authority. It must define explicit Campaign/Infinite eligibility, reuse existing enemy array/capacity, avoid a second director/full-array scan, preserve hard-control fairness and keep `MINE_WEAVER`/`MIRROR_WARDEN` deferred until their real mechanics exist.
+Inspect current live behavior before implementation. `SIEGE_PRISM` / `ARTILLERY_CARRIER` is the leading candidate only if the promised `SIEGE_VOLLEY` telegraph becomes demonstrably readable and certified. `FORMATION_BREAKER` and `JAMMER` remain deferred pending independent hard-control spacing/recovery proof. `MINE_WEAVER` / `MIRROR_WARDEN` remain outside the certified contract.
 
 ## Program sequence
-`J4B Narrow Live Tactical Adoption → J4C+ Additional Tactical Families → J5 Priority Targets/Chain Reactions → J6 Dynamic Events → J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance → ES-14 Living Warfront`
+`J4C Bounded Tactical Family Slice → J4D+ Additional Tactical Families → J5 Priority Targets/Chain Reactions → J6 Dynamic Events → J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance → ES-14 Living Warfront`

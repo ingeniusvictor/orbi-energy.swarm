@@ -104,38 +104,48 @@ Exact deployment anchors:
 - main Android `38488402647` / job `115607525424` GREEN;
 - Pages `38488489012` build + deploy GREEN.
 
-### J4B — Narrow Live Tactical Enemy Adoption
-Status: **NEXT ACTIVE ENGINEERING SLICE AFTER DOC15 CLOSURE**
+### J4B — Narrow Live Warp Ambusher Adoption
+Status: **DEPLOYED / FROZEN**  
+Canonical: `1023cee74d1c32a379bf542551397ae134f43573`  
+Issue #318 / PR #319
 
-Purpose: make a deliberately small subset of the J4A certified families actually reachable through live progression while reusing all existing enemy/spawn/capacity/runtime authority.
+J4B activated exactly one J4A family: `RIFT_HUNTER` → `WARP_AMBUSHER`.
 
-J4B is not permitted to “turn on all four everywhere”. Before implementation it must inspect the current Campaign/Infinite selection model and choose the smallest mode-isolated adoption that creates meaningful tactical variety without unfair control stacking.
+Certified live policy:
+- Campaign disabled;
+- Infinite minimum sector 26;
+- milestone and recovery sectors excluded;
+- sparse `(sector - 10) % 4 === 0` sector cadence;
+- final wave only;
+- exactly one deterministic replacement of an existing spawn-budget ordinal;
+- first reachable live sector 34;
+- tactical spawn excluded from generic random-elite overlay;
+- no density, cap, budget, timer, collection or second-director increase;
+- evolved-enemy and J3 formation authorities remain isolated;
+- existing `RIFT LOCK` gives the pre-commit cue/counterplay.
 
-Required J4B decisions:
-- which certified families enter the first live slice;
-- whether the first slice belongs to Campaign, Infinite, or explicitly different policies for each;
-- minimum progression boundary before each family becomes eligible;
-- whether hard-control families (`FORMATION_BREAKER`, `JAMMER`) are excluded from the first live slice or given stricter spacing/cooldown rules;
-- how tactical types consume **existing** spawn opportunities rather than creating extra enemies;
-- how existing `maxConcurrentEnemies`, global `MAX_ENEMIES`, projectile budget and current descriptor capacity remain authoritative;
-- how family selection avoids conflicting with Infinite evolved-enemy selection and J3 formation assignment;
-- how severe pressure remains telegraphed and how back-to-back hard-control pressure is prevented.
+Exact deployment anchors:
+- pre-PR head `d758c4a38575002b6a59242f2894fc4e8e235fb0`, run `38489976346` / job `115612611028` GREEN;
+- final PR head `5a29b7af53b9f62b017c54cde7ed87e00c04216b`;
+- PR CI `38490183094` / job `115613270626` GREEN;
+- PR Android `38490183041` / job `115613270479` GREEN;
+- canonical `1023cee74d1c32a379bf542551397ae134f43573`;
+- main CI `38490426895` / job `115614058362` GREEN;
+- main Android `38490426903` / job `115614058464` GREEN;
+- Pages `38490505690`, build `115614310963` + deploy `115614421521` GREEN.
 
-Hard constraints:
-- no new `EnemyType` in J4B;
-- no parallel enemy array or tactical-family runtime collection;
-- no new full-array scan solely for family selection;
-- no cap/budget increase;
-- no uncontrolled projectile/support spawning;
-- no silent score/economy/J1/J2/GAIA changes;
-- no FOTON GLB change;
-- preserve J3 enemy-formation and player/FOTON formation authority separation;
-- `MINE_WEAVER` / `MIRROR_WARDEN` remain outside scope unless a later pure contract first specifies their real mechanics.
+### J4C — Next Bounded Tactical Family Slice
+Status: **NEXT ACTIVE ENGINEERING SLICE AFTER DOC16 CLOSURE**
 
-### J4C+ — Additional Tactical Families
-Status: PLANNED / BOUNDED SLICES ONLY
+J4C must select only one next distinct tactical family after inspecting the live runtime semantics. `SIEGE_PRISM` / `ARTILLERY_CARRIER` is the leading candidate, but it is not eligible for live adoption merely because the J4A contract names `SIEGE_VOLLEY`: the actual runtime must first implement or certify an explicit readable artillery telegraph and fair reaction window.
 
-Add further families only when each creates a demonstrably distinct decision and reuses certified architecture. Offensive, support, mobility and stateful families should be separated when necessary rather than collected into one large PR.
+Hard-control families remain deferred:
+- `SWARM_REAVER` / `FORMATION_BREAKER` requires independent spacing/recovery fairness proof;
+- `VOID_ANCHOR` / `JAMMER` requires independent spacing/recovery fairness proof.
+
+`MINE_WEAVER` / `MIRROR_WARDEN` remain outside the certified family contract until dedicated pure mechanics genuinely implement mine/mirror behavior.
+
+J4C hard constraints remain: no new `EnemyType`, no parallel enemy collection/director, no family-only full-array scan, no cap/budget increase, no uncontrolled projectiles/support entities, no silent score/economy/J1/J2/GAIA/FOTON changes, and no FOTON GLB change.
 
 ### J4 design gate
 Every proposed family must answer:
