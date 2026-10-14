@@ -4,7 +4,10 @@ import test from "node:test";
 import {
   J4B_LIVE_FAMILY_ID,
   J4B_TACTICAL_MIN_INFINITE_SECTOR,
+  J4C_C_LIVE_FAMILY_ID,
+  J4C_C_SIEGE_MIN_INFINITE_SECTOR,
   getRuntimeTacticalEnemyAdoptionPolicy,
+  isRuntimeSiegeCadenceSector,
   isRuntimeTacticalCadenceSector,
   isRuntimeTacticalRecoverySector,
   resolveRuntimeTacticalEnemySpawn,
@@ -31,8 +34,8 @@ const makeDescriptor = ({
   waveNumber,
   waveCount,
   display: {
-    name: "J4B test wave",
-    displayName: "J4B test wave",
+    name: "J4 tactical test wave",
+    displayName: "J4 tactical test wave",
     subtitle: "test",
     description: "test",
     tacticalAdvice: "test",
@@ -78,11 +81,11 @@ const makeDescriptor = ({
     campaignWaveId: sourceMode === "CAMPAIGN" ? `wave-${sector}` : null,
     recipeId: sourceMode === "INFINITE" ? `sector-${sector}` : null,
     waveId: sourceMode === "INFINITE" ? `wave-${waveNumber}` : null,
-    seed: sourceMode === "INFINITE" ? "j4b-test" : null,
+    seed: sourceMode === "INFINITE" ? "j4-tactical-test" : null,
   },
 });
 
-test("J4B adopts only the certified Warp Ambusher family", () => {
+test("J4B retains the certified Warp Ambusher family", () => {
   const family = getTacticalEnemyFamilyProfileById(J4B_LIVE_FAMILY_ID);
   assert.ok(family);
   assert.equal(J4B_LIVE_FAMILY_ID, "WARP_AMBUSHER");
@@ -95,6 +98,21 @@ test("J4B adopts only the certified Warp Ambusher family", () => {
   assert.equal(policy.disabledReason, null);
 });
 
+test("J4C-C adopts the certified Artillery Carrier family", () => {
+  const family = getTacticalEnemyFamilyProfileById(J4C_C_LIVE_FAMILY_ID);
+  assert.ok(family);
+  assert.equal(J4C_C_LIVE_FAMILY_ID, "ARTILLERY_CARRIER");
+  assert.equal(family.enemyType, EnemyType.SIEGE_PRISM);
+
+  const policy = getRuntimeTacticalEnemyAdoptionPolicy(
+    makeDescriptor({ sector: 52 }),
+  );
+  assert.equal(policy.enabled, true);
+  assert.equal(policy.familyId, "ARTILLERY_CARRIER");
+  assert.equal(policy.enemyType, EnemyType.SIEGE_PRISM);
+  assert.equal(policy.disabledReason, null);
+});
+
 test("Campaign and early Infinite sectors remain disabled", () => {
   const campaign = getRuntimeTacticalEnemyAdoptionPolicy(
     makeDescriptor({ sourceMode: "CAMPAIGN", sector: 8, waveNumber: 8, waveCount: 10 }),
@@ -103,33 +121,53 @@ test("Campaign and early Infinite sectors remain disabled", () => {
   assert.equal(campaign.disabledReason, "CAMPAIGN_DISABLED");
 
   for (let sector = 11; sector < J4B_TACTICAL_MIN_INFINITE_SECTOR; sector += 1) {
-    const policy = getRuntimeTacticalEnemyAdoptionPolicy(
-      makeDescriptor({ sector }),
-    );
+    const policy = getRuntimeTacticalEnemyAdoptionPolicy(makeDescriptor({ sector }));
     assert.equal(policy.enabled, false, `sector ${sector}`);
     assert.equal(policy.disabledReason, "BELOW_MIN_SECTOR", `sector ${sector}`);
   }
+
+  for (let sector = 26; sector < J4C_C_SIEGE_MIN_INFINITE_SECTOR; sector += 1) {
+    assert.equal(isRuntimeSiegeCadenceSector(sector), false, `siege sector ${sector}`);
+  }
 });
 
-test("sparse sector cadence makes sector 34 the first reachable live adoption", () => {
-  const enabledSectors: number[] = [];
+test("J4B sparse cadence remains exact while J4C-C adds a disjoint sparse counterphase", () => {
+  const riftSectors: number[] = [];
+  const siegeSectors: number[] = [];
 
-  for (let sector = 26; sector <= 60; sector += 1) {
-    const policy = getRuntimeTacticalEnemyAdoptionPolicy(
-      makeDescriptor({ sector }),
-    );
-    if (policy.enabled) enabledSectors.push(sector);
+  for (let sector = 26; sector <= 140; sector += 1) {
+    const policy = getRuntimeTacticalEnemyAdoptionPolicy(makeDescriptor({ sector }));
+    if (policy.familyId === J4B_LIVE_FAMILY_ID) riftSectors.push(sector);
+    if (policy.familyId === J4C_C_LIVE_FAMILY_ID) siegeSectors.push(sector);
   }
 
-  assert.deepEqual(enabledSectors, [34, 38, 42, 46, 54, 58]);
-  assert.equal(enabledSectors[0], 34);
+  assert.deepEqual(
+    riftSectors.filter((sector) => sector <= 60),
+    [34, 38, 42, 46, 54, 58],
+  );
+  assert.deepEqual(
+    siegeSectors,
+    [52, 68, 84, 92, 108, 116, 124, 132],
+  );
+  assert.equal(riftSectors[0], 34);
+  assert.equal(siegeSectors[0], 52);
   assert.equal(isRuntimeTacticalCadenceSector(34), true);
   assert.equal(isRuntimeTacticalCadenceSector(35), false);
+  assert.equal(isRuntimeSiegeCadenceSector(52), true);
+  assert.equal(isRuntimeSiegeCadenceSector(53), false);
+
+  for (let sector = 26; sector <= 500; sector += 1) {
+    assert.equal(
+      isRuntimeTacticalCadenceSector(sector) && isRuntimeSiegeCadenceSector(sector),
+      false,
+      `tactical cadence overlap at sector ${sector}`,
+    );
+  }
 });
 
-test("milestone and recovery sectors are excluded before cadence adoption", () => {
-  for (let sector = 11; sector <= 130; sector += 1) {
-    const recipe = generateInfiniteSectorRecipe(sector, "j4b-recovery-proof");
+test("milestone and recovery sectors remain excluded before either family adoption", () => {
+  for (let sector = 11; sector <= 200; sector += 1) {
+    const recipe = generateInfiniteSectorRecipe(sector, "j4c-c-recovery-proof");
     const descriptor = makeDescriptor({ sector });
     const policy = getRuntimeTacticalEnemyAdoptionPolicy(descriptor);
 
@@ -149,21 +187,23 @@ test("milestone and recovery sectors are excluded before cadence adoption", () =
   }
 });
 
-test("only the final wave and a non-milestone wave may adopt", () => {
-  const earlyWave = getRuntimeTacticalEnemyAdoptionPolicy(
-    makeDescriptor({ sector: 34, waveNumber: 3, waveCount: 4 }),
-  );
-  assert.equal(earlyWave.enabled, false);
-  assert.equal(earlyWave.disabledReason, "NON_FINAL_WAVE");
+test("both tactical families require the final non-milestone wave", () => {
+  for (const sector of [34, 52]) {
+    const earlyWave = getRuntimeTacticalEnemyAdoptionPolicy(
+      makeDescriptor({ sector, waveNumber: 3, waveCount: 4 }),
+    );
+    assert.equal(earlyWave.enabled, false, `early wave sector ${sector}`);
+    assert.equal(earlyWave.disabledReason, "NON_FINAL_WAVE", `early wave sector ${sector}`);
 
-  const defensiveMilestone = getRuntimeTacticalEnemyAdoptionPolicy(
-    makeDescriptor({
-      sector: 34,
-      milestone: { kind: "MINIBOSS", id: "unexpected-miniboss" },
-    }),
-  );
-  assert.equal(defensiveMilestone.enabled, false);
-  assert.equal(defensiveMilestone.disabledReason, "MILESTONE_WAVE");
+    const defensiveMilestone = getRuntimeTacticalEnemyAdoptionPolicy(
+      makeDescriptor({
+        sector,
+        milestone: { kind: "MINIBOSS", id: "unexpected-miniboss" },
+      }),
+    );
+    assert.equal(defensiveMilestone.enabled, false, `milestone wave sector ${sector}`);
+    assert.equal(defensiveMilestone.disabledReason, "MILESTONE_WAVE", `milestone wave sector ${sector}`);
+  }
 });
 
 test("exactly one existing budget ordinal resolves to RIFT_HUNTER", () => {
@@ -174,10 +214,7 @@ test("exactly one existing budget ordinal resolves to RIFT_HUNTER", () => {
 
   const resolved: Array<{ ordinal: number; enemyType: EnemyType }> = [];
   for (let ordinal = 0; ordinal < descriptor.spawn.enemyBudget; ordinal += 1) {
-    const enemyType = resolveRuntimeTacticalEnemySpawn({
-      descriptor,
-      spawnOrdinal: ordinal,
-    });
+    const enemyType = resolveRuntimeTacticalEnemySpawn({ descriptor, spawnOrdinal: ordinal });
     if (enemyType) resolved.push({ ordinal, enemyType });
   }
 
@@ -186,32 +223,52 @@ test("exactly one existing budget ordinal resolves to RIFT_HUNTER", () => {
   ]);
 });
 
-test("invalid ordinals and insufficient budgets fail closed", () => {
-  const descriptor = makeDescriptor();
-  for (const spawnOrdinal of [-1, 1.25, Number.NaN, Number.POSITIVE_INFINITY]) {
-    assert.equal(
-      resolveRuntimeTacticalEnemySpawn({ descriptor, spawnOrdinal }),
-      null,
-    );
+test("exactly one existing budget ordinal resolves to SIEGE_PRISM", () => {
+  const descriptor = makeDescriptor({ sector: 52, enemyBudget: 22 });
+  const policy = getRuntimeTacticalEnemyAdoptionPolicy(descriptor);
+  assert.equal(policy.enabled, true);
+  assert.equal(policy.triggerSpawnOrdinal, 11);
+
+  const resolved: Array<{ ordinal: number; enemyType: EnemyType }> = [];
+  for (let ordinal = 0; ordinal < descriptor.spawn.enemyBudget; ordinal += 1) {
+    const enemyType = resolveRuntimeTacticalEnemySpawn({ descriptor, spawnOrdinal: ordinal });
+    if (enemyType) resolved.push({ ordinal, enemyType });
   }
 
-  const tiny = getRuntimeTacticalEnemyAdoptionPolicy(
-    makeDescriptor({ enemyBudget: 2 }),
-  );
-  assert.equal(tiny.enabled, false);
-  assert.equal(tiny.disabledReason, "INSUFFICIENT_BUDGET");
+  assert.deepEqual(resolved, [
+    { ordinal: 11, enemyType: EnemyType.SIEGE_PRISM },
+  ]);
+});
+
+test("invalid ordinals and insufficient budgets fail closed for both live families", () => {
+  for (const sector of [34, 52]) {
+    const descriptor = makeDescriptor({ sector });
+    for (const spawnOrdinal of [-1, 1.25, Number.NaN, Number.POSITIVE_INFINITY]) {
+      assert.equal(resolveRuntimeTacticalEnemySpawn({ descriptor, spawnOrdinal }), null);
+    }
+
+    const tiny = getRuntimeTacticalEnemyAdoptionPolicy(
+      makeDescriptor({ sector, enemyBudget: 2 }),
+    );
+    assert.equal(tiny.enabled, false);
+    assert.equal(tiny.disabledReason, "INSUFFICIENT_BUDGET");
+  }
 });
 
 test("policy resolution does not mutate the caller-owned descriptor", () => {
-  const descriptor = makeDescriptor({ sector: 34, enemyBudget: 19 });
-  const before = JSON.stringify(descriptor);
+  for (const sector of [34, 52]) {
+    const descriptor = makeDescriptor({ sector, enemyBudget: 19 });
+    const before = JSON.stringify(descriptor);
 
-  const policy = getRuntimeTacticalEnemyAdoptionPolicy(descriptor);
-  const resolved = resolveRuntimeTacticalEnemySpawn({
-    descriptor,
-    spawnOrdinal: policy.triggerSpawnOrdinal ?? -1,
-  });
+    const policy = getRuntimeTacticalEnemyAdoptionPolicy(descriptor);
+    const resolved = resolveRuntimeTacticalEnemySpawn({
+      descriptor,
+      spawnOrdinal: policy.triggerSpawnOrdinal ?? -1,
+    });
 
-  assert.equal(resolved, EnemyType.RIFT_HUNTER);
-  assert.equal(JSON.stringify(descriptor), before);
+    assert.ok(
+      resolved === EnemyType.RIFT_HUNTER || resolved === EnemyType.SIEGE_PRISM,
+    );
+    assert.equal(JSON.stringify(descriptor), before);
+  }
 });
