@@ -1,0 +1,46 @@
+name: ES-13J5C Canvas Patch
+
+on:
+  push:
+    branches:
+      - es-13j5c-live-command-core-priority-presentation
+    paths:
+      - '.github/es13j5c_patch.py'
+      - '.github/workflows/es-13j5c-canvas-patch.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact branch head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: es-13j5c-live-command-core-priority-presentation
+
+      - name: Apply guarded Canvas patch
+        run: python .github/es13j5c_patch.py
+
+      - name: Validate patch scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --check
+          mapfile -t changed < <(git diff --name-only | LC_ALL=C sort)
+          expected=("src/game/EnergySwarmCanvas.tsx")
+          [[ "${#changed[@]}" -eq 1 ]]
+          [[ "${changed[0]}" == "${expected[0]}" ]]
+
+      - name: Commit Canvas patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/game/EnergySwarmCanvas.tsx
+          git commit -m "ES-13J5C: adopt live command-core priority marker"
+          git push origin HEAD:es-13j5c-live-command-core-priority-presentation
