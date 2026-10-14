@@ -36,6 +36,7 @@ Rules:
 | ES-13J4A — Pure Tactical Enemy Family Contract | DEPLOYED / FROZEN | `0c3f5c668926130f7ac8044cff8b619302949225` | #314 | #315 |
 | ES-13J4B — Narrow Live Warp Ambusher Adoption | DEPLOYED / FROZEN | `1023cee74d1c32a379bf542551397ae134f43573` | #318 | #319 |
 | ES-13J4C-A — Pure Siege Volley Telegraph Contract | DEPLOYED / FROZEN | `4cb5fb320c4bed4fa884ede312c4f3c323cdc5c6` | #322 | #323 |
+| ES-13J4C-B — Live Siege Volley Telegraph Integration | DEPLOYED / FROZEN | `2e16ff9a577128ffb06211b612116553928c8cda` | #326 | #327 + #328 |
 
 ## Evidence anchors
 
@@ -134,6 +135,23 @@ Exact evidence:
 
 Issue #322 CLOSED / completed. J4C-A is **DEPLOYED / FROZEN**.
 
+### J4C-B — Live Siege Volley Telegraph Integration
+J4C-B adopted the J4C-A 700 ms target-lock state into every existing `SIEGE_PRISM`, including `SIEGE_CATHEDRAL` support, without expanding normal Campaign/Infinite progression. Locked target is fixed; COMMIT remains latched under cap/budget rejection; ACK/reset occurs only after existing projectile authority creates the volley; three projectiles, speed `4.0`, spread `0.12` and cooldown `150 + Math.random() * 70` remain unchanged.
+
+PR #327 exposed a scope defect: one historical certification file had been adapted in addition to the approved six J4C-B files. #326 was reopened fail-closed. PR #328 restored `tests/runtime-combat-pressure-adoption.test.ts` to pre-J4C-B state and preserved equivalent runtime semantics in allowed `EnergySwarmGame.tsx`. Final `19beb0abf2b17d391834cb6336419ed4ead6819c...2e16ff9a577128ffb06211b612116553928c8cda` diff is exactly the six approved J4C-B files; `siegeVolleyTelegraph.ts` remains untouched.
+
+Exact final evidence:
+- remediation pre-PR `b5a768e919b9a75fb71a1a627bc521f74661a13b`, run `38506960989` / job `115666560063` GREEN;
+- final PR #328 head `bba0fa7a94cd45084c55149f80714dd1155a5baa`;
+- PR CI `38507157523` / `115667172988` GREEN;
+- PR Android `38507157492` / `115667172667` GREEN including Build/Verify/Upload APK;
+- canonical `2e16ff9a577128ffb06211b612116553928c8cda`, parent `8dec7945338e0152e83536605b18da63879818fe`, tree `8435b068908d82225b5442c8865578c46fedc243`;
+- main CI `38507278577` / `115667552196` GREEN;
+- main Android `38507278528` / `115667552109` GREEN including Build/Verify/Upload APK;
+- Pages `38507354839`, build `115667791913` + deploy `115667881614` GREEN.
+
+Issue #326 CLOSED / completed. J4C-B is **DEPLOYED / FROZEN**.
+
 ## Documentation canonicals
 - DOC11 `31de2cd5bb89ae3032902c09ace881119c04dfec`;
 - DOC12 `f85e2432934454da191dea9bd0c9da43bbce86ca`;
@@ -141,7 +159,8 @@ Issue #322 CLOSED / completed. J4C-A is **DEPLOYED / FROZEN**.
 - DOC14 — J3D closure & J4 activation: `998292cd40a3364aa7f22933b6312173956d3baa`;
 - DOC15 — J4A closure & J4B activation: `096b2c9fe53551664b56baf6e382368f8b4078da` — Issue #316 / PR #317;
 - DOC16 — J4B closure & J4C activation: `56aca8a129be9310f64bb04a99fb19560b52b2e3` — Issue #320 / PR #321;
-- DOC17 — J4C-A closure & J4C-B activation: Issue #324, branch `docs/es-13-j4c-a-closure-j4c-b-activation`, in progress from gameplay canonical `4cb5fb320c4bed4fa884ede312c4f3c323cdc5c6`.
+- DOC17 — J4C-A closure & J4C-B activation: `19beb0abf2b17d391834cb6336419ed4ead6819c` — Issue #324 / PR #325;
+- DOC18 — J4C-B closure & J4C-C activation: Issue #329, branch `docs/es-13-j4c-b-closure-j4c-c-activation`, in progress from gameplay canonical `2e16ff9a577128ffb06211b612116553928c8cda`.
 
 ## Frozen manual/physical blockers
 Remain OPEN and deferred while ES-13 materially changes gameplay:
@@ -154,10 +173,10 @@ Automated CI never substitutes for required human/device evidence.
 
 ## Next planned gameplay
 
-### ES-13J4C-B — Live Siege Volley Telegraph Integration
-Status: **NEXT ENGINEERING TARGET AFTER DOC17 CLOSURE**.
+### ES-13J4C-C — Controlled Normal-Progression Siege Adoption
+Status: **NEXT ENGINEERING TARGET AFTER DOC18 CLOSURE**.
 
-Integrate the certified J4C-A state into existing `SIEGE_PRISM` instances, including `SIEGE_CATHEDRAL` support. Lock target at readiness, render the 700 ms cue, fire the existing three-projectile spread only on the one-shot COMMIT edge through existing projectile authority, acknowledge/reset once, and preserve all current spawn/progression/cap/budget contracts. Normal-progression SIEGE adoption remains later.
+Broaden `SIEGE_PRISM / ARTILLERY_CARRIER` only through a bounded policy proved from current Campaign/Infinite selection seams. Prefer narrow Infinite-only deterministic replacement; do not add density, caps, budgets, collections or a second director. J4C-B 700 ms target-lock/COMMIT/ACK behavior and `SIEGE_CATHEDRAL` support policy remain frozen. Hard-control families and mine/mirror semantics remain deferred.
 
 ## Program sequence
-`J4C-B Live Siege Volley Integration → J4C-C Controlled Siege Progression → J4D+ Additional Tactical Families → J5 Priority Targets/Chain Reactions → J6 Dynamic Events → J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance → ES-14 Living Warfront`
+`J4C-C Controlled Siege Progression → J4D+ Additional Tactical Families → J5 Priority Targets/Chain Reactions → J6 Dynamic Events → J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance → ES-14 Living Warfront`

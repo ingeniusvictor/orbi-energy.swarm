@@ -72,7 +72,7 @@ Goal: add enemies whose behavior creates a new tactical decision. J4 must not be
 Candidate long-range vocabulary remains: Shield Phalanx, Reflector Drone, Jammer, Mine Layer, Artillery Carrier, Warp Ambusher, Swarm Leech, Energy Vampire, Formation Breaker, Commander, Repair Drone, Stealth Hunter, Siege Fortress, Parasite Queen and Mirror Drone.
 
 ### J4A — Pure Tactical Enemy Family Contract
-Status: **DEPLOYED / FROZEN**  
+Status: **DEPLOYED / FROZEN**
 Canonical: `0c3f5c668926130f7ac8044cff8b619302949225`  
 Issue #314 / PR #315
 
@@ -105,7 +105,7 @@ Exact deployment anchors:
 - Pages `38488489012` build + deploy GREEN.
 
 ### J4B — Narrow Live Warp Ambusher Adoption
-Status: **DEPLOYED / FROZEN**  
+Status: **DEPLOYED / FROZEN**
 Canonical: `1023cee74d1c32a379bf542551397ae134f43573`  
 Issue #318 / PR #319
 
@@ -135,7 +135,7 @@ Exact deployment anchors:
 - Pages `38490505690`, build `115614310963` + deploy `115614421521` GREEN.
 
 ### J4C-A — Pure Siege Volley Telegraph Contract
-Status: **DEPLOYED / FROZEN**  
+Status: **DEPLOYED / FROZEN**
 Canonical: `4cb5fb320c4bed4fa884ede312c4f3c323cdc5c6`  
 Issue #322 / PR #323
 
@@ -161,19 +161,41 @@ Exact deployment anchors:
 - Pages `38492658345`, build `115621262106` + deploy `115621344438` GREEN.
 
 ### J4C-B — Live Siege Volley Telegraph Integration
-Status: **NEXT ACTIVE ENGINEERING SLICE AFTER DOC17 CLOSURE**
+Status: **DEPLOYED / FROZEN**
+Canonical: `2e16ff9a577128ffb06211b612116553928c8cda`
+Issue #326 / delivery PR #327 + exact-scope remediation PR #328
 
-Adopt J4C-A into all currently existing `SIEGE_PRISM` instances, including `SIEGE_CATHEDRAL` support, without broadening normal progression.
+Certified live policy:
+- all currently existing `SIEGE_PRISM`, including `SIEGE_CATHEDRAL` support, use the 700 ms target-lock telegraph;
+- target remains fixed; COMMIT remains latched under projectile budget rejection; ACK/reset occurs only after successful projectile creation;
+- existing three-projectile volley, speed `4.0`, spread `0.12`, cooldown `150 + Math.random() * 70`, caps/budgets and boss-support policy remain unchanged;
+- no second collection/director, family-only full-array scan or Campaign/Infinite progression expansion;
+- J4C-A `siegeVolleyTelegraph.ts` remains unchanged.
 
-Required gates of the gameplay design:
-- current SIEGE cooldown readiness begins the 700 ms target-lock telegraph instead of immediate fire;
-- renderer shows a clear target-locked artillery cue/readable `SIEGE_VOLLEY` state;
-- existing three-projectile SIEGE spread fires only on the certified single COMMIT edge through existing `shootFromEnemy`/projectile-budget authority;
-- COMMIT is acknowledged/reset exactly once before a new randomized cooldown;
-- no duplicate shot, no target tracking after lock, no second enemy collection/director and no family-only full-array scan;
-- `MAX_ENEMIES`, `MAX_PROJECTILES`, projectile count/speed/spread, `SIEGE_CATHEDRAL` support max/cooldown, Campaign and normal Infinite compositions remain unchanged.
+PR #327 initially contained one extra historical certification-file adaptation. Fail-closed PR #328 restored it to pre-J4C-B state. Final `19beb0abf2b17d391834cb6336419ed4ead6819c...2e16ff9a577128ffb06211b612116553928c8cda` diff is exactly the six approved J4C-B files.
 
-Normal-progression SIEGE adoption is deferred to a later controlled slice after J4C-B exact-SHA fairness certification. `FORMATION_BREAKER` and `JAMMER` remain deferred pending hard-control proof; `MINE_WEAVER` / `MIRROR_WARDEN` remain outside the certified contract.
+Exact final anchors:
+- remediation pre-PR `b5a768e919b9a75fb71a1a627bc521f74661a13b`, run `38506960989` / `115666560063` GREEN;
+- PR #328 final head `bba0fa7a94cd45084c55149f80714dd1155a5baa`;
+- PR CI `38507157523` / `115667172988` GREEN; Android `38507157492` / `115667172667` GREEN;
+- canonical `2e16ff9a577128ffb06211b612116553928c8cda`, parent `8dec7945338e0152e83536605b18da63879818fe`, tree `8435b068908d82225b5442c8865578c46fedc243`;
+- main CI `38507278577` / `115667552196` GREEN; Android `38507278528` / `115667552109` GREEN;
+- Pages `38507354839`, build `115667791913` + deploy `115667881614` GREEN.
+
+### J4C-C — Controlled Normal-Progression Siege Adoption
+Status: **NEXT ACTIVE ENGINEERING SLICE AFTER DOC18 CLOSURE**
+
+With SIEGE fairness certified live, J4C-C may broaden where `SIEGE_PRISM / ARTILLERY_CARRIER` appears in normal progression. The implementation issue must inspect current Campaign/Infinite selection first and prove a bounded policy rather than presume a sector cadence.
+
+Design constraints:
+- prefer narrow Infinite-only adoption unless runtime evidence independently justifies Campaign;
+- deterministically replace an existing spawn opportunity/budget rather than add entities;
+- preserve J4C-B target-lock/COMMIT/ACK behavior and `SIEGE_CATHEDRAL` support policy exactly;
+- preserve projectile count/speed/spread/cooldown, global caps/budgets and entity arrays;
+- no new `EnemyType`, parallel collection/director, family-only full-array scan or independent timer/RNG authority;
+- preserve evolved-enemy and J3 enemy-formation authority isolation.
+
+`FORMATION_BREAKER` and `JAMMER` remain deferred pending independent hard-control spacing/recovery proof. `MINE_WEAVER` / `MIRROR_WARDEN` remain deferred until genuine mine/mirror mechanics exist. J3C-C remains deferred, not cancelled.
 
 ### J4 design gate
 Every proposed family must answer:
