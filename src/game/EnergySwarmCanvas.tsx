@@ -5,7 +5,7 @@ import {
 } from "./types";
 import { CANVAS_WIDTH, CANVAS_HEIGHT } from "./constants";
 import { getCanvasBackingStoreSize } from "./canvasResolution";
-import { projectSiegeVolleyTelegraph } from "./siegeVolleyTelegraph";
+import { projectLiveSiegeVolleyTelegraph } from "./liveSiegeVolleyIntegration";
 import {
   projectFlashAccessibility,
   type FlashAccessibilityProfile,
@@ -926,7 +926,7 @@ export function drawEnemiesList(
     const siegeVolleyProjection =
       enemy.type === EnemyType.SIEGE_PRISM &&
       enemy.siegeVolleyTelegraph
-        ? projectSiegeVolleyTelegraph(
+        ? projectLiveSiegeVolleyTelegraph(
             enemy.siegeVolleyTelegraph,
           )
         : null;
@@ -1272,7 +1272,7 @@ export function drawEnemiesList(
       case EnemyType.SIEGE_PRISM: {
         const prismRotation = time * 0.0015;
         const volleyProjection = enemy.siegeVolleyTelegraph
-          ? projectSiegeVolleyTelegraph(
+          ? projectLiveSiegeVolleyTelegraph(
               enemy.siegeVolleyTelegraph,
             )
           : null;

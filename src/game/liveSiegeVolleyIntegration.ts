@@ -2,7 +2,9 @@ import {
   acknowledgeSiegeVolleyCommit,
   beginSiegeVolleyTelegraph,
   createSiegeVolleyTelegraphState,
+  projectSiegeVolleyTelegraph,
   stepSiegeVolleyTelegraph,
+  type SiegeVolleyTelegraphProjection,
   type SiegeVolleyTelegraphState,
 } from "./siegeVolleyTelegraph";
 
@@ -100,3 +102,8 @@ export const acknowledgeLiveSiegeVolleyShot = (
     ? freezeAcknowledgeResult(undefined, true)
     : freezeAcknowledgeResult(state, false);
 };
+
+export const projectLiveSiegeVolleyTelegraph = (
+  state: SiegeVolleyTelegraphState,
+): SiegeVolleyTelegraphProjection =>
+  projectSiegeVolleyTelegraph(state);

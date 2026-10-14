@@ -48,6 +48,7 @@ test("J4C-B reuses the exact J4C-A 700 ms target-lock state machine", () => {
   assert.match(adapterSource, /beginSiegeVolleyTelegraph/);
   assert.match(adapterSource, /stepSiegeVolleyTelegraph/);
   assert.match(adapterSource, /acknowledgeSiegeVolleyCommit/);
+  assert.match(adapterSource, /projectSiegeVolleyTelegraph/);
   assert.match(telegraphSource, /SIEGE_VOLLEY_TELEGRAPH_MS\s*=\s*700/);
   assert.match(telegraphSource, /"SIEGE_VOLLEY"/);
   assert.match(telegraphSource, /"BREAK_ARTILLERY_ENVELOPE"/);
@@ -89,8 +90,16 @@ test("existing projectile authority is preserved and reports accepted fire", () 
   assert.match(gameSource, /return\s+projectileCount\s*>\s*0/);
 });
 
-test("renderer exposes a visible SIEGE body and locked-target artillery cue", () => {
-  assert.match(canvasSource, /projectSiegeVolleyTelegraph/);
+test("renderer exposes a visible SIEGE body and locked-target artillery cue through the authorized live adapter", () => {
+  assert.match(canvasSource, /projectLiveSiegeVolleyTelegraph/);
+  assert.match(
+    canvasSource,
+    /from\s+["']\.\/liveSiegeVolleyIntegration["']/,
+  );
+  assert.doesNotMatch(
+    canvasSource,
+    /from\s+["']\.\/siegeVolleyTelegraph["']/,
+  );
   assert.match(canvasSource, /case EnemyType\.SIEGE_PRISM/);
   assert.match(canvasSource, /SIEGE VOLLEY/);
   assert.match(canvasSource, /targetX/);
