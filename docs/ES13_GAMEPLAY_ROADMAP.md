@@ -134,18 +134,46 @@ Exact deployment anchors:
 - main Android `38490426903` / job `115614058464` GREEN;
 - Pages `38490505690`, build `115614310963` + deploy `115614421521` GREEN.
 
-### J4C — Next Bounded Tactical Family Slice
-Status: **NEXT ACTIVE ENGINEERING SLICE AFTER DOC16 CLOSURE**
+### J4C-A — Pure Siege Volley Telegraph Contract
+Status: **DEPLOYED / FROZEN**  
+Canonical: `4cb5fb320c4bed4fa884ede312c4f3c323cdc5c6`  
+Issue #322 / PR #323
 
-J4C must select only one next distinct tactical family after inspecting the live runtime semantics. `SIEGE_PRISM` / `ARTILLERY_CARRIER` is the leading candidate, but it is not eligible for live adoption merely because the J4A contract names `SIEGE_VOLLEY`: the actual runtime must first implement or certify an explicit readable artillery telegraph and fair reaction window.
+J4C-A created the pure fairness contract required by `ARTILLERY_CARRIER / SIEGE_PRISM` before any additional live adoption:
+- 700 ms simulation-time telegraph;
+- target locked at telegraph start;
+- `IDLE → TELEGRAPH → COMMIT` state machine;
+- exact one-shot COMMIT edge with explicit acknowledgement;
+- `SIEGE_VOLLEY` + `BREAK_ARTILLERY_ENVELOPE` projection metadata;
+- invalid input fail-closed;
+- zero live runtime authority.
 
-Hard-control families remain deferred:
-- `SWARM_REAVER` / `FORMATION_BREAKER` requires independent spacing/recovery fairness proof;
-- `VOID_ANCHOR` / `JAMMER` requires independent spacing/recovery fairness proof.
+No runtime/renderer/progression/cap or `SIEGE_CATHEDRAL` composition changes occurred in J4C-A.
 
-`MINE_WEAVER` / `MIRROR_WARDEN` remain outside the certified family contract until dedicated pure mechanics genuinely implement mine/mirror behavior.
+Exact deployment anchors:
+- pre-PR head `d4963c8d435996adf39e6df582ba7c15540d3ab9`, run `38492253039` / job `115619974269` GREEN;
+- final PR head `1724dc4fd199e7be50f1110c7606d54bbe2b1543`;
+- PR CI `38492465605` / job `115620646548` GREEN;
+- PR Android `38492465573` / job `115620646615` GREEN;
+- canonical `4cb5fb320c4bed4fa884ede312c4f3c323cdc5c6`;
+- main CI `38492584499` / job `115621028391` GREEN;
+- main Android `38492584516` / job `115621028451` GREEN;
+- Pages `38492658345`, build `115621262106` + deploy `115621344438` GREEN.
 
-J4C hard constraints remain: no new `EnemyType`, no parallel enemy collection/director, no family-only full-array scan, no cap/budget increase, no uncontrolled projectiles/support entities, no silent score/economy/J1/J2/GAIA/FOTON changes, and no FOTON GLB change.
+### J4C-B — Live Siege Volley Telegraph Integration
+Status: **NEXT ACTIVE ENGINEERING SLICE AFTER DOC17 CLOSURE**
+
+Adopt J4C-A into all currently existing `SIEGE_PRISM` instances, including `SIEGE_CATHEDRAL` support, without broadening normal progression.
+
+Required gates of the gameplay design:
+- current SIEGE cooldown readiness begins the 700 ms target-lock telegraph instead of immediate fire;
+- renderer shows a clear target-locked artillery cue/readable `SIEGE_VOLLEY` state;
+- existing three-projectile SIEGE spread fires only on the certified single COMMIT edge through existing `shootFromEnemy`/projectile-budget authority;
+- COMMIT is acknowledged/reset exactly once before a new randomized cooldown;
+- no duplicate shot, no target tracking after lock, no second enemy collection/director and no family-only full-array scan;
+- `MAX_ENEMIES`, `MAX_PROJECTILES`, projectile count/speed/spread, `SIEGE_CATHEDRAL` support max/cooldown, Campaign and normal Infinite compositions remain unchanged.
+
+Normal-progression SIEGE adoption is deferred to a later controlled slice after J4C-B exact-SHA fairness certification. `FORMATION_BREAKER` and `JAMMER` remain deferred pending hard-control proof; `MINE_WEAVER` / `MIRROR_WARDEN` remain outside the certified contract.
 
 ### J4 design gate
 Every proposed family must answer:
