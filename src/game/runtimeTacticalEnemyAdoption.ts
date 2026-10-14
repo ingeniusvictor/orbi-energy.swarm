@@ -7,6 +7,15 @@ export const J4B_TACTICAL_SECTOR_CADENCE = 4;
 export const J4B_TACTICAL_SECTOR_OFFSET = 10;
 export const J4B_LIVE_FAMILY_ID = "WARP_AMBUSHER" as const;
 
+export const J4C_C_SIEGE_MIN_INFINITE_SECTOR = 51;
+export const J4C_C_SIEGE_SECTOR_CADENCE = 8;
+export const J4C_C_SIEGE_SECTOR_OFFSET = 52;
+export const J4C_C_LIVE_FAMILY_ID = "ARTILLERY_CARRIER" as const;
+
+type RuntimeTacticalLiveFamilyId =
+  | typeof J4B_LIVE_FAMILY_ID
+  | typeof J4C_C_LIVE_FAMILY_ID;
+
 export type RuntimeTacticalEnemyAdoptionDisabledReason =
   | "CAMPAIGN_DISABLED"
   | "BELOW_MIN_SECTOR"
@@ -20,7 +29,7 @@ export type RuntimeTacticalEnemyAdoptionDisabledReason =
 export interface RuntimeTacticalEnemyAdoptionPolicy {
   sourceMode: RuntimeWaveDescriptor["sourceMode"];
   enabled: boolean;
-  familyId: typeof J4B_LIVE_FAMILY_ID | null;
+  familyId: RuntimeTacticalLiveFamilyId | null;
   enemyType: EnemyType | null;
   triggerSpawnOrdinal: number | null;
   disabledReason: RuntimeTacticalEnemyAdoptionDisabledReason | null;
@@ -33,12 +42,21 @@ export interface RuntimeTacticalEnemySpawnInput {
 
 const WARP_AMBUSHER_PROFILE =
   getTacticalEnemyFamilyProfileById(J4B_LIVE_FAMILY_ID);
+const ARTILLERY_CARRIER_PROFILE =
+  getTacticalEnemyFamilyProfileById(J4C_C_LIVE_FAMILY_ID);
 
 if (
   !WARP_AMBUSHER_PROFILE ||
   WARP_AMBUSHER_PROFILE.enemyType !== EnemyType.RIFT_HUNTER
 ) {
   throw new Error("J4B requires the certified Warp Ambusher family contract.");
+}
+
+if (
+  !ARTILLERY_CARRIER_PROFILE ||
+  ARTILLERY_CARRIER_PROFILE.enemyType !== EnemyType.SIEGE_PRISM
+) {
+  throw new Error("J4C-C requires the certified Artillery Carrier family contract.");
 }
 
 export const isRuntimeTacticalRecoverySector = (sector: number): boolean =>
@@ -53,6 +71,13 @@ export const isRuntimeTacticalCadenceSector = (sector: number): boolean =>
     J4B_TACTICAL_SECTOR_CADENCE ===
     0;
 
+export const isRuntimeSiegeCadenceSector = (sector: number): boolean =>
+  Number.isInteger(sector) &&
+  sector >= J4C_C_SIEGE_MIN_INFINITE_SECTOR &&
+  (sector - J4C_C_SIEGE_SECTOR_OFFSET) %
+    J4C_C_SIEGE_SECTOR_CADENCE ===
+    0;
+
 const disabledPolicy = (
   descriptor: RuntimeWaveDescriptor,
   disabledReason: RuntimeTacticalEnemyAdoptionDisabledReason,
@@ -64,6 +89,29 @@ const disabledPolicy = (
   triggerSpawnOrdinal: null,
   disabledReason,
 });
+
+const resolveLiveTacticalFamily = (
+  sector: number,
+): Readonly<{
+  familyId: RuntimeTacticalLiveFamilyId;
+  enemyType: EnemyType;
+}> | null => {
+  if (isRuntimeTacticalCadenceSector(sector)) {
+    return {
+      familyId: J4B_LIVE_FAMILY_ID,
+      enemyType: WARP_AMBUSHER_PROFILE.enemyType,
+    };
+  }
+
+  if (isRuntimeSiegeCadenceSector(sector)) {
+    return {
+      familyId: J4C_C_LIVE_FAMILY_ID,
+      enemyType: ARTILLERY_CARRIER_PROFILE.enemyType,
+    };
+  }
+
+  return null;
+};
 
 export const getRuntimeTacticalEnemyAdoptionPolicy = (
   descriptor: RuntimeWaveDescriptor,
@@ -84,7 +132,8 @@ export const getRuntimeTacticalEnemyAdoptionPolicy = (
     return disabledPolicy(descriptor, "RECOVERY_SECTOR");
   }
 
-  if (!isRuntimeTacticalCadenceSector(descriptor.sector)) {
+  const liveFamily = resolveLiveTacticalFamily(descriptor.sector);
+  if (!liveFamily) {
     return disabledPolicy(descriptor, "OFF_CADENCE");
   }
 
@@ -106,8 +155,8 @@ export const getRuntimeTacticalEnemyAdoptionPolicy = (
   return {
     sourceMode: "INFINITE",
     enabled: true,
-    familyId: J4B_LIVE_FAMILY_ID,
-    enemyType: WARP_AMBUSHER_PROFILE.enemyType,
+    familyId: liveFamily.familyId,
+    enemyType: liveFamily.enemyType,
     triggerSpawnOrdinal: Math.floor(descriptor.spawn.enemyBudget / 2),
     disabledReason: null,
   };
