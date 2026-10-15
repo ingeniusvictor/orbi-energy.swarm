@@ -506,22 +506,47 @@ Exact deployment anchors:
 - Pages `38783697902`, build `116590143603` + deploy `116590341097` GREEN.
 
 ### J6B-B — Pure Deterministic Dynamic Event Identity Selection Contract
-Status: **NEXT ACTIVE ENGINEERING SLICE AFTER DOC31 CLOSURE**
+Status: **DEPLOYED / FROZEN**
+Canonical: `dcd39a173da7635bf85db6844dc86aeca6c1f38c`
+Issue #383 / PR #384
 
-J6A already emits one valid opportunity with an 8-lowercase-hex `identityFingerprint`; J6B-A freezes exactly five event identities. J6B-B may compose those two frozen contracts to select identity semantics only.
+Certified behavior:
+- consumes only valid current J6A `DYNAMIC_MID_SECTOR_EVENT_OPPORTUNITY` / `OPPORTUNITY_ONLY` / `INFINITE` metadata;
+- validates exact bounded interior-wave consistency, lowercase 8-hex `identityFingerprint`, canonical opportunity ID and all J6A zero-authority flags;
+- deterministically selects exactly one frozen J6B-A ID via `parseInt(identityFingerprint, 16) % 5`;
+- emits immutable `DYNAMIC_MID_SECTOR_EVENT_SELECTION` / `SELECTION_ONLY` metadata carrying source opportunity identity + selected event identity;
+- malformed, padded, forged, unsupported or tampered input fails closed;
+- owns semantic event selection only;
+- no new RNG/clock/seed authority, mutator/effect mapping, live execution, environment mutation, spawn/progression, collection, combat/economy, lookup/scan, cap/budget or entity create/remove/mutate authority;
+- no `EnergySwarmGame.tsx`, Infinite-director or environmental-runtime adoption.
+
+Exact deployment anchors:
+- DOC31 baseline `6cadd1db296d5249ae236121088307f480685fe0`;
+- pre-PR `2a82945747f6bd3b855a2a7b84c5db9d084fed38`, run `38808432120` / job `116675222019` GREEN including exact scope + Android APK;
+- final PR #384 head `acc98dccff52812b12e23bd26fb7b21e9889d06b`;
+- PR CI `38808893011` / `116676780125` GREEN; Android `38808893023` / `116676778988` GREEN;
+- canonical `dcd39a173da7635bf85db6844dc86aeca6c1f38c`, parent `6cadd1db296d5249ae236121088307f480685fe0`, tree `531fad95ced691ad24a0c2391fe9d30954f51e01`;
+- main CI `38809192748` / `116677795292` GREEN; Android `38809192821` / `116677795333` GREEN;
+- Pages `38809290030`, build `116678137605` + deploy `116678316176` GREEN.
+
+### J6B-C — Pure Dynamic Event Effect-Mapping Compatibility Contract
+Status: **NEXT ACTIVE ENGINEERING SLICE AFTER DOC32 CLOSURE**
+
+Architecture discovery after J6B-B confirms:
+- `runtimeMutatorEffects.ts` already owns the bounded mapping from the ten frozen `InfiniteMutator` values to effect magnitudes/clamps;
+- `runtimeEnvironmentalFields.ts` already owns reduced-visibility and resource-field projection from those effect profiles;
+- `infiniteSectorDirector.ts` already owns recipe seed/random selection authority;
+- therefore J6B-C must not create a parallel environment/effect/RNG director.
 
 Required direction:
-- pure deterministic contract only; no runtime adoption;
-- consume a valid current J6A opportunity and frozen J6B-A vocabulary;
-- validate kind/mode/source/wave consistency, canonical opportunity ID and exact fingerprint shape;
-- select exactly one frozen event ID from the existing `identityFingerprint`, with no new RNG/clock/seed authority;
-- output immutable `SELECTION_ONLY` metadata carrying source opportunity identity + selected event identity;
-- semantic event selection is allowed, but mutator/effect mapping and live execution remain forbidden;
-- invalid/stale/malformed input fails closed;
-- J6A/J6B-A remain unchanged;
-- no `EnergySwarmGame.tsx`, Infinite director, mutator/effect/environment runtime adoption;
-- no spawn/progression, collection, combat/economy, entity lookup/scan, timer/RNG, cap/budget or entity create/remove/mutate authority;
-- live effect mapping remains a later J6 slice and must reuse existing frozen environmental authorities.
+- contract-first and pure; no live runtime adoption in J6B-C;
+- consume a valid current frozen J6B-B selection and frozen J6B-A identity profile;
+- define compatibility/mapping metadata only onto existing bounded mutator/environment semantics;
+- DOC32 does **not** freeze a concrete mapping table: the dedicated J6B-C Issue must justify each mapping independently and may leave identities unmapped/fail-closed;
+- reuse existing magnitudes and clamps; do not tune or duplicate runtime effect authority;
+- unsupported/ambiguous/unjustified identity mappings fail closed;
+- no `EnergySwarmGame.tsx`, live environment mutation, spawn/progression, collection, combat/economy, entity lookup/scan, timer/RNG/seed, recipe, cap/budget or entity create/remove/mutate authority;
+- controlled live event adoption remains J6B-D+ and requires separate lifecycle/fairness/attribution certification.
 
 ## J7 — Bonus Challenge Rounds
 Status: PLANNED

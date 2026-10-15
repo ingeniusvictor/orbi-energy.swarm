@@ -50,6 +50,7 @@ Rules:
 | ES-13J5F-E — Controlled Live Command-Link Disruption Pulse Application | DEPLOYED / FROZEN | `9554358005d6d092341f4f65d8b986090307f8b5` | #371 | #372 |
 | ES-13J6A — Pure Dynamic Mid-Sector Event Opportunity Contract | DEPLOYED / FROZEN | `69ac8a1a83d2f6bbe6a989a3a819fac438e854c1` | #375 | #376 |
 | ES-13J6B-A — Pure Dynamic Mid-Sector Event Identity Vocabulary Contract | DEPLOYED / FROZEN | `204566693978adabba7e66995c88ae2f85818f8b` | #379 | #380 |
+| ES-13J6B-B — Pure Deterministic Dynamic Event Identity Selection Contract | DEPLOYED / FROZEN | `dcd39a173da7635bf85db6844dc86aeca6c1f38c` | #383 | #384 |
 
 ## Evidence anchors
 
@@ -442,6 +443,25 @@ Exact deployment anchors:
 
 Issue #379 CLOSED / completed. J6B-A is **DEPLOYED / FROZEN**.
 
+### J6B-B — Pure Deterministic Dynamic Event Identity Selection Contract
+Certified behavior:
+- validates exact current J6A opportunity kind/mode/source, bounded interior wave metadata, lowercase 8-hex fingerprint and canonical opportunity ID;
+- deterministically selects exactly one frozen J6B-A ID using the existing fingerprint modulo the frozen five-ID list;
+- emits immutable `DYNAMIC_MID_SECTOR_EVENT_SELECTION` / `SELECTION_ONLY` metadata;
+- malformed/tampered J6A facts fail closed;
+- owns semantic selection only and adds no RNG/clock/seed, mutator/effect mapping, live execution, environment mutation, spawn/progression, collection, combat/economy, lookup/scan, cap/budget or entity authority.
+
+Exact deployment anchors:
+- DOC31 baseline `6cadd1db296d5249ae236121088307f480685fe0`;
+- pre-PR `2a82945747f6bd3b855a2a7b84c5db9d084fed38`, run `38808432120` / job `116675222019` GREEN including exact scope + Android APK;
+- final PR #384 head `acc98dccff52812b12e23bd26fb7b21e9889d06b`;
+- PR CI `38808893011` / `116676780125` GREEN; Android `38808893023` / `116676778988` GREEN;
+- canonical `dcd39a173da7635bf85db6844dc86aeca6c1f38c`, parent `6cadd1db296d5249ae236121088307f480685fe0`, tree `531fad95ced691ad24a0c2391fe9d30954f51e01`;
+- main CI `38809192748` / `116677795292` GREEN; Android `38809192821` / `116677795333` GREEN;
+- Pages `38809290030`, build `116678137605` + deploy `116678316176` GREEN.
+
+Issue #383 CLOSED / completed. J6B-B is **DEPLOYED / FROZEN**.
+
 ## Documentation canonicals
 - DOC11 `31de2cd5bb89ae3032902c09ace881119c04dfec`;
 - DOC12 `f85e2432934454da191dea9bd0c9da43bbce86ca`;
@@ -463,7 +483,8 @@ Issue #379 CLOSED / completed. J6B-A is **DEPLOYED / FROZEN**.
 - DOC28 — J5F-D closure & J5F-E controlled live pulse activation: `022741e5c500dea2947241d4bb8c6cb8d004772c` — Issue #369 / PR #370.
 - DOC29 — J5F-E closure & J6A dynamic event opportunity activation: `0dca89678698be0557f0500590f27c9f53ab1548` — Issue #373 / PR #374.
 - DOC30 — J6A closure & J6B-A event identity vocabulary activation: `26554f20648f0a27c2c510c055cbec81c43416c7` — Issue #377 / PR #378.
-- DOC31 — J6B-A closure & J6B-B deterministic event selection activation: Issue #381, branch `docs/es-13-j6ba-closure-j6bb-activation`, in progress from gameplay canonical `204566693978adabba7e66995c88ae2f85818f8b`.
+- DOC31 — J6B-A closure & J6B-B deterministic event selection activation: `6cadd1db296d5249ae236121088307f480685fe0` — Issue #381 / PR #382.
+- DOC32 — J6B-B closure & J6B-C contract-first effect-mapping activation: Issue #385, branch `docs/es-13-j6bb-closure-j6bc-activation`, in progress from gameplay canonical `dcd39a173da7635bf85db6844dc86aeca6c1f38c`.
 
 ## Frozen manual/physical blockers
 Remain OPEN and deferred while ES-13 materially changes gameplay:
@@ -476,14 +497,14 @@ Automated CI never substitutes for required human/device evidence.
 
 ## Next planned gameplay
 
-### ES-13J6B-B — Pure Deterministic Dynamic Event Identity Selection Contract
-Status: **NEXT ENGINEERING TARGET AFTER DOC31 CLOSURE**.
+### ES-13J6B-C — Pure Dynamic Event Effect-Mapping Compatibility Contract
+Status: **NEXT ENGINEERING TARGET AFTER DOC32 CLOSURE**.
 
-J6A is frozen as opportunity-only and J6B-A as identity-only. J6B-B may select exactly one frozen identity from a valid current J6A `identityFingerprint` without creating new randomness or runtime effect authority.
+J6A, J6B-A and J6B-B are frozen through deterministic `SELECTION_ONLY` identity selection. Existing environment/effect authority already lives in the frozen Infinite mutator projection and runtime environmental-field systems.
 
-J6B-B may own semantic selection only (`SELECTION_ONLY`). It must not map identities to mutators/environment effects, execute live behavior, adopt into runtime, or own spawn/progression, collections, combat/economy, environment mutation, scan/lookup, timing/RNG, cap/budget or entity authority. Live effect mapping remains later and must reuse existing frozen environmental systems.
+J6B-C must be a pure compatibility/mapping contract only. It may reference already-existing bounded `InfiniteMutator` / environmental semantics after a dedicated Issue proves exact mappings, but DOC32 freezes no concrete identity-to-effect table. Ambiguous or unsupported identities must fail closed. J6B-C must not adopt into `EnergySwarmGame.tsx`, mutate environment/runtime state, invent effect magnitudes, RNG/clock/seed or recipe authority, or own spawn/progression, collections, combat/economy, scans/lookups, caps/budgets or entity mutation. Controlled live adoption remains J6B-D+ after separate fairness/lifecycle certification.
 
 J4D+ additional tactical families remain deferred: FORMATION_BREAKER/JAMMER require hard-control spacing/recovery proof; MINE_WEAVER/MIRROR_WARDEN require genuine mine/mirror mechanics. J3C-C remains deferred, not cancelled.
 
 ## Program sequence
-`J6B-B Pure Deterministic Dynamic Event Identity Selection Contract → J6B-C+ Certified Effect Mapping/Live Adoption → J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance → ES-14 Living Warfront`
+`J6B-C Pure Dynamic Event Effect-Mapping Compatibility Contract → J6B-D+ Controlled Live Event Adoption → J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance → ES-14 Living Warfront`
