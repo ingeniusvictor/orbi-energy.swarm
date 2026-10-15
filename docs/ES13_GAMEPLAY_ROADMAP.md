@@ -569,3 +569,63 @@ Required discovery direction:
 - prove event lifecycle/duration, expiry, pause, reset boundaries, fairness/telegraph and attribution;
 - no new collection, full-array scan/index, entity creation/removal, spawn/progression, combat/economy authority, cap/budget changes, FOTON GLB or formation changes without separate justification;
 - exact live seam and lifecycle remain unfrozen until the dedicated J6B-D Issue completes discovery.
+
+## J7 — Bonus Challenge Rounds
+Status: PLANNED
+
+20–40 s rhythm breakers: precision, rescue, collection, evasive corridors, pursuit, affinity puzzles, obstacle navigation, timed survival and survival without firing.
+
+## J8 — Additional Game Modes
+Status: PLANNED
+
+Score Attack, Boss Rush, Survival/Last Light, Swarm Trials, Anomaly Runs, Daily Seed, Elite Hunt, Endless Crisis and Perfect Sector. Reuse one certified engine/core; avoid mode-specific forks.
+
+## J9 — Boss & Miniboss Expansion
+Status: PLANNED
+
+Blackout Architect, Helios Devourer, Null Choir, Quantum Leviathan, Dyson Breaker, Swarm Sovereign and Singularity Engine. Use phases, destructible zones, affinity/formation pressure, battlefield manipulation and telegraphed vulnerability windows.
+
+## J10 — Expert Risk / Reward
+Status: PLANNED
+
+Resonance Graze, Quantum Slip, near-miss chains and optional danger-proximity bonuses. Never mandatory for baseline survival.
+
+## J11 — Build & Synergy Expansion
+Status: PLANNED
+
+Distinct run identities around Solar, Hydro, Wind, Thermal, Magnetic and Quantum, followed by controlled hybrid synergies.
+
+## J12 — Rare Events & Secret Encounters
+Status: PLANNED
+
+Golden Rift, Ancient ORBI Signal, Blackout Armada, Unknown Energy Signature, Titan-class Intruder and hidden variants. Surprise without required progression blockers.
+
+## J13 — Score, Rank & Mastery
+Status: PLANNED
+
+C/B/A/S/S+ ranks, optional sector objectives, perfect sectors, no-damage/swarm-preservation targets, affinity efficiency, formation mastery, time/chain goals and mode-specific mastery.
+
+## J14 — Procedural Interaction Matrix
+Status: PLANNED
+
+Safely combine `enemy archetype + evolved trait + formation + biome + mutator + event` with deterministic seed reproduction, explicit compatibility rejection and global caps/budgets authoritative.
+
+## J15 — Gameplay Integration & Long-Range Balance
+Status: PLANNED
+
+Long runs across difficulty bands, telegraph/spawn/recovery fairness, score/resonance/Overdrive economy, boss/event/mode interactions, desktop+Android performance, readability/pacing/replayability and deterministic failure evidence.
+
+Only after ES-13 stabilizes should the full RC manual campaign be repeated.
+
+---
+
+## ES-14 — Living Warfront
+Status: FUTURE PROGRAM / NOT YET COMMITTED
+
+Potential: new biomes/sectors, thematic arcs, contracts/missions, codex/discovery, deeper persistent mastery, mode unlocks, daily/weekly challenges, secure leaderboards when justified and an evolving warfront between runs.
+
+## Manual RC strategy
+Manual blockers remain open: #4 visual/responsive, #5 Infinite play-feel, #202 GAIA physical runtime, #248 Android real-device. Full final evidence remains deferred while ES-13 changes gameplay. CI must never fabricate human/device PASS.
+
+## Recovery discipline
+Read `PROJECT_CONTINUITY.md`, `IMPLEMENTATION_LEDGER.md`, this roadmap, `TRACEABILITY_POLICY.md`, `ES13_PHASE_CHECKLIST.md` and referenced active Issues/PRs; then verify live `main` before writing anything.
