@@ -1,4 +1,4 @@
-name: ES-13J5F-E Final Exact Candidate Certification v1.1
+name: ES-13J5F-E Final Exact Candidate Certification v1.2
 
 on:
   push:
@@ -95,8 +95,6 @@ jobs:
           expected=(
             ".github/workflows/es-13j5fe-final-cert.yml"
             ".github/workflows/es-13j5fe-patch-cert-v2.yml"
-            ".github/workflows/es-13j5fe-patch-cert-v3.yml"
-            ".github/workflows/es-13j5fe-patch-cert.yml"
             "src/game/EnergySwarmGame.tsx"
             "src/game/liveCommandLinkPulseApplication.ts"
             "tests/es-13j5fe-live-command-link-pulse-application.test.mjs"
