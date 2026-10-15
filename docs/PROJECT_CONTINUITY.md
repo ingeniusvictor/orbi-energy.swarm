@@ -18,16 +18,16 @@ Never infer deployment/certification from conversation text alone.
 
 ## Current certified gameplay canonical
 
-`6aa63e9643a2521738b3b6afebfb0856f48bd3fd`
+`90f3fc82271654e6d7a7076474ae46efd02775e4`
 
-Phase: **ES-13J5E — Controlled Live Command-Link Detach Application**
+Phase: **ES-13J5F-A — Pure Optional Command-Link Disruption Pulse Contract**
 Status: **DEPLOYED / FROZEN**
-Issue: #351 — CLOSED / completed
-Delivery: PR #352 — squash merged
+Issue: #355 — CLOSED / completed
+Delivery: PR #356 — squash merged
 
-Single parent: `b317faa1cb3403fe11baaa71e6c072b8a97a3062` — DOC23 documentation canonical.
+Single parent: `a94883c1532ba14e9c81b0a16e923a730aa1275d` — DOC24 documentation canonical.
 
-Canonical tree: `b7b65424cbfe1b574a632364e8cf028b1da155fa`, exactly equal to final PR-head tree.
+Canonical tree: `e0226f6da7fb90b54a612b5e42716437b19ca171`.
 
 Version remains `0.2.0-beta.1`. Full RC/manual certification remains intentionally deferred while ES-13 materially expands gameplay.
 
@@ -233,6 +233,39 @@ Final product scope exactly:
 
 Issue #351 CLOSED / completed. J5E is **DEPLOYED / FROZEN**.
 
+## J5F-A result
+J5F-A established a pure optional Command-Link disruption-pulse proposal without creating any live combat consequence.
+
+Certified contract:
+- consumes frozen J5D break resolution as a type-only prerequisite;
+- caller-supplied freshness `CURRENT` / `STALE`; only CURRENT may project;
+- exact vocabulary `COMMAND_LINK_DISRUPTION_PULSE` / `PULSE_LINKED_MEMBERS` / `PROPOSAL_ONLY` / `LINKED_MEMBER`;
+- target indices remain bounded to `[1]` or `[1,2]`;
+- projection and target-index arrays are immutable;
+- current-formation and living-target requirements remain metadata only;
+- explicit zero-effect facts prohibit damage, kills, score, rewards, projectiles and formation mutation;
+- no entity lookup/scan/collection, runtime mutation, clock/RNG, cap/budget or entity create/remove authority;
+- no live adoption and no collision with combat-resonance chain semantics.
+
+Final product scope exactly:
+- `src/game/commandLinkCombatEffectContract.ts`;
+- `tests/es-13j5fa-command-link-combat-effect-contract.test.mjs`;
+- `tests/gameplay/command-link-combat-effect-contract.test.ts`.
+
+## J5F-A exact evidence
+- DOC24 baseline `a94883c1532ba14e9c81b0a16e923a730aa1275d`;
+- pre-PR SHA `074d8f38a24eab6eb3a5adf448cd7fbdee8d57f8`, run `38683045891` / job `116251639676` GREEN including repo/gameplay/platform/typecheck/release/dossier/build/readiness, exact scope guard and Android APK build/verify/upload;
+- final PR #356 head `d5afcd198efbefa16eeb4659650db3f0ab7eebc8`;
+- PR CI `38683347951` / `116252576394` GREEN;
+- PR Android `38683348067` / `116252576749` GREEN including Build/Verify/Upload APK;
+- canonical `90f3fc82271654e6d7a7076474ae46efd02775e4`, single parent `a94883c1532ba14e9c81b0a16e923a730aa1275d`, tree `e0226f6da7fb90b54a612b5e42716437b19ca171`;
+- canonical diff exactly three certified product/test files;
+- main CI `38683470982` / `116252958810` GREEN;
+- main Android `38683471108` / `116252959290` GREEN including Build/Verify/Upload APK;
+- Pages `38683544584`: build `116253182791` + deploy `116253277337` GREEN.
+
+Issue #355 CLOSED / completed. J5F-A is **DEPLOYED / FROZEN**.
+
 ## ES-13 gameplay canonicals
 - J1A — Combat Chain & Resonance Core: `feb263957b52839d35a7cb1249762c223ba22595`;
 - J1B — Live Combat Resonance Adoption & HUD: `91564e365d0a2220e4db2999e38372809ec397f3`;
@@ -258,6 +291,7 @@ Issue #351 CLOSED / completed. J5E is **DEPLOYED / FROZEN**.
 - J5C — Live Command-Core Priority Presentation: `55d824d2b9cfaf6bb8cd97a032866b1fbcfa92fb`.
 - J5D — Pure Command-Link Break Resolution Contract: `99410123a8f20d15a88cd20ada34523ce4497006`.
 - J5E — Controlled Live Command-Link Detach Application: `6aa63e9643a2521738b3b6afebfb0856f48bd3fd`.
+- J5F-A — Pure Optional Command-Link Disruption Pulse Contract: `90f3fc82271654e6d7a7076474ae46efd02775e4`.
 
 J3C-C stateful formation patterns remain **DEFERRED / NOT CURRENTLY JUSTIFIED**, not cancelled.
 
@@ -275,24 +309,26 @@ J3C-C stateful formation patterns remain **DEFERRED / NOT CURRENTLY JUSTIFIED**,
 - DOC21 — J5B closure & J5C activation: `8a1e17b87cdd8508453814454175ef7f0b95c6ce` — Issue #341 / PR #342.
 - DOC22 — J5C closure & J5D activation: `025bc875a4b3a9dc5d1e690591b6ae0f5af6a6ec` — Issue #345 / PR #346.
 - DOC23 — J5D closure & J5E activation: `b317faa1cb3403fe11baaa71e6c072b8a97a3062` — Issue #349 / PR #350.
-- DOC24 — J5E closure & J5F-A activation: Issue #353, branch `docs/es-13-j5e-closure-j5fa-activation`, documentation-only closure in progress from gameplay canonical `6aa63e9643a2521738b3b6afebfb0856f48bd3fd`.
+- DOC24 — J5E closure & J5F-A activation: `a94883c1532ba14e9c81b0a16e923a730aa1275d` — Issue #353 / PR #354.
+- DOC25 — J5F-A closure & J5F-B target eligibility activation: Issue #357, branch `docs/es-13-j5fa-closure-j5fb-activation`, documentation-only closure in progress from gameplay canonical `90f3fc82271654e6d7a7076474ae46efd02775e4`.
 
 ## Next gameplay phase
 
-### ES-13J5F-A — Pure Optional Command-Link Combat Effect Contract
-Status: **NEXT ENGINEERING TARGET AFTER DOC24 CLOSURE**
+### ES-13J5F-B — Pure Current Command-Link Pulse Target Eligibility Contract
+Status: **NEXT ENGINEERING TARGET AFTER DOC25 CLOSURE**
 
-J5E is frozen as detach-only live behavior. J5F-A is contract-first: define a deterministic, fail-closed proposal for optional Command-Link combat-effect intent/eligibility without adopting any new effect into runtime.
+J5F-A is frozen as proposal-only. J5F-B resolves whether one caller-supplied current formation candidate is eligible for that proposal; it still does not apply an effect.
 
 Required direction:
-- pure helper/contract only; no `EnergySwarmGame.tsx` adoption;
-- reuse frozen J5 semantics rather than duplicating Command Core or link identity;
-- exact effect vocabulary and eligibility must be justified in the dedicated J5F-A issue after architecture discovery;
-- invalid/stale/linked-member/unsupported facts fail closed;
-- no entity ids, lookup, scan, collection or runtime mutation;
-- no damage/kill, score/reward/economy, projectile, spawn/progression, clock/RNG, cap/budget or entity create/remove authority;
-- no chain reaction becomes live in J5F-A;
-- any J5F-B+ live effect must separately prove bounded targeting, telegraph/fairness where relevant and single defeat/reward attribution.
+- pure deterministic helper only; no `EnergySwarmGame.tsx` adoption;
+- consume frozen J5F-A projection + current bounded formation facts for one candidate + explicit living state;
+- require exact J5F-A proposal vocabulary and current J5B `LINKED_MEMBER` binding;
+- require exact group identity match and candidate member index membership in the bounded projection target indices;
+- require `isLiving === true`;
+- absent/malformed/wrong-group/core/unsupported candidates fail closed;
+- return immutable `ELIGIBLE_ONLY` metadata only;
+- no live ids, lookup, scan, collection, health mutation, damage/kill/defeat, score/reward/economy, projectile, formation mutation, clock/RNG, cap/budget or entity create/remove authority;
+- J5F-C+ remains responsible for any damage magnitude/policy and live application, with independent defeat-attribution and duplicate-reward prevention proof.
 
 J4D+ additional tactical families remain **DEFERRED / NOT CURRENTLY JUSTIFIED**. J3C-C remains deferred, not cancelled.
 
@@ -323,7 +359,7 @@ Rules:
 - no gameplay phase is declared deployed before exact-SHA required evidence.
 
 ## Gameplay chronology
-`J5F-A Pure Optional Command-Link Combat Effect Contract → J5F-B+ separately proven live effects → J6 Dynamic Events → J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance`
+`J5F-B Pure Current Command-Link Pulse Target Eligibility Contract → J5F-C+ separately proven damage policy/live application → J6 Dynamic Events → J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance`
 
 Post-J15 direction: **ES-14 — Living Warfront**.
 
@@ -331,7 +367,7 @@ Post-J15 direction: **ES-14 — Living Warfront**.
 Read this file, `IMPLEMENTATION_LEDGER.md`, `ES13_GAMEPLAY_ROADMAP.md`, `TRACEABILITY_POLICY.md` and `ES13_PHASE_CHECKLIST.md`, then active Issues/PRs. Verify live `main` before any write.
 
 Suggested handoff:
-> Continue ORBI Energy Swarm autonomously. Repository `ingeniusvictor/orbi-energy.swarm`. J5E gameplay canonical is `6aa63e9643a2521738b3b6afebfb0856f48bd3fd`, fully DEPLOYED / FROZEN via Issue #351 / PR #352 with exact four-file product scope and post-main CI/Android/Pages GREEN. Complete DOC24 if still open, then implement J5F-A as a pure optional Command-Link combat-effect contract only after dedicated architecture discovery: no live adoption, damage/kill, reward duplication, entity lookup/scan/collection, timer/RNG or cap authority. Any live effect remains J5F-B+ and requires independent bounded/fairness/attribution proof. Keep J4D+ families and J3C-C deferred until prerequisites are proven. Follow Issue → Branch → full gates → PR → exact-SHA post-merge evidence. Never touch `main` directly or weaken tests.
+> Continue ORBI Energy Swarm autonomously. Repository `ingeniusvictor/orbi-energy.swarm`. J5F-A gameplay canonical is `90f3fc82271654e6d7a7076474ae46efd02775e4`, fully DEPLOYED / FROZEN via Issue #355 / PR #356 with exact three-file product scope and post-main CI/Android/Pages GREEN. Complete DOC25 if still open, then implement J5F-B as a pure current Command-Link pulse target-eligibility contract only: compose frozen J5F-A proposal semantics with one caller-supplied current formation candidate, J5B linked-member binding and explicit living state; return ELIGIBLE_ONLY. No live adoption, health/damage/kill/defeat, reward/score, entity lookup/scan/collection, timer/RNG or cap authority. Any damage policy/live application remains J5F-C+ and requires independent attribution/reward-deduplication proof. Keep J4D+ families and J3C-C deferred until prerequisites are proven. Follow Issue → Branch → full gates → PR → exact-SHA post-merge evidence. Never touch `main` directly or weaken tests.
 
 ## Update obligation
 Every merged gameplay phase must record exact gameplay canonical, Issue/PR, final head, pre-PR certification, PR CI/Android, main CI/Android/Pages, implementation result, unresolved follow-ups and next roadmap phase. A gameplay phase is not administratively closed until these records are current.
