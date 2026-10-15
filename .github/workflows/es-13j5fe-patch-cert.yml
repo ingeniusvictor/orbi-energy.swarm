@@ -1,0 +1,280 @@
+name: ES-13J5F-E Patch and Pre-PR Certification
+
+on:
+  push:
+    branches:
+      - es-13j5fe-controlled-live-command-link-pulse
+    paths:
+      - .github/workflows/es-13j5fe-patch-cert.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch-certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      BASE_SHA: 022741e5c500dea2947241d4bb8c6cb8d004772c
+      ORBI_BUILD_SHA: ${{ github.sha }}
+    steps:
+      - name: Checkout exact branch head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: es-13j5fe-controlled-live-command-link-pulse
+
+      - name: Apply exact J5F-E runtime patch
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          p = Path('src/game/EnergySwarmGame.tsx')
+          s = p.read_text()
+
+          def replace_exact(old: str, new: str, label: str):
+              global s
+              count = s.count(old)
+              if count != 1:
+                  raise RuntimeError(f'{label}: expected exactly 1 match, got {count}')
+              s = s.replace(old, new, 1)
+
+          break_import = '''import {
+            resolveLiveCommandLinkBreakIntent,
+            shouldDetachCommandLinkMember,
+            type LiveCommandLinkBreakIntent,
+          } from "./liveCommandLinkBreakApplication";
+          '''
+          pulse_import = break_import + '''import {
+            projectLiveCommandLinkPulseTarget,
+            resolveLiveCommandLinkPulseIntent,
+            type LiveCommandLinkPulseIntent,
+          } from "./liveCommandLinkPulseApplication";
+          '''
+          replace_exact(break_import, pulse_import, 'J5F-E import seam')
+
+          break_ref = '''  const pendingCommandLinkBreakRef =
+            useRef<LiveCommandLinkBreakIntent | null>(null);
+          '''
+          pulse_ref = break_ref + '''  const pendingCommandLinkPulseRef =
+            useRef<LiveCommandLinkPulseIntent | null>(null);
+          '''
+          replace_exact(break_ref, pulse_ref, 'J5F-E scalar ref seam')
+
+          reset_pattern = re.compile(
+              r'(?P<director>(?P<indent>[ \t]*)enemyFormationDirectorRef\.current =\s*\n[ \t]*createLiveEnemyFormationDirectorState\(\);\s*\n)(?P<breakindent>[ \t]*)pendingCommandLinkBreakRef\.current = null;'
+          )
+          def reset_repl(match):
+              indent = match.group('breakindent')
+              return (
+                  match.group('director')
+                  + indent + 'pendingCommandLinkBreakRef.current = null;\n'
+                  + indent + 'pendingCommandLinkPulseRef.current = null;'
+              )
+          s, reset_count = reset_pattern.subn(reset_repl, s)
+          if reset_count != 3:
+              raise RuntimeError(f'J5F-E lifecycle resets: expected 3, got {reset_count}')
+
+          loop_capture_old = '''    const pendingCommandLinkBreak = pendingCommandLinkBreakRef.current;
+              let detachedPendingCommandLink = false;
+          '''
+          loop_capture_new = '''    const pendingCommandLinkBreak = pendingCommandLinkBreakRef.current;
+              const pendingCommandLinkPulse = pendingCommandLinkPulseRef.current;
+              let detachedPendingCommandLink = false;
+          '''
+          replace_exact(loop_capture_old, loop_capture_new, 'J5F-E pending loop capture')
+
+          loop_apply_old = '''      if (enemy.isDead) return;
+          
+              if (
+                shouldDetachCommandLinkMember(
+          '''
+          loop_apply_new = '''      if (enemy.isDead) return;
+          
+              const commandLinkPulseProjection = projectLiveCommandLinkPulseTarget(
+                pendingCommandLinkPulse,
+                enemy.enemyFormation,
+                enemy.health,
+                enemy.maxHealth,
+                !enemy.isDead,
+              );
+              if (commandLinkPulseProjection) {
+                enemy.health = commandLinkPulseProjection.resultingHealth;
+              }
+          
+              if (
+                shouldDetachCommandLinkMember(
+          '''
+          replace_exact(loop_apply_old, loop_apply_new, 'J5F-E pulse-before-detach seam')
+
+          consume_old = '''    if (
+                detachedPendingCommandLink &&
+          '''
+          consume_new = '''    if (
+              pendingCommandLinkPulse &&
+              pendingCommandLinkPulseRef.current === pendingCommandLinkPulse
+            ) {
+              pendingCommandLinkPulseRef.current = null;
+            }
+          
+              if (
+                detachedPendingCommandLink &&
+          '''
+          replace_exact(consume_old, consume_new, 'J5F-E single-consume seam')
+
+          direct_damage_old = '''            // Apply direct damage
+                      enemy.health -= damageToApply;
+          '''
+          direct_damage_new = '''            // Apply direct damage
+                      const commandLinkPulseSourceHealthBeforeDirectHit = enemy.health;
+                      enemy.health -= damageToApply;
+          '''
+          replace_exact(direct_damage_old, direct_damage_new, 'J5F-E direct pre-hit source')
+
+          splash_damage_old = '''              splashCandidates.forEach(({ item: otherEnemy }) => {
+                          otherEnemy.health -= splashDamage;
+          '''
+          splash_damage_new = '''              splashCandidates.forEach(({ item: otherEnemy }) => {
+                          const commandLinkPulseSourceHealthBeforeSplashHit = otherEnemy.health;
+                          otherEnemy.health -= splashDamage;
+          '''
+          replace_exact(splash_damage_old, splash_damage_new, 'J5F-E splash pre-hit source')
+
+          splash_defeat_old = '''                    registerCombatDefeat(otherEnemy, proj.affinity);
+                            
+                              playEnemyExplodeSound(otherEnemy.isBoss || otherEnemy.size > 14);
+          '''
+          splash_defeat_new = '''                    registerCombatDefeat(otherEnemy, proj.affinity);
+                            const commandLinkPulseIntent = otherEnemy.enemyFormation
+                              ? resolveLiveCommandLinkPulseIntent(
+                                  otherEnemy.enemyFormation,
+                                  "SPLASH_HIT",
+                                  splashDamage,
+                                  commandLinkPulseSourceHealthBeforeSplashHit,
+                                )
+                              : null;
+                            if (commandLinkPulseIntent) {
+                              pendingCommandLinkPulseRef.current = commandLinkPulseIntent;
+                            }
+                            
+                              playEnemyExplodeSound(otherEnemy.isBoss || otherEnemy.size > 14);
+          '''
+          replace_exact(splash_defeat_old, splash_defeat_new, 'J5F-E splash lethal source projection')
+
+          direct_defeat_old = '''              registerCombatDefeat(enemy, proj.affinity);
+          
+                        playEnemyExplodeSound(enemy.isBoss || enemy.size > 14);
+          '''
+          direct_defeat_new = '''              registerCombatDefeat(enemy, proj.affinity);
+                        const commandLinkPulseIntent = enemy.enemyFormation
+                          ? resolveLiveCommandLinkPulseIntent(
+                              enemy.enemyFormation,
+                              "DIRECT_HIT",
+                              damageToApply,
+                              commandLinkPulseSourceHealthBeforeDirectHit,
+                            )
+                          : null;
+                        if (commandLinkPulseIntent) {
+                          pendingCommandLinkPulseRef.current = commandLinkPulseIntent;
+                        }
+          
+                        playEnemyExplodeSound(enemy.isBoss || enemy.size > 14);
+          '''
+          replace_exact(direct_defeat_old, direct_defeat_new, 'J5F-E direct lethal source projection')
+
+          p.write_text(s)
+          PY
+
+      - name: Commit exact J5F-E candidate locally
+        shell: bash
+        run: |
+          git config user.name ingeniusvictor
+          git config user.email ingenius.victor@gmail.com
+          git add src/game/EnergySwarmGame.tsx
+          git diff --cached --quiet && { echo 'No runtime patch produced'; exit 1; }
+          git commit -m 'ES-13J5F-E: integrate controlled live non-lethal command-link pulse'
+          echo "J5FE_CANDIDATE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+          git rev-parse HEAD
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Repository Smoke
+        run: npm run test:repo
+
+      - name: Gameplay regression
+        run: npm run test:gameplay
+
+      - name: Platform regression
+        run: npm run test:platform
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Release Contract
+        run: npm run release:verify
+
+      - name: Manual dossier
+        run: npm run release:evidence:verify
+
+      - name: Production Build
+        run: npm run build
+
+      - name: RC readiness fail-closed
+        run: npm run release:readiness
+
+      - name: J5F-E exact scope guard
+        shell: bash
+        run: |
+          changed="$(git diff --name-only "$BASE_SHA"...HEAD | sort)"
+          expected="$(printf '%s\n' .github/workflows/es-13j5fe-patch-cert.yml src/game/EnergySwarmGame.tsx src/game/liveCommandLinkPulseApplication.ts tests/es-13j5fe-live-command-link-pulse-application.test.mjs tests/gameplay/live-command-link-pulse-application.test.ts | sort)"
+          test "$changed" = "$expected" || { echo 'Unexpected J5F-E scope:'; echo "$changed"; exit 1; }
+
+      - name: Frozen registerCombatDefeat signature guard
+        shell: bash
+        run: |
+          grep -F 'const registerCombatDefeat = (enemy: Enemy, affinity?: OrbiAffinity) => {' src/game/EnergySwarmGame.tsx
+          test "$(grep -Fc 'registerCombatDefeat(enemy, proj.affinity);' src/game/EnergySwarmGame.tsx)" -eq 1
+          test "$(grep -Fc 'registerCombatDefeat(otherEnemy, proj.affinity);' src/game/EnergySwarmGame.tsx)" -eq 1
+
+      - name: Setup Java 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+
+      - name: Install Android 16 SDK
+        run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0' >/dev/null
+
+      - name: Build Android debug APK
+        run: npm run android:debug
+
+      - name: Verify APK
+        run: test -s android/app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: orbi-energy-swarm-j5fe-debug-${{ env.J5FE_CANDIDATE_SHA }}
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Push certified J5F-E candidate
+        shell: bash
+        run: |
+          git push origin HEAD:es-13j5fe-controlled-live-command-link-pulse
