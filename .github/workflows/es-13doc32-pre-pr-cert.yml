@@ -1,0 +1,73 @@
+name: ES-13DOC32 Pre-PR Certification
+
+on:
+  push:
+    branches:
+      - docs/es-13-j6bb-closure-j6bc-activation
+    paths:
+      - '.github/workflows/es-13doc32-pre-pr-cert.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      BASE_SHA: dcd39a173da7635bf85db6844dc86aeca6c1f38c
+      ORBI_BUILD_SHA: ${{ github.sha }}
+    steps:
+      - name: Checkout exact branch head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: docs/es-13-j6bb-closure-j6bc-activation
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Repository Smoke
+        run: npm run test:repo
+
+      - name: Gameplay regression
+        run: npm run test:gameplay
+
+      - name: Platform regression
+        run: npm run test:platform
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Release Contract
+        run: npm run release:verify
+
+      - name: Manual dossier
+        run: npm run release:evidence:verify
+
+      - name: Production Build
+        run: npm run build
+
+      - name: RC readiness
+        run: npm run release:readiness
+
+      - name: DOC32 exact docs-only scope guard
+        shell: bash
+        run: |
+          git diff --name-only "$BASE_SHA"...HEAD | sort > /tmp/actual.txt
+          printf '%s\n' \
+            '.github/workflows/es-13doc32-pre-pr-cert.yml' \
+            'docs/ES13_GAMEPLAY_ROADMAP.md' \
+            'docs/IMPLEMENTATION_LEDGER.md' \
+            'docs/PROJECT_CONTINUITY.md' | sort > /tmp/expected.txt
+          diff -u /tmp/expected.txt /tmp/actual.txt
+          ! git diff --name-only "$BASE_SHA"...HEAD | grep -Eq '^(src/|tests/|package|public/|assets/|android/)'
+          grep -Fq 'dcd39a173da7635bf85db6844dc86aeca6c1f38c' docs/PROJECT_CONTINUITY.md
+          grep -Fq 'ES-13J6B-C — Pure Dynamic Event Effect-Mapping Compatibility Contract' docs/IMPLEMENTATION_LEDGER.md
+          grep -Fq 'J6B-C — Pure Dynamic Event Effect-Mapping Compatibility Contract' docs/ES13_GAMEPLAY_ROADMAP.md
