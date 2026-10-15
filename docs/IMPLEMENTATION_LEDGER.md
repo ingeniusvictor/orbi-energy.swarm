@@ -47,6 +47,7 @@ Rules:
 | ES-13J5F-B — Pure Current Command-Link Pulse Target Eligibility Contract | DEPLOYED / FROZEN | `9812592dd77a0dd4e6364d57857f4c9065757d49` | #359 | #360 |
 | ES-13J5F-C — Pure Non-Lethal Command-Link Pulse Damage Safety Envelope | DEPLOYED / FROZEN | `53ff3b1fa0da58ea9bb7259162a98f3dac17df77` | #363 | #364 |
 | ES-13J5F-D — Pure Effective Trigger-Damage Source Projection | DEPLOYED / FROZEN | `113865079ac4581c90356c3c218a28f8f88b6ef7` | #367 | #368 |
+| ES-13J5F-E — Controlled Live Command-Link Disruption Pulse Application | DEPLOYED / FROZEN | `9554358005d6d092341f4f65d8b986090307f8b5` | #371 | #372 |
 
 ## Evidence anchors
 
@@ -381,6 +382,28 @@ Exact evidence:
 
 Issue #367 CLOSED / completed. J5F-D is **DEPLOYED / FROZEN**.
 
+### J5F-E — Controlled Live Command-Link Disruption Pulse Application
+Certified live behavior:
+- composes frozen J5F-A/B/C/D through one bounded live adapter;
+- direct/splash paths capture local pre-hit source health before the existing damage subtraction;
+- only the exact lethal hit against a valid current Command Core may raise one scalar pending pulse;
+- current linked-member eligibility and non-lethal health projection are consumed inside the already-existing enemy traversal and before J5E detach;
+- linked mutation is limited to the frozen J5F-C `resultingHealth` with exact 1 HP floor;
+- linked targets never receive `isDead` from the pulse and never generate pulse defeat, score, reward, drop or persistence attribution;
+- pending pulse is consumed with identity guard and reset at the same three J3/J5E lifecycle boundaries;
+- no second scan/index/collection, Enemy field, new projectile, timer/RNG, spawn/progression, cap/budget, presentation or audio authority.
+
+Exact deployment anchors:
+- DOC28 baseline `022741e5c500dea2947241d4bb8c6cb8d004772c`;
+- pre-PR `098726ad50eb74686fd186703d73a46e79eda340`, run `38729351008` / job `116402995881` GREEN including exact scope + Android APK;
+- final PR #372 head `98761ecaaaa0e873d8a0468d92ed0c70ce45cf57`;
+- PR CI `38729931559` / `116404920626` GREEN; Android `38729931466` / `116404919622` GREEN;
+- canonical `9554358005d6d092341f4f65d8b986090307f8b5`, parent `022741e5c500dea2947241d4bb8c6cb8d004772c`, tree `7cdc717088f0b4543564d0db404d444fcb2ac8d2`;
+- main CI `38730136916` / `116405605392` GREEN; Android `38730137080` / `116405605024` GREEN;
+- Pages `38730253083`, build `116405984608` + deploy `116406188447` GREEN.
+
+Issue #371 CLOSED / completed. J5F-E is **DEPLOYED / FROZEN**.
+
 ## Documentation canonicals
 - DOC11 `31de2cd5bb89ae3032902c09ace881119c04dfec`;
 - DOC12 `f85e2432934454da191dea9bd0c9da43bbce86ca`;
@@ -399,7 +422,8 @@ Issue #367 CLOSED / completed. J5F-D is **DEPLOYED / FROZEN**.
 - DOC25 — J5F-A closure & J5F-B target eligibility activation: `78737695d82f6bcdf76c1bc68e6c849c457711c0` — Issue #357 / PR #358.
 - DOC26 — J5F-B closure & J5F-C non-lethal damage safety activation: `7a24f7a747a2d2eb2fb79b4eb4a249ded67a8193` — Issue #361 / PR #362.
 - DOC27 — J5F-C closure & J5F-D trigger-damage source activation: `bc75751362e0dc8ed79c7b4688aa355ff9ae9648` — Issue #365 / PR #366.
-- DOC28 — J5F-D closure & J5F-E controlled live pulse activation: Issue #369, branch `docs/es-13-j5fd-closure-j5fe-live-pulse`, in progress from gameplay canonical `113865079ac4581c90356c3c218a28f8f88b6ef7`.
+- DOC28 — J5F-D closure & J5F-E controlled live pulse activation: `022741e5c500dea2947241d4bb8c6cb8d004772c` — Issue #369 / PR #370.
+- DOC29 — J5F-E closure & J6A dynamic event opportunity activation: Issue #373, branch `docs/es-13-j5fe-closure-j6a-activation`, in progress from gameplay canonical `9554358005d6d092341f4f65d8b986090307f8b5`.
 
 ## Frozen manual/physical blockers
 Remain OPEN and deferred while ES-13 materially changes gameplay:
@@ -412,14 +436,14 @@ Automated CI never substitutes for required human/device evidence.
 
 ## Next planned gameplay
 
-### ES-13J5F-E — Controlled Live Command-Link Disruption Pulse Application
-Status: **NEXT ENGINEERING TARGET AFTER DOC28 CLOSURE**.
+### ES-13J6A — Pure Dynamic Mid-Sector Event Opportunity Contract
+Status: **NEXT ENGINEERING TARGET AFTER DOC29 CLOSURE**.
 
-The runtime can adopt the frozen J5F-A/B/C/D stack without a second enemy traversal. Direct/splash paths may capture pre-hit source health locally and pass an already-projected J5F-D source only for the hit that actually defeats the current Command Core. A single pending pulse can then be consumed inside the existing J5E enemy pass before formation detach.
+J6A is contract-first and may only decide whether one bounded mid-sector event opportunity exists. It consumes existing Infinite sector/wave facts, fails closed for Campaign/recovery/milestone/invalid facts, permits only an interior wave, and derives at most one opportunity slot per sector from existing identity/seed facts without new clock/RNG ownership.
 
-Only J5F-C non-lethal `resultingHealth` may be applied to current matching linked members. No linked defeat, `isDead`, defeat registration, score/reward/drop/persistence, boss/milestone defeat, second scan/index, Enemy field, new projectile, pulse tuning, timing/RNG, spawn/progression or cap/budget authority is allowed. Pulse pending state must reset with the same J3 lifecycle boundaries and be consumed once after the existing pass.
+J6A emits immutable `OPPORTUNITY_ONLY` metadata only. It selects no event vocabulary and owns no live effect, spawn/entity/projectile collection, damage/defeat, score/reward/economy, mutator/environment mutation, lookup/scan, timer/RNG, cap/budget or entity create/remove authority.
 
 J4D+ additional tactical families remain deferred: FORMATION_BREAKER/JAMMER require hard-control spacing/recovery proof; MINE_WEAVER/MIRROR_WARDEN require genuine mine/mirror mechanics. J3C-C remains deferred, not cancelled.
 
 ## Program sequence
-`J5F-E Controlled Live Command-Link Disruption Pulse Application → J6 Dynamic Events → J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance → ES-14 Living Warfront`
+`J6A Pure Dynamic Mid-Sector Event Opportunity Contract → J6B+ Event Vocabulary/Live Effects → J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance → ES-14 Living Warfront`
