@@ -343,20 +343,44 @@ Exact deployment anchors:
 - main CI `38681102491` / `116245629498` GREEN; Android `38681102495` / `116245629757` GREEN;
 - Pages `38681179362`, build `116245865182` + deploy `116245989502` GREEN.
 
-### J5F-A — Pure Optional Command-Link Combat Effect Contract
-Status: **NEXT ACTIVE ENGINEERING SLICE AFTER DOC24 CLOSURE**
+### J5F-A — Pure Optional Command-Link Disruption Pulse Contract
+Status: **DEPLOYED / FROZEN**
+Canonical: `90f3fc82271654e6d7a7076474ae46efd02775e4`
+Issue #355 / PR #356
 
-J5E proves that command-link formation ownership can be detached safely without adding a second scan or entity index. J5F-A must remain contract-first before any additional combat consequence is allowed.
+Certified contract:
+- consumes frozen J5D `CommandLinkBreakResolution` as a type-only prerequisite;
+- explicit source freshness is caller-supplied as `CURRENT` / `STALE`, and `STALE` fails closed;
+- valid projections use `COMMAND_LINK_DISRUPTION_PULSE`, `PULSE_LINKED_MEMBERS`, `PROPOSAL_ONLY`, target role `LINKED_MEMBER`;
+- bounded target member indices remain exactly `[1]` or `[1,2]`;
+- current-formation and living-target requirements are metadata only;
+- explicit zero-effect facts keep damage, kills, score, rewards, projectiles and formation mutation false;
+- no runtime/entity lookup, scan, collection, clock/RNG, cap/budget or mutation authority;
+- no live adoption and no collision with existing combat-resonance chain semantics.
+
+Exact deployment anchors:
+- pre-PR `074d8f38a24eab6eb3a5adf448cd7fbdee8d57f8`, run `38683045891` / job `116251639676` GREEN including exact scope + Android APK build/verify/upload;
+- final PR #356 head `d5afcd198efbefa16eeb4659650db3f0ab7eebc8`;
+- PR CI `38683347951` / `116252576394` GREEN; Android `38683348067` / `116252576749` GREEN;
+- canonical `90f3fc82271654e6d7a7076474ae46efd02775e4`, parent `a94883c1532ba14e9c81b0a16e923a730aa1275d`, tree `e0226f6da7fb90b54a612b5e42716437b19ca171`;
+- main CI `38683470982` / `116252958810` GREEN; Android `38683471108` / `116252959290` GREEN;
+- Pages `38683544584`, build `116253182791` + deploy `116253277337` GREEN.
+
+### J5F-B — Pure Current Command-Link Pulse Target Eligibility Contract
+Status: **NEXT ACTIVE ENGINEERING SLICE AFTER DOC25 CLOSURE**
+
+J5F-A proves only a bounded proposal. J5F-B must prove that one caller-supplied current candidate is eligible before any damage magnitude or live mutation is allowed.
 
 Required direction:
-- pure deterministic contract only; no live `EnergySwarmGame.tsx` adoption;
-- consume frozen J5 semantic facts as data without taking J3/J5E authority;
-- define only bounded optional effect intent/eligibility metadata, with exact effect vocabulary justified in the dedicated J5F-A engineering issue;
-- invalid, linked-member, stale or unsupported facts fail closed;
-- no entity ids, lookup, scan, collection or runtime mutation;
-- no damage/kill, score/reward/economy, projectile/spawn/progression, timer/RNG, cap/budget or entity create/remove authority;
-- no automatic chain reaction is live in J5F-A;
-- any later J5F-B+ live application must independently prove bounded targeting, fairness, attribution and no duplicate defeat/reward semantics.
+- pure deterministic helper only; no live `EnergySwarmGame.tsx` adoption;
+- consume a frozen J5F-A projection plus current bounded formation facts for one candidate and explicit living state;
+- require exact J5F-A proposal semantics: `COMMAND_LINK_DISRUPTION_PULSE`, `PULSE_LINKED_MEMBERS`, `PROPOSAL_ONLY`, `LINKED_MEMBER`;
+- require current candidate `groupId` equality, bounded target-member index membership and J5B binding role `LINKED_MEMBER`;
+- require `isLiving === true`;
+- absent/malformed/wrong-group/core/unsupported candidates fail closed;
+- return immutable `ELIGIBLE_ONLY` metadata only;
+- no ids beyond existing opaque group facts, lookup, scan, collection, health mutation, damage/kill, defeat, score/reward, projectile, formation mutation, clock/RNG, cap/budget or entity create/remove authority;
+- damage policy/magnitude and live application remain J5F-C+ and require separate attribution/reward-deduplication proof.
 
 ## J6 — Dynamic Mid-Sector Events
 Status: PLANNED
