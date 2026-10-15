@@ -1,0 +1,71 @@
+name: ES-13DOC28 Patch and Certification
+
+on:
+  push:
+    branches:
+      - docs/es-13-j5fd-closure-j5fe-live-pulse
+    paths:
+      - .github/workflows/es-13doc28-patch-cert.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch-certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      BASE_SHA: 113865079ac4581c90356c3c218a28f8f88b6ef7
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: docs/es-13-j5fd-closure-j5fe-live-pulse
+
+      - name: Apply exact DOC28 patch
+        run: python .github/es13doc28_patch.py
+
+      - name: Commit candidate locally
+        run: |
+          git config user.name "ingeniusvictor"
+          git config user.email "ingenius.victor@gmail.com"
+          git add docs/ES13_GAMEPLAY_ROADMAP.md docs/IMPLEMENTATION_LEDGER.md docs/PROJECT_CONTINUITY.md
+          git diff --cached --quiet && exit 1
+          git commit -m "ES-13DOC28: close J5F-D and activate J5F-E"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Repository Smoke
+        run: npm run test:repo
+
+      - name: Gameplay regression
+        run: npm run test:gameplay
+
+      - name: Platform regression
+        run: npm run test:platform
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Release Contract
+        run: npm run release:verify
+
+      - name: Manual dossier
+        run: npm run release:evidence:verify
+
+      - name: Production Build
+        run: npm run build
+
+      - name: RC readiness fail-closed
+        run: npm run release:readiness
+
+      - name: DOC28 exact scope guard
+        run: |
+          changed="$(git diff --name-only "$BASE_SHA"...HEAD | sort)"
+          expected="$(printf '%s\n' .github/es13doc28_patch.py .github/workflows/es-13doc28-patch-cert.yml docs/ES13_GAMEPLAY_ROADMAP.md docs/IMPLEMENTATION_LEDGER.md docs/PROJECT_CONTINUITY.md | sort)"
+          test "$changed" = "$expected" || { echo "Unexpected scope:"; echo "$changed"; exit 1; }
+
+      - name: Push certified DOC28 candidate
+        run: git push origin HEAD:docs/es-13-j5fd-closure-j5fe-live-pulse
