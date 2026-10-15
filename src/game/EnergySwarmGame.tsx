@@ -236,6 +236,11 @@ import {
   type LiveCommandLinkBreakIntent,
 } from "./liveCommandLinkBreakApplication";
 import {
+  projectLiveCommandLinkPulseTarget,
+  resolveLiveCommandLinkPulseIntent,
+  type LiveCommandLinkPulseIntent,
+} from "./liveCommandLinkPulseApplication";
+import {
   LIVE_SIEGE_VOLLEY_FIRE_RANGE,
   acknowledgeLiveSiegeVolleyShot,
   stepLiveSiegeVolley,
@@ -406,6 +411,8 @@ export const EnergySwarmGame: React.FC = () => {
   );
   const pendingCommandLinkBreakRef =
     useRef<LiveCommandLinkBreakIntent | null>(null);
+  const pendingCommandLinkPulseRef =
+    useRef<LiveCommandLinkPulseIntent | null>(null);
 
   // Boss Refs
   const bossActiveRef = useRef(false);
@@ -1446,6 +1453,7 @@ export const EnergySwarmGame: React.FC = () => {
     enemyFormationDirectorRef.current =
       createLiveEnemyFormationDirectorState();
     pendingCommandLinkBreakRef.current = null;
+    pendingCommandLinkPulseRef.current = null;
     waveBreakTimerRef.current = 2500; // 2.5 seconds visual preparation break
 
     // Reset mid-run upgrades
@@ -2504,6 +2512,7 @@ export const EnergySwarmGame: React.FC = () => {
         enemyFormationDirectorRef.current =
           createLiveEnemyFormationDirectorState();
         pendingCommandLinkBreakRef.current = null;
+        pendingCommandLinkPulseRef.current = null;
         setIsWaveBreak(false);
         setWaveName(descriptor.display.name);
 
@@ -2953,6 +2962,7 @@ export const EnergySwarmGame: React.FC = () => {
     enemyFormationDirectorRef.current =
       createLiveEnemyFormationDirectorState();
     pendingCommandLinkBreakRef.current = null;
+    pendingCommandLinkPulseRef.current = null;
     hazardZonesRef.current = [];
 
     const isRematch = rematchProfile !== null;
@@ -4895,10 +4905,25 @@ export const EnergySwarmGame: React.FC = () => {
     }
 
     const pendingCommandLinkBreak = pendingCommandLinkBreakRef.current;
-      let detachedPendingCommandLink = false;
+
+    const pendingCommandLinkPulse = pendingCommandLinkPulseRef.current;
+
+    let detachedPendingCommandLink = false;
 
     enemiesRef.current.forEach((enemy) => {
       if (enemy.isDead) return;
+
+      const commandLinkPulseProjection = projectLiveCommandLinkPulseTarget(
+        pendingCommandLinkPulse,
+        enemy.enemyFormation,
+        enemy.health,
+        enemy.maxHealth,
+        !enemy.isDead,
+      );
+      if (commandLinkPulseProjection) {
+        enemy.health = commandLinkPulseProjection.resultingHealth;
+      }
+
 
       if (
         shouldDetachCommandLinkMember(
@@ -5291,7 +5316,21 @@ export const EnergySwarmGame: React.FC = () => {
     fotonThreatAccumulatorMsRef.current += delta;
 
     if (
-        detachedPendingCommandLink &&
+
+      pendingCommandLinkPulse &&
+
+      pendingCommandLinkPulseRef.current === pendingCommandLinkPulse
+
+    ) {
+
+      pendingCommandLinkPulseRef.current = null;
+
+    }
+
+
+    if (
+
+      detachedPendingCommandLink &&
         pendingCommandLinkBreak &&
         pendingCommandLinkBreakRef.current === pendingCommandLinkBreak
       ) {
@@ -5950,6 +5989,7 @@ export const EnergySwarmGame: React.FC = () => {
             }
 
             // Apply direct damage
+            const commandLinkPulseSourceHealthBeforeDirectHit = enemy.health;
             enemy.health -= damageToApply;
             enemy.flashTicks = 4; // Trigger flash
 
@@ -6090,6 +6130,7 @@ export const EnergySwarmGame: React.FC = () => {
                 ).entries;
 
               splashCandidates.forEach(({ item: otherEnemy }) => {
+                  const commandLinkPulseSourceHealthBeforeSplashHit = otherEnemy.health;
                   otherEnemy.health -= splashDamage;
                   otherEnemy.flashTicks = 4;
 
@@ -6125,6 +6166,17 @@ export const EnergySwarmGame: React.FC = () => {
                       );
                     }
                     registerCombatDefeat(otherEnemy, proj.affinity);
+                    const commandLinkPulseIntent = otherEnemy.enemyFormation
+                      ? resolveLiveCommandLinkPulseIntent(
+                          otherEnemy.enemyFormation,
+                          "SPLASH_HIT",
+                          splashDamage,
+                          commandLinkPulseSourceHealthBeforeSplashHit,
+                        )
+                      : null;
+                    if (commandLinkPulseIntent) {
+                      pendingCommandLinkPulseRef.current = commandLinkPulseIntent;
+                    }
                     
                     playEnemyExplodeSound(otherEnemy.isBoss || otherEnemy.size > 14);
 
@@ -6181,6 +6233,17 @@ export const EnergySwarmGame: React.FC = () => {
                 persistInfiniteMilestoneDefeat(enemy);
               }
               registerCombatDefeat(enemy, proj.affinity);
+              const commandLinkPulseIntent = enemy.enemyFormation
+                ? resolveLiveCommandLinkPulseIntent(
+                    enemy.enemyFormation,
+                    "DIRECT_HIT",
+                    damageToApply,
+                    commandLinkPulseSourceHealthBeforeDirectHit,
+                  )
+                : null;
+              if (commandLinkPulseIntent) {
+                pendingCommandLinkPulseRef.current = commandLinkPulseIntent;
+              }
 
               playEnemyExplodeSound(enemy.isBoss || enemy.size > 14);
 
