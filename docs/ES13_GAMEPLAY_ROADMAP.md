@@ -530,23 +530,45 @@ Exact deployment anchors:
 - Pages `38809290030`, build `116678137605` + deploy `116678316176` GREEN.
 
 ### J6B-C — Pure Dynamic Event Effect-Mapping Compatibility Contract
-Status: **NEXT ACTIVE ENGINEERING SLICE AFTER DOC32 CLOSURE**
+Status: **DEPLOYED / FROZEN**
+Canonical: `1ad68edc1fd15ffa15e1cf6aa139d3d97a547623`  
+Issue #387 / PR #388
 
-Architecture discovery after J6B-B confirms:
-- `runtimeMutatorEffects.ts` already owns the bounded mapping from the ten frozen `InfiniteMutator` values to effect magnitudes/clamps;
-- `runtimeEnvironmentalFields.ts` already owns reduced-visibility and resource-field projection from those effect profiles;
-- `infiniteSectorDirector.ts` already owns recipe seed/random selection authority;
-- therefore J6B-C must not create a parallel environment/effect/RNG director.
+J6B-C freezes compatibility metadata only between the deterministic J6B-B selection and existing Infinite mutator semantics:
+- `SOLAR_STORM` → `ELECTRICAL_STORM`;
+- `QUANTUM_RIFT` → `MAGNETIC_DRIFT`;
+- `BLACKOUT_SURGE` → `REDUCED_VISIBILITY`;
+- `CRYSTAL_RUSH` → `UNSTABLE_RESOURCE_FIELDS`;
+- `DYSON_ECLIPSE` → explicit `UNMAPPED` / fail-closed.
 
-Required direction:
-- contract-first and pure; no live runtime adoption in J6B-C;
-- consume a valid current frozen J6B-B selection and frozen J6B-A identity profile;
-- define compatibility/mapping metadata only onto existing bounded mutator/environment semantics;
-- DOC32 does **not** freeze a concrete mapping table: the dedicated J6B-C Issue must justify each mapping independently and may leave identities unmapped/fail-closed;
-- reuse existing magnitudes and clamps; do not tune or duplicate runtime effect authority;
-- unsupported/ambiguous/unjustified identity mappings fail closed;
-- no `EnergySwarmGame.tsx`, live environment mutation, spawn/progression, collection, combat/economy, entity lookup/scan, timer/RNG/seed, recipe, cap/budget or entity create/remove/mutate authority;
-- controlled live event adoption remains J6B-D+ and requires separate lifecycle/fairness/attribution certification.
+Certified boundaries:
+- valid current J6B-B `SELECTION_ONLY` input only;
+- immutable `COMPATIBILITY_ONLY` result;
+- no live effect application or environment/runtime mutation;
+- no duplicated effect magnitudes or clamps;
+- no `EnergySwarmGame.tsx`, spawn/progression, collection, combat/economy, entity lookup/scan, timer/RNG/seed/recipe, cap/budget or entity create/remove/mutate authority;
+- existing `runtimeMutatorEffects.ts`, `runtimeEnvironmentalFields.ts` and Infinite recipe/director remain authoritative.
+
+Exact deployment anchors:
+- pre-PR `b4ab4fa7afa46061d92eec42befd9bdc023cbbb1`, run `38811558582` / job `116685777412` GREEN including Android APK;
+- final PR head `b19e97adfead5dd5734f8bc19614af29ec474e37`;
+- PR CI `38811968442` / `116687154525` GREEN; Android `38811968545` / `116687155789` GREEN;
+- canonical `1ad68edc1fd15ffa15e1cf6aa139d3d97a547623`, parent `007f1c6744300d47d9e1f43f9cb943e74d70379d`, tree `4fad16370a449e88810a5a4742ba2e9d1c969f17`;
+- main CI `38814014351` / `116694041805` GREEN; Android `38814014266` / `116694040113` GREEN;
+- Pages `38814144837`, build `116694455490` + deploy `116694621071` GREEN.
+
+### J6B-D — Controlled Live Dynamic Event Adoption
+Status: **NEXT ACTIVE ENGINEERING SLICE AFTER DOC33 CLOSURE**
+
+Required discovery direction:
+- locate and prove one existing live environmental adoption seam before any mutation;
+- Infinite only unless separately justified; preserve Campaign isolation;
+- only J6B-C `MAPPED` identities may be adopted; `DYSON_ECLIPSE` remains `UNMAPPED` and fail-closed;
+- reuse current mutator/environment effect magnitudes and clamps; no second environmental director or copied tuning;
+- preserve J6A opportunity cadence and J6B-B deterministic identity selection; no new RNG, seed, clock or timer authority;
+- prove event lifecycle/duration, expiry, pause, reset boundaries, fairness/telegraph and attribution;
+- no new collection, full-array scan/index, entity creation/removal, spawn/progression, combat/economy authority, cap/budget changes, FOTON GLB or formation changes without separate justification;
+- exact live seam and lifecycle remain unfrozen until the dedicated J6B-D Issue completes discovery.
 
 ## J7 — Bonus Challenge Rounds
 Status: PLANNED
