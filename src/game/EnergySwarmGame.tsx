@@ -231,10 +231,10 @@ import {
   requestLiveEnemyFormationSpawn,
 } from "./liveEnemyFormationDirector";
 import {
-  resolveCommandLinkBreakResolution,
-  type CommandLinkBreakResolution,
-} from "./commandLinkBreakResolution";
-import { shouldDetachCommandLinkMember } from "./liveCommandLinkBreakApplication";
+  resolveLiveCommandLinkBreakIntent,
+  shouldDetachCommandLinkMember,
+  type LiveCommandLinkBreakIntent,
+} from "./liveCommandLinkBreakApplication";
 import {
   LIVE_SIEGE_VOLLEY_FIRE_RANGE,
   acknowledgeLiveSiegeVolleyShot,
@@ -405,7 +405,7 @@ export const EnergySwarmGame: React.FC = () => {
     createLiveEnemyFormationDirectorState(),
   );
   const pendingCommandLinkBreakRef =
-    useRef<Readonly<CommandLinkBreakResolution> | null>(null);
+    useRef<LiveCommandLinkBreakIntent | null>(null);
 
   // Boss Refs
   const bossActiveRef = useRef(false);
@@ -4895,6 +4895,7 @@ export const EnergySwarmGame: React.FC = () => {
     }
 
     const pendingCommandLinkBreak = pendingCommandLinkBreakRef.current;
+      let detachedPendingCommandLink = false;
 
     enemiesRef.current.forEach((enemy) => {
       if (enemy.isDead) return;
@@ -4906,6 +4907,7 @@ export const EnergySwarmGame: React.FC = () => {
         )
       ) {
         enemy.enemyFormation = undefined;
+          detachedPendingCommandLink = true;
       }
 
       const signatureBehavior =
@@ -5289,11 +5291,12 @@ export const EnergySwarmGame: React.FC = () => {
     fotonThreatAccumulatorMsRef.current += delta;
 
     if (
-      pendingCommandLinkBreak &&
-      pendingCommandLinkBreakRef.current === pendingCommandLinkBreak
-    ) {
-      pendingCommandLinkBreakRef.current = null;
-    }
+        detachedPendingCommandLink &&
+        pendingCommandLinkBreak &&
+        pendingCommandLinkBreakRef.current === pendingCommandLinkBreak
+      ) {
+        pendingCommandLinkBreakRef.current = null;
+      }
 
     // 7. Projectiles coordinates
     projectilesRef.current.forEach((proj) => {
@@ -5737,11 +5740,11 @@ export const EnergySwarmGame: React.FC = () => {
     enemy.milestoneKind === "MINIBOSS";
 
   const registerCombatDefeat = (enemy: Enemy, affinity?: OrbiAffinity) => {
-    const commandLinkBreakResolution = enemy.enemyFormation
-      ? resolveCommandLinkBreakResolution(enemy.enemyFormation)
+    const commandLinkBreakIntent = enemy.enemyFormation
+      ? resolveLiveCommandLinkBreakIntent(enemy.enemyFormation)
       : null;
-    if (commandLinkBreakResolution) {
-      pendingCommandLinkBreakRef.current = commandLinkBreakResolution;
+    if (commandLinkBreakIntent) {
+      pendingCommandLinkBreakRef.current = commandLinkBreakIntent;
     }
 
     const resolution = registerCombatResonanceDefeat(
