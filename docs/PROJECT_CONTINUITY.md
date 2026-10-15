@@ -18,16 +18,16 @@ Never infer deployment/certification from conversation text alone.
 
 ## Current certified gameplay canonical
 
-`1ad68edc1fd15ffa15e1cf6aa139d3d97a547623`
+`247d976b6e2cc634cbc5158cdff46ac42b51c5fc`
 
-Phase: **ES-13J6B-C — Pure Dynamic Event Effect-Mapping Compatibility Contract**
+Phase: **ES-13J6B-D — Controlled Live Dynamic Event Adoption**
 Status: **DEPLOYED / FROZEN**
-Issue: #387 — CLOSED / completed
-Delivery: PR #388 — squash merged
+Issue: #391 — CLOSED / completed
+Delivery: PR #392 — squash merged
 
-Single parent: `007f1c6744300d47d9e1f43f9cb943e74d70379d` — DOC32 documentation canonical.
+Single parent: `34168aa3ed192d72ef7100103691dff8cca7e1c9` — DOC33 documentation canonical.
 
-Canonical tree: `4fad16370a449e88810a5a4742ba2e9d1c969f17`.
+Canonical tree: `eb0890fa715fa29dfb4c124b0508bb9cdb0adfc3`.
 
 Version remains `0.2.0-beta.1`. Full RC/manual certification remains intentionally deferred while ES-13 materially expands gameplay.
 
@@ -534,7 +534,8 @@ J3C-C stateful formation patterns remain **DEFERRED / NOT CURRENTLY JUSTIFIED**,
 - DOC30 — J6A closure & J6B-A event identity vocabulary activation: `26554f20648f0a27c2c510c055cbec81c43416c7` — Issue #377 / PR #378.
 - DOC31 — J6B-A closure & J6B-B deterministic event selection activation: `6cadd1db296d5249ae236121088307f480685fe0` — Issue #381 / PR #382.
 - DOC32 — J6B-B closure & J6B-C contract-first effect-mapping activation: `007f1c6744300d47d9e1f43f9cb943e74d70379d` — Issue #385 / PR #386.
-- DOC33 — J6B-C closure & J6B-D controlled live adoption activation: Issue #389, branch `docs/es-13-j6bc-closure-j6bd-activation`, documentation-only closure in progress from gameplay canonical `1ad68edc1fd15ffa15e1cf6aa139d3d97a547623`.
+- DOC33 — J6B-C closure & J6B-D controlled live adoption activation: `34168aa3ed192d72ef7100103691dff8cca7e1c9` — Issue #389 / PR #390.
+- DOC34 — J6B-D closure & J7 discovery activation: Issue #393, branch `docs/es-13-j6bd-closure-j7-discovery`, documentation-only closure in progress from gameplay canonical `247d976b6e2cc634cbc5158cdff46ac42b51c5fc`.
 
 ## J6B-C result
 J6B-C froze a pure compatibility-only mapping from the deterministic J6B-B event identity selection onto already-existing Infinite mutator semantics. It does not apply live effects, project runtime magnitudes or create fallback semantics.
@@ -571,22 +572,55 @@ Final product scope exactly:
 
 Issue #387 CLOSED / completed. J6B-C is **DEPLOYED / FROZEN**.
 
+## J6B-D result
+J6B-D adopted the frozen J6A → J6B-B → J6B-C dynamic-event chain through one immutable current-wave descriptor overlay in the existing runtime projection cache.
+
+Certified live behavior:
+- single adoption seam in `runtimeProjectionBundleCache.ts`, after the existing adaptive-invasion overlay and before existing pressure/mutator/budget/milestone projection;
+- Campaign unchanged;
+- J6A retains opportunity timing authority, J6B-B deterministic identity selection, and J6B-C compatibility mapping;
+- mapped identities append at most one already-existing Infinite mutator to an immutable descriptor copy, deduplicated;
+- `SOLAR_STORM → ELECTRICAL_STORM`, `QUANTUM_RIFT → MAGNETIC_DRIFT`, `BLACKOUT_SURGE → REDUCED_VISIBILITY`, `CRYSTAL_RUSH → UNSTABLE_RESOURCE_FIELDS`;
+- `DYSON_ECLIPSE` remains explicit `UNMAPPED` / fail-closed and leaves the descriptor unchanged;
+- existing `runtimeMutatorEffects.ts`, environmental-field projection and electrical-storm delay/telegraph remain authoritative for live semantics and magnitudes;
+- lifecycle is `CURRENT_WAVE_ONLY`; advancing `RuntimeProgressionState` naturally expires the overlay;
+- no J6B-D timer, RNG/seed/clock, recipe/session mutation, entity/projectile collection, scan/index, spawn/progression, combat/economy, cap/budget, FOTON GLB or formation authority;
+- `EnergySwarmGame.tsx` is unchanged.
+
+Final product scope exactly:
+- `src/game/dynamicMidSectorEventRuntimeAdoption.ts`;
+- `src/game/runtimeProjectionBundleCache.ts`;
+- `tests/es-13j6bd-dynamic-mid-sector-event-runtime-adoption.test.mjs`;
+- `tests/gameplay/dynamic-mid-sector-event-runtime-adoption.test.ts`.
+
+## J6B-D exact evidence
+- DOC33 baseline `34168aa3ed192d72ef7100103691dff8cca7e1c9`;
+- pre-PR SHA `559c44d3e7aea58e79cce5a0b30d1d28571f8959`, run `38817464641` / job `116705630774` GREEN including Android APK build/verify/upload;
+- final PR #392 head `479241ee9604b017ac4d062e80ebe353878aab46`;
+- PR CI `38817902374` / `116707069836` GREEN;
+- PR Android `38817902279` / `116707067282` GREEN including Build/Verify/Upload APK;
+- canonical `247d976b6e2cc634cbc5158cdff46ac42b51c5fc`, single parent `34168aa3ed192d72ef7100103691dff8cca7e1c9`, tree `eb0890fa715fa29dfb4c124b0508bb9cdb0adfc3`;
+- canonical diff exactly four certified product files;
+- main CI `38818106840` / `116707736739` GREEN;
+- main Android `38818106804` / `116707736723` GREEN including Build/Verify/Upload APK;
+- Pages `38818209120`: build `116708074756` + deploy `116708178250` GREEN.
+
+Issue #391 CLOSED / completed. J6B-D is **DEPLOYED / FROZEN**.
+
 ## Next gameplay phase
 
-### ES-13J6B-D — Controlled Live Dynamic Event Adoption
-Status: **NEXT ENGINEERING TARGET AFTER DOC33 CLOSURE**
+### ES-13J7 — Bonus Challenge Rounds Discovery
+Status: **NEXT ARCHITECTURE / DISCOVERY TARGET AFTER DOC34 CLOSURE**
 
-J6A opportunity timing, J6B-A identity vocabulary, J6B-B deterministic selection and J6B-C compatibility mapping are frozen. J6B-D is the first slice allowed to investigate controlled live adoption.
+J7 is activated for discovery only. The roadmap candidate vocabulary remains 20–40 s rhythm breakers such as precision, rescue, collection, evasive corridors, pursuit, affinity puzzles, obstacle navigation, timed survival and survival without firing.
 
-Required direction:
-- discovery-first: identify one existing live environmental seam and prove exact ownership before mutation;
-- Infinite only unless a dedicated Issue proves otherwise; Campaign remains isolated;
-- only the four J6B-C `MAPPED` identities may be considered; `DYSON_ECLIPSE` remains `UNMAPPED` and must fail closed;
-- reuse existing `runtimeMutatorEffects.ts` / environmental-field semantics and magnitudes; no second environmental director and no copied tuning;
-- preserve J6A opportunity cadence and J6B-B deterministic identity selection; no new RNG, seed, timer or clock authority;
-- prove lifecycle, duration/expiry, pause behavior, reset boundaries, fairness/telegraph and attribution before live behavior can be frozen;
-- no new entity/projectile collection, spawn/progression authority, damage/defeat/score/reward/economy authority, scan/index, cap/budget change, entity creation/removal, FOTON GLB or formation change unless separately justified;
-- exact adoption seam is not frozen by DOC33 and requires a dedicated J6B-D Issue.
+DOC34 does not freeze a first challenge, exact duration/cadence, mode scope, timer/pause authority, spawn/arena behavior, score/reward/economy semantics, HUD contract, success/failure rules or J7 subphase name. Dedicated discovery must inspect current runtime seams and select the smallest justified contract before a gameplay Issue/branch exists.
+
+Required preservation:
+- Campaign/Infinite isolation remains unchanged until discovery proves scope;
+- existing global caps/budgets, entity/projectile arrays and gameplay authorities remain unchanged;
+- no reward/score/economy or timer authority is inferred from the roadmap wording;
+- J3C-C, J4D+ and manual blockers remain deferred as recorded.
 
 ## Resolved diagnostics
 - #254 CLOSED / NOT PLANNED: historical platform failure was not an I5 pause regression; no product merge.
@@ -615,7 +649,7 @@ Rules:
 - no gameplay phase is declared deployed before exact-SHA required evidence.
 
 ## Gameplay chronology
-`J6B-D Controlled Live Dynamic Event Adoption → J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance`
+`J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance`
 
 Post-J15 direction: **ES-14 — Living Warfront**.
 
@@ -623,7 +657,7 @@ Post-J15 direction: **ES-14 — Living Warfront**.
 Read this file, `IMPLEMENTATION_LEDGER.md`, `ES13_GAMEPLAY_ROADMAP.md`, `TRACEABILITY_POLICY.md` and `ES13_PHASE_CHECKLIST.md`, then active Issues/PRs. Verify live `main` before any write.
 
 Suggested handoff:
-> Continue ORBI Energy Swarm autonomously. Repository `ingeniusvictor/orbi-energy.swarm`. J6B-C gameplay canonical is `1ad68edc1fd15ffa15e1cf6aa139d3d97a547623`, fully DEPLOYED / FROZEN via Issue #387 / PR #388 with pure `COMPATIBILITY_ONLY` mappings and post-main CI/Android/Pages GREEN. Complete DOC33 if still open, then perform J6B-D architecture/discovery before any controlled live adoption. Reuse only frozen J6A/J6B-A/J6B-B/J6B-C facts and existing Infinite runtime environmental authority; keep `DYSON_ECLIPSE` fail-closed/unmapped. Prove lifecycle, fairness/telegraph, attribution, pause/reset behavior and exact adoption seam before writing live code. Keep J3C-C, J4D+ and manual blockers deferred. Follow Issue → Branch → full gates → PR → exact-SHA post-merge evidence. Never touch `main` directly or weaken tests.
+> Continue ORBI Energy Swarm autonomously. Repository `ingeniusvictor/orbi-energy.swarm`. J6B-D gameplay canonical is `247d976b6e2cc634cbc5158cdff46ac42b51c5fc`, fully DEPLOYED / FROZEN via Issue #391 / PR #392 with post-main CI/Android/Pages GREEN. Complete DOC34 if still open, then perform J7 Bonus Challenge Rounds architecture/discovery before naming or implementing a J7 sub-slice. Do not infer timer, reward, score, spawn, arena, HUD or mode authority from the candidate roadmap vocabulary. Preserve caps/budgets, Campaign/Infinite isolation, J3C-C/J4D+ deferrals and manual blockers. Follow Issue → Branch → full gates → PR → exact-SHA post-merge evidence. Never touch `main` directly or weaken tests.
 
 ## Update obligation
 Every merged gameplay phase must record exact gameplay canonical, Issue/PR, final head, pre-PR certification, PR CI/Android, main CI/Android/Pages, implementation result, unresolved follow-ups and next roadmap phase. A gameplay phase is not administratively closed until these records are current.
