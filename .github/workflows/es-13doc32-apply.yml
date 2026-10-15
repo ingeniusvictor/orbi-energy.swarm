@@ -26,287 +26,59 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
+          import base64
 
-          def replace_once(path: str, old: str, new: str) -> None:
-              p = Path(path)
-              text = p.read_text(encoding="utf-8")
+          def dec(value):
+              return base64.b64decode(value).decode('utf-8')
+
+          def replace_once(text, old, new, label):
               count = text.count(old)
               if count != 1:
-                  raise SystemExit(f"{path}: expected exactly one replacement anchor, found {count}: {old[:80]!r}")
-              p.write_text(text.replace(old, new, 1), encoding="utf-8")
+                  raise SystemExit(f'{label}: expected one anchor, found {count}')
+              return text.replace(old, new, 1)
 
-          continuity = "docs/PROJECT_CONTINUITY.md"
-          ledger = "docs/IMPLEMENTATION_LEDGER.md"
-          roadmap = "docs/ES13_GAMEPLAY_ROADMAP.md"
+          def replace_section(text, start, end, new, label):
+              if text.count(start) != 1:
+                  raise SystemExit(f'{label}: start anchor count={text.count(start)}')
+              i = text.index(start)
+              j = text.find(end, i + len(start))
+              if j < 0:
+                  raise SystemExit(f'{label}: end anchor missing')
+              return text[:i] + new + text[j:]
 
-          replace_once(
-              continuity,
-              '''## Current certified gameplay canonical
+          CONT_CURRENT = dec('IyMgQ3VycmVudCBjZXJ0aWZpZWQgZ2FtZXBsYXkgY2Fub25pY2FsCgpgZGNkMzlhMTczZGE3NjM1YmY4NWRiNjg0NGRjODZhZWNhNmMxZjM4Y2AKClBoYXNlOiAqKkVTLTEzSjZCLUIg4oCUIFB1cmUgRGV0ZXJtaW5pc3RpYyBEeW5hbWljIEV2ZW50IElkZW50aXR5IFNlbGVjdGlvbiBDb250cmFjdCoqClN0YXR1czogKipERVBMT1lFRCAvIEZST1pFTioqCklzc3VlOiAjMzgzIOKAlCBDTE9TRUQgLyBjb21wbGV0ZWQKRGVsaXZlcnk6IFBSICMzODQg4oCUIHNxdWFzaCBtZXJnZWQKClNpbmdsZSBwYXJlbnQ6IGA2Y2FkZDFkYjI5NmQ1MjQ5YWUyMzYxMjEwODgzMDdmNDgwNjg1ZmUwYCDigJQgRE9DMzEgZG9jdW1lbnRhdGlvbiBjYW5vbmljYWwuCgpDYW5vbmljYWwgdHJlZTogYDUzMWZhZDk1Y2VkNjkxYWQyNGEwYzIzOTFmZTlkMzA5NTRmNTFlMDFgLg==')
+          CONT_RESULT = dec('IyMgSjZCLUIgcmVzdWx0Cko2Qi1CIGVzdGFibGlzaGVkIGRldGVybWluaXN0aWMgc2VtYW50aWMgZXZlbnQgc2VsZWN0aW9uIG92ZXIgZnJvemVuIEo2QSBvcHBvcnR1bml0eSBtZXRhZGF0YSBhbmQgdGhlIGZyb3plbiBKNkItQSBpZGVudGl0eSB2b2NhYnVsYXJ5LCB3aXRob3V0IG1hcHBpbmcgb3IgZXhlY3V0aW5nIGFueSBlZmZlY3QuCgpDZXJ0aWZpZWQgY29udHJhY3Q6Ci0gY29uc3VtZXMgb25seSBhIHZhbGlkIGN1cnJlbnQgSjZBIGBEWU5BTUlDX01JRF9TRUNUT1JfRVZFTlRfT1BQT1JUVU5JVFlgIC8gYE9QUE9SVFVOSVRZX09OTFlgIC8gYElORklOSVRFYCBwcm9qZWN0aW9uOwotIHJlcXVpcmVzIGludGVnZXIgSW5maW5pdGUgc2VjdG9yID49IDExLCBjZXJ0aWZpZWQgd2F2ZSBjb3VudCAz4oCTNywgZXhhY3QgaW50ZXJpb3IgYHdhdmVJbmRleCA9PT0gc2VsZWN0ZWRXYXZlSW5kZXhgLCBleGFjdCBsb3dlcmNhc2UgOC1oZXggYGlkZW50aXR5RmluZ2VycHJpbnRgLCBhbmQgY2Fub25pY2FsIGBvcHBvcnR1bml0eUlkID0gajZhOjxzZWN0b3I+OjxzZWxlY3RlZFdhdmVJbmRleD46PGlkZW50aXR5RmluZ2VycHJpbnQ+YDsKLSByZWplY3RzIHRhbXBlcmVkIEo2QSB6ZXJvLWF1dGhvcml0eSBmbGFncyByYXRoZXIgdGhhbiBub3JtYWxpemluZyB0aGVtOwotIGRlcml2ZXMgYHNlbGVjdGlvbkluZGV4ID0gcGFyc2VJbnQoaWRlbnRpdHlGaW5nZXJwcmludCwgMTYpICUgNWAgYW5kIHNlbGVjdHMgZXhhY3RseSBvbmUgb2YgdGhlIGZpdmUgZnJvemVuIEo2Qi1BIElEczsKLSBvdXRwdXQgaXMgaW1tdXRhYmxlIGBEWU5BTUlDX01JRF9TRUNUT1JfRVZFTlRfU0VMRUNUSU9OYCAvIGBTRUxFQ1RJT05fT05MWWAgbWV0YWRhdGE7Ci0gb3ducyBzZW1hbnRpYyBldmVudC1zZWxlY3Rpb24gYXV0aG9yaXR5IG9ubHk7Ci0gbm8gbmV3IFJORy9jbG9jay9zZWVkIGF1dGhvcml0eSwgbXV0YXRvci9lZmZlY3QgbWFwcGluZywgbGl2ZSBleGVjdXRpb24sIGVudmlyb25tZW50IG11dGF0aW9uLCBzcGF3bi9wcm9ncmVzc2lvbiwgY29sbGVjdGlvbiwgY29tYmF0L2Vjb25vbXksIGVudGl0eSBsb29rdXAvc2NhbiwgY2FwL2J1ZGdldCBvciBlbnRpdHkgY3JlYXRlL3JlbW92ZS9tdXRhdGUgYXV0aG9yaXR5OwotIG5vIGBFbmVyZ3lTd2FybUdhbWUudHN4YCwgSW5maW5pdGUtZGlyZWN0b3Igb3IgZW52aXJvbm1lbnRhbC1ydW50aW1lIGFkb3B0aW9uLgoKRmluYWwgcHJvZHVjdCBzY29wZSBleGFjdGx5OgotIGBzcmMvZ2FtZS9keW5hbWljTWlkU2VjdG9yRXZlbnRTZWxlY3Rpb24udHNgOwotIGB0ZXN0cy9lcy0xM2o2YmItZHluYW1pYy1taWQtc2VjdG9yLWV2ZW50LXNlbGVjdGlvbi50ZXN0Lm1qc2A7Ci0gYHRlc3RzL2dhbWVwbGF5L2R5bmFtaWMtbWlkLXNlY3Rvci1ldmVudC1zZWxlY3Rpb24udGVzdC50c2AuCgojIyBKNkItQiBleGFjdCBldmlkZW5jZQotIERPQzMxIGJhc2VsaW5lIGA2Y2FkZDFkYjI5NmQ1MjQ5YWUyMzYxMjEwODgzMDdmNDgwNjg1ZmUwYDsKLSBwcmUtUFIgU0hBIGAyYTgyOTQ1NzQ3ZjZiZDNiODU1YTJhN2I4NGM1ZGI5ZDA4NGZlZDM4YCwgcnVuIGAzODgwODQzMjEyMGAgLyBqb2IgYDExNjY3NTIyMjAxOWAgR1JFRU4gaW5jbHVkaW5nIHJlcG8vZ2FtZXBsYXkvcGxhdGZvcm0vdHlwZWNoZWNrL3JlbGVhc2UvZG9zc2llci9idWlsZC9yZWFkaW5lc3MsIGV4YWN0IHByb2R1Y3Qtc2NvcGUgZ3VhcmQgYW5kIEFuZHJvaWQgQVBLIGJ1aWxkL3ZlcmlmeS91cGxvYWQ7Ci0gZmluYWwgUFIgIzM4NCBoZWFkIGBhY2M5OGRjY2ZmNTI4MTJiMTJlMjNiZDI2ZmI3YjIxZTk4ODlkMDZiYDsKLSBQUiBDSSBgMzg4MDg4OTMwMTFgIC8gYDExNjY3Njc4MDEyNWAgR1JFRU47Ci0gUFIgQW5kcm9pZCBgMzg4MDg4OTMwMjNgIC8gYDExNjY3Njc3ODk4OGAgR1JFRU4gaW5jbHVkaW5nIEJ1aWxkL1ZlcmlmeS9VcGxvYWQgQVBLOwotIGNhbm9uaWNhbCBgZGNkMzlhMTczZGE3NjM1YmY4NWRiNjg0NGRjODZhZWNhNmMxZjM4Y2AsIHNpbmdsZSBwYXJlbnQgYDZjYWRkMWRiMjk2ZDUyNDlhZTIzNjEyMTA4ODMwN2Y0ODA2ODVmZTBgLCB0cmVlIGA1MzFmYWQ5NWNlZDY5MWFkMjRhMGMyMzkxZmU5ZDMwOTU0ZjUxZTAxYDsKLSBjYW5vbmljYWwgZGlmZiBleGFjdGx5IHRocmVlIGNlcnRpZmllZCBwcm9kdWN0L3Rlc3QgZmlsZXM7Ci0gbWFpbiBDSSBgMzg4MDkxOTI3NDhgIC8gYDExNjY3Nzc5NTI5MmAgR1JFRU47Ci0gbWFpbiBBbmRyb2lkIGAzODgwOTE5MjgyMWAgLyBgMTE2Njc3Nzk1MzMzYCBHUkVFTiBpbmNsdWRpbmcgQnVpbGQvVmVyaWZ5L1VwbG9hZCBBUEs7Ci0gUGFnZXMgYDM4ODA5MjkwMDMwYDogYnVpbGQgYDExNjY3ODEzNzYwNWAgKyBkZXBsb3kgYDExNjY3ODMxNjE3NmAgR1JFRU4uCgpJc3N1ZSAjMzgzIENMT1NFRCAvIGNvbXBsZXRlZC4gSjZCLUIgaXMgKipERVBMT1lFRCAvIEZST1pFTioqLg==')
+          CONT_NEXT = dec('IyMgTmV4dCBnYW1lcGxheSBwaGFzZQoKIyMjIEVTLTEzSjZCLUMg4oCUIFB1cmUgRHluYW1pYyBFdmVudCBFZmZlY3QtTWFwcGluZyBDb21wYXRpYmlsaXR5IENvbnRyYWN0ClN0YXR1czogKipORVhUIEVOR0lORUVSSU5HIFRBUkdFVCBBRlRFUiBET0MzMiBDTE9TVVJFKioKCko2QSBvcHBvcnR1bml0eSBzZWxlY3Rpb24sIEo2Qi1BIGlkZW50aXR5IHZvY2FidWxhcnkgYW5kIEo2Qi1CIGRldGVybWluaXN0aWMgaWRlbnRpdHkgc2VsZWN0aW9uIGFyZSBmcm96ZW4uIEFyY2hpdGVjdHVyZSBkaXNjb3ZlcnkgY29uZmlybXMgdGhhdCBleGlzdGluZyBydW50aW1lIGF1dGhvcml0eSBhbHJlYWR5IGxpdmVzIGluIGBydW50aW1lTXV0YXRvckVmZmVjdHMudHNgLCBgcnVudGltZUVudmlyb25tZW50YWxGaWVsZHMudHNgIGFuZCB0aGUgSW5maW5pdGUgcmVjaXBlL2RpcmVjdG9yIHN0YWNrOyBKNkItQyBtdXN0IG5vdCBjcmVhdGUgYSBwYXJhbGxlbCBlbnZpcm9ubWVudGFsIHN5c3RlbS4KClJlcXVpcmVkIGRpcmVjdGlvbjoKLSBjb250cmFjdC1maXJzdCBhbmQgcHVyZSBvbmx5OyBubyBsaXZlIHJ1bnRpbWUgYWRvcHRpb24gaW4gSjZCLUM7Ci0gY29uc3VtZSBhIHZhbGlkIGN1cnJlbnQgZnJvemVuIEo2Qi1CIGBTRUxFQ1RJT05fT05MWWAgcHJvamVjdGlvbiBhbmQgZnJvemVuIEo2Qi1BIGlkZW50aXR5IHNlbWFudGljczsKLSBkZWZpbmUgb25seSBjb21wYXRpYmlsaXR5L21hcHBpbmcgbWV0YWRhdGEgb250byBhbHJlYWR5LWV4aXN0aW5nIGJvdW5kZWQgYEluZmluaXRlTXV0YXRvcmAgLyBlbnZpcm9ubWVudGFsLWVmZmVjdCBzZW1hbnRpY3Mgd2hlbiB0aGF0IG1hcHBpbmcgaXMgaW5kZXBlbmRlbnRseSBqdXN0aWZpZWQ7Ci0gY29uY3JldGUgaWRlbnRpdHktdG8tZWZmZWN0IG1hcHBpbmdzIGFyZSAqKm5vdCBmcm96ZW4gYnkgRE9DMzIqKiBhbmQgbXVzdCBiZSBwcm92ZWQvZnJvemVuIGJ5IHRoZSBkZWRpY2F0ZWQgSjZCLUMgSXNzdWU7IGRvIG5vdCBhc3N1bWUgYWxsIGZpdmUgaWRlbnRpdGllcyBhcmUgbWFwcGFibGU7Ci0gdW5zdXBwb3J0ZWQsIGFtYmlndW91cyBvciB1bmp1c3RpZmllZCBtYXBwaW5ncyBtdXN0IGZhaWwgY2xvc2VkIHJhdGhlciB0aGFuIGludmVudCBuZXcgZWZmZWN0IHNlbWFudGljczsKLSByZXVzZSBleGlzdGluZyBlZmZlY3QgbWFnbml0dWRlcy9jbGFtcHM7IG5vIG5ldyB0dW5pbmcsIHNlY29uZCBlbnZpcm9ubWVudGFsIGRpcmVjdG9yLCBSTkcvY2xvY2svc2VlZCBhdXRob3JpdHkgb3IgcmVjaXBlIGF1dGhvcml0eTsKLSBubyBgRW5lcmd5U3dhcm1HYW1lLnRzeGAsIGxpdmUgZW52aXJvbm1lbnQgbXV0YXRpb24sIHNwYXduL3Byb2dyZXNzaW9uLCBjb2xsZWN0aW9uLCBjb21iYXQvZWNvbm9teSwgZW50aXR5IGxvb2t1cC9zY2FuLCBjYXAvYnVkZ2V0IG9yIGVudGl0eSBjcmVhdGUvcmVtb3ZlL211dGF0ZSBhdXRob3JpdHk7Ci0gY29udHJvbGxlZCBsaXZlIGV2ZW50IGFkb3B0aW9uIHJlbWFpbnMgYSBsYXRlciBKNkItRCsgc2xpY2UgYW5kIHJlcXVpcmVzIHNlcGFyYXRlIGZhaXJuZXNzL2xpZmVjeWNsZS9hdHRyaWJ1dGlvbiBjZXJ0aWZpY2F0aW9uLg==')
+          CONT_HANDOFF = dec('PiBDb250aW51ZSBPUkJJIEVuZXJneSBTd2FybSBhdXRvbm9tb3VzbHkuIFJlcG9zaXRvcnkgYGluZ2VuaXVzdmljdG9yL29yYmktZW5lcmd5LnN3YXJtYC4gSjZCLUIgZ2FtZXBsYXkgY2Fub25pY2FsIGlzIGBkY2QzOWExNzNkYTc2MzViZjg1ZGI2ODQ0ZGM4NmFlY2E2YzFmMzhjYCwgZnVsbHkgREVQTE9ZRUQgLyBGUk9aRU4gdmlhIElzc3VlICMzODMgLyBQUiAjMzg0IHdpdGggcHVyZSBkZXRlcm1pbmlzdGljIGBTRUxFQ1RJT05fT05MWWAgaWRlbnRpdHkgc2VsZWN0aW9uIGFuZCBwb3N0LW1haW4gQ0kvQW5kcm9pZC9QYWdlcyBHUkVFTi4gQ29tcGxldGUgRE9DMzIgaWYgc3RpbGwgb3BlbiwgdGhlbiBwZXJmb3JtIEo2Qi1DIGFyY2hpdGVjdHVyZS9kaXNjb3ZlcnkgYmVmb3JlIGZyZWV6aW5nIGEgZGVkaWNhdGVkIHB1cmUgZWZmZWN0LW1hcHBpbmcgY29tcGF0aWJpbGl0eSBjb250cmFjdC4gUmV1c2Ugb25seSBleGlzdGluZyBmcm96ZW4gSW5maW5pdGUgbXV0YXRvci9lbnZpcm9ubWVudCBhdXRob3JpdGllczsgZG8gbm90IGludmVudCBjb25jcmV0ZSBpZGVudGl0eSBtYXBwaW5ncywgbmV3IGVmZmVjdCBtYWduaXR1ZGVzLCBydW50aW1lIGFkb3B0aW9uIG9yIGEgc2Vjb25kIGVudmlyb25tZW50YWwgc3lzdGVtIHdpdGhvdXQgZXZpZGVuY2UuIEtlZXAgY29udHJvbGxlZCBsaXZlIGFkb3B0aW9uIGZvciBKNkItRCsgYW5kIGtlZXAgSjNDLUMsIEo0RCsgYW5kIG1hbnVhbCBibG9ja2VycyBkZWZlcnJlZC4gRm9sbG93IElzc3VlIOKGkiBCcmFuY2gg4oaSIGZ1bGwgZ2F0ZXMg4oaSIFBSIOKGkiBleGFjdC1TSEEgcG9zdC1tZXJnZSBldmlkZW5jZS4gTmV2ZXIgdG91Y2ggYG1haW5gIGRpcmVjdGx5IG9yIHdlYWtlbiB0ZXN0cy4=')
+          LEDGER_RESULT = dec('IyMjIEo2Qi1CIOKAlCBQdXJlIERldGVybWluaXN0aWMgRHluYW1pYyBFdmVudCBJZGVudGl0eSBTZWxlY3Rpb24gQ29udHJhY3QKQ2VydGlmaWVkIGJlaGF2aW9yOgotIHZhbGlkYXRlcyBleGFjdCBjdXJyZW50IEo2QSBvcHBvcnR1bml0eSBraW5kL21vZGUvc291cmNlLCBib3VuZGVkIGludGVyaW9yIHdhdmUgbWV0YWRhdGEsIGxvd2VyY2FzZSA4LWhleCBmaW5nZXJwcmludCBhbmQgY2Fub25pY2FsIG9wcG9ydHVuaXR5IElEOwotIGRldGVybWluaXN0aWNhbGx5IHNlbGVjdHMgZXhhY3RseSBvbmUgZnJvemVuIEo2Qi1BIElEIHVzaW5nIHRoZSBleGlzdGluZyBmaW5nZXJwcmludCBtb2R1bG8gdGhlIGZyb3plbiBmaXZlLUlEIGxpc3Q7Ci0gZW1pdHMgaW1tdXRhYmxlIGBEWU5BTUlDX01JRF9TRUNUT1JfRVZFTlRfU0VMRUNUSU9OYCAvIGBTRUxFQ1RJT05fT05MWWAgbWV0YWRhdGE7Ci0gbWFsZm9ybWVkL3RhbXBlcmVkIEo2QSBmYWN0cyBmYWlsIGNsb3NlZDsKLSBvd25zIHNlbWFudGljIHNlbGVjdGlvbiBvbmx5IGFuZCBhZGRzIG5vIFJORy9jbG9jay9zZWVkLCBtdXRhdG9yL2VmZmVjdCBtYXBwaW5nLCBsaXZlIGV4ZWN1dGlvbiwgZW52aXJvbm1lbnQgbXV0YXRpb24sIHNwYXduL3Byb2dyZXNzaW9uLCBjb2xsZWN0aW9uLCBjb21iYXQvZWNvbm9teSwgbG9va3VwL3NjYW4sIGNhcC9idWRnZXQgb3IgZW50aXR5IGF1dGhvcml0eS4KCkV4YWN0IGRlcGxveW1lbnQgYW5jaG9yczoKLSBET0MzMSBiYXNlbGluZSBgNmNhZGQxZGIyOTZkNTI0OWFlMjM2MTIxMDg4MzA3ZjQ4MDY4NWZlMGA7Ci0gcHJlLVBSIGAyYTgyOTQ1NzQ3ZjZiZDNiODU1YTJhN2I4NGM1ZGI5ZDA4NGZlZDM4YCwgcnVuIGAzODgwODQzMjEyMGAgLyBqb2IgYDExNjY3NTIyMjAxOWAgR1JFRU4gaW5jbHVkaW5nIGV4YWN0IHNjb3BlICsgQW5kcm9pZCBBUEs7Ci0gZmluYWwgUFIgIzM4NCBoZWFkIGBhY2M5OGRjY2ZmNTI4MTJiMTJlMjNiZDI2ZmI3YjIxZTk4ODlkMDZiYDsKLSBQUiBDSSBgMzg4MDg4OTMwMTFgIC8gYDExNjY3Njc4MDEyNWAgR1JFRU47IEFuZHJvaWQgYDM4ODA4ODkzMDIzYCAvIGAxMTY2NzY3Nzg5ODhgIEdSRUVOOwotIGNhbm9uaWNhbCBgZGNkMzlhMTczZGE3NjM1YmY4NWRiNjg0NGRjODZhZWNhNmMxZjM4Y2AsIHBhcmVudCBgNmNhZGQxZGIyOTZkNTI0OWFlMjM2MTIxMDg4MzA3ZjQ4MDY4NWZlMGAsIHRyZWUgYDUzMWZhZDk1Y2VkNjkxYWQyNGEwYzIzOTFmZTlkMzA5NTRmNTFlMDFgOwotIG1haW4gQ0kgYDM4ODA5MTkyNzQ4YCAvIGAxMTY2Nzc3OTUyOTJgIEdSRUVOOyBBbmRyb2lkIGAzODgwOTE5MjgyMWAgLyBgMTE2Njc3Nzk1MzMzYCBHUkVFTjsKLSBQYWdlcyBgMzg4MDkyOTAwMzBgLCBidWlsZCBgMTE2Njc4MTM3NjA1YCArIGRlcGxveSBgMTE2Njc4MzE2MTc2YCBHUkVFTi4KCklzc3VlICMzODMgQ0xPU0VEIC8gY29tcGxldGVkLiBKNkItQiBpcyAqKkRFUExPWUVEIC8gRlJPWkVOKiou')
+          LEDGER_NEXT = dec('IyMgTmV4dCBwbGFubmVkIGdhbWVwbGF5CgojIyMgRVMtMTNKNkItQyDigJQgUHVyZSBEeW5hbWljIEV2ZW50IEVmZmVjdC1NYXBwaW5nIENvbXBhdGliaWxpdHkgQ29udHJhY3QKU3RhdHVzOiAqKk5FWFQgRU5HSU5FRVJJTkcgVEFSR0VUIEFGVEVSIERPQzMyIENMT1NVUkUqKi4KCko2QSwgSjZCLUEgYW5kIEo2Qi1CIGFyZSBmcm96ZW4gdGhyb3VnaCBkZXRlcm1pbmlzdGljIGBTRUxFQ1RJT05fT05MWWAgaWRlbnRpdHkgc2VsZWN0aW9uLiBFeGlzdGluZyBlbnZpcm9ubWVudC9lZmZlY3QgYXV0aG9yaXR5IGFscmVhZHkgbGl2ZXMgaW4gdGhlIGZyb3plbiBJbmZpbml0ZSBtdXRhdG9yIHByb2plY3Rpb24gYW5kIHJ1bnRpbWUgZW52aXJvbm1lbnRhbC1maWVsZCBzeXN0ZW1zLgoKSjZCLUMgbXVzdCBiZSBhIHB1cmUgY29tcGF0aWJpbGl0eS9tYXBwaW5nIGNvbnRyYWN0IG9ubHkuIEl0IG1heSByZWZlcmVuY2UgYWxyZWFkeS1leGlzdGluZyBib3VuZGVkIGBJbmZpbml0ZU11dGF0b3JgIC8gZW52aXJvbm1lbnRhbCBzZW1hbnRpY3MgYWZ0ZXIgYSBkZWRpY2F0ZWQgSXNzdWUgcHJvdmVzIGV4YWN0IG1hcHBpbmdzLCBidXQgRE9DMzIgZnJlZXplcyBubyBjb25jcmV0ZSBpZGVudGl0eS10by1lZmZlY3QgdGFibGUuIEFtYmlndW91cyBvciB1bnN1cHBvcnRlZCBpZGVudGl0aWVzIG11c3QgZmFpbCBjbG9zZWQuIEo2Qi1DIG11c3Qgbm90IGFkb3B0IGludG8gYEVuZXJneVN3YXJtR2FtZS50c3hgLCBtdXRhdGUgZW52aXJvbm1lbnQvcnVudGltZSBzdGF0ZSwgaW52ZW50IGVmZmVjdCBtYWduaXR1ZGVzLCBSTkcvY2xvY2svc2VlZCBvciByZWNpcGUgYXV0aG9yaXR5LCBvciBvd24gc3Bhd24vcHJvZ3Jlc3Npb24sIGNvbGxlY3Rpb25zLCBjb21iYXQvZWNvbm9teSwgc2NhbnMvbG9va3VwcywgY2Fwcy9idWRnZXRzIG9yIGVudGl0eSBtdXRhdGlvbi4gQ29udHJvbGxlZCBsaXZlIGFkb3B0aW9uIHJlbWFpbnMgSjZCLUQrIGFmdGVyIHNlcGFyYXRlIGZhaXJuZXNzL2xpZmVjeWNsZSBjZXJ0aWZpY2F0aW9uLg==')
+          ROADMAP_J6 = dec('IyMjIEo2Qi1CIOKAlCBQdXJlIERldGVybWluaXN0aWMgRHluYW1pYyBFdmVudCBJZGVudGl0eSBTZWxlY3Rpb24gQ29udHJhY3QKU3RhdHVzOiAqKkRFUExPWUVEIC8gRlJPWkVOKioKQ2Fub25pY2FsOiBgZGNkMzlhMTczZGE3NjM1YmY4NWRiNjg0NGRjODZhZWNhNmMxZjM4Y2AKSXNzdWUgIzM4MyAvIFBSICMzODQKCkNlcnRpZmllZCBiZWhhdmlvcjoKLSBjb25zdW1lcyBvbmx5IHZhbGlkIGN1cnJlbnQgSjZBIGBEWU5BTUlDX01JRF9TRUNUT1JfRVZFTlRfT1BQT1JUVU5JVFlgIC8gYE9QUE9SVFVOSVRZX09OTFlgIC8gYElORklOSVRFYCBtZXRhZGF0YTsKLSB2YWxpZGF0ZXMgZXhhY3QgYm91bmRlZCBpbnRlcmlvci13YXZlIGNvbnNpc3RlbmN5LCBsb3dlcmNhc2UgOC1oZXggYGlkZW50aXR5RmluZ2VycHJpbnRgLCBjYW5vbmljYWwgb3Bwb3J0dW5pdHkgSUQgYW5kIGFsbCBKNkEgemVyby1hdXRob3JpdHkgZmxhZ3M7Ci0gZGV0ZXJtaW5pc3RpY2FsbHkgc2VsZWN0cyBleGFjdGx5IG9uZSBmcm96ZW4gSjZCLUEgSUQgdmlhIGBwYXJzZUludChpZGVudGl0eUZpbmdlcnByaW50LCAxNikgJSA1YDsKLSBlbWl0cyBpbW11dGFibGUgYERZTkFNSUNfTUlEX1NFQ1RPUl9FVkVOVF9TRUxFQ1RJT05gIC8gYFNFTEVDVElPTl9PTkxZYCBtZXRhZGF0YSBjYXJyeWluZyBzb3VyY2Ugb3Bwb3J0dW5pdHkgaWRlbnRpdHkgKyBzZWxlY3RlZCBldmVudCBpZGVudGl0eTsKLSBtYWxmb3JtZWQsIHBhZGRlZCwgZm9yZ2VkLCB1bnN1cHBvcnRlZCBvciB0YW1wZXJlZCBpbnB1dCBmYWlscyBjbG9zZWQ7Ci0gb3ducyBzZW1hbnRpYyBldmVudCBzZWxlY3Rpb24gb25seTsKLSBubyBuZXcgUk5HL2Nsb2NrL3NlZWQgYXV0aG9yaXR5LCBtdXRhdG9yL2VmZmVjdCBtYXBwaW5nLCBsaXZlIGV4ZWN1dGlvbiwgZW52aXJvbm1lbnQgbXV0YXRpb24sIHNwYXduL3Byb2dyZXNzaW9uLCBjb2xsZWN0aW9uLCBjb21iYXQvZWNvbm9teSwgbG9va3VwL3NjYW4sIGNhcC9idWRnZXQgb3IgZW50aXR5IGNyZWF0ZS9yZW1vdmUvbXV0YXRlIGF1dGhvcml0eTsKLSBubyBgRW5lcmd5U3dhcm1HYW1lLnRzeGAsIEluZmluaXRlLWRpcmVjdG9yIG9yIGVudmlyb25tZW50YWwtcnVudGltZSBhZG9wdGlvbi4KCkV4YWN0IGRlcGxveW1lbnQgYW5jaG9yczoKLSBET0MzMSBiYXNlbGluZSBgNmNhZGQxZGIyOTZkNTI0OWFlMjM2MTIxMDg4MzA3ZjQ4MDY4NWZlMGA7Ci0gcHJlLVBSIGAyYTgyOTQ1NzQ3ZjZiZDNiODU1YTJhN2I4NGM1ZGI5ZDA4NGZlZDM4YCwgcnVuIGAzODgwODQzMjEyMGAgLyBqb2IgYDExNjY3NTIyMjAxOWAgR1JFRU4gaW5jbHVkaW5nIGV4YWN0IHNjb3BlICsgQW5kcm9pZCBBUEs7Ci0gZmluYWwgUFIgIzM4NCBoZWFkIGBhY2M5OGRjY2ZmNTI4MTJiMTJlMjNiZDI2ZmI3YjIxZTk4ODlkMDZiYDsKLSBQUiBDSSBgMzg4MDg4OTMwMTFgIC8gYDExNjY3Njc4MDEyNWAgR1JFRU47IEFuZHJvaWQgYDM4ODA4ODkzMDIzYCAvIGAxMTY2NzY3Nzg5ODhgIEdSRUVOOwotIGNhbm9uaWNhbCBgZGNkMzlhMTczZGE3NjM1YmY4NWRiNjg0NGRjODZhZWNhNmMxZjM4Y2AsIHBhcmVudCBgNmNhZGQxZGIyOTZkNTI0OWFlMjM2MTIxMDg4MzA3ZjQ4MDY4NWZlMGAsIHRyZWUgYDUzMWZhZDk1Y2VkNjkxYWQyNGEwYzIzOTFmZTlkMzA5NTRmNTFlMDFgOwotIG1haW4gQ0kgYDM4ODA5MTkyNzQ4YCAvIGAxMTY2Nzc3OTUyOTJgIEdSRUVOOyBBbmRyb2lkIGAzODgwOTE5MjgyMWAgLyBgMTE2Njc3Nzk1MzMzYCBHUkVFTjsKLSBQYWdlcyBgMzg4MDkyOTAwMzBgLCBidWlsZCBgMTE2Njc4MTM3NjA1YCArIGRlcGxveSBgMTE2Njc4MzE2MTc2YCBHUkVFTi4KCiMjIyBKNkItQyDigJQgUHVyZSBEeW5hbWljIEV2ZW50IEVmZmVjdC1NYXBwaW5nIENvbXBhdGliaWxpdHkgQ29udHJhY3QKU3RhdHVzOiAqKk5FWFQgQUNUSVZFIEVOR0lORUVSSU5HIFNMSUNFIEFGVEVSIERPQzMyIENMT1NVUkUqKgoKQXJjaGl0ZWN0dXJlIGRpc2NvdmVyeSBhZnRlciBKNkItQiBjb25maXJtczoKLSBgcnVudGltZU11dGF0b3JFZmZlY3RzLnRzYCBhbHJlYWR5IG93bnMgdGhlIGJvdW5kZWQgbWFwcGluZyBmcm9tIHRoZSB0ZW4gZnJvemVuIGBJbmZpbml0ZU11dGF0b3JgIHZhbHVlcyB0byBlZmZlY3QgbWFnbml0dWRlcy9jbGFtcHM7Ci0gYHJ1bnRpbWVFbnZpcm9ubWVudGFsRmllbGRzLnRzYCBhbHJlYWR5IG93bnMgcmVkdWNlZC12aXNpYmlsaXR5IGFuZCByZXNvdXJjZS1maWVsZCBwcm9qZWN0aW9uIGZyb20gdGhvc2UgZWZmZWN0IHByb2ZpbGVzOwotIGBpbmZpbml0ZVNlY3RvckRpcmVjdG9yLnRzYCBhbHJlYWR5IG93bnMgcmVjaXBlIHNlZWQvcmFuZG9tIHNlbGVjdGlvbiBhdXRob3JpdHk7Ci0gdGhlcmVmb3JlIEo2Qi1DIG11c3Qgbm90IGNyZWF0ZSBhIHBhcmFsbGVsIGVudmlyb25tZW50L2VmZmVjdC9STkcgZGlyZWN0b3IuCgpSZXF1aXJlZCBkaXJlY3Rpb246Ci0gY29udHJhY3QtZmlyc3QgYW5kIHB1cmU7IG5vIGxpdmUgcnVudGltZSBhZG9wdGlvbiBpbiBKNkItQzsKLSBjb25zdW1lIGEgdmFsaWQgY3VycmVudCBmcm96ZW4gSjZCLUIgc2VsZWN0aW9uIGFuZCBmcm96ZW4gSjZCLUEgaWRlbnRpdHkgcHJvZmlsZTsKLSBkZWZpbmUgY29tcGF0aWJpbGl0eS9tYXBwaW5nIG1ldGFkYXRhIG9ubHkgb250byBleGlzdGluZyBib3VuZGVkIG11dGF0b3IvZW52aXJvbm1lbnQgc2VtYW50aWNzOwotIERPQzMyIGRvZXMgKipub3QqKiBmcmVlemUgYSBjb25jcmV0ZSBtYXBwaW5nIHRhYmxlOiB0aGUgZGVkaWNhdGVkIEo2Qi1DIElzc3VlIG11c3QganVzdGlmeSBlYWNoIG1hcHBpbmcgaW5kZXBlbmRlbnRseSBhbmQgbWF5IGxlYXZlIGlkZW50aXRpZXMgdW5tYXBwZWQvZmFpbC1jbG9zZWQ7Ci0gcmV1c2UgZXhpc3RpbmcgbWFnbml0dWRlcyBhbmQgY2xhbXBzOyBkbyBub3QgdHVuZSBvciBkdXBsaWNhdGUgcnVudGltZSBlZmZlY3QgYXV0aG9yaXR5OwotIHVuc3VwcG9ydGVkL2FtYmlndW91cy91bmp1c3RpZmllZCBpZGVudGl0eSBtYXBwaW5ncyBmYWlsIGNsb3NlZDsKLSBubyBgRW5lcmd5U3dhcm1HYW1lLnRzeGAsIGxpdmUgZW52aXJvbm1lbnQgbXV0YXRpb24sIHNwYXduL3Byb2dyZXNzaW9uLCBjb2xsZWN0aW9uLCBjb21iYXQvZWNvbm9teSwgZW50aXR5IGxvb2t1cC9zY2FuLCB0aW1lci9STkcvc2VlZCwgcmVjaXBlLCBjYXAvYnVkZ2V0IG9yIGVudGl0eSBjcmVhdGUvcmVtb3ZlL211dGF0ZSBhdXRob3JpdHk7Ci0gY29udHJvbGxlZCBsaXZlIGV2ZW50IGFkb3B0aW9uIHJlbWFpbnMgSjZCLUQrIGFuZCByZXF1aXJlcyBzZXBhcmF0ZSBsaWZlY3ljbGUvZmFpcm5lc3MvYXR0cmlidXRpb24gY2VydGlmaWNhdGlvbi4=')
 
-`204566693978adabba7e66995c88ae2f85818f8b`
+          p = Path('docs/PROJECT_CONTINUITY.md')
+          text = p.read_text(encoding='utf-8')
+          text = replace_section(text, '## Current certified gameplay canonical\n', '\n\nVersion remains', CONT_CURRENT, 'continuity current')
+          text = replace_once(text, '\n\n## ES-13 gameplay canonicals', '\n\n' + CONT_RESULT + '\n\n## ES-13 gameplay canonicals', 'continuity J6B-B result')
+          text = replace_once(text, '- J6B-A — Pure Dynamic Mid-Sector Event Identity Vocabulary Contract: `204566693978adabba7e66995c88ae2f85818f8b`.\n', '- J6B-A — Pure Dynamic Mid-Sector Event Identity Vocabulary Contract: `204566693978adabba7e66995c88ae2f85818f8b`.\n- J6B-B — Pure Deterministic Dynamic Event Identity Selection Contract: `dcd39a173da7635bf85db6844dc86aeca6c1f38c`.\n', 'continuity canonical list')
+          text = replace_once(text, '- DOC31 — J6B-A closure & J6B-B deterministic event selection activation: Issue #381, branch `docs/es-13-j6ba-closure-j6bb-activation`, documentation-only closure in progress from gameplay canonical `204566693978adabba7e66995c88ae2f85818f8b`.\n', '- DOC31 — J6B-A closure & J6B-B deterministic event selection activation: `6cadd1db296d5249ae236121088307f480685fe0` — Issue #381 / PR #382.\n- DOC32 — J6B-B closure & J6B-C contract-first effect-mapping activation: Issue #385, branch `docs/es-13-j6bb-closure-j6bc-activation`, documentation-only closure in progress from gameplay canonical `dcd39a173da7635bf85db6844dc86aeca6c1f38c`.\n', 'continuity docs')
+          text = replace_section(text, '## Next gameplay phase\n', '\n\nJ4D+ additional tactical families', CONT_NEXT, 'continuity next')
+          text = replace_once(text, '`J6B-B Pure Deterministic Dynamic Event Identity Selection Contract → J6B-C+ Certified Effect Mapping/Live Adoption → J7 Bonus Rounds', '`J6B-C Pure Dynamic Event Effect-Mapping Compatibility Contract → J6B-D+ Controlled Live Event Adoption → J7 Bonus Rounds', 'continuity chronology')
+          text = replace_section(text, '> Continue ORBI Energy Swarm autonomously.', '\n\n## Update obligation', CONT_HANDOFF, 'continuity handoff')
+          p.write_text(text, encoding='utf-8')
 
-Phase: **ES-13J6B-A — Pure Dynamic Mid-Sector Event Identity Vocabulary Contract**
-Status: **DEPLOYED / FROZEN**
-Issue: #379 — CLOSED / completed
-Delivery: PR #380 — squash merged
+          p = Path('docs/IMPLEMENTATION_LEDGER.md')
+          text = p.read_text(encoding='utf-8')
+          row = '| ES-13J6B-A — Pure Dynamic Mid-Sector Event Identity Vocabulary Contract | DEPLOYED / FROZEN | `204566693978adabba7e66995c88ae2f85818f8b` | #379 | #380 |\n'
+          text = replace_once(text, row, row + '| ES-13J6B-B — Pure Deterministic Dynamic Event Identity Selection Contract | DEPLOYED / FROZEN | `dcd39a173da7635bf85db6844dc86aeca6c1f38c` | #383 | #384 |\n', 'ledger row')
+          text = replace_once(text, '\n\n## Documentation canonicals', '\n\n' + LEDGER_RESULT + '\n\n## Documentation canonicals', 'ledger result')
+          text = replace_once(text, '- DOC31 — J6B-A closure & J6B-B deterministic event selection activation: Issue #381, branch `docs/es-13-j6ba-closure-j6bb-activation`, in progress from gameplay canonical `204566693978adabba7e66995c88ae2f85818f8b`.\n', '- DOC31 — J6B-A closure & J6B-B deterministic event selection activation: `6cadd1db296d5249ae236121088307f480685fe0` — Issue #381 / PR #382.\n- DOC32 — J6B-B closure & J6B-C contract-first effect-mapping activation: Issue #385, branch `docs/es-13-j6bb-closure-j6bc-activation`, in progress from gameplay canonical `dcd39a173da7635bf85db6844dc86aeca6c1f38c`.\n', 'ledger docs')
+          text = replace_section(text, '## Next planned gameplay\n', '\n\nJ4D+ additional tactical families', LEDGER_NEXT, 'ledger next')
+          text = replace_once(text, '`J6B-B Pure Deterministic Dynamic Event Identity Selection Contract → J6B-C+ Certified Effect Mapping/Live Adoption → J7 Bonus Rounds', '`J6B-C Pure Dynamic Event Effect-Mapping Compatibility Contract → J6B-D+ Controlled Live Event Adoption → J7 Bonus Rounds', 'ledger sequence')
+          p.write_text(text, encoding='utf-8')
 
-Single parent: `26554f20648f0a27c2c510c055cbec81c43416c7` — DOC30 documentation canonical.
-
-Canonical tree: `3f6d2359ca87ec31853fbbfccc6bb1ffb6fb68ba`, exactly equal to final PR-head tree.''',
-              '''## Current certified gameplay canonical
-
-`dcd39a173da7635bf85db6844dc86aeca6c1f38c`
-
-Phase: **ES-13J6B-B — Pure Deterministic Dynamic Event Identity Selection Contract**
-Status: **DEPLOYED / FROZEN**
-Issue: #383 — CLOSED / completed
-Delivery: PR #384 — squash merged
-
-Single parent: `6cadd1db296d5249ae236121088307f480685fe0` — DOC31 documentation canonical.
-
-Canonical tree: `531fad95ced691ad24a0c2391fe9d30954f51e01`.'''
-          )
-
-          replace_once(
-              continuity,
-              '''Issue #379 CLOSED / completed. J6B-A is **DEPLOYED / FROZEN**.
-
-## ES-13 gameplay canonicals''',
-              '''Issue #379 CLOSED / completed. J6B-A is **DEPLOYED / FROZEN**.
-
-## J6B-B result
-J6B-B established deterministic semantic event selection over frozen J6A opportunity metadata and the frozen J6B-A identity vocabulary, without mapping or executing any effect.
-
-Certified contract:
-- consumes only a valid current J6A `DYNAMIC_MID_SECTOR_EVENT_OPPORTUNITY` / `OPPORTUNITY_ONLY` / `INFINITE` projection;
-- requires integer Infinite sector >= 11, certified wave count 3–7, exact interior `waveIndex === selectedWaveIndex`, exact lowercase 8-hex `identityFingerprint`, and canonical `opportunityId = j6a:<sector>:<selectedWaveIndex>:<identityFingerprint>`;
-- rejects tampered J6A zero-authority flags rather than normalizing them;
-- derives `selectionIndex = parseInt(identityFingerprint, 16) % 5` and selects exactly one of the five frozen J6B-A IDs;
-- output is immutable `DYNAMIC_MID_SECTOR_EVENT_SELECTION` / `SELECTION_ONLY` metadata;
-- owns semantic event-selection authority only;
-- no new RNG/clock/seed authority, mutator/effect mapping, live execution, environment mutation, spawn/progression, collection, combat/economy, entity lookup/scan, cap/budget or entity create/remove/mutate authority;
-- no `EnergySwarmGame.tsx`, Infinite-director or environmental-runtime adoption.
-
-Final product scope exactly:
-- `src/game/dynamicMidSectorEventSelection.ts`;
-- `tests/es-13j6bb-dynamic-mid-sector-event-selection.test.mjs`;
-- `tests/gameplay/dynamic-mid-sector-event-selection.test.ts`.
-
-## J6B-B exact evidence
-- DOC31 baseline `6cadd1db296d5249ae236121088307f480685fe0`;
-- pre-PR SHA `2a82945747f6bd3b855a2a7b84c5db9d084fed38`, run `38808432120` / job `116675222019` GREEN including repo/gameplay/platform/typecheck/release/dossier/build/readiness, exact product-scope guard and Android APK build/verify/upload;
-- final PR #384 head `acc98dccff52812b12e23bd26fb7b21e9889d06b`;
-- PR CI `38808893011` / `116676780125` GREEN;
-- PR Android `38808893023` / `116676778988` GREEN including Build/Verify/Upload APK;
-- canonical `dcd39a173da7635bf85db6844dc86aeca6c1f38c`, single parent `6cadd1db296d5249ae236121088307f480685fe0`, tree `531fad95ced691ad24a0c2391fe9d30954f51e01`;
-- canonical diff exactly three certified product/test files;
-- main CI `38809192748` / `116677795292` GREEN;
-- main Android `38809192821` / `116677795333` GREEN including Build/Verify/Upload APK;
-- Pages `38809290030`: build `116678137605` + deploy `116678316176` GREEN.
-
-Issue #383 CLOSED / completed. J6B-B is **DEPLOYED / FROZEN**.
-
-## ES-13 gameplay canonicals'''
-          )
-
-          replace_once(
-              continuity,
-              '''- J6B-A — Pure Dynamic Mid-Sector Event Identity Vocabulary Contract: `204566693978adabba7e66995c88ae2f85818f8b`.
-
-J3C-C stateful formation patterns''',
-              '''- J6B-A — Pure Dynamic Mid-Sector Event Identity Vocabulary Contract: `204566693978adabba7e66995c88ae2f85818f8b`.
-- J6B-B — Pure Deterministic Dynamic Event Identity Selection Contract: `dcd39a173da7635bf85db6844dc86aeca6c1f38c`.
-
-J3C-C stateful formation patterns'''
-          )
-
-          replace_once(
-              continuity,
-              '''- DOC31 — J6B-A closure & J6B-B deterministic event selection activation: Issue #381, branch `docs/es-13-j6ba-closure-j6bb-activation`, documentation-only closure in progress from gameplay canonical `204566693978adabba7e66995c88ae2f85818f8b`.
-
-## Next gameplay phase
-
-### ES-13J6B-B — Pure Deterministic Dynamic Event Identity Selection Contract
-Status: **NEXT ENGINEERING TARGET AFTER DOC31 CLOSURE**
-
-J6A is frozen as opportunity-only and J6B-A as identity-only. J6B-B composes those frozen facts to select exactly one event identity deterministically from the existing J6A fingerprint.
-
-Required direction:
-- validate current J6A opportunity identity and exact 8-lowercase-hex fingerprint;
-- select one of the five frozen J6B-A IDs with no new RNG/clock/seed authority;
-- emit immutable `SELECTION_ONLY` metadata only;
-- no mutator/effect mapping or live execution;
-- no adoption into `EnergySwarmGame.tsx`, Infinite directors or environmental runtime;
-- no spawn/progression, collection, combat/economy, environment mutation, scan/lookup, timing/RNG, cap/budget or entity authority;
-- any J6B-C+ live mapping must separately prove compatibility and reuse frozen environmental authorities.''',
-              '''- DOC31 — J6B-A closure & J6B-B deterministic event selection activation: `6cadd1db296d5249ae236121088307f480685fe0` — Issue #381 / PR #382.
-- DOC32 — J6B-B closure & J6B-C contract-first effect-mapping activation: Issue #385, branch `docs/es-13-j6bb-closure-j6bc-activation`, documentation-only closure in progress from gameplay canonical `dcd39a173da7635bf85db6844dc86aeca6c1f38c`.
-
-## Next gameplay phase
-
-### ES-13J6B-C — Pure Dynamic Event Effect-Mapping Compatibility Contract
-Status: **NEXT ENGINEERING TARGET AFTER DOC32 CLOSURE**
-
-J6A opportunity selection, J6B-A identity vocabulary and J6B-B deterministic identity selection are frozen. Architecture discovery confirms that existing runtime authority already lives in `runtimeMutatorEffects.ts`, `runtimeEnvironmentalFields.ts` and the Infinite recipe/director stack; J6B-C must not create a parallel environmental system.
-
-Required direction:
-- contract-first and pure only; no live runtime adoption in J6B-C;
-- consume a valid current frozen J6B-B `SELECTION_ONLY` projection and frozen J6B-A identity semantics;
-- define only compatibility/mapping metadata onto already-existing bounded `InfiniteMutator` / environmental-effect semantics when that mapping is independently justified;
-- concrete identity-to-effect mappings are **not frozen by DOC32** and must be proved/frozen by the dedicated J6B-C Issue; do not assume all five identities are mappable;
-- unsupported, ambiguous or unjustified mappings must fail closed rather than invent new effect semantics;
-- reuse existing effect magnitudes/clamps; no new tuning, second environmental director, RNG/clock/seed authority or recipe authority;
-- no `EnergySwarmGame.tsx`, live environment mutation, spawn/progression, collection, combat/economy, entity lookup/scan, cap/budget or entity create/remove/mutate authority;
-- controlled live event adoption remains a later J6B-D+ slice and requires separate fairness/lifecycle/attribution certification.'''
-          )
-
-          replace_once(
-              continuity,
-              '''`J6B-B Pure Deterministic Dynamic Event Identity Selection Contract → J6B-C+ Certified Effect Mapping/Live Adoption → J7 Bonus Rounds''',
-              '''`J6B-C Pure Dynamic Event Effect-Mapping Compatibility Contract → J6B-D+ Controlled Live Event Adoption → J7 Bonus Rounds'''
-          )
-
-          replace_once(
-              continuity,
-              '''> Continue ORBI Energy Swarm autonomously. Repository `ingeniusvictor/orbi-energy.swarm`. J6B-A gameplay canonical is `204566693978adabba7e66995c88ae2f85818f8b`, fully DEPLOYED / FROZEN via Issue #379 / PR #380 with exactly five immutable IDENTITY_ONLY event identities and post-main CI/Android/Pages GREEN. Complete DOC31 if still open, then implement J6B-B as a pure deterministic selection contract over the frozen J6A opportunity + J6B-A vocabulary: validate the current opportunity/fingerprint, choose one frozen event ID using only the existing fingerprint, emit SELECTION_ONLY metadata, and add no mutator/effect mapping, runtime adoption, spawn/collection/combat/economy/environment/timing/scan/cap/entity authority. Keep live mapping for J6B-C+ and reuse existing environmental authorities. Keep J3C-C, J4D+ and manual blockers deferred. Follow Issue → Branch → full gates → PR → exact-SHA post-merge evidence. Never touch `main` directly or weaken tests.''',
-              '''> Continue ORBI Energy Swarm autonomously. Repository `ingeniusvictor/orbi-energy.swarm`. J6B-B gameplay canonical is `dcd39a173da7635bf85db6844dc86aeca6c1f38c`, fully DEPLOYED / FROZEN via Issue #383 / PR #384 with pure deterministic `SELECTION_ONLY` identity selection and post-main CI/Android/Pages GREEN. Complete DOC32 if still open, then perform J6B-C architecture/discovery before freezing a dedicated pure effect-mapping compatibility contract. Reuse only existing frozen Infinite mutator/environment authorities; do not invent concrete identity mappings, new effect magnitudes, runtime adoption or a second environmental system without evidence. Keep controlled live adoption for J6B-D+ and keep J3C-C, J4D+ and manual blockers deferred. Follow Issue → Branch → full gates → PR → exact-SHA post-merge evidence. Never touch `main` directly or weaken tests.'''
-          )
-
-          replace_once(
-              ledger,
-              '''| ES-13J6B-A — Pure Dynamic Mid-Sector Event Identity Vocabulary Contract | DEPLOYED / FROZEN | `204566693978adabba7e66995c88ae2f85818f8b` | #379 | #380 |
-''',
-              '''| ES-13J6B-A — Pure Dynamic Mid-Sector Event Identity Vocabulary Contract | DEPLOYED / FROZEN | `204566693978adabba7e66995c88ae2f85818f8b` | #379 | #380 |
-| ES-13J6B-B — Pure Deterministic Dynamic Event Identity Selection Contract | DEPLOYED / FROZEN | `dcd39a173da7635bf85db6844dc86aeca6c1f38c` | #383 | #384 |
-'''
-          )
-
-          replace_once(
-              ledger,
-              '''Issue #379 CLOSED / completed. J6B-A is **DEPLOYED / FROZEN**.
-
-## Documentation canonicals''',
-              '''Issue #379 CLOSED / completed. J6B-A is **DEPLOYED / FROZEN**.
-
-### J6B-B — Pure Deterministic Dynamic Event Identity Selection Contract
-Certified behavior:
-- validates exact current J6A opportunity kind/mode/source, bounded interior wave metadata, lowercase 8-hex fingerprint and canonical opportunity ID;
-- deterministically selects exactly one frozen J6B-A ID using the existing fingerprint modulo the frozen five-ID list;
-- emits immutable `DYNAMIC_MID_SECTOR_EVENT_SELECTION` / `SELECTION_ONLY` metadata;
-- malformed/tampered J6A facts fail closed;
-- owns semantic selection only and adds no RNG/clock/seed, mutator/effect mapping, live execution, environment mutation, spawn/progression, collection, combat/economy, lookup/scan, cap/budget or entity authority.
-
-Exact deployment anchors:
-- DOC31 baseline `6cadd1db296d5249ae236121088307f480685fe0`;
-- pre-PR `2a82945747f6bd3b855a2a7b84c5db9d084fed38`, run `38808432120` / job `116675222019` GREEN including exact scope + Android APK;
-- final PR #384 head `acc98dccff52812b12e23bd26fb7b21e9889d06b`;
-- PR CI `38808893011` / `116676780125` GREEN; Android `38808893023` / `116676778988` GREEN;
-- canonical `dcd39a173da7635bf85db6844dc86aeca6c1f38c`, parent `6cadd1db296d5249ae236121088307f480685fe0`, tree `531fad95ced691ad24a0c2391fe9d30954f51e01`;
-- main CI `38809192748` / `116677795292` GREEN; Android `38809192821` / `116677795333` GREEN;
-- Pages `38809290030`, build `116678137605` + deploy `116678316176` GREEN.
-
-Issue #383 CLOSED / completed. J6B-B is **DEPLOYED / FROZEN**.
-
-## Documentation canonicals'''
-          )
-
-          replace_once(
-              ledger,
-              '''- DOC31 — J6B-A closure & J6B-B deterministic event selection activation: Issue #381, branch `docs/es-13-j6ba-closure-j6bb-activation`, in progress from gameplay canonical `204566693978adabba7e66995c88ae2f85818f8b`.
-''',
-              '''- DOC31 — J6B-A closure & J6B-B deterministic event selection activation: `6cadd1db296d5249ae236121088307f480685fe0` — Issue #381 / PR #382.
-- DOC32 — J6B-B closure & J6B-C contract-first effect-mapping activation: Issue #385, branch `docs/es-13-j6bb-closure-j6bc-activation`, in progress from gameplay canonical `dcd39a173da7635bf85db6844dc86aeca6c1f38c`.
-'''
-          )
-
-          replace_once(
-              ledger,
-              '''### ES-13J6B-B — Pure Deterministic Dynamic Event Identity Selection Contract
-Status: **NEXT ENGINEERING TARGET AFTER DOC31 CLOSURE**.
-
-J6A is frozen as opportunity-only and J6B-A as identity-only. J6B-B may select exactly one frozen identity from a valid current J6A `identityFingerprint` without creating new randomness or runtime effect authority.
-
-J6B-B may own semantic selection only (`SELECTION_ONLY`). It must not map identities to mutators/environment effects, execute live behavior, adopt into runtime, or own spawn/progression, collections, combat/economy, environment mutation, scan/lookup, timing/RNG, cap/budget or entity authority. Live effect mapping remains later and must reuse existing frozen environmental systems.''',
-              '''### ES-13J6B-C — Pure Dynamic Event Effect-Mapping Compatibility Contract
-Status: **NEXT ENGINEERING TARGET AFTER DOC32 CLOSURE**.
-
-J6A, J6B-A and J6B-B are frozen through deterministic `SELECTION_ONLY` identity selection. Existing environment/effect authority already lives in the frozen Infinite mutator projection and runtime environmental-field systems.
-
-J6B-C must be a pure compatibility/mapping contract only. It may reference already-existing bounded `InfiniteMutator` / environmental semantics after a dedicated Issue proves exact mappings, but DOC32 freezes no concrete identity-to-effect table. Ambiguous or unsupported identities must fail closed. J6B-C must not adopt into `EnergySwarmGame.tsx`, mutate environment/runtime state, invent effect magnitudes, RNG/clock/seed or recipe authority, or own spawn/progression, collections, combat/economy, scans/lookups, caps/budgets or entity mutation. Controlled live adoption remains J6B-D+ after separate fairness/lifecycle certification.'''
-          )
-
-          replace_once(
-              ledger,
-              '''`J6B-B Pure Deterministic Dynamic Event Identity Selection Contract → J6B-C+ Certified Effect Mapping/Live Adoption → J7 Bonus Rounds''',
-              '''`J6B-C Pure Dynamic Event Effect-Mapping Compatibility Contract → J6B-D+ Controlled Live Event Adoption → J7 Bonus Rounds'''
-          )
-
-          replace_once(
-              roadmap,
-              '''### J6B-B — Pure Deterministic Dynamic Event Identity Selection Contract
-Status: **NEXT ACTIVE ENGINEERING SLICE AFTER DOC31 CLOSURE**
-
-J6A already emits one valid opportunity with an 8-lowercase-hex `identityFingerprint`; J6B-A freezes exactly five event identities. J6B-B may compose those two frozen contracts to select identity semantics only.
-
-Required direction:
-- pure deterministic contract only; no runtime adoption;
-- consume a valid current J6A opportunity and frozen J6B-A vocabulary;
-- validate kind/mode/source/wave consistency, canonical opportunity ID and exact fingerprint shape;
-- select exactly one frozen event ID from the existing `identityFingerprint`, with no new RNG/clock/seed authority;
-- output immutable `SELECTION_ONLY` metadata carrying source opportunity identity + selected event identity;
-- semantic event selection is allowed, but mutator/effect mapping and live execution remain forbidden;
-- invalid/stale/malformed input fails closed;
-- J6A/J6B-A remain unchanged;
-- no `EnergySwarmGame.tsx`, Infinite director, mutator/effect/environment runtime adoption;
-- no spawn/progression, collection, combat/economy, entity lookup/scan, timer/RNG, cap/budget or entity create/remove/mutate authority;
-- live effect mapping remains a later J6 slice and must reuse existing frozen environmental authorities.
-
-## J7 — Bonus Challenge Rounds''',
-              '''### J6B-B — Pure Deterministic Dynamic Event Identity Selection Contract
-Status: **DEPLOYED / FROZEN**
-Canonical: `dcd39a173da7635bf85db6844dc86aeca6c1f38c`
-Issue #383 / PR #384
-
-Certified behavior:
-- consumes only valid current J6A `DYNAMIC_MID_SECTOR_EVENT_OPPORTUNITY` / `OPPORTUNITY_ONLY` / `INFINITE` metadata;
-- validates exact bounded interior-wave consistency, lowercase 8-hex `identityFingerprint`, canonical opportunity ID and all J6A zero-authority flags;
-- deterministically selects exactly one frozen J6B-A ID via `parseInt(identityFingerprint, 16) % 5`;
-- emits immutable `DYNAMIC_MID_SECTOR_EVENT_SELECTION` / `SELECTION_ONLY` metadata carrying source opportunity identity + selected event identity;
-- malformed, padded, forged, unsupported or tampered input fails closed;
-- owns semantic event selection only;
-- no new RNG/clock/seed authority, mutator/effect mapping, live execution, environment mutation, spawn/progression, collection, combat/economy, lookup/scan, cap/budget or entity create/remove/mutate authority;
-- no `EnergySwarmGame.tsx`, Infinite-director or environmental-runtime adoption.
-
-Exact deployment anchors:
-- DOC31 baseline `6cadd1db296d5249ae236121088307f480685fe0`;
-- pre-PR `2a82945747f6bd3b855a2a7b84c5db9d084fed38`, run `38808432120` / job `116675222019` GREEN including exact scope + Android APK;
-- final PR #384 head `acc98dccff52812b12e23bd26fb7b21e9889d06b`;
-- PR CI `38808893011` / `116676780125` GREEN; Android `38808893023` / `116676778988` GREEN;
-- canonical `dcd39a173da7635bf85db6844dc86aeca6c1f38c`, parent `6cadd1db296d5249ae236121088307f480685fe0`, tree `531fad95ced691ad24a0c2391fe9d30954f51e01`;
-- main CI `38809192748` / `116677795292` GREEN; Android `38809192821` / `116677795333` GREEN;
-- Pages `38809290030`, build `116678137605` + deploy `116678316176` GREEN.
-
-### J6B-C — Pure Dynamic Event Effect-Mapping Compatibility Contract
-Status: **NEXT ACTIVE ENGINEERING SLICE AFTER DOC32 CLOSURE**
-
-Architecture discovery after J6B-B confirms:
-- `runtimeMutatorEffects.ts` already owns the bounded mapping from the ten frozen `InfiniteMutator` values to effect magnitudes/clamps;
-- `runtimeEnvironmentalFields.ts` already owns reduced-visibility and resource-field projection from those effect profiles;
-- `infiniteSectorDirector.ts` already owns recipe seed/random selection authority;
-- therefore J6B-C must not create a parallel environment/effect/RNG director.
-
-Required direction:
-- contract-first and pure; no live runtime adoption in J6B-C;
-- consume a valid current frozen J6B-B selection and frozen J6B-A identity profile;
-- define compatibility/mapping metadata only onto existing bounded mutator/environment semantics;
-- DOC32 does **not** freeze a concrete mapping table: the dedicated J6B-C Issue must justify each mapping independently and may leave identities unmapped/fail-closed;
-- reuse existing magnitudes and clamps; do not tune or duplicate runtime effect authority;
-- unsupported/ambiguous/unjustified identity mappings fail closed;
-- no `EnergySwarmGame.tsx`, live environment mutation, spawn/progression, collection, combat/economy, entity lookup/scan, timer/RNG/seed, recipe, cap/budget or entity create/remove/mutate authority;
-- controlled live event adoption remains J6B-D+ and requires separate lifecycle/fairness/attribution certification.
-
-## J7 — Bonus Challenge Rounds'''
-          )
+          p = Path('docs/ES13_GAMEPLAY_ROADMAP.md')
+          text = p.read_text(encoding='utf-8')
+          text = replace_section(text, '### J6B-B — Pure Deterministic Dynamic Event Identity Selection Contract\n', '\n\n## J7 — Bonus Challenge Rounds', ROADMAP_J6, 'roadmap J6B')
+          p.write_text(text, encoding='utf-8')
           PY
 
       - name: Verify exact DOC32 product scope before commit
@@ -314,15 +86,12 @@ Required direction:
         run: |
           git diff --check
           git diff --name-only | sort > /tmp/actual.txt
-          printf '%s\n' \
-            'docs/ES13_GAMEPLAY_ROADMAP.md' \
-            'docs/IMPLEMENTATION_LEDGER.md' \
-            'docs/PROJECT_CONTINUITY.md' | sort > /tmp/expected.txt
+          printf '%s\n' 'docs/ES13_GAMEPLAY_ROADMAP.md' 'docs/IMPLEMENTATION_LEDGER.md' 'docs/PROJECT_CONTINUITY.md' | sort > /tmp/expected.txt
           diff -u /tmp/expected.txt /tmp/actual.txt
           grep -Fq 'dcd39a173da7635bf85db6844dc86aeca6c1f38c' docs/PROJECT_CONTINUITY.md
           grep -Fq 'ES-13J6B-C — Pure Dynamic Event Effect-Mapping Compatibility Contract' docs/IMPLEMENTATION_LEDGER.md
-          grep -Fq 'Controlled live event adoption remains J6B-D+' docs/ES13_GAMEPLAY_ROADMAP.md
-          ! git diff --name-only | grep -Eq '^(src/|tests/|package|public/|assets/)'
+          grep -Fq 'controlled live event adoption remains J6B-D+' docs/ES13_GAMEPLAY_ROADMAP.md
+          if git diff --name-only | grep -Eq '^(src/|tests/|package|public/|assets/)'; then exit 1; fi
 
       - name: Commit and push DOC32 candidate
         shell: bash
