@@ -52,7 +52,7 @@ replace_once(
 )
 
 detach_pattern = re.compile(
-    r"(if\s*\(\s*pendingCommandLinkBreak\s*&&\s*shouldDetachCommandLinkMember\(\s*"
+    r"(if\s*\(\s*shouldDetachCommandLinkMember\(\s*"
     r"pendingCommandLinkBreak,\s*enemy\.enemyFormation,\s*\)\s*\)\s*\{\s*"
     r"enemy\.enemyFormation = undefined;)(\s*\})"
 )
