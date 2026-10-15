@@ -1,0 +1,331 @@
+name: ES-13DOC24 Patch and Certification
+
+on:
+  push:
+    branches:
+      - docs/es-13-j5e-closure-j5fa-activation
+    paths:
+      - '.github/workflows/es-13doc24-patch-cert.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch-certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      BASE_SHA: 6aa63e9643a2521738b3b6afebfb0856f48bd3fd
+    steps:
+      - name: Checkout exact branch head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: docs/es-13-j5e-closure-j5fa-activation
+
+      - name: Apply DOC24 exact anchored patch
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          def replace_exact(text: str, old: str, new: str, label: str) -> str:
+              count = text.count(old)
+              if count != 1:
+                  raise RuntimeError(f"{label}: expected exactly 1 match, got {count}")
+              return text.replace(old, new, 1)
+
+          def replace_regex(text: str, pattern: str, replacement: str, label: str) -> str:
+              updated, count = re.subn(pattern, replacement, text, count=1, flags=re.S)
+              if count != 1:
+                  raise RuntimeError(f"{label}: expected exactly 1 match, got {count}")
+              return updated
+
+          # ROADMAP
+          p = Path('docs/ES13_GAMEPLAY_ROADMAP.md')
+          s = p.read_text()
+          j5e_j5fa = '''### J5E — Controlled Live Command-Link Detach Application
+          Status: **DEPLOYED / FROZEN**
+          Canonical: `6aa63e9643a2521738b3b6afebfb0856f48bd3fd`
+          Issue #351 / PR #352
+
+          Certified live behavior:
+          - a valid current `COMMAND_CORE` defeat is observed only through existing centralized `registerCombatDefeat(...)`;
+          - exactly one pending bounded break intent is retained; no queue, map, set or group/entity index exists;
+          - the intent is captured before the existing enemy logic traversal and applied only inside that traversal;
+          - only living linked members with the same `groupId` and a bounded J5D linked-member index detach;
+          - detach mutates only formation ownership via `enemy.enemyFormation = undefined`, after which existing legacy movement remains authoritative;
+          - captured intent is consumed by identity guard without erasing a newer intent;
+          - pending intent resets with all J3 director reset boundaries;
+          - no second enemy scan/collection, Enemy/EnemyType field, damage/kill, score/reward/economy, spawn/progression, clock/RNG, cap/budget or entity create/remove authority;
+          - J3 formation authority and frozen J5A–J5D semantics remain unchanged.
+
+          Exact deployment anchors:
+          - pre-PR `868ff46c057ec589a0984a8b24fdd824a63bd903`, run `38680675400` / job `116244260573` GREEN including exact scope + Android APK;
+          - final PR #352 head `92fcb5930029ca42cc8fb191458397c4610b2f7e`;
+          - PR CI `38680965872` / `116245194669` GREEN; Android `38680965875` / `116245194752` GREEN;
+          - canonical `6aa63e9643a2521738b3b6afebfb0856f48bd3fd`, parent `b317faa1cb3403fe11baaa71e6c072b8a97a3062`, tree `b7b65424cbfe1b574a632364e8cf028b1da155fa`;
+          - main CI `38681102491` / `116245629498` GREEN; Android `38681102495` / `116245629757` GREEN;
+          - Pages `38681179362`, build `116245865182` + deploy `116245989502` GREEN.
+
+          ### J5F-A — Pure Optional Command-Link Combat Effect Contract
+          Status: **NEXT ACTIVE ENGINEERING SLICE AFTER DOC24 CLOSURE**
+
+          J5E proves that command-link formation ownership can be detached safely without adding a second scan or entity index. J5F-A must remain contract-first before any additional combat consequence is allowed.
+
+          Required direction:
+          - pure deterministic contract only; no live `EnergySwarmGame.tsx` adoption;
+          - consume frozen J5 semantic facts as data without taking J3/J5E authority;
+          - define only bounded optional effect intent/eligibility metadata, with exact effect vocabulary justified in the dedicated J5F-A engineering issue;
+          - invalid, linked-member, stale or unsupported facts fail closed;
+          - no entity ids, lookup, scan, collection or runtime mutation;
+          - no damage/kill, score/reward/economy, projectile/spawn/progression, timer/RNG, cap/budget or entity create/remove authority;
+          - no automatic chain reaction is live in J5F-A;
+          - any later J5F-B+ live application must independently prove bounded targeting, fairness, attribution and no duplicate defeat/reward semantics.
+
+          '''
+          s = replace_regex(
+              s,
+              r'### J5E — Controlled Live Command-Link Detach Application\n.*?(?=## J6 — Dynamic Mid-Sector Events)',
+              j5e_j5fa,
+              'roadmap J5E→J5F-A section',
+          )
+          p.write_text(s)
+
+          # LEDGER
+          p = Path('docs/IMPLEMENTATION_LEDGER.md')
+          s = p.read_text()
+          j5d_row = '| ES-13J5D — Pure Command-Link Break Resolution Contract | DEPLOYED / FROZEN | `99410123a8f20d15a88cd20ada34523ce4497006` | #347 | #348 |'
+          j5e_row = '| ES-13J5E — Controlled Live Command-Link Detach Application | DEPLOYED / FROZEN | `6aa63e9643a2521738b3b6afebfb0856f48bd3fd` | #351 | #352 |'
+          s = replace_exact(s, j5d_row, j5d_row + '\n' + j5e_row, 'ledger milestone row')
+
+          j5e_evidence = '''### J5E — Controlled Live Command-Link Detach Application
+          J5E adopted the frozen J5D break intent into live formation ownership only, through existing runtime seams and without creating a second enemy authority.
+
+          Final product diff exactly:
+          - `src/game/EnergySwarmGame.tsx`;
+          - `src/game/liveCommandLinkBreakApplication.ts`;
+          - `tests/es-13j5e-live-command-link-break-application.test.mjs`;
+          - `tests/gameplay/live-command-link-break-application.test.ts`.
+
+          Exact evidence:
+          - baseline DOC23 `b317faa1cb3403fe11baaa71e6c072b8a97a3062`;
+          - pre-PR SHA `868ff46c057ec589a0984a8b24fdd824a63bd903`, run `38680675400` / job `116244260573` GREEN including repo/gameplay/platform/typecheck/release/dossier/build/readiness, exact scope guard and Android APK build/verify/upload;
+          - final PR #352 head `92fcb5930029ca42cc8fb191458397c4610b2f7e`;
+          - PR CI `38680965872` / `116245194669` GREEN;
+          - PR Android `38680965875` / `116245194752` GREEN including Build/Verify/Upload APK;
+          - canonical `6aa63e9643a2521738b3b6afebfb0856f48bd3fd`, single parent `b317faa1cb3403fe11baaa71e6c072b8a97a3062`, tree `b7b65424cbfe1b574a632364e8cf028b1da155fa` equal to final PR-head tree;
+          - canonical diff exactly four certified J5E files;
+          - main CI `38681102491` / `116245629498` GREEN;
+          - main Android `38681102495` / `116245629757` GREEN including Build/Verify/Upload APK;
+          - Pages `38681179362`: build `116245865182` + deploy `116245989502` GREEN.
+
+          Issue #351 CLOSED / completed. J5E is **DEPLOYED / FROZEN**.
+
+          '''
+          s = replace_exact(s, '## Documentation canonicals\n', j5e_evidence + '## Documentation canonicals\n', 'ledger J5E evidence')
+          s = replace_exact(
+              s,
+              '- DOC23 — J5D closure & J5E activation: Issue #349, branch `docs/es-13-j5d-closure-j5e-activation`, in progress from gameplay canonical `99410123a8f20d15a88cd20ada34523ce4497006`.',
+              '- DOC23 — J5D closure & J5E activation: `b317faa1cb3403fe11baaa71e6c072b8a97a3062` — Issue #349 / PR #350.\n- DOC24 — J5E closure & J5F-A activation: Issue #353, branch `docs/es-13-j5e-closure-j5fa-activation`, in progress from gameplay canonical `6aa63e9643a2521738b3b6afebfb0856f48bd3fd`.',
+              'ledger DOC23/DOC24',
+          )
+          next_ledger = '''### ES-13J5F-A — Pure Optional Command-Link Combat Effect Contract
+          Status: **NEXT ENGINEERING TARGET AFTER DOC24 CLOSURE**.
+
+          J5E is now frozen as formation-ownership detach only. J5F-A may define a pure, deterministic and fail-closed optional combat-effect contract, but it may not adopt any effect live. Exact effect vocabulary and eligibility must be justified in the dedicated engineering issue before implementation.
+
+          J5F-A may not add live entity ids/lookup/scans/collections, runtime mutation, damage/kill, score/reward/economy, projectiles, spawn/progression, timer/RNG, cap/budget or entity create/remove authority. Any J5F-B+ live application must separately prove bounded targeting, fairness and single defeat/reward attribution.
+
+          '''
+          s = replace_regex(
+              s,
+              r'### ES-13J5E — Controlled Live Command-Link Detach Application\n.*?(?=J4D\+ additional tactical families remain deferred:)',
+              next_ledger,
+              'ledger next gameplay',
+          )
+          s = replace_exact(
+              s,
+              '`J5A Pure Priority-Target Contract → J5B+ Controlled Priority Targets/Chain Reactions → J6 Dynamic Events → J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance → ES-14 Living Warfront`',
+              '`J5F-A Pure Optional Command-Link Combat Effect Contract → J5F-B+ separately proven live effects → J6 Dynamic Events → J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance → ES-14 Living Warfront`',
+              'ledger program sequence',
+          )
+          p.write_text(s)
+
+          # CONTINUITY
+          p = Path('docs/PROJECT_CONTINUITY.md')
+          s = p.read_text()
+          s = replace_exact(s, 'Last continuity update: 2026-10-14', 'Last continuity update: 2026-10-15', 'continuity date')
+          current = '''## Current certified gameplay canonical
+
+          `6aa63e9643a2521738b3b6afebfb0856f48bd3fd`
+
+          Phase: **ES-13J5E — Controlled Live Command-Link Detach Application**
+          Status: **DEPLOYED / FROZEN**
+          Issue: #351 — CLOSED / completed
+          Delivery: PR #352 — squash merged
+
+          Single parent: `b317faa1cb3403fe11baaa71e6c072b8a97a3062` — DOC23 documentation canonical.
+
+          Canonical tree: `b7b65424cbfe1b574a632364e8cf028b1da155fa`, exactly equal to final PR-head tree.
+
+          '''
+          s = replace_regex(
+              s,
+              r'## Current certified gameplay canonical\n.*?(?=Version remains `0\.2\.0-beta\.1`\.)',
+              current,
+              'continuity current canonical',
+          )
+          j5e_cont = '''## J5E result
+          J5E delivered controlled live Command-Link detach while preserving frozen J5D purity and J3 formation authority.
+
+          Certified live behavior:
+          - valid current Command Core defeat is observed at existing centralized `registerCombatDefeat(...)`;
+          - one scalar pending break intent only; no queue/map/set/group index;
+          - capture occurs before, and detach application occurs only inside, the existing enemy traversal;
+          - matching living linked members require exact `groupId` plus a bounded J5D linked-member index;
+          - detach clears only `enemy.enemyFormation`; existing movement immediately resumes authority;
+          - captured intent consumption uses object identity so a newer intent cannot be erased;
+          - pending intent resets at all J3 director reset boundaries;
+          - no second enemy scan/collection, entity schema change, damage/kill, score/reward/economy, spawn/progression, clock/RNG, cap/budget or entity create/remove authority.
+
+          Final product scope exactly:
+          - `src/game/EnergySwarmGame.tsx`;
+          - `src/game/liveCommandLinkBreakApplication.ts`;
+          - `tests/es-13j5e-live-command-link-break-application.test.mjs`;
+          - `tests/gameplay/live-command-link-break-application.test.ts`.
+
+          ## J5E exact evidence
+          - DOC23 baseline `b317faa1cb3403fe11baaa71e6c072b8a97a3062`;
+          - pre-PR SHA `868ff46c057ec589a0984a8b24fdd824a63bd903`, run `38680675400` / job `116244260573` GREEN including repo/gameplay/platform/typecheck/release/dossier/build/readiness, exact product-scope guard and Android APK build/verify/upload;
+          - final PR #352 head `92fcb5930029ca42cc8fb191458397c4610b2f7e`;
+          - PR CI `38680965872` / `116245194669` GREEN;
+          - PR Android `38680965875` / `116245194752` GREEN including Build/Verify/Upload APK;
+          - canonical `6aa63e9643a2521738b3b6afebfb0856f48bd3fd`, single parent `b317faa1cb3403fe11baaa71e6c072b8a97a3062`, tree `b7b65424cbfe1b574a632364e8cf028b1da155fa` equal to final PR-head tree;
+          - canonical diff exactly four certified product/test files;
+          - main CI `38681102491` / `116245629498` GREEN;
+          - main Android `38681102495` / `116245629757` GREEN including Build/Verify/Upload APK;
+          - Pages `38681179362`: build `116245865182` + deploy `116245989502` GREEN.
+
+          Issue #351 CLOSED / completed. J5E is **DEPLOYED / FROZEN**.
+
+          '''
+          s = replace_exact(s, '## ES-13 gameplay canonicals\n', j5e_cont + '## ES-13 gameplay canonicals\n', 'continuity J5E evidence')
+          s = replace_exact(
+              s,
+              '- J5D — Pure Command-Link Break Resolution Contract: `99410123a8f20d15a88cd20ada34523ce4497006`.',
+              '- J5D — Pure Command-Link Break Resolution Contract: `99410123a8f20d15a88cd20ada34523ce4497006`.\n- J5E — Controlled Live Command-Link Detach Application: `6aa63e9643a2521738b3b6afebfb0856f48bd3fd`.',
+              'continuity canonical list',
+          )
+          s = replace_exact(
+              s,
+              '- DOC23 — J5D closure & J5E activation: Issue #349, branch `docs/es-13-j5d-closure-j5e-activation`, documentation-only closure in progress from gameplay canonical `99410123a8f20d15a88cd20ada34523ce4497006`.',
+              '- DOC23 — J5D closure & J5E activation: `b317faa1cb3403fe11baaa71e6c072b8a97a3062` — Issue #349 / PR #350.\n- DOC24 — J5E closure & J5F-A activation: Issue #353, branch `docs/es-13-j5e-closure-j5fa-activation`, documentation-only closure in progress from gameplay canonical `6aa63e9643a2521738b3b6afebfb0856f48bd3fd`.',
+              'continuity DOC23/DOC24',
+          )
+          next_cont = '''## Next gameplay phase
+
+          ### ES-13J5F-A — Pure Optional Command-Link Combat Effect Contract
+          Status: **NEXT ENGINEERING TARGET AFTER DOC24 CLOSURE**
+
+          J5E is frozen as detach-only live behavior. J5F-A is contract-first: define a deterministic, fail-closed proposal for optional Command-Link combat-effect intent/eligibility without adopting any new effect into runtime.
+
+          Required direction:
+          - pure helper/contract only; no `EnergySwarmGame.tsx` adoption;
+          - reuse frozen J5 semantics rather than duplicating Command Core or link identity;
+          - exact effect vocabulary and eligibility must be justified in the dedicated J5F-A issue after architecture discovery;
+          - invalid/stale/linked-member/unsupported facts fail closed;
+          - no entity ids, lookup, scan, collection or runtime mutation;
+          - no damage/kill, score/reward/economy, projectile, spawn/progression, clock/RNG, cap/budget or entity create/remove authority;
+          - no chain reaction becomes live in J5F-A;
+          - any J5F-B+ live effect must separately prove bounded targeting, telegraph/fairness where relevant and single defeat/reward attribution.
+
+          J4D+ additional tactical families remain **DEFERRED / NOT CURRENTLY JUSTIFIED**. J3C-C remains deferred, not cancelled.
+
+          '''
+          s = replace_regex(s, r'## Next gameplay phase\n.*?(?=## Resolved diagnostics)', next_cont, 'continuity next phase')
+          s = replace_exact(
+              s,
+              '`J5E Controlled Live Command-Link Detach Application → J5F+ Optional Command-Link Combat Effects → J6 Dynamic Events → J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance`',
+              '`J5F-A Pure Optional Command-Link Combat Effect Contract → J5F-B+ separately proven live effects → J6 Dynamic Events → J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance`',
+              'continuity chronology',
+          )
+          s = replace_regex(
+              s,
+              r'> Continue ORBI Energy Swarm autonomously\..*?(?=\n\n## Update obligation)',
+              '> Continue ORBI Energy Swarm autonomously. Repository `ingeniusvictor/orbi-energy.swarm`. J5E gameplay canonical is `6aa63e9643a2521738b3b6afebfb0856f48bd3fd`, fully DEPLOYED / FROZEN via Issue #351 / PR #352 with exact four-file product scope and post-main CI/Android/Pages GREEN. Complete DOC24 if still open, then implement J5F-A as a pure optional Command-Link combat-effect contract only after dedicated architecture discovery: no live adoption, damage/kill, reward duplication, entity lookup/scan/collection, timer/RNG or cap authority. Any live effect remains J5F-B+ and requires independent bounded/fairness/attribution proof. Keep J4D+ families and J3C-C deferred until prerequisites are proven. Follow Issue → Branch → full gates → PR → exact-SHA post-merge evidence. Never touch `main` directly or weaken tests.',
+              'continuity handoff',
+          )
+          p.write_text(s)
+
+          print('DOC24 patch applied to exactly three documentation files')
+          PY
+
+          git diff --check
+          git status --short
+          test "$(git diff --name-only | sort | paste -sd ' ' -)" = "docs/ES13_GAMEPLAY_ROADMAP.md docs/IMPLEMENTATION_LEDGER.md docs/PROJECT_CONTINUITY.md"
+
+      - name: Commit exact DOC24 candidate locally
+        shell: bash
+        run: |
+          git config user.name ingeniusvictor
+          git config user.email ingenius.victor@gmail.com
+          git add docs/ES13_GAMEPLAY_ROADMAP.md docs/IMPLEMENTATION_LEDGER.md docs/PROJECT_CONTINUITY.md
+          git commit -m 'ES-13DOC24: close J5E and activate J5F-A'
+          echo "CERT_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+          git show --stat --oneline --decorate=short HEAD
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Repository Smoke
+        run: npm run test:repo
+
+      - name: Gameplay regression
+        run: npm run test:gameplay
+
+      - name: Platform regression
+        run: npm run test:platform
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Release Contract
+        run: npm run release:verify
+
+      - name: Manual dossier
+        run: npm run release:evidence:verify
+
+      - name: Production Build
+        run: npm run build
+
+      - name: RC readiness fail-closed
+        run: npm run release:readiness -- --output release-readiness.json
+
+      - name: DOC24 exact scope guard
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "Certified local commit: $CERT_SHA"
+          [[ "$CERT_SHA" == "$(git rev-parse HEAD)" ]]
+          git diff --check "$BASE_SHA" HEAD
+          mapfile -t actual < <(git diff --name-only "$BASE_SHA" HEAD | LC_ALL=C sort)
+          expected=(
+            ".github/workflows/es-13doc24-patch-cert.yml"
+            "docs/ES13_GAMEPLAY_ROADMAP.md"
+            "docs/IMPLEMENTATION_LEDGER.md"
+            "docs/PROJECT_CONTINUITY.md"
+          )
+          mapfile -t expected_sorted < <(printf '%s\n' "${expected[@]}" | LC_ALL=C sort)
+          [[ "${#actual[@]}" -eq "${#expected_sorted[@]}" ]]
+          for i in "${!expected_sorted[@]}"; do
+            [[ "${actual[$i]}" == "${expected_sorted[$i]}" ]]
+          done
+          git diff --quiet "$BASE_SHA" HEAD -- src tests android public package.json package-lock.json
+
+      - name: Push certified DOC24 candidate
+        shell: bash
+        run: |
+          git push origin HEAD:docs/es-13-j5e-closure-j5fa-activation
+          echo "PUSHED_CERT_SHA=$(git rev-parse HEAD)"
