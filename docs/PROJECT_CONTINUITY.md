@@ -588,6 +588,32 @@ Required direction:
 - no new entity/projectile collection, spawn/progression authority, damage/defeat/score/reward/economy authority, scan/index, cap/budget change, entity creation/removal, FOTON GLB or formation change unless separately justified;
 - exact adoption seam is not frozen by DOC33 and requires a dedicated J6B-D Issue.
 
+## Resolved diagnostics
+- #254 CLOSED / NOT PLANNED: historical platform failure was not an I5 pause regression; no product merge.
+- #283 CLOSED / NOT PLANNED: stale-chat false start; no branch/product work.
+
+## Frozen manual/physical blockers
+Still OPEN and intentionally deferred while ES-13 changes gameplay:
+- #4 — visual/responsive certification;
+- #5 — Infinite play-feel;
+- #202 — GAIA physical runtime/performance;
+- #248 — Android real-device certification.
+
+CI is never a substitute for required human/device evidence.
+
+## Mandatory workflow
+`Issue → branch from exact live main → implementation/tests → repo/gameplay/platform/typecheck/release/dossier/build/readiness → PR → PR CI GREEN + Android GREEN when applicable → squash merge → exact-SHA main CI GREEN + Android GREEN when applicable + Pages GREEN`
+
+Rules:
+- never modify `main` directly;
+- correction before speed;
+- never weaken tests merely to pass;
+- remove temporary certification workflows/scripts/diagnostics before final PR diff;
+- preserve `MAX_ENEMIES`, `MAX_PROJECTILES`, entity arrays and simulation budgets unless a dedicated demonstrated change requires otherwise;
+- preserve Campaign/Infinite isolation where scoped;
+- no FOTON GLB change without explicit scope;
+- no gameplay phase is declared deployed before exact-SHA required evidence.
+
 ## Gameplay chronology
 `J6B-D Controlled Live Dynamic Event Adoption → J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance`
 
