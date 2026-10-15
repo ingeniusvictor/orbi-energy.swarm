@@ -1,4 +1,4 @@
-name: ES-13J5F-E Final Exact Candidate Certification
+name: ES-13J5F-E Final Exact Candidate Certification v1.1
 
 on:
   push:
@@ -23,7 +23,7 @@ jobs:
           fetch-depth: 0
           ref: es-13j5fe-controlled-live-command-link-pulse
 
-      - name: Apply already-proven runtime patch and exact smoke correction
+      - name: Apply already-proven runtime patch exactly
         shell: bash
         run: |
           python - <<'PY'
@@ -35,15 +35,6 @@ jobs:
           end = next(i for i in range(start + 1, len(workflow)) if workflow[i].strip() == 'PY')
           script = textwrap.dedent('\n'.join(workflow[start + 1:end]))
           exec(compile(script, 'es-13j5fe-patch-cert-v2.py', 'exec'), {})
-
-          smoke = Path('tests/es-13j5fe-live-command-link-pulse-application.test.mjs')
-          source = smoke.read_text()
-          old = 'assert.match(j5fcSource, /effectMode:\\s*"NON_LETHAL_PROJECTION_ONLY"/);'
-          new = 'assert.match(j5fcSource, /damageSafetyMode:\\s*"NON_LETHAL_PROJECTION_ONLY"/);'
-          count = source.count(old)
-          if count != 1:
-              raise RuntimeError(f'J5F-E J5F-C smoke correction: expected exactly 1 match, got {count}')
-          smoke.write_text(source.replace(old, new, 1))
           PY
 
       - name: Commit exact candidate locally
@@ -52,7 +43,7 @@ jobs:
           set -euo pipefail
           git config user.name ingeniusvictor
           git config user.email ingenius.victor@gmail.com
-          git add src/game/EnergySwarmGame.tsx tests/es-13j5fe-live-command-link-pulse-application.test.mjs
+          git add src/game/EnergySwarmGame.tsx
           git diff --cached --check
           git diff --cached --quiet && { echo 'No candidate changes produced'; exit 1; }
           git commit -m 'ES-13J5F-E: integrate controlled live non-lethal command-link pulse'
@@ -104,6 +95,7 @@ jobs:
           expected=(
             ".github/workflows/es-13j5fe-final-cert.yml"
             ".github/workflows/es-13j5fe-patch-cert-v2.yml"
+            ".github/workflows/es-13j5fe-patch-cert-v3.yml"
             ".github/workflows/es-13j5fe-patch-cert.yml"
             "src/game/EnergySwarmGame.tsx"
             "src/game/liveCommandLinkPulseApplication.ts"
