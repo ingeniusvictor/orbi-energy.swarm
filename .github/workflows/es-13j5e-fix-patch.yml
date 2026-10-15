@@ -45,3 +45,5 @@ jobs:
           git add src/game/EnergySwarmGame.tsx
           git commit -m 'ES-13J5E: preserve J5D boundary and retain unapplied detach intent'
           git push origin HEAD:es-13j5e-controlled-live-command-link-detach
+
+# guarded patch revision 2
