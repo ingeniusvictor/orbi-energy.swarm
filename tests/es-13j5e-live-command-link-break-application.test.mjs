@@ -11,9 +11,10 @@ const bindingSource = readFileSync("src/game/commandLinkBinding.ts", "utf8");
 const presentationSource = readFileSync("src/game/liveCommandCorePresentation.ts", "utf8");
 const breakSource = readFileSync("src/game/commandLinkBreakResolution.ts", "utf8");
 
-test("J5E matcher reuses J5B binding and J5D resolution metadata only", () => {
+test("J5E adapter reuses J5B binding and J5D resolution metadata only", () => {
   assert.match(helperSource, /resolveCommandLinkBinding[\s\S]*from "\.\/commandLinkBinding"/);
-  assert.match(helperSource, /CommandLinkBreakResolution[\s\S]*from "\.\/commandLinkBreakResolution"/);
+  assert.match(helperSource, /resolveCommandLinkBreakResolution[\s\S]*from "\.\/commandLinkBreakResolution"/);
+  assert.match(helperSource, /export const resolveLiveCommandLinkBreakIntent/);
   assert.match(helperSource, /binding\.memberRole !== "LINKED_MEMBER"/);
   assert.match(helperSource, /binding\.groupId !== resolution\.groupId/);
   assert.match(helperSource, /resolution\.intent !== "DETACH_LINKED_MEMBERS"/);
@@ -46,16 +47,17 @@ test("J5E matcher reuses J5B binding and J5D resolution metadata only", () => {
 test("J5E live adapter uses one scalar pending ref and existing defeat authority", () => {
   assert.match(
     gameSource,
-    /pendingCommandLinkBreakRef\s*=\s*useRef<Readonly<CommandLinkBreakResolution> \| null>\(null\)/,
+    /pendingCommandLinkBreakRef\s*=\s*useRef<LiveCommandLinkBreakIntent \| null>\(null\)/,
   );
   assert.doesNotMatch(gameSource, /pendingCommandLinkBreak(?:s|Queue|Map|Set)/);
+  assert.doesNotMatch(gameSource, /commandLinkBreakResolution/);
   assert.match(
     gameSource,
-    /const registerCombatDefeat = \(enemy: Enemy, affinity\?: OrbiAffinity\) => \{[\s\S]{0,700}resolveCommandLinkBreakResolution\(enemy\.enemyFormation\)/,
+    /const registerCombatDefeat = \(enemy: Enemy, affinity\?: OrbiAffinity\) => \{[\s\S]{0,700}resolveLiveCommandLinkBreakIntent\(enemy\.enemyFormation\)/,
   );
   assert.match(
     gameSource,
-    /pendingCommandLinkBreakRef\.current\s*=\s*commandLinkBreakResolution/,
+    /pendingCommandLinkBreakRef\.current\s*=\s*commandLinkBreakIntent/,
   );
 });
 
@@ -70,9 +72,15 @@ test("J5E consumes detach only inside the one existing enemy logic iteration", (
   const beforeLoop = gameSource.slice(0, loopStart);
   const loopBody = gameSource.slice(loopStart, loopEnd);
   assert.match(beforeLoop, /const pendingCommandLinkBreak = pendingCommandLinkBreakRef\.current;/);
-  assert.match(loopBody, /shouldDetachCommandLinkMember\([\s\S]{0,180}enemy\.enemyFormation/);
-  assert.match(loopBody, /enemy\.enemyFormation = undefined;/);
-  assert.match(loopBody, /pendingCommandLinkBreakRef\.current === pendingCommandLinkBreak/);
+  assert.match(beforeLoop, /let detachedPendingCommandLink = false;/);
+  assert.match(
+    loopBody,
+    /shouldDetachCommandLinkMember\([\s\S]{0,180}enemy\.enemyFormation[\s\S]{0,180}enemy\.enemyFormation = undefined;\s*detachedPendingCommandLink = true;/,
+  );
+  assert.match(
+    loopBody,
+    /detachedPendingCommandLink &&\s*pendingCommandLinkBreak &&\s*pendingCommandLinkBreakRef\.current === pendingCommandLinkBreak/,
+  );
   assert.match(loopBody, /pendingCommandLinkBreakRef\.current = null;/);
 
   const detachAssignments = gameSource.match(/enemy\.enemyFormation = undefined;/g) ?? [];
