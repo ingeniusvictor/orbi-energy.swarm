@@ -435,34 +435,55 @@ Exact deployment anchors:
 - Pages `38721821467`, build `116377981983` + deploy `116378114444` GREEN.
 
 ### J5F-E — Controlled Live Command-Link Disruption Pulse Application
-Status: **NEXT ACTIVE ENGINEERING SLICE AFTER DOC28 CLOSURE**
+Status: **DEPLOYED / FROZEN**
+Canonical: `9554358005d6d092341f4f65d8b986090307f8b5`
+Issue #371 / PR #372
 
-Post-J5F-D discovery proves a bounded live application through existing seams only:
-- direct and splash paths already own their final resolved hit scalar before health mutation;
-- each path can capture only local pre-hit source health and project J5F-D only when that same hit proves lethal;
-- `registerCombatDefeat(...)` already centralizes direct+splash defeat and resolves the full current J5D break resolution;
-- J5E already carries one pending break through the existing enemy logic pass;
-- J5F-B can validate each current linked member inside that same pass;
-- J5F-C can project exact non-lethal `resultingHealth` from current `health/maxHealth` plus J5F-D proposed pulse damage;
-- pulse application can occur before J5E detaches formation ownership, with no second scan or entity index.
+Certified live behavior:
+- composes frozen J5F-A/B/C/D through one bounded live adapter;
+- direct/splash paths capture local pre-hit source health before the existing damage subtraction;
+- only the exact lethal hit against a valid current Command Core may raise one scalar pending pulse;
+- current linked-member eligibility and non-lethal health projection are consumed inside the already-existing enemy traversal and before J5E detach;
+- linked mutation is limited to the frozen J5F-C `resultingHealth` with exact 1 HP floor;
+- linked targets never receive `isDead` from the pulse and never generate pulse defeat, score, reward, drop or persistence attribution;
+- pending pulse is consumed with identity guard and reset at the same three J3/J5E lifecycle boundaries;
+- no second scan/index/collection, Enemy field, new projectile, timer/RNG, spawn/progression, cap/budget, presentation or audio authority.
 
-Required direction:
-- one new pure live-adapter helper composing frozen J5F-A/B/C/D; frozen contracts remain unchanged;
-- one scalar pending pulse object/ref only, never a queue/map/set/index;
-- capture pre-hit source health immediately before existing direct/splash health subtraction;
-- only a defeat caused by that exact hit may pass J5F-D source metadata into centralized defeat routing;
-- J5E detach remains independent if pulse source is absent/invalid;
-- capture pending pulse before the existing enemy pass and apply only inside that pass, before J5E clears `enemyFormation`;
-- matching current living linked members receive only J5F-C `resultingHealth`; exact 1 HP floor remains authoritative;
-- never set linked `isDead`, never register pulse defeat, never award score/reward/drop/persistence and never trigger boss/milestone defeat;
-- size-3 may pulse both bounded linked members during the same pass, then consume the captured pulse once with identity guard;
-- reset pending pulse at the same run/wave/boss J3 lifecycle boundaries;
-- no new Enemy/EnemyType field, scan/collection/lookup, projectile, multiplier/percentage/radius/cadence, timer/RNG, spawn/progression, cap/budget, visual or audio authority.
+Exact deployment anchors:
+- DOC28 baseline `022741e5c500dea2947241d4bb8c6cb8d004772c`;
+- pre-PR `098726ad50eb74686fd186703d73a46e79eda340`, run `38729351008` / job `116402995881` GREEN including exact scope + Android APK;
+- final PR #372 head `98761ecaaaa0e873d8a0468d92ed0c70ce45cf57`;
+- PR CI `38729931559` / `116404920626` GREEN; Android `38729931466` / `116404919622` GREEN;
+- canonical `9554358005d6d092341f4f65d8b986090307f8b5`, parent `022741e5c500dea2947241d4bb8c6cb8d004772c`, tree `7cdc717088f0b4543564d0db404d444fcb2ac8d2`;
+- main CI `38730136916` / `116405605392` GREEN; Android `38730137080` / `116405605024` GREEN;
+- Pages `38730253083`, build `116405984608` + deploy `116406188447` GREEN.
 
 ## J6 — Dynamic Mid-Sector Events
-Status: PLANNED
+Status: ACTIVE PROGRAM / CONTRACT-FIRST
 
-Solar Storm, Quantum Rift, Blackout Surge, Crystal Rush, Dyson Eclipse, Swarm Distress Call, Convoy Defense, Void Hunt, Elite Incursion, Mirror Swarm, Meteor/Debris Field and Singularity Event.
+### J6A — Pure Dynamic Mid-Sector Event Opportunity Contract
+Status: **NEXT ACTIVE ENGINEERING SLICE AFTER DOC29 CLOSURE**
+
+Architecture discovery reuses existing Infinite authority instead of creating a parallel event director:
+- `RuntimeWaveDescriptor` already exposes source mode, sector, wave index/count, mutators, milestone, fairness and traceable source/seed facts;
+- Infinite sectors already contain 3–7 waves;
+- milestone ownership is final-wave only;
+- recovery sectors already exist explicitly and suppress mutators;
+- environmental mutator selection/conflicts and runtime environmental effects already have dedicated authorities.
+
+Required J6A direction:
+- pure deterministic/fail-closed contract only; no `EnergySwarmGame.tsx` adoption;
+- consume caller-supplied existing sector/wave facts; own no runtime state;
+- Campaign, recovery sectors, milestone waves and invalid/stale facts fail closed;
+- only interior Infinite waves (`waveIndex > 1 && waveIndex < waveCount`) may expose an opportunity;
+- at most one deterministic opportunity slot per sector, derived from existing sector/wave identity/seed facts without a new RNG or clock;
+- output immutable `OPPORTUNITY_ONLY` metadata;
+- J6A does not yet select Solar Storm, Quantum Rift, Blackout Surge, Crystal Rush, Dyson Eclipse or any other event identity/effect;
+- no spawn/entity/projectile collection, damage/defeat, score/reward/economy, mutator/environment mutation, lookup/scan, timer/RNG, cap/budget mutation or entity create/remove authority.
+
+Event vocabulary and live effect mapping require later J6 slices after J6A is certified.
+
+Planned vocabulary remains Solar Storm, Quantum Rift, Blackout Surge, Crystal Rush, Dyson Eclipse, Swarm Distress Call, Convoy Defense, Void Hunt, Elite Incursion, Mirror Swarm, Meteor/Debris Field and Singularity Event. J6A activates only the bounded opportunity contract; event identity and live effects remain deferred.
 
 ## J7 — Bonus Challenge Rounds
 Status: PLANNED
