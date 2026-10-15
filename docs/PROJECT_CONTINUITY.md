@@ -18,16 +18,16 @@ Never infer deployment/certification from conversation text alone.
 
 ## Current certified gameplay canonical
 
-`69ac8a1a83d2f6bbe6a989a3a819fac438e854c1`
+`204566693978adabba7e66995c88ae2f85818f8b`
 
-Phase: **ES-13J6A — Pure Dynamic Mid-Sector Event Opportunity Contract**
+Phase: **ES-13J6B-A — Pure Dynamic Mid-Sector Event Identity Vocabulary Contract**
 Status: **DEPLOYED / FROZEN**
-Issue: #375 — CLOSED / completed
-Delivery: PR #376 — squash merged
+Issue: #379 — CLOSED / completed
+Delivery: PR #380 — squash merged
 
-Single parent: `0dca89678698be0557f0500590f27c9f53ab1548` — DOC29 documentation canonical.
+Single parent: `26554f20648f0a27c2c510c055cbec81c43416c7` — DOC30 documentation canonical.
 
-Canonical tree: `d3aac694e27af9c4fddcbce7c07d6766c84f1146`, exactly equal to final PR-head tree.
+Canonical tree: `3f6d2359ca87ec31853fbbfccc6bb1ffb6fb68ba`, exactly equal to final PR-head tree.
 
 Version remains `0.2.0-beta.1`. Full RC/manual certification remains intentionally deferred while ES-13 materially expands gameplay.
 
@@ -415,6 +415,34 @@ Final product scope exactly:
 
 Issue #375 CLOSED / completed. J6A is **DEPLOYED / FROZEN**.
 
+## J6B-A result
+J6B-A established the first bounded event identity vocabulary without selecting or executing an event.
+
+Certified contract:
+- exactly five immutable IDs: `SOLAR_STORM`, `QUANTUM_RIFT`, `BLACKOUT_SURGE`, `CRYSTAL_RUSH`, `DYSON_ECLIPSE`;
+- exact deterministic lookup; malformed/unsupported/deferred IDs fail closed;
+- immutable `ENVIRONMENTAL_IDENTITY` / `IDENTITY_ONLY` profiles;
+- no opportunity/event selection, effect mapping, runtime adoption, spawn/progression, collection, combat/economy, environment, scan/lookup, timing/RNG, cap/budget or entity authority.
+
+Final product scope exactly:
+- `src/game/dynamicMidSectorEventIdentity.ts`;
+- `tests/es-13j6ba-dynamic-mid-sector-event-identity.test.mjs`;
+- `tests/gameplay/dynamic-mid-sector-event-identity.test.ts`.
+
+## J6B-A exact evidence
+- DOC30 baseline `26554f20648f0a27c2c510c055cbec81c43416c7`;
+- pre-PR SHA `cd2abd12e20082382611bf08cac2d3d89f693adc`, run `38782799375` / job `116587050168` GREEN including repo/gameplay/platform/typecheck/release/dossier/build/readiness, exact scope guard and Android APK build/verify/upload;
+- final PR #380 head `2aae2803d302bea80c3f0b0748bda10c6fcaffcd`;
+- PR CI `38783326052` / `116588875589` GREEN;
+- PR Android `38783326187` / `116588876111` GREEN including Build/Verify/Upload APK;
+- canonical `204566693978adabba7e66995c88ae2f85818f8b`, single parent `26554f20648f0a27c2c510c055cbec81c43416c7`, tree `3f6d2359ca87ec31853fbbfccc6bb1ffb6fb68ba` equal to final PR-head tree;
+- canonical diff exactly three certified product/test files;
+- main CI `38783605087` / `116589825599` GREEN;
+- main Android `38783604964` / `116589827934` GREEN including Build/Verify/Upload APK;
+- Pages `38783697902`: build `116590143603` + deploy `116590341097` GREEN.
+
+Issue #379 CLOSED / completed. J6B-A is **DEPLOYED / FROZEN**.
+
 ## ES-13 gameplay canonicals
 - J1A — Combat Chain & Resonance Core: `feb263957b52839d35a7cb1249762c223ba22595`;
 - J1B — Live Combat Resonance Adoption & HUD: `91564e365d0a2220e4db2999e38372809ec397f3`;
@@ -446,6 +474,7 @@ Issue #375 CLOSED / completed. J6A is **DEPLOYED / FROZEN**.
 - J5F-D — Pure Effective Trigger-Damage Source Projection: `113865079ac4581c90356c3c218a28f8f88b6ef7`.
 - J5F-E — Controlled Live Command-Link Disruption Pulse Application: `9554358005d6d092341f4f65d8b986090307f8b5`.
 - J6A — Pure Dynamic Mid-Sector Event Opportunity Contract: `69ac8a1a83d2f6bbe6a989a3a819fac438e854c1`.
+- J6B-A — Pure Dynamic Mid-Sector Event Identity Vocabulary Contract: `204566693978adabba7e66995c88ae2f85818f8b`.
 
 J3C-C stateful formation patterns remain **DEFERRED / NOT CURRENTLY JUSTIFIED**, not cancelled.
 
@@ -469,22 +498,24 @@ J3C-C stateful formation patterns remain **DEFERRED / NOT CURRENTLY JUSTIFIED**,
 - DOC27 — J5F-C closure & J5F-D trigger-damage source activation: `bc75751362e0dc8ed79c7b4688aa355ff9ae9648` — Issue #365 / PR #366.
 - DOC28 — J5F-D closure & J5F-E controlled live pulse activation: `022741e5c500dea2947241d4bb8c6cb8d004772c` — Issue #369 / PR #370.
 - DOC29 — J5F-E closure & J6A dynamic event opportunity activation: `0dca89678698be0557f0500590f27c9f53ab1548` — Issue #373 / PR #374.
-- DOC30 — J6A closure & J6B-A event identity vocabulary activation: Issue #377, branch `docs/es-13-j6a-closure-j6ba-activation`, documentation-only closure in progress from gameplay canonical `69ac8a1a83d2f6bbe6a989a3a819fac438e854c1`.
+- DOC30 — J6A closure & J6B-A event identity vocabulary activation: `26554f20648f0a27c2c510c055cbec81c43416c7` — Issue #377 / PR #378.
+- DOC31 — J6B-A closure & J6B-B deterministic event selection activation: Issue #381, branch `docs/es-13-j6ba-closure-j6bb-activation`, documentation-only closure in progress from gameplay canonical `204566693978adabba7e66995c88ae2f85818f8b`.
 
 ## Next gameplay phase
 
-### ES-13J6B-A — Pure Dynamic Mid-Sector Event Identity Vocabulary Contract
-Status: **NEXT ENGINEERING TARGET AFTER DOC30 CLOSURE**
+### ES-13J6B-B — Pure Deterministic Dynamic Event Identity Selection Contract
+Status: **NEXT ENGINEERING TARGET AFTER DOC31 CLOSURE**
 
-J6A is frozen as opportunity-only. J6B-A defines the first five event identities as pure immutable vocabulary only: `SOLAR_STORM`, `QUANTUM_RIFT`, `BLACKOUT_SURGE`, `CRYSTAL_RUSH`, `DYSON_ECLIPSE`.
+J6A is frozen as opportunity-only and J6B-A as identity-only. J6B-B composes those frozen facts to select exactly one event identity deterministically from the existing J6A fingerprint.
 
 Required direction:
-- exact deterministic lookup and fail-closed unsupported IDs;
-- semantic/display/tactical metadata only with explicit `IDENTITY_ONLY` semantics;
-- no event selection, mutator/effect mapping, execution or runtime adoption;
-- no imports into J6A, Infinite/mutator/environment authorities or `EnergySwarmGame.tsx`;
-- no spawn/progression, collection, combat/economy, environment mutation, scan/lookup, timer/RNG, cap/budget or entity authority;
-- J6B-B+ must separately prove deterministic selection; any live mapping must reuse existing certified environmental authorities.
+- validate current J6A opportunity identity and exact 8-lowercase-hex fingerprint;
+- select one of the five frozen J6B-A IDs with no new RNG/clock/seed authority;
+- emit immutable `SELECTION_ONLY` metadata only;
+- no mutator/effect mapping or live execution;
+- no adoption into `EnergySwarmGame.tsx`, Infinite directors or environmental runtime;
+- no spawn/progression, collection, combat/economy, environment mutation, scan/lookup, timing/RNG, cap/budget or entity authority;
+- any J6B-C+ live mapping must separately prove compatibility and reuse frozen environmental authorities.
 
 J4D+ additional tactical families remain **DEFERRED / NOT CURRENTLY JUSTIFIED**. J3C-C remains deferred, not cancelled.
 
@@ -515,7 +546,7 @@ Rules:
 - no gameplay phase is declared deployed before exact-SHA required evidence.
 
 ## Gameplay chronology
-`J6B-A Pure Dynamic Mid-Sector Event Identity Vocabulary Contract → J6B-B+ Deterministic Selection/Certified Live Mapping → J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance`
+`J6B-B Pure Deterministic Dynamic Event Identity Selection Contract → J6B-C+ Certified Effect Mapping/Live Adoption → J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance`
 
 Post-J15 direction: **ES-14 — Living Warfront**.
 
@@ -523,7 +554,7 @@ Post-J15 direction: **ES-14 — Living Warfront**.
 Read this file, `IMPLEMENTATION_LEDGER.md`, `ES13_GAMEPLAY_ROADMAP.md`, `TRACEABILITY_POLICY.md` and `ES13_PHASE_CHECKLIST.md`, then active Issues/PRs. Verify live `main` before any write.
 
 Suggested handoff:
-> Continue ORBI Energy Swarm autonomously. Repository `ingeniusvictor/orbi-energy.swarm`. J6A gameplay canonical is `69ac8a1a83d2f6bbe6a989a3a819fac438e854c1`, fully DEPLOYED / FROZEN via Issue #375 / PR #376 with exact three-file product scope and post-main CI/Android/Pages GREEN. Complete DOC30 if still open, then implement J6B-A as a pure Dynamic Mid-Sector Event Identity Vocabulary Contract: exactly the initial five identities `SOLAR_STORM`, `QUANTUM_RIFT`, `BLACKOUT_SURGE`, `CRYSTAL_RUSH`, `DYSON_ECLIPSE`, immutable/fail-closed identity lookup only, no selection, mutator/effect mapping, live adoption, spawn/collection/combat/economy/environment/timing/scan/cap authority. J6B-B+ must separately prove deterministic selection and later live mapping must reuse frozen environmental authorities. Keep J3C-C, J4D+ and manual blockers deferred. Follow Issue → Branch → full gates → PR → exact-SHA post-merge evidence. Never touch `main` directly or weaken tests.
+> Continue ORBI Energy Swarm autonomously. Repository `ingeniusvictor/orbi-energy.swarm`. J6B-A gameplay canonical is `204566693978adabba7e66995c88ae2f85818f8b`, fully DEPLOYED / FROZEN via Issue #379 / PR #380 with exactly five immutable IDENTITY_ONLY event identities and post-main CI/Android/Pages GREEN. Complete DOC31 if still open, then implement J6B-B as a pure deterministic selection contract over the frozen J6A opportunity + J6B-A vocabulary: validate the current opportunity/fingerprint, choose one frozen event ID using only the existing fingerprint, emit SELECTION_ONLY metadata, and add no mutator/effect mapping, runtime adoption, spawn/collection/combat/economy/environment/timing/scan/cap/entity authority. Keep live mapping for J6B-C+ and reuse existing environmental authorities. Keep J3C-C, J4D+ and manual blockers deferred. Follow Issue → Branch → full gates → PR → exact-SHA post-merge evidence. Never touch `main` directly or weaken tests.
 
 ## Update obligation
 Every merged gameplay phase must record exact gameplay canonical, Issue/PR, final head, pre-PR certification, PR CI/Android, main CI/Android/Pages, implementation result, unresolved follow-ups and next roadmap phase. A gameplay phase is not administratively closed until these records are current.
