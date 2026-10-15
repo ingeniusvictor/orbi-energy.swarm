@@ -1,0 +1,335 @@
+name: ES-13DOC32 Apply Documentation
+
+on:
+  push:
+    branches:
+      - docs/es-13-j6bb-closure-j6bc-activation
+    paths:
+      - '.github/workflows/es-13doc32-apply.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact branch head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: docs/es-13-j6bb-closure-j6bc-activation
+
+      - name: Apply DOC32 exact replacements fail-closed
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path: str, old: str, new: str) -> None:
+              p = Path(path)
+              text = p.read_text(encoding="utf-8")
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f"{path}: expected exactly one replacement anchor, found {count}: {old[:80]!r}")
+              p.write_text(text.replace(old, new, 1), encoding="utf-8")
+
+          continuity = "docs/PROJECT_CONTINUITY.md"
+          ledger = "docs/IMPLEMENTATION_LEDGER.md"
+          roadmap = "docs/ES13_GAMEPLAY_ROADMAP.md"
+
+          replace_once(
+              continuity,
+              '''## Current certified gameplay canonical
+
+`204566693978adabba7e66995c88ae2f85818f8b`
+
+Phase: **ES-13J6B-A — Pure Dynamic Mid-Sector Event Identity Vocabulary Contract**
+Status: **DEPLOYED / FROZEN**
+Issue: #379 — CLOSED / completed
+Delivery: PR #380 — squash merged
+
+Single parent: `26554f20648f0a27c2c510c055cbec81c43416c7` — DOC30 documentation canonical.
+
+Canonical tree: `3f6d2359ca87ec31853fbbfccc6bb1ffb6fb68ba`, exactly equal to final PR-head tree.''',
+              '''## Current certified gameplay canonical
+
+`dcd39a173da7635bf85db6844dc86aeca6c1f38c`
+
+Phase: **ES-13J6B-B — Pure Deterministic Dynamic Event Identity Selection Contract**
+Status: **DEPLOYED / FROZEN**
+Issue: #383 — CLOSED / completed
+Delivery: PR #384 — squash merged
+
+Single parent: `6cadd1db296d5249ae236121088307f480685fe0` — DOC31 documentation canonical.
+
+Canonical tree: `531fad95ced691ad24a0c2391fe9d30954f51e01`.'''
+          )
+
+          replace_once(
+              continuity,
+              '''Issue #379 CLOSED / completed. J6B-A is **DEPLOYED / FROZEN**.
+
+## ES-13 gameplay canonicals''',
+              '''Issue #379 CLOSED / completed. J6B-A is **DEPLOYED / FROZEN**.
+
+## J6B-B result
+J6B-B established deterministic semantic event selection over frozen J6A opportunity metadata and the frozen J6B-A identity vocabulary, without mapping or executing any effect.
+
+Certified contract:
+- consumes only a valid current J6A `DYNAMIC_MID_SECTOR_EVENT_OPPORTUNITY` / `OPPORTUNITY_ONLY` / `INFINITE` projection;
+- requires integer Infinite sector >= 11, certified wave count 3–7, exact interior `waveIndex === selectedWaveIndex`, exact lowercase 8-hex `identityFingerprint`, and canonical `opportunityId = j6a:<sector>:<selectedWaveIndex>:<identityFingerprint>`;
+- rejects tampered J6A zero-authority flags rather than normalizing them;
+- derives `selectionIndex = parseInt(identityFingerprint, 16) % 5` and selects exactly one of the five frozen J6B-A IDs;
+- output is immutable `DYNAMIC_MID_SECTOR_EVENT_SELECTION` / `SELECTION_ONLY` metadata;
+- owns semantic event-selection authority only;
+- no new RNG/clock/seed authority, mutator/effect mapping, live execution, environment mutation, spawn/progression, collection, combat/economy, entity lookup/scan, cap/budget or entity create/remove/mutate authority;
+- no `EnergySwarmGame.tsx`, Infinite-director or environmental-runtime adoption.
+
+Final product scope exactly:
+- `src/game/dynamicMidSectorEventSelection.ts`;
+- `tests/es-13j6bb-dynamic-mid-sector-event-selection.test.mjs`;
+- `tests/gameplay/dynamic-mid-sector-event-selection.test.ts`.
+
+## J6B-B exact evidence
+- DOC31 baseline `6cadd1db296d5249ae236121088307f480685fe0`;
+- pre-PR SHA `2a82945747f6bd3b855a2a7b84c5db9d084fed38`, run `38808432120` / job `116675222019` GREEN including repo/gameplay/platform/typecheck/release/dossier/build/readiness, exact product-scope guard and Android APK build/verify/upload;
+- final PR #384 head `acc98dccff52812b12e23bd26fb7b21e9889d06b`;
+- PR CI `38808893011` / `116676780125` GREEN;
+- PR Android `38808893023` / `116676778988` GREEN including Build/Verify/Upload APK;
+- canonical `dcd39a173da7635bf85db6844dc86aeca6c1f38c`, single parent `6cadd1db296d5249ae236121088307f480685fe0`, tree `531fad95ced691ad24a0c2391fe9d30954f51e01`;
+- canonical diff exactly three certified product/test files;
+- main CI `38809192748` / `116677795292` GREEN;
+- main Android `38809192821` / `116677795333` GREEN including Build/Verify/Upload APK;
+- Pages `38809290030`: build `116678137605` + deploy `116678316176` GREEN.
+
+Issue #383 CLOSED / completed. J6B-B is **DEPLOYED / FROZEN**.
+
+## ES-13 gameplay canonicals'''
+          )
+
+          replace_once(
+              continuity,
+              '''- J6B-A — Pure Dynamic Mid-Sector Event Identity Vocabulary Contract: `204566693978adabba7e66995c88ae2f85818f8b`.
+
+J3C-C stateful formation patterns''',
+              '''- J6B-A — Pure Dynamic Mid-Sector Event Identity Vocabulary Contract: `204566693978adabba7e66995c88ae2f85818f8b`.
+- J6B-B — Pure Deterministic Dynamic Event Identity Selection Contract: `dcd39a173da7635bf85db6844dc86aeca6c1f38c`.
+
+J3C-C stateful formation patterns'''
+          )
+
+          replace_once(
+              continuity,
+              '''- DOC31 — J6B-A closure & J6B-B deterministic event selection activation: Issue #381, branch `docs/es-13-j6ba-closure-j6bb-activation`, documentation-only closure in progress from gameplay canonical `204566693978adabba7e66995c88ae2f85818f8b`.
+
+## Next gameplay phase
+
+### ES-13J6B-B — Pure Deterministic Dynamic Event Identity Selection Contract
+Status: **NEXT ENGINEERING TARGET AFTER DOC31 CLOSURE**
+
+J6A is frozen as opportunity-only and J6B-A as identity-only. J6B-B composes those frozen facts to select exactly one event identity deterministically from the existing J6A fingerprint.
+
+Required direction:
+- validate current J6A opportunity identity and exact 8-lowercase-hex fingerprint;
+- select one of the five frozen J6B-A IDs with no new RNG/clock/seed authority;
+- emit immutable `SELECTION_ONLY` metadata only;
+- no mutator/effect mapping or live execution;
+- no adoption into `EnergySwarmGame.tsx`, Infinite directors or environmental runtime;
+- no spawn/progression, collection, combat/economy, environment mutation, scan/lookup, timing/RNG, cap/budget or entity authority;
+- any J6B-C+ live mapping must separately prove compatibility and reuse frozen environmental authorities.''',
+              '''- DOC31 — J6B-A closure & J6B-B deterministic event selection activation: `6cadd1db296d5249ae236121088307f480685fe0` — Issue #381 / PR #382.
+- DOC32 — J6B-B closure & J6B-C contract-first effect-mapping activation: Issue #385, branch `docs/es-13-j6bb-closure-j6bc-activation`, documentation-only closure in progress from gameplay canonical `dcd39a173da7635bf85db6844dc86aeca6c1f38c`.
+
+## Next gameplay phase
+
+### ES-13J6B-C — Pure Dynamic Event Effect-Mapping Compatibility Contract
+Status: **NEXT ENGINEERING TARGET AFTER DOC32 CLOSURE**
+
+J6A opportunity selection, J6B-A identity vocabulary and J6B-B deterministic identity selection are frozen. Architecture discovery confirms that existing runtime authority already lives in `runtimeMutatorEffects.ts`, `runtimeEnvironmentalFields.ts` and the Infinite recipe/director stack; J6B-C must not create a parallel environmental system.
+
+Required direction:
+- contract-first and pure only; no live runtime adoption in J6B-C;
+- consume a valid current frozen J6B-B `SELECTION_ONLY` projection and frozen J6B-A identity semantics;
+- define only compatibility/mapping metadata onto already-existing bounded `InfiniteMutator` / environmental-effect semantics when that mapping is independently justified;
+- concrete identity-to-effect mappings are **not frozen by DOC32** and must be proved/frozen by the dedicated J6B-C Issue; do not assume all five identities are mappable;
+- unsupported, ambiguous or unjustified mappings must fail closed rather than invent new effect semantics;
+- reuse existing effect magnitudes/clamps; no new tuning, second environmental director, RNG/clock/seed authority or recipe authority;
+- no `EnergySwarmGame.tsx`, live environment mutation, spawn/progression, collection, combat/economy, entity lookup/scan, cap/budget or entity create/remove/mutate authority;
+- controlled live event adoption remains a later J6B-D+ slice and requires separate fairness/lifecycle/attribution certification.'''
+          )
+
+          replace_once(
+              continuity,
+              '''`J6B-B Pure Deterministic Dynamic Event Identity Selection Contract → J6B-C+ Certified Effect Mapping/Live Adoption → J7 Bonus Rounds''',
+              '''`J6B-C Pure Dynamic Event Effect-Mapping Compatibility Contract → J6B-D+ Controlled Live Event Adoption → J7 Bonus Rounds'''
+          )
+
+          replace_once(
+              continuity,
+              '''> Continue ORBI Energy Swarm autonomously. Repository `ingeniusvictor/orbi-energy.swarm`. J6B-A gameplay canonical is `204566693978adabba7e66995c88ae2f85818f8b`, fully DEPLOYED / FROZEN via Issue #379 / PR #380 with exactly five immutable IDENTITY_ONLY event identities and post-main CI/Android/Pages GREEN. Complete DOC31 if still open, then implement J6B-B as a pure deterministic selection contract over the frozen J6A opportunity + J6B-A vocabulary: validate the current opportunity/fingerprint, choose one frozen event ID using only the existing fingerprint, emit SELECTION_ONLY metadata, and add no mutator/effect mapping, runtime adoption, spawn/collection/combat/economy/environment/timing/scan/cap/entity authority. Keep live mapping for J6B-C+ and reuse existing environmental authorities. Keep J3C-C, J4D+ and manual blockers deferred. Follow Issue → Branch → full gates → PR → exact-SHA post-merge evidence. Never touch `main` directly or weaken tests.''',
+              '''> Continue ORBI Energy Swarm autonomously. Repository `ingeniusvictor/orbi-energy.swarm`. J6B-B gameplay canonical is `dcd39a173da7635bf85db6844dc86aeca6c1f38c`, fully DEPLOYED / FROZEN via Issue #383 / PR #384 with pure deterministic `SELECTION_ONLY` identity selection and post-main CI/Android/Pages GREEN. Complete DOC32 if still open, then perform J6B-C architecture/discovery before freezing a dedicated pure effect-mapping compatibility contract. Reuse only existing frozen Infinite mutator/environment authorities; do not invent concrete identity mappings, new effect magnitudes, runtime adoption or a second environmental system without evidence. Keep controlled live adoption for J6B-D+ and keep J3C-C, J4D+ and manual blockers deferred. Follow Issue → Branch → full gates → PR → exact-SHA post-merge evidence. Never touch `main` directly or weaken tests.'''
+          )
+
+          replace_once(
+              ledger,
+              '''| ES-13J6B-A — Pure Dynamic Mid-Sector Event Identity Vocabulary Contract | DEPLOYED / FROZEN | `204566693978adabba7e66995c88ae2f85818f8b` | #379 | #380 |
+''',
+              '''| ES-13J6B-A — Pure Dynamic Mid-Sector Event Identity Vocabulary Contract | DEPLOYED / FROZEN | `204566693978adabba7e66995c88ae2f85818f8b` | #379 | #380 |
+| ES-13J6B-B — Pure Deterministic Dynamic Event Identity Selection Contract | DEPLOYED / FROZEN | `dcd39a173da7635bf85db6844dc86aeca6c1f38c` | #383 | #384 |
+'''
+          )
+
+          replace_once(
+              ledger,
+              '''Issue #379 CLOSED / completed. J6B-A is **DEPLOYED / FROZEN**.
+
+## Documentation canonicals''',
+              '''Issue #379 CLOSED / completed. J6B-A is **DEPLOYED / FROZEN**.
+
+### J6B-B — Pure Deterministic Dynamic Event Identity Selection Contract
+Certified behavior:
+- validates exact current J6A opportunity kind/mode/source, bounded interior wave metadata, lowercase 8-hex fingerprint and canonical opportunity ID;
+- deterministically selects exactly one frozen J6B-A ID using the existing fingerprint modulo the frozen five-ID list;
+- emits immutable `DYNAMIC_MID_SECTOR_EVENT_SELECTION` / `SELECTION_ONLY` metadata;
+- malformed/tampered J6A facts fail closed;
+- owns semantic selection only and adds no RNG/clock/seed, mutator/effect mapping, live execution, environment mutation, spawn/progression, collection, combat/economy, lookup/scan, cap/budget or entity authority.
+
+Exact deployment anchors:
+- DOC31 baseline `6cadd1db296d5249ae236121088307f480685fe0`;
+- pre-PR `2a82945747f6bd3b855a2a7b84c5db9d084fed38`, run `38808432120` / job `116675222019` GREEN including exact scope + Android APK;
+- final PR #384 head `acc98dccff52812b12e23bd26fb7b21e9889d06b`;
+- PR CI `38808893011` / `116676780125` GREEN; Android `38808893023` / `116676778988` GREEN;
+- canonical `dcd39a173da7635bf85db6844dc86aeca6c1f38c`, parent `6cadd1db296d5249ae236121088307f480685fe0`, tree `531fad95ced691ad24a0c2391fe9d30954f51e01`;
+- main CI `38809192748` / `116677795292` GREEN; Android `38809192821` / `116677795333` GREEN;
+- Pages `38809290030`, build `116678137605` + deploy `116678316176` GREEN.
+
+Issue #383 CLOSED / completed. J6B-B is **DEPLOYED / FROZEN**.
+
+## Documentation canonicals'''
+          )
+
+          replace_once(
+              ledger,
+              '''- DOC31 — J6B-A closure & J6B-B deterministic event selection activation: Issue #381, branch `docs/es-13-j6ba-closure-j6bb-activation`, in progress from gameplay canonical `204566693978adabba7e66995c88ae2f85818f8b`.
+''',
+              '''- DOC31 — J6B-A closure & J6B-B deterministic event selection activation: `6cadd1db296d5249ae236121088307f480685fe0` — Issue #381 / PR #382.
+- DOC32 — J6B-B closure & J6B-C contract-first effect-mapping activation: Issue #385, branch `docs/es-13-j6bb-closure-j6bc-activation`, in progress from gameplay canonical `dcd39a173da7635bf85db6844dc86aeca6c1f38c`.
+'''
+          )
+
+          replace_once(
+              ledger,
+              '''### ES-13J6B-B — Pure Deterministic Dynamic Event Identity Selection Contract
+Status: **NEXT ENGINEERING TARGET AFTER DOC31 CLOSURE**.
+
+J6A is frozen as opportunity-only and J6B-A as identity-only. J6B-B may select exactly one frozen identity from a valid current J6A `identityFingerprint` without creating new randomness or runtime effect authority.
+
+J6B-B may own semantic selection only (`SELECTION_ONLY`). It must not map identities to mutators/environment effects, execute live behavior, adopt into runtime, or own spawn/progression, collections, combat/economy, environment mutation, scan/lookup, timing/RNG, cap/budget or entity authority. Live effect mapping remains later and must reuse existing frozen environmental systems.''',
+              '''### ES-13J6B-C — Pure Dynamic Event Effect-Mapping Compatibility Contract
+Status: **NEXT ENGINEERING TARGET AFTER DOC32 CLOSURE**.
+
+J6A, J6B-A and J6B-B are frozen through deterministic `SELECTION_ONLY` identity selection. Existing environment/effect authority already lives in the frozen Infinite mutator projection and runtime environmental-field systems.
+
+J6B-C must be a pure compatibility/mapping contract only. It may reference already-existing bounded `InfiniteMutator` / environmental semantics after a dedicated Issue proves exact mappings, but DOC32 freezes no concrete identity-to-effect table. Ambiguous or unsupported identities must fail closed. J6B-C must not adopt into `EnergySwarmGame.tsx`, mutate environment/runtime state, invent effect magnitudes, RNG/clock/seed or recipe authority, or own spawn/progression, collections, combat/economy, scans/lookups, caps/budgets or entity mutation. Controlled live adoption remains J6B-D+ after separate fairness/lifecycle certification.'''
+          )
+
+          replace_once(
+              ledger,
+              '''`J6B-B Pure Deterministic Dynamic Event Identity Selection Contract → J6B-C+ Certified Effect Mapping/Live Adoption → J7 Bonus Rounds''',
+              '''`J6B-C Pure Dynamic Event Effect-Mapping Compatibility Contract → J6B-D+ Controlled Live Event Adoption → J7 Bonus Rounds'''
+          )
+
+          replace_once(
+              roadmap,
+              '''### J6B-B — Pure Deterministic Dynamic Event Identity Selection Contract
+Status: **NEXT ACTIVE ENGINEERING SLICE AFTER DOC31 CLOSURE**
+
+J6A already emits one valid opportunity with an 8-lowercase-hex `identityFingerprint`; J6B-A freezes exactly five event identities. J6B-B may compose those two frozen contracts to select identity semantics only.
+
+Required direction:
+- pure deterministic contract only; no runtime adoption;
+- consume a valid current J6A opportunity and frozen J6B-A vocabulary;
+- validate kind/mode/source/wave consistency, canonical opportunity ID and exact fingerprint shape;
+- select exactly one frozen event ID from the existing `identityFingerprint`, with no new RNG/clock/seed authority;
+- output immutable `SELECTION_ONLY` metadata carrying source opportunity identity + selected event identity;
+- semantic event selection is allowed, but mutator/effect mapping and live execution remain forbidden;
+- invalid/stale/malformed input fails closed;
+- J6A/J6B-A remain unchanged;
+- no `EnergySwarmGame.tsx`, Infinite director, mutator/effect/environment runtime adoption;
+- no spawn/progression, collection, combat/economy, entity lookup/scan, timer/RNG, cap/budget or entity create/remove/mutate authority;
+- live effect mapping remains a later J6 slice and must reuse existing frozen environmental authorities.
+
+## J7 — Bonus Challenge Rounds''',
+              '''### J6B-B — Pure Deterministic Dynamic Event Identity Selection Contract
+Status: **DEPLOYED / FROZEN**
+Canonical: `dcd39a173da7635bf85db6844dc86aeca6c1f38c`
+Issue #383 / PR #384
+
+Certified behavior:
+- consumes only valid current J6A `DYNAMIC_MID_SECTOR_EVENT_OPPORTUNITY` / `OPPORTUNITY_ONLY` / `INFINITE` metadata;
+- validates exact bounded interior-wave consistency, lowercase 8-hex `identityFingerprint`, canonical opportunity ID and all J6A zero-authority flags;
+- deterministically selects exactly one frozen J6B-A ID via `parseInt(identityFingerprint, 16) % 5`;
+- emits immutable `DYNAMIC_MID_SECTOR_EVENT_SELECTION` / `SELECTION_ONLY` metadata carrying source opportunity identity + selected event identity;
+- malformed, padded, forged, unsupported or tampered input fails closed;
+- owns semantic event selection only;
+- no new RNG/clock/seed authority, mutator/effect mapping, live execution, environment mutation, spawn/progression, collection, combat/economy, lookup/scan, cap/budget or entity create/remove/mutate authority;
+- no `EnergySwarmGame.tsx`, Infinite-director or environmental-runtime adoption.
+
+Exact deployment anchors:
+- DOC31 baseline `6cadd1db296d5249ae236121088307f480685fe0`;
+- pre-PR `2a82945747f6bd3b855a2a7b84c5db9d084fed38`, run `38808432120` / job `116675222019` GREEN including exact scope + Android APK;
+- final PR #384 head `acc98dccff52812b12e23bd26fb7b21e9889d06b`;
+- PR CI `38808893011` / `116676780125` GREEN; Android `38808893023` / `116676778988` GREEN;
+- canonical `dcd39a173da7635bf85db6844dc86aeca6c1f38c`, parent `6cadd1db296d5249ae236121088307f480685fe0`, tree `531fad95ced691ad24a0c2391fe9d30954f51e01`;
+- main CI `38809192748` / `116677795292` GREEN; Android `38809192821` / `116677795333` GREEN;
+- Pages `38809290030`, build `116678137605` + deploy `116678316176` GREEN.
+
+### J6B-C — Pure Dynamic Event Effect-Mapping Compatibility Contract
+Status: **NEXT ACTIVE ENGINEERING SLICE AFTER DOC32 CLOSURE**
+
+Architecture discovery after J6B-B confirms:
+- `runtimeMutatorEffects.ts` already owns the bounded mapping from the ten frozen `InfiniteMutator` values to effect magnitudes/clamps;
+- `runtimeEnvironmentalFields.ts` already owns reduced-visibility and resource-field projection from those effect profiles;
+- `infiniteSectorDirector.ts` already owns recipe seed/random selection authority;
+- therefore J6B-C must not create a parallel environment/effect/RNG director.
+
+Required direction:
+- contract-first and pure; no live runtime adoption in J6B-C;
+- consume a valid current frozen J6B-B selection and frozen J6B-A identity profile;
+- define compatibility/mapping metadata only onto existing bounded mutator/environment semantics;
+- DOC32 does **not** freeze a concrete mapping table: the dedicated J6B-C Issue must justify each mapping independently and may leave identities unmapped/fail-closed;
+- reuse existing magnitudes and clamps; do not tune or duplicate runtime effect authority;
+- unsupported/ambiguous/unjustified identity mappings fail closed;
+- no `EnergySwarmGame.tsx`, live environment mutation, spawn/progression, collection, combat/economy, entity lookup/scan, timer/RNG/seed, recipe, cap/budget or entity create/remove/mutate authority;
+- controlled live event adoption remains J6B-D+ and requires separate lifecycle/fairness/attribution certification.
+
+## J7 — Bonus Challenge Rounds'''
+          )
+          PY
+
+      - name: Verify exact DOC32 product scope before commit
+        shell: bash
+        run: |
+          git diff --check
+          git diff --name-only | sort > /tmp/actual.txt
+          printf '%s\n' \
+            'docs/ES13_GAMEPLAY_ROADMAP.md' \
+            'docs/IMPLEMENTATION_LEDGER.md' \
+            'docs/PROJECT_CONTINUITY.md' | sort > /tmp/expected.txt
+          diff -u /tmp/expected.txt /tmp/actual.txt
+          grep -Fq 'dcd39a173da7635bf85db6844dc86aeca6c1f38c' docs/PROJECT_CONTINUITY.md
+          grep -Fq 'ES-13J6B-C — Pure Dynamic Event Effect-Mapping Compatibility Contract' docs/IMPLEMENTATION_LEDGER.md
+          grep -Fq 'Controlled live event adoption remains J6B-D+' docs/ES13_GAMEPLAY_ROADMAP.md
+          ! git diff --name-only | grep -Eq '^(src/|tests/|package|public/|assets/)'
+
+      - name: Commit and push DOC32 candidate
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add docs/PROJECT_CONTINUITY.md docs/IMPLEMENTATION_LEDGER.md docs/ES13_GAMEPLAY_ROADMAP.md
+          git commit -m 'ES-13DOC32: close J6B-B and activate J6B-C discovery'
+          git push origin HEAD:docs/es-13-j6bb-closure-j6bc-activation
+          echo "DOC32 candidate SHA: $(git rev-parse HEAD)" >> "$GITHUB_STEP_SUMMARY"
