@@ -388,20 +388,42 @@ Exact deployment anchors:
 - Pages `38685655054`, build `116259769899` + deploy `116259848508` GREEN.
 
 ### J5F-C — Pure Non-Lethal Command-Link Pulse Damage Safety Envelope
-Status: **NEXT ACTIVE ENGINEERING SLICE AFTER DOC26 CLOSURE**
+Status: **DEPLOYED / FROZEN**
+Canonical: `53ff3b1fa0da58ea9bb7259162a98f3dac17df77`
+Issue #363 / PR #364
 
-Architecture discovery shows current enemies own `health`, `maxHealth` and `isDead`, while direct-hit and splash branches already own health mutation and may converge through `registerCombatDefeat(...)`. Enemy health also varies by family and runtime/evolved/elite/milestone multipliers. J5F-C therefore must certify damage safety without choosing tuning or adopting live mutation.
+Certified behavior:
+- consumes one already-eligible current linked target plus caller-supplied `currentHealth`, `maxHealth` and `proposedDamage`;
+- requires finite `currentHealth >= 1`, finite `maxHealth >= 1`, `currentHealth <= maxHealth`, finite `proposedDamage > 0`;
+- preserves an exact 1 HP non-lethal floor and clamps overkill rather than killing;
+- `0 < currentHealth < 1` fails closed rather than inventing healing;
+- does not choose or tune proposed damage;
+- output is immutable `NON_LETHAL_PROJECTION_ONLY` metadata;
+- no live health mutation, defeat, score/reward/drop, milestone/boss, scan/lookup/collection, timing/RNG, cap/budget or entity authority;
+- J5F-A/J5F-B/J5B and live runtime remain frozen.
+
+Exact deployment anchors:
+- pre-PR `345d84493e10d2b2e6308811206e3597755d6b5a`, run `38686699512` / job `116263082196` GREEN including exact scope + Android APK;
+- final PR #364 head `e131110e5d586660b755dada17be0d011faee682`;
+- PR CI `38686990002` / `116264005879` GREEN; Android `38686989965` / `116264005932` GREEN;
+- canonical `53ff3b1fa0da58ea9bb7259162a98f3dac17df77`, parent `7a24f7a747a2d2eb2fb79b4eb4a249ded67a8193`, tree `a6067fdfdc5847fa7b6c0f73894bfa889fec24e4`;
+- main CI `38687143378` / `116264489750` GREEN; Android `38687143454` / `116264489903` GREEN;
+- Pages `38687226083`, build `116264740311` + deploy `116264855735` GREEN.
+
+### J5F-D — Pure Effective Trigger-Damage Source Projection
+Status: **NEXT ACTIVE ENGINEERING SLICE AFTER DOC27 CLOSURE**
+
+Runtime discovery shows both existing defeat-capable paths already compute the final scalar damage applied before health mutation: direct hit uses `damageToApply`; splash uses `splashDamage`. J5F-D must reuse caller-supplied resolved source facts rather than inventing a pulse multiplier.
 
 Required direction:
-- pure deterministic helper only; no live `EnergySwarmGame.tsx` adoption;
-- consume one frozen J5F-B `ELIGIBLE_ONLY` result plus caller-supplied `currentHealth`, `maxHealth` and positive finite `proposedDamage`;
-- validate scalar health/damage facts fail-closed and preserve J5F-B group/member eligibility metadata without entity IDs;
-- J5F-C does not choose the proposed magnitude; it only bounds safety;
-- cap safe damage at `max(0, currentHealth - 1)` so projected resulting health is never below exactly 1 HP;
-- at the 1 HP floor safe damage resolves to 0, never a kill;
-- immutable metadata only with `canKill: false`, `registersDefeat: false`, `awardsScore: false`, `awardsRewards: false`;
-- no health/isDead mutation, defeat registration, score/reward/drop/milestone/boss effect, lookup/scan/collection, projectile/formation mutation, timer/RNG, cap/budget or entity create/remove authority;
-- source magnitude/tuning and live application remain J5F-D+ and require independent attribution/reward-deduplication proof.
+- pure deterministic contract only; no `EnergySwarmGame.tsx` adoption;
+- consume caller-supplied source kind (`DIRECT_HIT` or `SPLASH_HIT`), resolved source damage and source health immediately before that hit;
+- require finite positive source damage and finite positive pre-hit source health;
+- project effective trigger damage as `min(resolvedSourceDamage, sourceHealthBeforeHit)` so projectile overkill is not amplified into pulse magnitude;
+- expose that bounded scalar only as proposed downstream pulse damage metadata;
+- no fixed multiplier, percentage, radius, cadence, clock or RNG;
+- no target lookup/scan/collection, health mutation, defeat/reward/drop attribution, projectile/spawn, formation, cap/budget or entity create/remove authority;
+- any live wiring remains J5F-E+ and must independently prove source capture, current-target application and single defeat/reward attribution.
 
 ## J6 — Dynamic Mid-Sector Events
 Status: PLANNED
