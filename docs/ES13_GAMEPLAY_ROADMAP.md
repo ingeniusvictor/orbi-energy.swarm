@@ -367,20 +367,41 @@ Exact deployment anchors:
 - Pages `38683544584`, build `116253182791` + deploy `116253277337` GREEN.
 
 ### J5F-B — Pure Current Command-Link Pulse Target Eligibility Contract
-Status: **NEXT ACTIVE ENGINEERING SLICE AFTER DOC25 CLOSURE**
+Status: **DEPLOYED / FROZEN**
+Canonical: `9812592dd77a0dd4e6364d57857f4c9065757d49`
+Issue #359 / PR #360
 
-J5F-A proves only a bounded proposal. J5F-B must prove that one caller-supplied current candidate is eligible before any damage magnitude or live mutation is allowed.
+Certified behavior:
+- composes frozen J5F-A proposal semantics with current J5B binding for exactly one caller-supplied candidate;
+- requires `COMMAND_LINK_DISRUPTION_PULSE` / `PULSE_LINKED_MEMBERS` / `PROPOSAL_ONLY` / `LINKED_MEMBER` semantics and all J5F-A zero-effect flags;
+- requires valid current J5B `LINKED_MEMBER`, same `groupId`, explicit `isLiving === true`, and exact bounded target shape `[1]` for size 2 or `[1,2]` for size 3;
+- output is immutable `ELIGIBLE_ONLY` metadata;
+- no live IDs, lookup/scan/collection, health mutation, damage/kill/defeat, score/reward, projectile/formation mutation, clock/RNG, cap/budget or entity create/remove authority;
+- no `EnergySwarmGame.tsx` adoption and no disruption pulse is live.
+
+Exact deployment anchors:
+- pre-PR `66472e7939ec4230b1d8fba8ba520417254523ed`, run `38685113993` / job `116258071836` GREEN including exact scope + Android APK;
+- final PR #360 head `e286127a0fc4d78d05a1f37e2427296376d5819e`;
+- PR CI `38685413567` / `116259016390` GREEN; Android `38685413708` / `116259016971` GREEN;
+- canonical `9812592dd77a0dd4e6364d57857f4c9065757d49`, parent `78737695d82f6bcdf76c1bc68e6c849c457711c0`, tree `e248768164f391adec3d71955f6b065fa1b4b787`;
+- main CI `38685585231` / `116259545039` GREEN; Android `38685585286` / `116259545298` GREEN;
+- Pages `38685655054`, build `116259769899` + deploy `116259848508` GREEN.
+
+### J5F-C — Pure Non-Lethal Command-Link Pulse Damage Safety Envelope
+Status: **NEXT ACTIVE ENGINEERING SLICE AFTER DOC26 CLOSURE**
+
+Architecture discovery shows current enemies own `health`, `maxHealth` and `isDead`, while direct-hit and splash branches already own health mutation and may converge through `registerCombatDefeat(...)`. Enemy health also varies by family and runtime/evolved/elite/milestone multipliers. J5F-C therefore must certify damage safety without choosing tuning or adopting live mutation.
 
 Required direction:
 - pure deterministic helper only; no live `EnergySwarmGame.tsx` adoption;
-- consume a frozen J5F-A projection plus current bounded formation facts for one candidate and explicit living state;
-- require exact J5F-A proposal semantics: `COMMAND_LINK_DISRUPTION_PULSE`, `PULSE_LINKED_MEMBERS`, `PROPOSAL_ONLY`, `LINKED_MEMBER`;
-- require current candidate `groupId` equality, bounded target-member index membership and J5B binding role `LINKED_MEMBER`;
-- require `isLiving === true`;
-- absent/malformed/wrong-group/core/unsupported candidates fail closed;
-- return immutable `ELIGIBLE_ONLY` metadata only;
-- no ids beyond existing opaque group facts, lookup, scan, collection, health mutation, damage/kill, defeat, score/reward, projectile, formation mutation, clock/RNG, cap/budget or entity create/remove authority;
-- damage policy/magnitude and live application remain J5F-C+ and require separate attribution/reward-deduplication proof.
+- consume one frozen J5F-B `ELIGIBLE_ONLY` result plus caller-supplied `currentHealth`, `maxHealth` and positive finite `proposedDamage`;
+- validate scalar health/damage facts fail-closed and preserve J5F-B group/member eligibility metadata without entity IDs;
+- J5F-C does not choose the proposed magnitude; it only bounds safety;
+- cap safe damage at `max(0, currentHealth - 1)` so projected resulting health is never below exactly 1 HP;
+- at the 1 HP floor safe damage resolves to 0, never a kill;
+- immutable metadata only with `canKill: false`, `registersDefeat: false`, `awardsScore: false`, `awardsRewards: false`;
+- no health/isDead mutation, defeat registration, score/reward/drop/milestone/boss effect, lookup/scan/collection, projectile/formation mutation, timer/RNG, cap/budget or entity create/remove authority;
+- source magnitude/tuning and live application remain J5F-D+ and require independent attribution/reward-deduplication proof.
 
 ## J6 — Dynamic Mid-Sector Events
 Status: PLANNED
