@@ -57,7 +57,15 @@ test("J6A selects one interior wave from stable sector identity rather than curr
     /selectedWaveIndex: 2 \+ \(identityHash % interiorWaveCount\)/,
   );
   assert.match(source, /facts\.waveIndex !== selectedWaveIndex/);
-  assert.doesNotMatch(source, /waveIndex.*hashIdentity|hashIdentity.*waveIndex/s);
+
+  const selectorStart = source.indexOf("const selectInteriorWaveIndex");
+  const resolverStart = source.indexOf(
+    "export const resolveDynamicMidSectorEventOpportunity",
+  );
+  assert.ok(selectorStart >= 0);
+  assert.ok(resolverStart > selectorStart);
+  const selectorSource = source.slice(selectorStart, resolverStart);
+  assert.doesNotMatch(selectorSource, /\bwaveIndex\b/);
 });
 
 test("J6A emits opportunity-only metadata and contains no event vocabulary or live effects", () => {
@@ -149,5 +157,9 @@ test("existing Infinite and environmental authorities retain their frozen owners
   assert.match(sectorSource, /recoverySector:\s*boolean/);
   assert.match(waveSource, /waveIndex/);
   assert.match(mutatorSource, /directInfiniteMutatorSelection/);
-  assert.match(environmentSource, /deriveRuntimeEnvironmentalEffects/);
+  assert.match(
+    environmentSource,
+    /export const getReducedVisibilityOverlayProfile/,
+  );
+  assert.match(environmentSource, /export const getResourceFieldProfile/);
 });
