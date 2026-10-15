@@ -530,80 +530,42 @@ Exact deployment anchors:
 - Pages `38809290030`, build `116678137605` + deploy `116678316176` GREEN.
 
 ### J6B-C — Pure Dynamic Event Effect-Mapping Compatibility Contract
-Status: **NEXT ACTIVE ENGINEERING SLICE AFTER DOC32 CLOSURE**
+Status: **DEPLOYED / FROZEN**
+Canonical: `1ad68edc1fd15ffa15e1cf6aa139d3d97a547623`  
+Issue #387 / PR #388
 
-Architecture discovery after J6B-B confirms:
-- `runtimeMutatorEffects.ts` already owns the bounded mapping from the ten frozen `InfiniteMutator` values to effect magnitudes/clamps;
-- `runtimeEnvironmentalFields.ts` already owns reduced-visibility and resource-field projection from those effect profiles;
-- `infiniteSectorDirector.ts` already owns recipe seed/random selection authority;
-- therefore J6B-C must not create a parallel environment/effect/RNG director.
+J6B-C freezes compatibility metadata only between the deterministic J6B-B selection and existing Infinite mutator semantics:
+- `SOLAR_STORM` → `ELECTRICAL_STORM`;
+- `QUANTUM_RIFT` → `MAGNETIC_DRIFT`;
+- `BLACKOUT_SURGE` → `REDUCED_VISIBILITY`;
+- `CRYSTAL_RUSH` → `UNSTABLE_RESOURCE_FIELDS`;
+- `DYSON_ECLIPSE` → explicit `UNMAPPED` / fail-closed.
 
-Required direction:
-- contract-first and pure; no live runtime adoption in J6B-C;
-- consume a valid current frozen J6B-B selection and frozen J6B-A identity profile;
-- define compatibility/mapping metadata only onto existing bounded mutator/environment semantics;
-- DOC32 does **not** freeze a concrete mapping table: the dedicated J6B-C Issue must justify each mapping independently and may leave identities unmapped/fail-closed;
-- reuse existing magnitudes and clamps; do not tune or duplicate runtime effect authority;
-- unsupported/ambiguous/unjustified identity mappings fail closed;
-- no `EnergySwarmGame.tsx`, live environment mutation, spawn/progression, collection, combat/economy, entity lookup/scan, timer/RNG/seed, recipe, cap/budget or entity create/remove/mutate authority;
-- controlled live event adoption remains J6B-D+ and requires separate lifecycle/fairness/attribution certification.
+Certified boundaries:
+- valid current J6B-B `SELECTION_ONLY` input only;
+- immutable `COMPATIBILITY_ONLY` result;
+- no live effect application or environment/runtime mutation;
+- no duplicated effect magnitudes or clamps;
+- no `EnergySwarmGame.tsx`, spawn/progression, collection, combat/economy, entity lookup/scan, timer/RNG/seed/recipe, cap/budget or entity create/remove/mutate authority;
+- existing `runtimeMutatorEffects.ts`, `runtimeEnvironmentalFields.ts` and Infinite recipe/director remain authoritative.
 
-## J7 — Bonus Challenge Rounds
-Status: PLANNED
+Exact deployment anchors:
+- pre-PR `b4ab4fa7afa46061d92eec42befd9bdc023cbbb1`, run `38811558582` / job `116685777412` GREEN including Android APK;
+- final PR head `b19e97adfead5dd5734f8bc19614af29ec474e37`;
+- PR CI `38811968442` / `116687154525` GREEN; Android `38811968545` / `116687155789` GREEN;
+- canonical `1ad68edc1fd15ffa15e1cf6aa139d3d97a547623`, parent `007f1c6744300d47d9e1f43f9cb943e74d70379d`, tree `4fad16370a449e88810a5a4742ba2e9d1c969f17`;
+- main CI `38814014351` / `116694041805` GREEN; Android `38814014266` / `116694040113` GREEN;
+- Pages `38814144837`, build `116694455490` + deploy `116694621071` GREEN.
 
-20–40 s rhythm breakers: precision, rescue, collection, evasive corridors, pursuit, affinity puzzles, obstacle navigation, timed survival and survival without firing.
+### J6B-D — Controlled Live Dynamic Event Adoption
+Status: **NEXT ACTIVE ENGINEERING SLICE AFTER DOC33 CLOSURE**
 
-## J8 — Additional Game Modes
-Status: PLANNED
-
-Score Attack, Boss Rush, Survival/Last Light, Swarm Trials, Anomaly Runs, Daily Seed, Elite Hunt, Endless Crisis and Perfect Sector. Reuse one certified engine/core; avoid mode-specific forks.
-
-## J9 — Boss & Miniboss Expansion
-Status: PLANNED
-
-Blackout Architect, Helios Devourer, Null Choir, Quantum Leviathan, Dyson Breaker, Swarm Sovereign and Singularity Engine. Use phases, destructible zones, affinity/formation pressure, battlefield manipulation and telegraphed vulnerability windows.
-
-## J10 — Expert Risk / Reward
-Status: PLANNED
-
-Resonance Graze, Quantum Slip, near-miss chains and optional danger-proximity bonuses. Never mandatory for baseline survival.
-
-## J11 — Build & Synergy Expansion
-Status: PLANNED
-
-Distinct run identities around Solar, Hydro, Wind, Thermal, Magnetic and Quantum, followed by controlled hybrid synergies.
-
-## J12 — Rare Events & Secret Encounters
-Status: PLANNED
-
-Golden Rift, Ancient ORBI Signal, Blackout Armada, Unknown Energy Signature, Titan-class Intruder and hidden variants. Surprise without required progression blockers.
-
-## J13 — Score, Rank & Mastery
-Status: PLANNED
-
-C/B/A/S/S+ ranks, optional sector objectives, perfect sectors, no-damage/swarm-preservation targets, affinity efficiency, formation mastery, time/chain goals and mode-specific mastery.
-
-## J14 — Procedural Interaction Matrix
-Status: PLANNED
-
-Safely combine `enemy archetype + evolved trait + formation + biome + mutator + event` with deterministic seed reproduction, explicit compatibility rejection and global caps/budgets authoritative.
-
-## J15 — Gameplay Integration & Long-Range Balance
-Status: PLANNED
-
-Long runs across difficulty bands, telegraph/spawn/recovery fairness, score/resonance/Overdrive economy, boss/event/mode interactions, desktop+Android performance, readability/pacing/replayability and deterministic failure evidence.
-
-Only after ES-13 stabilizes should the full RC manual campaign be repeated.
-
----
-
-## ES-14 — Living Warfront
-Status: FUTURE PROGRAM / NOT YET COMMITTED
-
-Potential: new biomes/sectors, thematic arcs, contracts/missions, codex/discovery, deeper persistent mastery, mode unlocks, daily/weekly challenges, secure leaderboards when justified and an evolving warfront between runs.
-
-## Manual RC strategy
-Manual blockers remain open: #4 visual/responsive, #5 Infinite play-feel, #202 GAIA physical runtime, #248 Android real-device. Full final evidence remains deferred while ES-13 changes gameplay. CI must never fabricate human/device PASS.
-
-## Recovery discipline
-Read `PROJECT_CONTINUITY.md`, `IMPLEMENTATION_LEDGER.md`, this roadmap, `TRACEABILITY_POLICY.md`, `ES13_PHASE_CHECKLIST.md` and referenced active Issues/PRs; then verify live `main` before writing anything.
+Required discovery direction:
+- locate and prove one existing live environmental adoption seam before any mutation;
+- Infinite only unless separately justified; preserve Campaign isolation;
+- only J6B-C `MAPPED` identities may be adopted; `DYSON_ECLIPSE` remains `UNMAPPED` and fail-closed;
+- reuse current mutator/environment effect magnitudes and clamps; no second environmental director or copied tuning;
+- preserve J6A opportunity cadence and J6B-B deterministic identity selection; no new RNG, seed, clock or timer authority;
+- prove event lifecycle/duration, expiry, pause, reset boundaries, fairness/telegraph and attribution;
+- no new collection, full-array scan/index, entity creation/removal, spawn/progression, combat/economy authority, cap/budget changes, FOTON GLB or formation changes without separate justification;
+- exact live seam and lifecycle remain unfrozen until the dedicated J6B-D Issue completes discovery.
