@@ -42,6 +42,7 @@ Rules:
 | ES-13J5B — Pure Command-Link Binding Contract | DEPLOYED / FROZEN | `f868058889b24fecbd97f968e932890248ca2b33` | #339 | #340 |
 | ES-13J5C — Live Command-Core Priority Presentation | DEPLOYED / FROZEN | `55d824d2b9cfaf6bb8cd97a032866b1fbcfa92fb` | #343 | #344 |
 | ES-13J5D — Pure Command-Link Break Resolution Contract | DEPLOYED / FROZEN | `99410123a8f20d15a88cd20ada34523ce4497006` | #347 | #348 |
+| ES-13J5E — Controlled Live Command-Link Detach Application | DEPLOYED / FROZEN | `6aa63e9643a2521738b3b6afebfb0856f48bd3fd` | #351 | #352 |
 
 ## Evidence anchors
 
@@ -265,6 +266,29 @@ Exact evidence:
 
 Issue #347 CLOSED / completed. J5D is **DEPLOYED / FROZEN**.
 
+### J5E — Controlled Live Command-Link Detach Application
+J5E adopted the frozen J5D break intent into live formation ownership only, through existing runtime seams and without creating a second enemy authority.
+
+Final product diff exactly:
+- `src/game/EnergySwarmGame.tsx`;
+- `src/game/liveCommandLinkBreakApplication.ts`;
+- `tests/es-13j5e-live-command-link-break-application.test.mjs`;
+- `tests/gameplay/live-command-link-break-application.test.ts`.
+
+Exact evidence:
+- baseline DOC23 `b317faa1cb3403fe11baaa71e6c072b8a97a3062`;
+- pre-PR SHA `868ff46c057ec589a0984a8b24fdd824a63bd903`, run `38680675400` / job `116244260573` GREEN including repo/gameplay/platform/typecheck/release/dossier/build/readiness, exact scope guard and Android APK build/verify/upload;
+- final PR #352 head `92fcb5930029ca42cc8fb191458397c4610b2f7e`;
+- PR CI `38680965872` / `116245194669` GREEN;
+- PR Android `38680965875` / `116245194752` GREEN including Build/Verify/Upload APK;
+- canonical `6aa63e9643a2521738b3b6afebfb0856f48bd3fd`, single parent `b317faa1cb3403fe11baaa71e6c072b8a97a3062`, tree `b7b65424cbfe1b574a632364e8cf028b1da155fa` equal to final PR-head tree;
+- canonical diff exactly four certified J5E files;
+- main CI `38681102491` / `116245629498` GREEN;
+- main Android `38681102495` / `116245629757` GREEN including Build/Verify/Upload APK;
+- Pages `38681179362`: build `116245865182` + deploy `116245989502` GREEN.
+
+Issue #351 CLOSED / completed. J5E is **DEPLOYED / FROZEN**.
+
 ## Documentation canonicals
 - DOC11 `31de2cd5bb89ae3032902c09ace881119c04dfec`;
 - DOC12 `f85e2432934454da191dea9bd0c9da43bbce86ca`;
@@ -278,7 +302,8 @@ Issue #347 CLOSED / completed. J5D is **DEPLOYED / FROZEN**.
 - DOC20 — J5A closure & J5B activation: `efe68202b4046c7f4b2df3cae951908b9e012d3b` — Issue #337 / PR #338.
 - DOC21 — J5B closure & J5C activation: `8a1e17b87cdd8508453814454175ef7f0b95c6ce` — Issue #341 / PR #342.
 - DOC22 — J5C closure & J5D activation: `025bc875a4b3a9dc5d1e690591b6ae0f5af6a6ec` — Issue #345 / PR #346.
-- DOC23 — J5D closure & J5E activation: Issue #349, branch `docs/es-13-j5d-closure-j5e-activation`, in progress from gameplay canonical `99410123a8f20d15a88cd20ada34523ce4497006`.
+- DOC23 — J5D closure & J5E activation: `b317faa1cb3403fe11baaa71e6c072b8a97a3062` — Issue #349 / PR #350.
+- DOC24 — J5E closure & J5F-A activation: Issue #353, branch `docs/es-13-j5e-closure-j5fa-activation`, in progress from gameplay canonical `6aa63e9643a2521738b3b6afebfb0856f48bd3fd`.
 
 ## Frozen manual/physical blockers
 Remain OPEN and deferred while ES-13 materially changes gameplay:
@@ -291,14 +316,14 @@ Automated CI never substitutes for required human/device evidence.
 
 ## Next planned gameplay
 
-### ES-13J5E — Controlled Live Command-Link Detach Application
-Status: **NEXT ENGINEERING TARGET AFTER DOC23 CLOSURE**.
+### ES-13J5F-A — Pure Optional Command-Link Combat Effect Contract
+Status: **NEXT ENGINEERING TARGET AFTER DOC24 CLOSURE**.
 
-J3's `activeUntilMs` serializes live formation groups, so one bounded pending J5D intent slot is sufficient and no group/entity index is needed. Existing direct+splash defeat routing can raise the intent in `registerCombatDefeat`, and the already-existing enemy logic iteration can consume it by clearing only matching linked members' `enemy.enemyFormation`. The pending slot must reset wherever the J3 director resets and must be consumed without erasing a newer intent.
+J5E is now frozen as formation-ownership detach only. J5F-A may define a pure, deterministic and fail-closed optional combat-effect contract, but it may not adopt any effect live. Exact effect vocabulary and eligibility must be justified in the dedicated engineering issue before implementation.
 
-J5E may not add a second enemy scan/collection, Enemy field, damage/kill, score/reward/economy, spawn/progression, timing/RNG, cap/budget or chain-reaction authority. Detached members immediately fall back to existing legacy movement. True combat chain reactions remain deferred beyond J5E.
+J5F-A may not add live entity ids/lookup/scans/collections, runtime mutation, damage/kill, score/reward/economy, projectiles, spawn/progression, timer/RNG, cap/budget or entity create/remove authority. Any J5F-B+ live application must separately prove bounded targeting, fairness and single defeat/reward attribution.
 
 J4D+ additional tactical families remain deferred: FORMATION_BREAKER/JAMMER require hard-control spacing/recovery proof; MINE_WEAVER/MIRROR_WARDEN require genuine mine/mirror mechanics. J3C-C remains deferred, not cancelled.
 
 ## Program sequence
-`J5A Pure Priority-Target Contract → J5B+ Controlled Priority Targets/Chain Reactions → J6 Dynamic Events → J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance → ES-14 Living Warfront`
+`J5F-A Pure Optional Command-Link Combat Effect Contract → J5F-B+ separately proven live effects → J6 Dynamic Events → J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance → ES-14 Living Warfront`

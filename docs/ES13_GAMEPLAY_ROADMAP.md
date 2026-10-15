@@ -320,25 +320,43 @@ Exact deployment anchors:
 - Pages `38613648878`, build `116023067863` + deploy `116023290302` GREEN.
 
 ### J5E — Controlled Live Command-Link Detach Application
-Status: **NEXT ACTIVE ENGINEERING SLICE AFTER DOC23 CLOSURE**
+Status: **DEPLOYED / FROZEN**
+Canonical: `6aa63e9643a2521738b3b6afebfb0856f48bd3fd`
+Issue #351 / PR #352
 
-Post-J5D discovery proves a bounded live seam:
-- J3 prevents overlapping active formation groups via `activeUntilMs`;
-- one pending break-resolution slot is therefore sufficient;
-- direct and splash deaths already converge in `registerCombatDefeat(...)`;
-- the enemy logic pass already visits every living enemy once;
-- J3 already defines detach semantics as clearing `enemy.enemyFormation`, with legacy movement as fallback.
+Certified live behavior:
+- a valid current `COMMAND_CORE` defeat is observed only through existing centralized `registerCombatDefeat(...)`;
+- exactly one pending bounded break intent is retained; no queue, map, set or group/entity index exists;
+- the intent is captured before the existing enemy logic traversal and applied only inside that traversal;
+- only living linked members with the same `groupId` and a bounded J5D linked-member index detach;
+- detach mutates only formation ownership via `enemy.enemyFormation = undefined`, after which existing legacy movement remains authoritative;
+- captured intent is consumed by identity guard without erasing a newer intent;
+- pending intent resets with all J3 director reset boundaries;
+- no second enemy scan/collection, Enemy/EnemyType field, damage/kill, score/reward/economy, spawn/progression, clock/RNG, cap/budget or entity create/remove authority;
+- J3 formation authority and frozen J5A–J5D semantics remain unchanged.
 
-Design constraints:
-- one scalar pending `CommandLinkBreakResolution | null`, never a collection/queue;
-- raise only from valid current core defeat through J5D;
-- capture before the existing enemy loop and apply only inside that loop;
-- same `groupId` + bounded linked-member index required for detach;
-- detach only formation ownership (`enemy.enemyFormation = undefined`);
-- consume captured intent exactly once without clobbering a newer intent;
-- reset pending intent at every J3 director reset boundary;
-- no second enemy scan, group/entity index, Enemy field, damage/kill, score/reward/economy, spawn/progression, clock/RNG, caps/budgets or entity create/remove;
-- true chain-reaction combat effects remain deferred to J5F+.
+Exact deployment anchors:
+- pre-PR `868ff46c057ec589a0984a8b24fdd824a63bd903`, run `38680675400` / job `116244260573` GREEN including exact scope + Android APK;
+- final PR #352 head `92fcb5930029ca42cc8fb191458397c4610b2f7e`;
+- PR CI `38680965872` / `116245194669` GREEN; Android `38680965875` / `116245194752` GREEN;
+- canonical `6aa63e9643a2521738b3b6afebfb0856f48bd3fd`, parent `b317faa1cb3403fe11baaa71e6c072b8a97a3062`, tree `b7b65424cbfe1b574a632364e8cf028b1da155fa`;
+- main CI `38681102491` / `116245629498` GREEN; Android `38681102495` / `116245629757` GREEN;
+- Pages `38681179362`, build `116245865182` + deploy `116245989502` GREEN.
+
+### J5F-A — Pure Optional Command-Link Combat Effect Contract
+Status: **NEXT ACTIVE ENGINEERING SLICE AFTER DOC24 CLOSURE**
+
+J5E proves that command-link formation ownership can be detached safely without adding a second scan or entity index. J5F-A must remain contract-first before any additional combat consequence is allowed.
+
+Required direction:
+- pure deterministic contract only; no live `EnergySwarmGame.tsx` adoption;
+- consume frozen J5 semantic facts as data without taking J3/J5E authority;
+- define only bounded optional effect intent/eligibility metadata, with exact effect vocabulary justified in the dedicated J5F-A engineering issue;
+- invalid, linked-member, stale or unsupported facts fail closed;
+- no entity ids, lookup, scan, collection or runtime mutation;
+- no damage/kill, score/reward/economy, projectile/spawn/progression, timer/RNG, cap/budget or entity create/remove authority;
+- no automatic chain reaction is live in J5F-A;
+- any later J5F-B+ live application must independently prove bounded targeting, fairness, attribution and no duplicate defeat/reward semantics.
 
 ## J6 — Dynamic Mid-Sector Events
 Status: PLANNED
