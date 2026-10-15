@@ -17,6 +17,10 @@ import {
 } from "./runtimeMilestoneEncounter";
 import type { RuntimeWaveDescriptor } from "./runtimeWaveDescriptor";
 import { applyAdaptiveInvasionToDescriptor } from "./adaptiveInvasionRuntime";
+import {
+  applyDynamicMidSectorEventRuntimeAdoption,
+  type DynamicMidSectorEventRuntimeAdoption,
+} from "./dynamicMidSectorEventRuntimeAdoption";
 
 export interface RuntimeProjectionBundle {
   descriptor: RuntimeWaveDescriptor;
@@ -24,6 +28,7 @@ export interface RuntimeProjectionBundle {
   mutatorEffects: RuntimeMutatorEffectProfile;
   enemyBudget: number;
   milestoneEncounter: InfiniteMilestoneEncounterProfile | null;
+  dynamicEventAdoption: Readonly<DynamicMidSectorEventRuntimeAdoption> | null;
 }
 
 export type RuntimeProjectionBundleCache = WeakMap<
@@ -46,10 +51,16 @@ export const getCachedRuntimeProjectionBundle = (
   }
 
   const baseDescriptor = resolveRuntimeWaveDescriptor(state);
-  const descriptor =
+  const adaptiveDescriptor =
     typeof liveFollowerCount === "number"
       ? applyAdaptiveInvasionToDescriptor(baseDescriptor, liveFollowerCount)
       : baseDescriptor;
+  const dynamicEventProjection =
+    applyDynamicMidSectorEventRuntimeAdoption(
+      state,
+      adaptiveDescriptor,
+    );
+  const descriptor = dynamicEventProjection.descriptor;
   const bundle: RuntimeProjectionBundle = {
     descriptor,
     combatPressure:
@@ -60,6 +71,8 @@ export const getCachedRuntimeProjectionBundle = (
       getRuntimeMutatedEnemyBudget(descriptor),
     milestoneEncounter:
       projectInfiniteMilestoneEncounter(descriptor),
+    dynamicEventAdoption:
+      dynamicEventProjection.adoption,
   };
 
   cache.set(state, bundle);
