@@ -49,6 +49,7 @@ Rules:
 | ES-13J5F-D — Pure Effective Trigger-Damage Source Projection | DEPLOYED / FROZEN | `113865079ac4581c90356c3c218a28f8f88b6ef7` | #367 | #368 |
 | ES-13J5F-E — Controlled Live Command-Link Disruption Pulse Application | DEPLOYED / FROZEN | `9554358005d6d092341f4f65d8b986090307f8b5` | #371 | #372 |
 | ES-13J6A — Pure Dynamic Mid-Sector Event Opportunity Contract | DEPLOYED / FROZEN | `69ac8a1a83d2f6bbe6a989a3a819fac438e854c1` | #375 | #376 |
+| ES-13J6B-A — Pure Dynamic Mid-Sector Event Identity Vocabulary Contract | DEPLOYED / FROZEN | `204566693978adabba7e66995c88ae2f85818f8b` | #379 | #380 |
 
 ## Evidence anchors
 
@@ -423,6 +424,24 @@ Exact deployment anchors:
 
 Issue #375 CLOSED / completed. J6A is **DEPLOYED / FROZEN**.
 
+### J6B-A — Pure Dynamic Mid-Sector Event Identity Vocabulary Contract
+Certified behavior:
+- exactly five frozen identities: `SOLAR_STORM`, `QUANTUM_RIFT`, `BLACKOUT_SURGE`, `CRYSTAL_RUSH`, `DYSON_ECLIPSE`;
+- exact fail-closed lookup with immutable `ENVIRONMENTAL_IDENTITY` / `IDENTITY_ONLY` profiles;
+- no opportunity/event selection, mutator/effect mapping, live execution or runtime adoption;
+- no spawn/progression, collection, combat/economy, environment, scan/lookup, timing/RNG, cap/budget or entity authority.
+
+Exact deployment anchors:
+- DOC30 baseline `26554f20648f0a27c2c510c055cbec81c43416c7`;
+- pre-PR `cd2abd12e20082382611bf08cac2d3d89f693adc`, run `38782799375` / job `116587050168` GREEN including exact scope + Android APK;
+- final PR #380 head `2aae2803d302bea80c3f0b0748bda10c6fcaffcd`;
+- PR CI `38783326052` / `116588875589` GREEN; Android `38783326187` / `116588876111` GREEN;
+- canonical `204566693978adabba7e66995c88ae2f85818f8b`, parent `26554f20648f0a27c2c510c055cbec81c43416c7`, tree `3f6d2359ca87ec31853fbbfccc6bb1ffb6fb68ba` equal to final PR tree;
+- main CI `38783605087` / `116589825599` GREEN; Android `38783604964` / `116589827934` GREEN;
+- Pages `38783697902`, build `116590143603` + deploy `116590341097` GREEN.
+
+Issue #379 CLOSED / completed. J6B-A is **DEPLOYED / FROZEN**.
+
 ## Documentation canonicals
 - DOC11 `31de2cd5bb89ae3032902c09ace881119c04dfec`;
 - DOC12 `f85e2432934454da191dea9bd0c9da43bbce86ca`;
@@ -443,7 +462,8 @@ Issue #375 CLOSED / completed. J6A is **DEPLOYED / FROZEN**.
 - DOC27 — J5F-C closure & J5F-D trigger-damage source activation: `bc75751362e0dc8ed79c7b4688aa355ff9ae9648` — Issue #365 / PR #366.
 - DOC28 — J5F-D closure & J5F-E controlled live pulse activation: `022741e5c500dea2947241d4bb8c6cb8d004772c` — Issue #369 / PR #370.
 - DOC29 — J5F-E closure & J6A dynamic event opportunity activation: `0dca89678698be0557f0500590f27c9f53ab1548` — Issue #373 / PR #374.
-- DOC30 — J6A closure & J6B-A event identity vocabulary activation: Issue #377, branch `docs/es-13-j6a-closure-j6ba-activation`, in progress from gameplay canonical `69ac8a1a83d2f6bbe6a989a3a819fac438e854c1`.
+- DOC30 — J6A closure & J6B-A event identity vocabulary activation: `26554f20648f0a27c2c510c055cbec81c43416c7` — Issue #377 / PR #378.
+- DOC31 — J6B-A closure & J6B-B deterministic event selection activation: Issue #381, branch `docs/es-13-j6ba-closure-j6bb-activation`, in progress from gameplay canonical `204566693978adabba7e66995c88ae2f85818f8b`.
 
 ## Frozen manual/physical blockers
 Remain OPEN and deferred while ES-13 materially changes gameplay:
@@ -456,14 +476,14 @@ Automated CI never substitutes for required human/device evidence.
 
 ## Next planned gameplay
 
-### ES-13J6B-A — Pure Dynamic Mid-Sector Event Identity Vocabulary Contract
-Status: **NEXT ENGINEERING TARGET AFTER DOC30 CLOSURE**.
+### ES-13J6B-B — Pure Deterministic Dynamic Event Identity Selection Contract
+Status: **NEXT ENGINEERING TARGET AFTER DOC31 CLOSURE**.
 
-J6A is frozen as opportunity-only. J6B-A may define exactly five initial immutable event identities (`SOLAR_STORM`, `QUANTUM_RIFT`, `BLACKOUT_SURGE`, `CRYSTAL_RUSH`, `DYSON_ECLIPSE`) with semantic/display metadata and fail-closed lookup only.
+J6A is frozen as opportunity-only and J6B-A as identity-only. J6B-B may select exactly one frozen identity from a valid current J6A `identityFingerprint` without creating new randomness or runtime effect authority.
 
-J6B-A must not select an opportunity, map identities to existing mutators/effects, execute events or adopt live runtime. It owns no spawn/progression, entity/projectile collection, damage/defeat, score/reward/economy, environment/mutator mutation, lookup/scan, timing/RNG, cap/budget or entity authority. Selection remains J6B-B+ and live effect mapping must later reuse existing certified environmental authorities.
+J6B-B may own semantic selection only (`SELECTION_ONLY`). It must not map identities to mutators/environment effects, execute live behavior, adopt into runtime, or own spawn/progression, collections, combat/economy, environment mutation, scan/lookup, timing/RNG, cap/budget or entity authority. Live effect mapping remains later and must reuse existing frozen environmental systems.
 
 J4D+ additional tactical families remain deferred: FORMATION_BREAKER/JAMMER require hard-control spacing/recovery proof; MINE_WEAVER/MIRROR_WARDEN require genuine mine/mirror mechanics. J3C-C remains deferred, not cancelled.
 
 ## Program sequence
-`J6B-A Pure Dynamic Mid-Sector Event Identity Vocabulary Contract → J6B-B+ Deterministic Selection/Certified Live Mapping → J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance → ES-14 Living Warfront`
+`J6B-B Pure Deterministic Dynamic Event Identity Selection Contract → J6B-C+ Certified Effect Mapping/Live Adoption → J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance → ES-14 Living Warfront`

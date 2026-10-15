@@ -484,27 +484,44 @@ Exact deployment anchors:
 - Pages `38781193209`, build `116581519042` + deploy `116581668287` GREEN.
 
 ### J6B-A — Pure Dynamic Mid-Sector Event Identity Vocabulary Contract
-Status: **NEXT ACTIVE ENGINEERING SLICE AFTER DOC30 CLOSURE**
+Status: **DEPLOYED / FROZEN**
+Canonical: `204566693978adabba7e66995c88ae2f85818f8b`
+Issue #379 / PR #380
 
-Architecture discovery found no existing J6 event identity catalog. Existing `infiniteMutatorDirector`, `runtimeMutatorEffects` and `runtimeEnvironmentalFields` already own environmental selection/effects and must not be duplicated.
+Certified behavior:
+- exactly five immutable identities: `SOLAR_STORM`, `QUANTUM_RIFT`, `BLACKOUT_SURGE`, `CRYSTAL_RUSH`, `DYSON_ECLIPSE`;
+- exact deterministic lookup by supported ID; padded/empty/lowercase/deferred/unsupported values fail closed;
+- every profile is `ENVIRONMENTAL_IDENTITY` / `IDENTITY_ONLY`;
+- no opportunity selection, event selection, mutator/effect mapping or live execution;
+- no import/adoption by J6A, Infinite directors, mutator/environment runtime files or `EnergySwarmGame.tsx`;
+- no spawn/progression, collection, combat/economy, environment, entity lookup/scan, timing/RNG, cap/budget or entity authority.
 
-Initial bounded identity vocabulary:
-- `SOLAR_STORM`;
-- `QUANTUM_RIFT`;
-- `BLACKOUT_SURGE`;
-- `CRYSTAL_RUSH`;
-- `DYSON_ECLIPSE`.
+Exact deployment anchors:
+- DOC30 baseline `26554f20648f0a27c2c510c055cbec81c43416c7`;
+- pre-PR `cd2abd12e20082382611bf08cac2d3d89f693adc`, run `38782799375` / job `116587050168` GREEN including exact scope + Android APK;
+- final PR #380 head `2aae2803d302bea80c3f0b0748bda10c6fcaffcd`;
+- PR CI `38783326052` / `116588875589` GREEN; Android `38783326187` / `116588876111` GREEN;
+- canonical `204566693978adabba7e66995c88ae2f85818f8b`, parent `26554f20648f0a27c2c510c055cbec81c43416c7`, tree `3f6d2359ca87ec31853fbbfccc6bb1ffb6fb68ba`;
+- main CI `38783605087` / `116589825599` GREEN; Android `38783604964` / `116589827934` GREEN;
+- Pages `38783697902`, build `116590143603` + deploy `116590341097` GREEN.
+
+### J6B-B — Pure Deterministic Dynamic Event Identity Selection Contract
+Status: **NEXT ACTIVE ENGINEERING SLICE AFTER DOC31 CLOSURE**
+
+J6A already emits one valid opportunity with an 8-lowercase-hex `identityFingerprint`; J6B-A freezes exactly five event identities. J6B-B may compose those two frozen contracts to select identity semantics only.
 
 Required direction:
-- pure immutable/fail-closed identity profiles only;
-- deterministic exact lookup by supported event ID;
-- semantic/display/tactical metadata only, with explicit `IDENTITY_ONLY` / zero-live-authority semantics;
-- no opportunity selection, event execution, mutator/effect mapping or runtime adoption;
-- no import/adoption by J6A, Infinite directors, mutator directors, environmental runtime files or `EnergySwarmGame.tsx`;
-- no spawn/progression, entity/projectile collection, damage/defeat, score/reward/economy, lookup/scan, clock/timer/RNG, cap/budget or entity create/remove/mutate authority;
-- unsupported IDs fail closed;
-- objective/spawn-heavy events remain deferred until dedicated mechanics justify them;
-- deterministic event selection remains J6B-B+; live effect mapping remains later and must reuse existing certified environmental authorities.
+- pure deterministic contract only; no runtime adoption;
+- consume a valid current J6A opportunity and frozen J6B-A vocabulary;
+- validate kind/mode/source/wave consistency, canonical opportunity ID and exact fingerprint shape;
+- select exactly one frozen event ID from the existing `identityFingerprint`, with no new RNG/clock/seed authority;
+- output immutable `SELECTION_ONLY` metadata carrying source opportunity identity + selected event identity;
+- semantic event selection is allowed, but mutator/effect mapping and live execution remain forbidden;
+- invalid/stale/malformed input fails closed;
+- J6A/J6B-A remain unchanged;
+- no `EnergySwarmGame.tsx`, Infinite director, mutator/effect/environment runtime adoption;
+- no spawn/progression, collection, combat/economy, entity lookup/scan, timer/RNG, cap/budget or entity create/remove/mutate authority;
+- live effect mapping remains a later J6 slice and must reuse existing frozen environmental authorities.
 
 ## J7 — Bonus Challenge Rounds
 Status: PLANNED
