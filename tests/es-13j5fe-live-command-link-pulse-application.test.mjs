@@ -157,6 +157,6 @@ test("J5F-E does not capture entity schema or mutate frozen J5F contracts", () =
 
   assert.match(j5faSource, /effectMode:\s*"PROPOSAL_ONLY"/);
   assert.match(j5fbSource, /eligibilityMode:\s*"ELIGIBLE_ONLY"/);
-  assert.match(j5fcSource, /effectMode:\s*"NON_LETHAL_PROJECTION_ONLY"/);
+  assert.match(j5fcSource, /damageSafetyMode:\s*"NON_LETHAL_PROJECTION_ONLY"/);
   assert.match(j5fdSource, /effectiveTriggerDamage/);
 });
