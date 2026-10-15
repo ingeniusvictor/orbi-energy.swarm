@@ -25,7 +25,24 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Repository Smoke
-        run: npm test
+        id: smoke
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          npm test 2>&1 | tee smoke.log
+      - name: Upload smoke diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: es-13doc33-smoke-${{ github.sha }}
+          path: smoke.log
+          if-no-files-found: error
+          retention-days: 7
+      - name: Enforce Repository Smoke
+        if: always()
+        shell: bash
+        run: test "${{ steps.smoke.outcome }}" = "success"
       - name: Gameplay regression
         run: npm run test:gameplay
       - name: Platform regression
