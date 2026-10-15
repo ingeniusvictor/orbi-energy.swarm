@@ -11,8 +11,10 @@ export type LiveCommandLinkBreakIntent = Readonly<CommandLinkBreakResolution>;
 
 export const resolveLiveCommandLinkBreakIntent = (
   formation: CommandLinkFormationFacts | null | undefined,
-): LiveCommandLinkBreakIntent | null =>
-  resolveCommandLinkBreakResolution(formation);
+): LiveCommandLinkBreakIntent | null => {
+  if (!formation) return null;
+  return resolveCommandLinkBreakResolution(formation);
+};
 
 export const shouldDetachCommandLinkMember = (
   resolution: LiveCommandLinkBreakIntent | null | undefined,
