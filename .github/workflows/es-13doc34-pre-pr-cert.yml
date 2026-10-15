@@ -1,0 +1,72 @@
+name: ES-13DOC34 Pre-PR Certification
+
+on:
+  push:
+    branches:
+      - docs/es-13-j6bd-closure-j7-discovery
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact branch head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Repository Smoke
+        run: npm test
+      - name: Gameplay regression
+        run: npm run test:gameplay
+      - name: Platform regression
+        run: npm run test:platform
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Release Contract
+        run: npm run release:verify
+      - name: Manual dossier
+        run: npm run release:evidence:verify
+      - name: Production Build
+        run: npm run build
+      - name: RC readiness fail-closed
+        env:
+          ORBI_RELEASE_SHA: ${{ github.sha }}
+        run: npm run release:readiness -- --output release-readiness.json
+      - name: DOC34 exact scope and preservation guard
+        shell: bash
+        run: |
+          git diff --name-only 247d976b6e2cc634cbc5158cdff46ac42b51c5fc...HEAD | sort > /tmp/files.txt
+          printf '%s\n' '.github/workflows/es-13doc34-pre-pr-cert.yml' 'docs/ES13_GAMEPLAY_ROADMAP.md' 'docs/IMPLEMENTATION_LEDGER.md' 'docs/PROJECT_CONTINUITY.md' | sort > /tmp/expected.txt
+          diff -u /tmp/expected.txt /tmp/files.txt
+          ! grep -E '^(src/|tests/|package|public/|assets/|android/)' /tmp/files.txt
+          grep -q '247d976b6e2cc634cbc5158cdff46ac42b51c5fc' docs/PROJECT_CONTINUITY.md
+          grep -q '^### ES-13J7 — Bonus Challenge Rounds Discovery$' docs/PROJECT_CONTINUITY.md
+          grep -q '^### ES-13J7 — Bonus Challenge Rounds Discovery$' docs/IMPLEMENTATION_LEDGER.md
+          grep -q '^### J6B-D — Controlled Live Dynamic Event Adoption$' docs/ES13_GAMEPLAY_ROADMAP.md
+          grep -q '^## J7 — Bonus Challenge Rounds$' docs/ES13_GAMEPLAY_ROADMAP.md
+          grep -q '^## J8 — Additional Game Modes$' docs/ES13_GAMEPLAY_ROADMAP.md
+          grep -q '^## J15 — Gameplay Integration & Long-Range Balance$' docs/ES13_GAMEPLAY_ROADMAP.md
+          grep -q '^## ES-14 — Living Warfront$' docs/ES13_GAMEPLAY_ROADMAP.md
+          grep -q '^## Resolved diagnostics$' docs/PROJECT_CONTINUITY.md
+          grep -q '#4 — visual/responsive certification' docs/PROJECT_CONTINUITY.md
+          grep -q '#5 — Infinite play-feel' docs/PROJECT_CONTINUITY.md
+          grep -q '#202 — GAIA physical runtime/performance' docs/PROJECT_CONTINUITY.md
+          grep -q '#248 — Android real-device certification' docs/PROJECT_CONTINUITY.md
+          ! grep -q '^## J7 — Bonus Challenge Rounds$[\s\S]*DEPLOYED' docs/ES13_GAMEPLAY_ROADMAP.md
+      - name: Upload RC readiness evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: es-13doc34-readiness-${{ github.sha }}
+          path: release-readiness.json
+          if-no-files-found: error
+          retention-days: 30
