@@ -411,19 +411,53 @@ Exact deployment anchors:
 - Pages `38687226083`, build `116264740311` + deploy `116264855735` GREEN.
 
 ### J5F-D — Pure Effective Trigger-Damage Source Projection
-Status: **NEXT ACTIVE ENGINEERING SLICE AFTER DOC27 CLOSURE**
+Status: **DEPLOYED / FROZEN**
+Canonical: `113865079ac4581c90356c3c218a28f8f88b6ef7`
+Issue #367 / PR #368
 
-Runtime discovery shows both existing defeat-capable paths already compute the final scalar damage applied before health mutation: direct hit uses `damageToApply`; splash uses `splashDamage`. J5F-D must reuse caller-supplied resolved source facts rather than inventing a pulse multiplier.
+Certified behavior:
+- source kind is exactly `DIRECT_HIT` or `SPLASH_HIT`;
+- caller supplies already-resolved hit damage plus source health immediately before that hit;
+- `effectiveTriggerDamage = min(resolvedSourceDamage, sourceHealthBeforeHit)`;
+- `proposedPulseDamage` exactly equals that bounded scalar;
+- overkill cannot transfer into pulse magnitude;
+- output is immutable `EFFECTIVE_TRIGGER_DAMAGE_ONLY` metadata;
+- no multiplier/percentage/radius/cadence/timer/RNG;
+- no live IDs, lookup/scan/collection, health mutation, defeat/score/reward/drop, projectile/spawn, formation, cap/budget or entity authority;
+- J5F-A/B/C and live runtime remain unchanged.
+
+Exact deployment anchors:
+- pre-PR `aa8fe452636ef1857d1664aba3968896a0316731`, run `38721123148` / job `116375646962` GREEN including exact scope + Android APK;
+- final PR #368 head `407a647ec511f8a6fb1a44ee13bd3eac9069db0b`;
+- PR CI `38721504340` / `116376911142` GREEN; Android `38721504506` / `116376911875` GREEN;
+- canonical `113865079ac4581c90356c3c218a28f8f88b6ef7`, parent `bc75751362e0dc8ed79c7b4688aa355ff9ae9648`, tree `c63c7aa7634f2d8ee8555f11da1648a8a83d2af8`;
+- main CI `38721717159` / `116377625580` GREEN; Android `38721717129` / `116377625451` GREEN;
+- Pages `38721821467`, build `116377981983` + deploy `116378114444` GREEN.
+
+### J5F-E — Controlled Live Command-Link Disruption Pulse Application
+Status: **NEXT ACTIVE ENGINEERING SLICE AFTER DOC28 CLOSURE**
+
+Post-J5F-D discovery proves a bounded live application through existing seams only:
+- direct and splash paths already own their final resolved hit scalar before health mutation;
+- each path can capture only local pre-hit source health and project J5F-D only when that same hit proves lethal;
+- `registerCombatDefeat(...)` already centralizes direct+splash defeat and resolves the full current J5D break resolution;
+- J5E already carries one pending break through the existing enemy logic pass;
+- J5F-B can validate each current linked member inside that same pass;
+- J5F-C can project exact non-lethal `resultingHealth` from current `health/maxHealth` plus J5F-D proposed pulse damage;
+- pulse application can occur before J5E detaches formation ownership, with no second scan or entity index.
 
 Required direction:
-- pure deterministic contract only; no `EnergySwarmGame.tsx` adoption;
-- consume caller-supplied source kind (`DIRECT_HIT` or `SPLASH_HIT`), resolved source damage and source health immediately before that hit;
-- require finite positive source damage and finite positive pre-hit source health;
-- project effective trigger damage as `min(resolvedSourceDamage, sourceHealthBeforeHit)` so projectile overkill is not amplified into pulse magnitude;
-- expose that bounded scalar only as proposed downstream pulse damage metadata;
-- no fixed multiplier, percentage, radius, cadence, clock or RNG;
-- no target lookup/scan/collection, health mutation, defeat/reward/drop attribution, projectile/spawn, formation, cap/budget or entity create/remove authority;
-- any live wiring remains J5F-E+ and must independently prove source capture, current-target application and single defeat/reward attribution.
+- one new pure live-adapter helper composing frozen J5F-A/B/C/D; frozen contracts remain unchanged;
+- one scalar pending pulse object/ref only, never a queue/map/set/index;
+- capture pre-hit source health immediately before existing direct/splash health subtraction;
+- only a defeat caused by that exact hit may pass J5F-D source metadata into centralized defeat routing;
+- J5E detach remains independent if pulse source is absent/invalid;
+- capture pending pulse before the existing enemy pass and apply only inside that pass, before J5E clears `enemyFormation`;
+- matching current living linked members receive only J5F-C `resultingHealth`; exact 1 HP floor remains authoritative;
+- never set linked `isDead`, never register pulse defeat, never award score/reward/drop/persistence and never trigger boss/milestone defeat;
+- size-3 may pulse both bounded linked members during the same pass, then consume the captured pulse once with identity guard;
+- reset pending pulse at the same run/wave/boss J3 lifecycle boundaries;
+- no new Enemy/EnemyType field, scan/collection/lookup, projectile, multiplier/percentage/radius/cadence, timer/RNG, spawn/progression, cap/budget, visual or audio authority.
 
 ## J6 — Dynamic Mid-Sector Events
 Status: PLANNED
