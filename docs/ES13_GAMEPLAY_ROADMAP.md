@@ -462,28 +462,49 @@ Exact deployment anchors:
 Status: ACTIVE PROGRAM / CONTRACT-FIRST
 
 ### J6A — Pure Dynamic Mid-Sector Event Opportunity Contract
-Status: **NEXT ACTIVE ENGINEERING SLICE AFTER DOC29 CLOSURE**
+Status: **DEPLOYED / FROZEN**
+Canonical: `69ac8a1a83d2f6bbe6a989a3a819fac438e854c1`
+Issue #375 / PR #376
 
-Architecture discovery reuses existing Infinite authority instead of creating a parallel event director:
-- `RuntimeWaveDescriptor` already exposes source mode, sector, wave index/count, mutators, milestone, fairness and traceable source/seed facts;
-- Infinite sectors already contain 3–7 waves;
-- milestone ownership is final-wave only;
-- recovery sectors already exist explicitly and suppress mutators;
-- environmental mutator selection/conflicts and runtime environmental effects already have dedicated authorities.
+Certified behavior:
+- Infinite-only and bounded to certified wave counts 3–7;
+- Campaign, recovery sectors, milestone waves, first/final waves and malformed facts fail closed;
+- exactly one interior opportunity wave is selected deterministically per valid sector identity from existing `seed + recipeId + sector + waveCount` facts;
+- output is immutable `DYNAMIC_MID_SECTOR_EVENT_OPPORTUNITY` / `OPPORTUNITY_ONLY` metadata;
+- no event identity/profile, live effect, environmental/mutator mutation, spawn/progression, entity/projectile collection, combat/economy, entity lookup/scan, timer/RNG or cap/budget authority;
+- existing Infinite and environmental authorities remain unchanged.
 
-Required J6A direction:
-- pure deterministic/fail-closed contract only; no `EnergySwarmGame.tsx` adoption;
-- consume caller-supplied existing sector/wave facts; own no runtime state;
-- Campaign, recovery sectors, milestone waves and invalid/stale facts fail closed;
-- only interior Infinite waves (`waveIndex > 1 && waveIndex < waveCount`) may expose an opportunity;
-- at most one deterministic opportunity slot per sector, derived from existing sector/wave identity/seed facts without a new RNG or clock;
-- output immutable `OPPORTUNITY_ONLY` metadata;
-- J6A does not yet select Solar Storm, Quantum Rift, Blackout Surge, Crystal Rush, Dyson Eclipse or any other event identity/effect;
-- no spawn/entity/projectile collection, damage/defeat, score/reward/economy, mutator/environment mutation, lookup/scan, timer/RNG, cap/budget mutation or entity create/remove authority.
+Exact deployment anchors:
+- DOC29 baseline `0dca89678698be0557f0500590f27c9f53ab1548`;
+- pre-PR `8dd38514738e0873364851bea472413b44b5539c`, run `38741496798` / job `116444066588` GREEN including exact scope + Android APK;
+- final PR #376 head `38a8e76c147ca682143e44f2cd57dca0d0bc54af`;
+- PR CI `38780778121` / `116580097952` GREEN; Android `38780778404` / `116580099652` GREEN;
+- canonical `69ac8a1a83d2f6bbe6a989a3a819fac438e854c1`, parent `0dca89678698be0557f0500590f27c9f53ab1548`, tree `d3aac694e27af9c4fddcbce7c07d6766c84f1146`;
+- main CI `38781077090` / `116581119711` GREEN; Android `38781076913` / `116581119364` GREEN;
+- Pages `38781193209`, build `116581519042` + deploy `116581668287` GREEN.
 
-Event vocabulary and live effect mapping require later J6 slices after J6A is certified.
+### J6B-A — Pure Dynamic Mid-Sector Event Identity Vocabulary Contract
+Status: **NEXT ACTIVE ENGINEERING SLICE AFTER DOC30 CLOSURE**
 
-Planned vocabulary remains Solar Storm, Quantum Rift, Blackout Surge, Crystal Rush, Dyson Eclipse, Swarm Distress Call, Convoy Defense, Void Hunt, Elite Incursion, Mirror Swarm, Meteor/Debris Field and Singularity Event. J6A activates only the bounded opportunity contract; event identity and live effects remain deferred.
+Architecture discovery found no existing J6 event identity catalog. Existing `infiniteMutatorDirector`, `runtimeMutatorEffects` and `runtimeEnvironmentalFields` already own environmental selection/effects and must not be duplicated.
+
+Initial bounded identity vocabulary:
+- `SOLAR_STORM`;
+- `QUANTUM_RIFT`;
+- `BLACKOUT_SURGE`;
+- `CRYSTAL_RUSH`;
+- `DYSON_ECLIPSE`.
+
+Required direction:
+- pure immutable/fail-closed identity profiles only;
+- deterministic exact lookup by supported event ID;
+- semantic/display/tactical metadata only, with explicit `IDENTITY_ONLY` / zero-live-authority semantics;
+- no opportunity selection, event execution, mutator/effect mapping or runtime adoption;
+- no import/adoption by J6A, Infinite directors, mutator directors, environmental runtime files or `EnergySwarmGame.tsx`;
+- no spawn/progression, entity/projectile collection, damage/defeat, score/reward/economy, lookup/scan, clock/timer/RNG, cap/budget or entity create/remove/mutate authority;
+- unsupported IDs fail closed;
+- objective/spawn-heavy events remain deferred until dedicated mechanics justify them;
+- deterministic event selection remains J6B-B+; live effect mapping remains later and must reuse existing certified environmental authorities.
 
 ## J7 — Bonus Challenge Rounds
 Status: PLANNED

@@ -48,6 +48,7 @@ Rules:
 | ES-13J5F-C — Pure Non-Lethal Command-Link Pulse Damage Safety Envelope | DEPLOYED / FROZEN | `53ff3b1fa0da58ea9bb7259162a98f3dac17df77` | #363 | #364 |
 | ES-13J5F-D — Pure Effective Trigger-Damage Source Projection | DEPLOYED / FROZEN | `113865079ac4581c90356c3c218a28f8f88b6ef7` | #367 | #368 |
 | ES-13J5F-E — Controlled Live Command-Link Disruption Pulse Application | DEPLOYED / FROZEN | `9554358005d6d092341f4f65d8b986090307f8b5` | #371 | #372 |
+| ES-13J6A — Pure Dynamic Mid-Sector Event Opportunity Contract | DEPLOYED / FROZEN | `69ac8a1a83d2f6bbe6a989a3a819fac438e854c1` | #375 | #376 |
 
 ## Evidence anchors
 
@@ -404,6 +405,24 @@ Exact deployment anchors:
 
 Issue #371 CLOSED / completed. J5F-E is **DEPLOYED / FROZEN**.
 
+### J6A — Pure Dynamic Mid-Sector Event Opportunity Contract
+Certified behavior:
+- Infinite-only, certified wave range 3–7 and one deterministic interior opportunity per valid sector identity;
+- Campaign/recovery/milestone/first/final/invalid facts fail closed;
+- immutable `DYNAMIC_MID_SECTOR_EVENT_OPPORTUNITY` / `OPPORTUNITY_ONLY` output;
+- no event identity/live effect, environmental/mutator mutation, spawn/progression, collection, combat/economy, lookup/scan, timer/RNG or cap/budget authority.
+
+Exact deployment anchors:
+- DOC29 baseline `0dca89678698be0557f0500590f27c9f53ab1548`;
+- pre-PR `8dd38514738e0873364851bea472413b44b5539c`, run `38741496798` / job `116444066588` GREEN including exact scope + Android APK;
+- final PR #376 head `38a8e76c147ca682143e44f2cd57dca0d0bc54af`;
+- PR CI `38780778121` / `116580097952` GREEN; Android `38780778404` / `116580099652` GREEN;
+- canonical `69ac8a1a83d2f6bbe6a989a3a819fac438e854c1`, parent `0dca89678698be0557f0500590f27c9f53ab1548`, tree `d3aac694e27af9c4fddcbce7c07d6766c84f1146` equal to final PR tree;
+- main CI `38781077090` / `116581119711` GREEN; Android `38781076913` / `116581119364` GREEN;
+- Pages `38781193209`, build `116581519042` + deploy `116581668287` GREEN.
+
+Issue #375 CLOSED / completed. J6A is **DEPLOYED / FROZEN**.
+
 ## Documentation canonicals
 - DOC11 `31de2cd5bb89ae3032902c09ace881119c04dfec`;
 - DOC12 `f85e2432934454da191dea9bd0c9da43bbce86ca`;
@@ -423,7 +442,8 @@ Issue #371 CLOSED / completed. J5F-E is **DEPLOYED / FROZEN**.
 - DOC26 — J5F-B closure & J5F-C non-lethal damage safety activation: `7a24f7a747a2d2eb2fb79b4eb4a249ded67a8193` — Issue #361 / PR #362.
 - DOC27 — J5F-C closure & J5F-D trigger-damage source activation: `bc75751362e0dc8ed79c7b4688aa355ff9ae9648` — Issue #365 / PR #366.
 - DOC28 — J5F-D closure & J5F-E controlled live pulse activation: `022741e5c500dea2947241d4bb8c6cb8d004772c` — Issue #369 / PR #370.
-- DOC29 — J5F-E closure & J6A dynamic event opportunity activation: Issue #373, branch `docs/es-13-j5fe-closure-j6a-activation`, in progress from gameplay canonical `9554358005d6d092341f4f65d8b986090307f8b5`.
+- DOC29 — J5F-E closure & J6A dynamic event opportunity activation: `0dca89678698be0557f0500590f27c9f53ab1548` — Issue #373 / PR #374.
+- DOC30 — J6A closure & J6B-A event identity vocabulary activation: Issue #377, branch `docs/es-13-j6a-closure-j6ba-activation`, in progress from gameplay canonical `69ac8a1a83d2f6bbe6a989a3a819fac438e854c1`.
 
 ## Frozen manual/physical blockers
 Remain OPEN and deferred while ES-13 materially changes gameplay:
@@ -436,14 +456,14 @@ Automated CI never substitutes for required human/device evidence.
 
 ## Next planned gameplay
 
-### ES-13J6A — Pure Dynamic Mid-Sector Event Opportunity Contract
-Status: **NEXT ENGINEERING TARGET AFTER DOC29 CLOSURE**.
+### ES-13J6B-A — Pure Dynamic Mid-Sector Event Identity Vocabulary Contract
+Status: **NEXT ENGINEERING TARGET AFTER DOC30 CLOSURE**.
 
-J6A is contract-first and may only decide whether one bounded mid-sector event opportunity exists. It consumes existing Infinite sector/wave facts, fails closed for Campaign/recovery/milestone/invalid facts, permits only an interior wave, and derives at most one opportunity slot per sector from existing identity/seed facts without new clock/RNG ownership.
+J6A is frozen as opportunity-only. J6B-A may define exactly five initial immutable event identities (`SOLAR_STORM`, `QUANTUM_RIFT`, `BLACKOUT_SURGE`, `CRYSTAL_RUSH`, `DYSON_ECLIPSE`) with semantic/display metadata and fail-closed lookup only.
 
-J6A emits immutable `OPPORTUNITY_ONLY` metadata only. It selects no event vocabulary and owns no live effect, spawn/entity/projectile collection, damage/defeat, score/reward/economy, mutator/environment mutation, lookup/scan, timer/RNG, cap/budget or entity create/remove authority.
+J6B-A must not select an opportunity, map identities to existing mutators/effects, execute events or adopt live runtime. It owns no spawn/progression, entity/projectile collection, damage/defeat, score/reward/economy, environment/mutator mutation, lookup/scan, timing/RNG, cap/budget or entity authority. Selection remains J6B-B+ and live effect mapping must later reuse existing certified environmental authorities.
 
 J4D+ additional tactical families remain deferred: FORMATION_BREAKER/JAMMER require hard-control spacing/recovery proof; MINE_WEAVER/MIRROR_WARDEN require genuine mine/mirror mechanics. J3C-C remains deferred, not cancelled.
 
 ## Program sequence
-`J6A Pure Dynamic Mid-Sector Event Opportunity Contract → J6B+ Event Vocabulary/Live Effects → J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance → ES-14 Living Warfront`
+`J6B-A Pure Dynamic Mid-Sector Event Identity Vocabulary Contract → J6B-B+ Deterministic Selection/Certified Live Mapping → J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance → ES-14 Living Warfront`
