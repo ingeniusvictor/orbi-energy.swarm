@@ -45,6 +45,7 @@ Rules:
 | ES-13J5E — Controlled Live Command-Link Detach Application | DEPLOYED / FROZEN | `6aa63e9643a2521738b3b6afebfb0856f48bd3fd` | #351 | #352 |
 | ES-13J5F-A — Pure Optional Command-Link Disruption Pulse Contract | DEPLOYED / FROZEN | `90f3fc82271654e6d7a7076474ae46efd02775e4` | #355 | #356 |
 | ES-13J5F-B — Pure Current Command-Link Pulse Target Eligibility Contract | DEPLOYED / FROZEN | `9812592dd77a0dd4e6364d57857f4c9065757d49` | #359 | #360 |
+| ES-13J5F-C — Pure Non-Lethal Command-Link Pulse Damage Safety Envelope | DEPLOYED / FROZEN | `53ff3b1fa0da58ea9bb7259162a98f3dac17df77` | #363 | #364 |
 
 ## Evidence anchors
 
@@ -335,6 +336,28 @@ Exact evidence:
 
 Issue #359 CLOSED / completed. J5F-B is **DEPLOYED / FROZEN**.
 
+### J5F-C — Pure Non-Lethal Command-Link Pulse Damage Safety Envelope
+J5F-C froze a pure non-lethal damage-safety projection for one already-eligible linked target without choosing pulse tuning or mutating live health.
+
+Final product diff exactly:
+- `src/game/commandLinkPulseDamageSafety.ts`;
+- `tests/es-13j5fc-command-link-pulse-damage-safety.test.mjs`;
+- `tests/gameplay/command-link-pulse-damage-safety.test.ts`.
+
+Exact evidence:
+- baseline DOC26 `7a24f7a747a2d2eb2fb79b4eb4a249ded67a8193`;
+- pre-PR SHA `345d84493e10d2b2e6308811206e3597755d6b5a`, run `38686699512` / job `116263082196` GREEN including repo/gameplay/platform/typecheck/release/dossier/build/readiness, exact scope guard and Android APK build/verify/upload;
+- final PR #364 head `e131110e5d586660b755dada17be0d011faee682`;
+- PR CI `38686990002` / `116264005879` GREEN;
+- PR Android `38686989965` / `116264005932` GREEN including Build/Verify/Upload APK;
+- canonical `53ff3b1fa0da58ea9bb7259162a98f3dac17df77`, single parent `7a24f7a747a2d2eb2fb79b4eb4a249ded67a8193`, tree `a6067fdfdc5847fa7b6c0f73894bfa889fec24e4`;
+- canonical diff exactly three certified product/test files;
+- main CI `38687143378` / `116264489750` GREEN;
+- main Android `38687143454` / `116264489903` GREEN including Build/Verify/Upload APK;
+- Pages `38687226083`: build `116264740311` + deploy `116264855735` GREEN.
+
+Issue #363 CLOSED / completed. J5F-C is **DEPLOYED / FROZEN**.
+
 ## Documentation canonicals
 - DOC11 `31de2cd5bb89ae3032902c09ace881119c04dfec`;
 - DOC12 `f85e2432934454da191dea9bd0c9da43bbce86ca`;
@@ -351,7 +374,8 @@ Issue #359 CLOSED / completed. J5F-B is **DEPLOYED / FROZEN**.
 - DOC23 — J5D closure & J5E activation: `b317faa1cb3403fe11baaa71e6c072b8a97a3062` — Issue #349 / PR #350.
 - DOC24 — J5E closure & J5F-A activation: `a94883c1532ba14e9c81b0a16e923a730aa1275d` — Issue #353 / PR #354.
 - DOC25 — J5F-A closure & J5F-B target eligibility activation: `78737695d82f6bcdf76c1bc68e6c849c457711c0` — Issue #357 / PR #358.
-- DOC26 — J5F-B closure & J5F-C non-lethal damage safety activation: Issue #361, branch `docs/es-13-j5fb-closure-j5fc-activation`, in progress from gameplay canonical `9812592dd77a0dd4e6364d57857f4c9065757d49`.
+- DOC26 — J5F-B closure & J5F-C non-lethal damage safety activation: `7a24f7a747a2d2eb2fb79b4eb4a249ded67a8193` — Issue #361 / PR #362.
+- DOC27 — J5F-C closure & J5F-D trigger-damage source activation: Issue #365, branch `docs/es-13-j5fc-closure-j5fd-source-projection`, in progress from gameplay canonical `53ff3b1fa0da58ea9bb7259162a98f3dac17df77`.
 
 ## Frozen manual/physical blockers
 Remain OPEN and deferred while ES-13 materially changes gameplay:
@@ -364,14 +388,14 @@ Automated CI never substitutes for required human/device evidence.
 
 ## Next planned gameplay
 
-### ES-13J5F-C — Pure Non-Lethal Command-Link Pulse Damage Safety Envelope
-Status: **NEXT ENGINEERING TARGET AFTER DOC26 CLOSURE**.
+### ES-13J5F-D — Pure Effective Trigger-Damage Source Projection
+Status: **NEXT ENGINEERING TARGET AFTER DOC27 CLOSURE**.
 
-Current direct-hit and splash paths already own health mutation and defeat-adjacent side effects, and enemy health scales across families and runtime modifiers. J5F-C therefore remains pure: it constrains caller-supplied proposed damage so an eligible linked target cannot be reduced below 1 HP, without selecting tuning or mutating runtime.
+Existing direct and splash combat paths already compute the final scalar damage they apply before mutating health (`damageToApply` and `splashDamage`). J5F-D must remain pure and reuse those caller-supplied resolved facts rather than inventing a new pulse multiplier or percentage.
 
-J5F-C must validate finite positive health/damage scalars, preserve frozen J5F-B eligibility, cap safe damage at `max(0, currentHealth - 1)`, expose resulting health >= 1, and explicitly own no kill/defeat/score/reward/drop/milestone/live mutation authority. Source magnitude and live adoption remain J5F-D+.
+Required contract: validate source kind plus finite positive resolved source damage and finite positive source health immediately before the defeating hit; project `effectiveTriggerDamage = min(resolvedSourceDamage, sourceHealthBeforeHit)` and expose it only as downstream proposed pulse-damage metadata. No live source capture, target lookup, mutation, defeat/reward/drop attribution, timing/RNG, projectile/spawn, formation, cap/budget or entity authority. Live wiring remains J5F-E+.
 
 J4D+ additional tactical families remain deferred: FORMATION_BREAKER/JAMMER require hard-control spacing/recovery proof; MINE_WEAVER/MIRROR_WARDEN require genuine mine/mirror mechanics. J3C-C remains deferred, not cancelled.
 
 ## Program sequence
-`J5F-C Pure Non-Lethal Command-Link Pulse Damage Safety Envelope → J5F-D+ source tuning/live application → J6 Dynamic Events → J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance → ES-14 Living Warfront`
+`J5F-D Pure Effective Trigger-Damage Source Projection → J5F-E+ separately proven live application → J6 Dynamic Events → J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance → ES-14 Living Warfront`
