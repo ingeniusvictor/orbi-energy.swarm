@@ -1,8 +1,21 @@
-import { resolveCommandLinkBinding, type CommandLinkFormationFacts } from "./commandLinkBinding";
-import type { CommandLinkBreakResolution } from "./commandLinkBreakResolution";
+import {
+  resolveCommandLinkBinding,
+  type CommandLinkFormationFacts,
+} from "./commandLinkBinding";
+import {
+  resolveCommandLinkBreakResolution,
+  type CommandLinkBreakResolution,
+} from "./commandLinkBreakResolution";
+
+export type LiveCommandLinkBreakIntent = Readonly<CommandLinkBreakResolution>;
+
+export const resolveLiveCommandLinkBreakIntent = (
+  formation: CommandLinkFormationFacts | null | undefined,
+): LiveCommandLinkBreakIntent | null =>
+  resolveCommandLinkBreakResolution(formation);
 
 export const shouldDetachCommandLinkMember = (
-  resolution: Readonly<CommandLinkBreakResolution> | null | undefined,
+  resolution: LiveCommandLinkBreakIntent | null | undefined,
   formation: CommandLinkFormationFacts | null | undefined,
 ): boolean => {
   if (!resolution || !formation) return false;
