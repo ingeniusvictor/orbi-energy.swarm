@@ -1,4 +1,4 @@
-name: ES-13J5F-E Patch and Pre-PR Certification v2
+name: ES-13J5F-E Patch and Pre-PR Certification v2.1
 
 on:
   push:
@@ -41,21 +41,18 @@ jobs:
                   raise RuntimeError(f'{label}: expected exactly 1 match, got {count}')
               s = s2
 
-          # Import only the J5F-E adapter into runtime.
           sub_once(
               r'(import \{\n\s*resolveLiveCommandLinkBreakIntent,\n\s*shouldDetachCommandLinkMember,\n\s*type LiveCommandLinkBreakIntent,\n\} from "\.\/liveCommandLinkBreakApplication";\n)',
               r'\1import {\n  projectLiveCommandLinkPulseTarget,\n  resolveLiveCommandLinkPulseIntent,\n  type LiveCommandLinkPulseIntent,\n} from "./liveCommandLinkPulseApplication";\n',
               'J5F-E import seam',
           )
 
-          # One scalar pending pulse slot beside frozen J5E state.
           sub_once(
               r'(  const pendingCommandLinkBreakRef =\n\s*useRef<LiveCommandLinkBreakIntent \| null>\(null\);\n)',
               r'\1  const pendingCommandLinkPulseRef =\n    useRef<LiveCommandLinkPulseIntent | null>(null);\n',
               'J5F-E scalar ref seam',
           )
 
-          # Reset pulse at every existing J3/J5E reset boundary; exact count must remain 3.
           reset_pattern = re.compile(
               r'(?P<director>(?P<indent>[ \t]*)enemyFormationDirectorRef\.current =\s*\n[ \t]*createLiveEnemyFormationDirectorState\(\);\s*\n)(?P<breakindent>[ \t]*)pendingCommandLinkBreakRef\.current = null;'
           )
@@ -70,7 +67,6 @@ jobs:
           if reset_count != 3:
               raise RuntimeError(f'J5F-E lifecycle resets: expected 3, got {reset_count}')
 
-          # Capture one pending pulse before the single existing enemy traversal.
           sub_once(
               r'(?m)^(\s*)const pendingCommandLinkBreak = pendingCommandLinkBreakRef\.current;\n\s*let detachedPendingCommandLink = false;',
               lambda m: (
@@ -81,7 +77,6 @@ jobs:
               'J5F-E pending loop capture',
           )
 
-          # Apply non-lethal health projection before J5E clears formation ownership.
           sub_once(
               r'(enemiesRef\.current\.forEach\(\(enemy\) => \{\n\s*if \(enemy\.isDead\) return;\n)(\s*if \(\n\s*shouldDetachCommandLinkMember\()',
               lambda m: (
@@ -101,7 +96,6 @@ jobs:
               'J5F-E pulse-before-detach seam',
           )
 
-          # Consume the captured pulse once; newer intents are protected by object identity.
           sub_once(
               r'(?m)^(\s*)if \(\n\s*detachedPendingCommandLink &&',
               lambda m: (
@@ -117,7 +111,6 @@ jobs:
               'J5F-E single-consume seam',
           )
 
-          # Preserve exact caller-resolved direct-hit magnitude and pre-hit health.
           sub_once(
               r'(\s*// Apply direct damage\n)(\s*)enemy\.health -= damageToApply;',
               lambda m: (
@@ -128,7 +121,6 @@ jobs:
               'J5F-E direct pre-hit source',
           )
 
-          # Preserve exact caller-resolved splash magnitude and pre-hit health.
           sub_once(
               r'(splashCandidates\.forEach\(\(\{ item: otherEnemy \}\) => \{\n)(\s*)otherEnemy\.health -= splashDamage;',
               lambda m: (
@@ -139,7 +131,6 @@ jobs:
               'J5F-E splash pre-hit source',
           )
 
-          # Keep frozen defeat attribution call exact, then project the pulse source adjacently.
           sub_once(
               r'(?m)^(\s*)registerCombatDefeat\(otherEnemy, proj\.affinity\);$',
               lambda m: (
