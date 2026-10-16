@@ -55,6 +55,7 @@ Rules:
 | ES-13J6B-D — Controlled Live Dynamic Event Adoption | DEPLOYED / FROZEN | `247d976b6e2cc634cbc5158cdff46ac42b51c5fc` | #391 | #392 |
 | ES-13J7A — Pure Timed Survival Bonus Challenge Profile Contract | DEPLOYED / FROZEN | `8a5244e770c360d13b8218599ba3f49bbaa03b46` | #395 | #396 |
 | ES-13J7B — Pure Timed Survival Opportunity/Cadence Contract | DEPLOYED / FROZEN | `93af4e999af5e3b3afed7f684706536bdfaedd89` | #399 | #400 |
+| ES-13J7C — Pure Timed Survival Duration & TIMEBOX Projection Contract | DEPLOYED / FROZEN | `1ad86de5155a3e6e73630e5244f7ce7ec107f4af` | #404 | #405 |
 
 ## Evidence anchors
 
@@ -492,7 +493,8 @@ Issue #383 CLOSED / completed. J6B-B is **DEPLOYED / FROZEN**.
 - DOC33 — J6B-C closure & J6B-D controlled live adoption activation: `34168aa3ed192d72ef7100103691dff8cca7e1c9` — Issue #389 / PR #390.
 - DOC34 — J6B-D closure & J7 discovery activation: `b858b14a2682fd5855eda5093fc6b13ec3a5653c` — Issue #393 / PR #394.
 - DOC35 — J7A closure & J7B opportunity/cadence discovery activation: `bd4c5c7061337aec3c857f548e086516bbea04e0` — Issue #397 / PR #398.
-- DOC36 — J7B closure & J7C duration/TIMEBOX projection activation: Issue #401, branch `docs/es-13-j7b-closure-j7c-activation`, in progress from gameplay canonical `93af4e999af5e3b3afed7f684706536bdfaedd89`.
+- DOC36 — J7B closure & J7C duration/TIMEBOX projection activation: `af998aa40c1f767727bbe2c999b4c7b3bc872a3c` — Issue #401 / PR #403.
+- DOC37 — J7C closure & J7D controlled live Timed Survival adoption activation: Issue #406, branch `docs/es-13-j7c-closure-j7d-activation`, in progress from gameplay canonical `1ad86de5155a3e6e73630e5244f7ce7ec107f4af`.
 
 ### J6B-C — Pure Dynamic Event Effect-Mapping Compatibility Contract
 - Frozen mappings: `SOLAR_STORM → ELECTRICAL_STORM`, `QUANTUM_RIFT → MAGNETIC_DRIFT`, `BLACKOUT_SURGE → REDUCED_VISIBILITY`, `CRYSTAL_RUSH → UNSTABLE_RESOURCE_FIELDS`; `DYSON_ECLIPSE → UNMAPPED` fail-closed.
@@ -533,6 +535,16 @@ Issue #383 CLOSED / completed. J6B-B is **DEPLOYED / FROZEN**.
 - Main CI `38851462985` / `116813368003` GREEN; Android `38851462903` / `116813367709` GREEN; Pages `38851545491`, build `116813624422` + deploy `116813744666` GREEN.
 - No live execution, exact duration, descriptor/completion mutation, timer/clock/pause, spawn/arena, progression, combat/economy, HUD, RNG/hash, scans/indexes, cap/budget, entity/projectile or formation authority.
 
+### J7C — Pure Timed Survival Duration & TIMEBOX Projection Contract
+- Exact duration `30000 ms`, mathematically the midpoint of J7A's `20000..40000 ms` window and below minimum normal Campaign TIMEBOX `35000 ms`.
+- Pure immutable `PROJECTION_ONLY` result with `{ type: "TIMEBOX", durationMs: 30000 }`.
+- Reuses J7A profile + J7B opportunity authority; noneligible facts fail closed through J7B.
+- Only exact-duration + completion metadata projection authority; no live descriptor/timer/clock/pause/spawn/arena/progression/combat/economy/HUD/RNG/collection/cap/FOTON/formation authority.
+- Pre-PR `7716741ea46d4926672ac13a88e89b1b7ef2fc30`, run `38862130838`, certify `116846577888` + Android `116846578106` GREEN.
+- Final PR #405 head `e553330a434b138bb6dae304a0bffedf442403d3`; PR CI `38862303820` / `116847134910` GREEN; PR Android `38862303706` / `116847134685` GREEN.
+- Canonical `1ad86de5155a3e6e73630e5244f7ce7ec107f4af`, parent `af998aa40c1f767727bbe2c999b4c7b3bc872a3c`, tree `5025f401e8562cff5097a0592b9c5345ec96f366`, exact diff three product/test files.
+- Main CI `38862461080` / `116847645968` GREEN; Android `38862461028` / `116847645716` GREEN; Pages `38862526063`, build `116847854661` + deploy `116847951677` GREEN.
+
 ## Frozen manual/physical blockers
 Remain OPEN and deferred while ES-13 materially changes gameplay:
 - #4 — visual/responsive certification;
@@ -544,10 +556,10 @@ Automated CI never substitutes for required human/device evidence.
 
 ## Next planned gameplay
 
-### ES-13J7C — Pure Timed Survival Duration & TIMEBOX Projection Contract
-Status: **NEXT DISCOVERY / CONTRACT TARGET AFTER DOC36 CLOSURE**.
+### ES-13J7D — Controlled Live Timed Survival Adoption
+Status: **NEXT DISCOVERY / LIVE ADOPTION TARGET AFTER DOC37 CLOSURE**.
 
-J7C must consume frozen J7A/J7B semantics, choose and justify one deterministic exact duration inside `20000..40000 ms`, and emit immutable TIMEBOX projection metadata only. `30000 ms` is the leading discovery candidate because it is the exact midpoint of the frozen window and below the minimum normal Campaign TIMEBOX duration (`35000 ms`), but DOC36 does not freeze it. Existing runtime completion/timer/pause authority remains authoritative. No live descriptor mutation, timer/clock/pause authority, spawn/arena, progression, combat/economy, HUD, RNG/hash, collection/scan/index, cap/budget, entity/projectile or formation authority is allowed in J7C. Live adoption remains J7D+.
+J7D must complete architecture discovery before any runtime write. It may adopt only the frozen J7C `TIMEBOX 30000` projection for the current J7B-selected Infinite wave, through one bounded existing descriptor seam. Existing TIMEBOX completion/timer/pause lifecycle must remain authoritative; no second clock/timer/ref/progression director is allowed. It must preserve unrelated descriptor fields, spawn/arena/combat/economy/caps/budgets and prove transition/reset/no-stale behavior plus coexistence/order with J6 and adaptive descriptor overlays. Exact live file/seam is not frozen by DOC37 and requires the dedicated J7D Issue.
 
 J4D+ additional tactical families remain deferred: FORMATION_BREAKER/JAMMER require hard-control spacing/recovery proof; MINE_WEAVER/MIRROR_WARDEN require genuine mine/mirror mechanics. J3C-C remains deferred, not cancelled.
 

@@ -18,16 +18,16 @@ Never infer deployment/certification from conversation text alone.
 
 ## Current certified gameplay canonical
 
-`93af4e999af5e3b3afed7f684706536bdfaedd89`
+`1ad86de5155a3e6e73630e5244f7ce7ec107f4af`
 
-Phase: **ES-13J7B — Pure Timed Survival Opportunity/Cadence Contract**
+Phase: **ES-13J7C — Pure Timed Survival Duration & TIMEBOX Projection Contract**
 Status: **DEPLOYED / FROZEN**
-Issue: #399 — CLOSED / completed
-Delivery: PR #400 — squash merged
+Issue: #404 — CLOSED / completed
+Delivery: PR #405 — squash merged
 
-Single parent: `bd4c5c7061337aec3c857f548e086516bbea04e0` — DOC35 documentation canonical.
+Single parent: `af998aa40c1f767727bbe2c999b4c7b3bc872a3c` — DOC36 documentation canonical.
 
-Canonical tree: `75698c115814e371173ad3e16adc6dff6e6dba22`.
+Canonical tree: `5025f401e8562cff5097a0592b9c5345ec96f366`.
 
 Version remains `0.2.0-beta.1`. Full RC/manual certification remains intentionally deferred while ES-13 materially expands gameplay.
 
@@ -537,7 +537,8 @@ J3C-C stateful formation patterns remain **DEFERRED / NOT CURRENTLY JUSTIFIED**,
 - DOC33 — J6B-C closure & J6B-D controlled live adoption activation: `34168aa3ed192d72ef7100103691dff8cca7e1c9` — Issue #389 / PR #390.
 - DOC34 — J6B-D closure & J7 discovery activation: `b858b14a2682fd5855eda5093fc6b13ec3a5653c` — Issue #393 / PR #394.
 - DOC35 — J7A closure & J7B opportunity/cadence discovery activation: `bd4c5c7061337aec3c857f548e086516bbea04e0` — Issue #397 / PR #398.
-- DOC36 — J7B closure & J7C duration/TIMEBOX projection activation: Issue #401, branch `docs/es-13-j7b-closure-j7c-activation`, documentation-only closure in progress from gameplay canonical `93af4e999af5e3b3afed7f684706536bdfaedd89`.
+- DOC36 — J7B closure & J7C duration/TIMEBOX projection activation: `af998aa40c1f767727bbe2c999b4c7b3bc872a3c` — Issue #401 / PR #403.
+- DOC37 — J7C closure & J7D controlled live Timed Survival adoption activation: Issue #406, branch `docs/es-13-j7c-closure-j7d-activation`, documentation-only closure in progress from gameplay canonical `1ad86de5155a3e6e73630e5244f7ce7ec107f4af`.
 
 ## J6B-C result
 J6B-C froze a pure compatibility-only mapping from the deterministic J6B-B event identity selection onto already-existing Infinite mutator semantics. It does not apply live effects, project runtime magnitudes or create fallback semantics.
@@ -678,23 +679,59 @@ Final product scope exactly:
 
 Issue #399 CLOSED / completed. J7B is **DEPLOYED / FROZEN**.
 
+## J7C result
+J7C froze the final pure pre-live Timed Survival duration and completion projection contract.
+
+Certified contract:
+- consumes frozen J7A `TIMED_SURVIVAL` profile and J7B opportunity authority rather than duplicating them;
+- exact duration is `30000 ms`;
+- `30000 ms` is exactly the midpoint of J7A's frozen `20000..40000 ms` window and remains below the current minimum normal Campaign TIMEBOX wave (`35000 ms`);
+- immutable mode `PROJECTION_ONLY`;
+- immutable completion projection `{ type: "TIMEBOX", durationMs: 30000 }`;
+- unsupported/noneligible J7B facts fail closed through the frozen J7B resolver;
+- only positive authority is exact-duration projection + completion metadata projection;
+- no live challenge execution, live completion-policy authority, runtime descriptor mutation, timer start/tick/reset, clock/pause, spawn/arena/progression, damage/defeat/score/reward/economy, HUD, RNG/hash, collections/scans/indexes, caps/budgets, entity/projectile, FOTON or formation authority;
+- no live runtime authority imports J7C.
+
+Final product scope exactly:
+- `src/game/bonusChallengeTimeboxProjection.ts`;
+- `tests/es-13j7c-bonus-challenge-timebox-projection.test.mjs`;
+- `tests/gameplay/bonus-challenge-timebox-projection.test.ts`.
+
+## J7C exact evidence
+- DOC36 baseline `af998aa40c1f767727bbe2c999b4c7b3bc872a3c`;
+- pre-PR SHA `7716741ea46d4926672ac13a88e89b1b7ef2fc30`, run `38862130838`, certify job `116846577888` + Android job `116846578106` GREEN;
+- final PR #405 head `e553330a434b138bb6dae304a0bffedf442403d3`;
+- PR CI `38862303820` / `116847134910` GREEN;
+- PR Android `38862303706` / `116847134685` GREEN including Build/Verify/Upload APK;
+- canonical `1ad86de5155a3e6e73630e5244f7ce7ec107f4af`, single parent `af998aa40c1f767727bbe2c999b4c7b3bc872a3c`, tree `5025f401e8562cff5097a0592b9c5345ec96f366`;
+- canonical diff exactly three certified product/test files;
+- main CI `38862461080` / `116847645968` GREEN;
+- main Android `38862461028` / `116847645716` GREEN including Build/Verify/Upload APK;
+- Pages `38862526063`: build `116847854661` + deploy `116847951677` GREEN.
+
+Issue #404 CLOSED / completed. J7C is **DEPLOYED / FROZEN**.
+
 ## Next gameplay phase
 
-### ES-13J7C — Pure Timed Survival Duration & TIMEBOX Projection Contract
-Status: **NEXT DISCOVERY / CONTRACT TARGET AFTER DOC36 CLOSURE**
+### ES-13J7D — Controlled Live Timed Survival Adoption
+Status: **NEXT DISCOVERY / LIVE ADOPTION TARGET AFTER DOC37 CLOSURE**
 
-J7A profile semantics and J7B Infinite opportunity/cadence are frozen. J7C must remain pure and close the remaining pre-live authority gap: exact duration plus immutable TIMEBOX projection metadata.
+J7A profile, J7B opportunity/cadence and J7C `30000 ms` TIMEBOX projection are frozen. J7D is the first slice allowed to investigate live Timed Survival execution.
 
 Required discovery:
-- consume J7A/J7B authorities rather than duplicate profile or cadence logic;
-- choose one deterministic exact duration inside `20000..40000 ms` and justify it without RNG/clock authority;
-- investigate `30000 ms` as the leading candidate because it is the exact midpoint of J7A's window and remains shorter than the minimum normal Campaign TIMEBOX wave (`35000 ms`), but DOC36 does not freeze that value;
-- project `TIMEBOX` intent/metadata only; do not mutate a live descriptor;
-- rely on existing `runtimeCompletionPolicy` and `EnergySwarmGame` timer/pause path for future execution;
-- fail closed for noncanonical/noneligible J7B facts;
-- no live runtime import/adoption, timer ticking, clock/pause authority, spawn/arena, progression, combat, score/reward/economy, HUD, RNG/hash, collections/scans/indexes, caps/budgets, entities/projectiles, FOTON or formations.
+- Infinite only unless separately justified; Campaign remains unchanged;
+- consume J7C rather than copy duration/profile/cadence logic;
+- prove exactly one smallest existing runtime descriptor seam before mutation;
+- adopt only the selected current J7B wave; no inserted wave or second progression/session director;
+- preserve unrelated descriptor fields, spawn composition, pressure, enemy budget, mutators, milestone facts, caps/budgets and entity collections;
+- reuse existing `TIMEBOX` completion, `waveTimeRemainingRef`, timer tick and pause lifecycle; no second clock/timer/ref/completion authority;
+- prove wave-start initialization, expiry/completion, pause, transition/reset and no stale carry-over;
+- prove ordering/coexistence with frozen J6 dynamic-event adoption and adaptive descriptor overlays;
+- prove bounded attribution/telegraph without creating an independent HUD/timer system;
+- no new RNG/hash, collections/scans/indexes, spawn/arena/combat/score/reward/economy authority, caps/budgets, entities/projectiles, FOTON or formations.
 
-Controlled live Timed Survival adoption remains J7D+ and requires a separate seam/lifecycle/telegraph certification.
+DOC37 freezes no exact live file/seam. The dedicated J7D Issue must complete architecture discovery before implementation.
 
 ## Resolved diagnostics
 - #254 CLOSED / NOT PLANNED: historical platform failure was not an I5 pause regression; no product merge.
@@ -731,7 +768,7 @@ Post-J15 direction: **ES-14 — Living Warfront**.
 Read this file, `IMPLEMENTATION_LEDGER.md`, `ES13_GAMEPLAY_ROADMAP.md`, `TRACEABILITY_POLICY.md` and `ES13_PHASE_CHECKLIST.md`, then active Issues/PRs. Verify live `main` before any write.
 
 Suggested handoff:
-> Continue ORBI Energy Swarm autonomously. Repository `ingeniusvictor/orbi-energy.swarm`. J7B gameplay canonical is `93af4e999af5e3b3afed7f684706536bdfaedd89`, fully DEPLOYED / FROZEN via Issue #399 / PR #400 with Infinite-only sparse Timed Survival opportunity cadence and post-main CI/Android/Pages GREEN. Complete DOC36 if still open, then perform J7C pure duration/TIMEBOX projection discovery before any live Bonus Challenge adoption. Reuse J7A/J7B and the existing runtime TIMEBOX/timer/pause authority; do not create a second clock or mutate live descriptors in J7C. Preserve caps/budgets, J6 coexistence, J3C-C/J4D+ deferrals and manual blockers. Follow Issue → Branch → full gates → PR → exact-SHA post-merge evidence. Never touch `main` directly or weaken tests.
+> Continue ORBI Energy Swarm autonomously. Repository `ingeniusvictor/orbi-energy.swarm`. J7C gameplay canonical is `1ad86de5155a3e6e73630e5244f7ce7ec107f4af`, fully DEPLOYED / FROZEN via Issue #404 / PR #405 with exact 30000 ms `PROJECTION_ONLY` TIMEBOX metadata and post-main CI/Android/Pages GREEN. Complete DOC37 if still open, then perform J7D architecture/discovery before any live Timed Survival adoption. Reuse J7A/J7B/J7C plus the existing runtime TIMEBOX/timer/pause authority; do not create a second clock, timer or progression director. Preserve J6 coexistence, caps/budgets, J3C-C/J4D+ deferrals and manual blockers. Follow Issue → Branch → full gates → PR → exact-SHA post-merge evidence. Never touch `main` directly or weaken tests.
 
 ## Update obligation
 Every merged gameplay phase must record exact gameplay canonical, Issue/PR, final head, pre-PR certification, PR CI/Android, main CI/Android/Pages, implementation result, unresolved follow-ups and next roadmap phase. A gameplay phase is not administratively closed until these records are current.
