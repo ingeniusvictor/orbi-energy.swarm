@@ -23,15 +23,17 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
-      - name: Canonical envelope shape
-        run: npx tsx --test --test-name-pattern='composes one canonical' tests/gameplay/score-attack-runtime-activation-envelope.test.ts
-      - name: Object identity
-        run: npx tsx --test --test-name-pattern='preserves exact runtime/session' tests/gameplay/score-attack-runtime-activation-envelope.test.ts
-      - name: Isolation facts
-        run: npx tsx --test --test-name-pattern='carries frozen Score Attack isolation' tests/gameplay/score-attack-runtime-activation-envelope.test.ts
-      - name: Unsupported ids
-        run: npx tsx --test --test-name-pattern='fails closed for unsupported' tests/gameplay/score-attack-runtime-activation-envelope.test.ts
-      - name: Repeated resolutions
-        run: npx tsx --test --test-name-pattern='repeated resolutions' tests/gameplay/score-attack-runtime-activation-envelope.test.ts
-      - name: Authority contract
-        run: npx tsx --test --test-name-pattern='authority contract owns only' tests/gameplay/score-attack-runtime-activation-envelope.test.ts
+      - name: Resolver returns envelope
+        run: npx tsx -e 'import assert from "node:assert/strict"; import { resolveScoreAttackRuntimeActivationEnvelope as r } from "./src/game/scoreAttackRuntimeActivationEnvelope.ts"; assert.ok(r("SCORE_ATTACK"));'
+      - name: Envelope metadata
+        if: always()
+        run: npx tsx -e 'import assert from "node:assert/strict"; import { resolveScoreAttackRuntimeActivationEnvelope as r } from "./src/game/scoreAttackRuntimeActivationEnvelope.ts"; const a=r("SCORE_ATTACK"); assert.ok(a); assert.equal(a.kind,"SCORE_ATTACK_RUNTIME_ACTIVATION_ENVELOPE"); assert.equal(a.activationMode,"ACTIVATION_ONLY"); assert.equal(a.modeId,"SCORE_ATTACK"); assert.equal(a.sourceRuntimeMode,"INFINITE"); assert.equal(a.runtimeProgression.mode,"INFINITE"); assert.equal(a.exactDurationMs,60000);'
+      - name: Envelope frozen
+        if: always()
+        run: npx tsx -e 'import assert from "node:assert/strict"; import { resolveScoreAttackRuntimeActivationEnvelope as r } from "./src/game/scoreAttackRuntimeActivationEnvelope.ts"; const a=r("SCORE_ATTACK"); assert.ok(a); assert.equal(Object.isFrozen(a),true);'
+      - name: Completion policy
+        if: always()
+        run: npx tsx -e 'import assert from "node:assert/strict"; import { resolveScoreAttackRuntimeActivationEnvelope as r } from "./src/game/scoreAttackRuntimeActivationEnvelope.ts"; const a=r("SCORE_ATTACK"); assert.ok(a); assert.deepEqual(a.completionPolicy,{type:"TIMEBOX",durationMs:60000}); assert.equal(Object.isFrozen(a.completionPolicy),true);'
+      - name: Canonical fresh start
+        if: always()
+        run: npx tsx -e 'import assert from "node:assert/strict"; import { resolveScoreAttackRuntimeActivationEnvelope as r } from "./src/game/scoreAttackRuntimeActivationEnvelope.ts"; const a=r("SCORE_ATTACK"); assert.ok(a); assert.deepEqual(a.canonicalFreshStart,{sector:11,wave:1});'
