@@ -94,7 +94,7 @@ test("J7D leaves timer pause and completion execution in the existing game/runti
     /if \(isPausedRef\.current \|\| isUpgradeSelectionOpenRef\.current\)/,
   );
   assert.match(completionSource, /descriptor\.completionPolicy\.type === "TIMEBOX"/);
-  assert.match(completionSource, /cursor\.remainingTimeMs <= 0/);
+  assert.match(completionSource, /snapshot\.remainingTimeMs <= 0/);
   assert.doesNotMatch(source, /runtimeCompletionPolicy/);
   assert.doesNotMatch(source, /EnergySwarmGame/);
 });
