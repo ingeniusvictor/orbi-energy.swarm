@@ -967,13 +967,36 @@ Exact deployment anchors:
 - Pages `38964054007`, build `117186003430` + deploy `117186140619` GREEN.
 
 ### ES-13J8M — Pure Score Attack Attempt Finalization Plan Contract
-Status: **NEXT CONTRACT TARGET AFTER DOC50 CLOSURE**
+Status: **DEPLOYED / FROZEN**
+Canonical: `9ec6a76bf34057881326530af9581e0eca1a0c74`  
+Issue #461 / PR #462
 
-J8M must freeze the final pure terminal-orchestration prerequisite before live Score Attack UI/runtime/persistence adoption. It must consume one valid J8L activation envelope plus one existing `RuntimeCompletionSnapshot`, delegate terminal completion only to frozen J8J/existing runtime completion policy, and return null until J8J resolves canonical `END_SCORE_ATTACK_ATTEMPT`.
+J8M freezes pure Score Attack terminal orchestration without performing live writes or UI transitions:
+- consumes exact frozen J8L activation identity plus one existing runtime completion snapshot;
+- delegates terminal resolution only to J8J and returns null until canonical `END_SCORE_ATTACK_ATTEMPT`;
+- derives only completed `TIMEBOX / 60000 ms` metadata;
+- delegates score normalization/comparison/eligibility only to J8F;
+- preserves NEW_BEST / TIED_BEST / BELOW_BEST and invalid-score fail-closed semantics;
+- preserves exact activation-envelope identity;
+- exactly one positive authority: attempt-finalization plan composition;
+- no storage/GameStats/global-highScore/generic-run-persistence/archive/UI/timer/session/gameplay mutation authority.
 
-Once terminal, J8M must derive the completed TIMEBOX fact exactly `{ type: "TIMEBOX", durationMs: 60000, completed: true }`, delegate dedicated record eligibility only to frozen J8F using current `scoreAttackBestScore` plus candidate run score, and expose immutable finalization metadata: terminal disposition, normalized existing/candidate scores, projected dedicated best, record status and dedicated-record-advance eligibility.
+Exact deployment anchors:
+- pre-PR SHA `e1d0782323797f23df07b23144343a1bad6f6ed7`, run `38967353570`, certify `117197025001` + Android `117197024558` GREEN;
+- clean PR #462 head `be585fcbe0db9e3070679a248b32e3e843685557`;
+- PR CI `38967576188` / `117197754938` GREEN; Android `38967575955` / `117197754035` GREEN;
+- canonical `9ec6a76bf34057881326530af9581e0eca1a0c74`, parent `25fed78cc7a6855a015d10538246490c914d6818`, tree `3fd28427b2997aaae3a5ea4b20bc4c1bfbd8e644`, exact diff three certified files;
+- main CI `38967741204` / `117198308312` GREEN; Android `38967740979` / `117198308018` GREEN;
+- Pages `38967850132`, build `117198668879` + deploy `117198801507` GREEN.
 
-J8M must keep global `highScore`, generic run persistence/archive and generic Infinite progression separate. It owns no storage/GameStats writes, `saveGameStats`, `applyFinalRunCommit`, React/ResultScreen/HUD transition, timer/clock/cursor, session progression, score formula/economy, spawn/arena/entity/projectile/cap/budget/FOTON/formation authority.
+### ES-13J8N — Pure Dedicated Score Attack Stats-Commit Application Contract
+Status: **NEXT CONTRACT TARGET AFTER DOC51 CLOSURE**
+
+Discovery after J8M shows live adoption is still unsafe if Score Attack falls through the generic run finalizer: current `commitStats(...)` delegates to `applyFinalRunCommit(...)`, while the dedicated Score Attack record must remain isolated from global `highScore`, generic archive/run counters and Infinite persistence. Generic live projection also consumes live follower count, and generic Infinite completion advances the runtime, so those seams remain deferred until dedicated record application is frozen.
+
+J8N must consume one valid J8M finalization plan plus existing `GameStats`, fail closed if the current `scoreAttackBestScore` no longer matches J8M's normalized existing-best fact, and return a new immutable stats application result. NEW_BEST may change only `scoreAttackBestScore` to J8M `projectedBestScore`; TIED_BEST / BELOW_BEST must preserve stats semantically unchanged. Every unrelated GameStats field, including global `highScore`, Campaign/Infinite records, totalRuns, credits, memories and recent-run archive, must remain exact.
+
+J8N owns only dedicated Score Attack stats-commit application semantics. It must not call `saveGameStats`, localStorage, `applyFinalRunCommit`, archive append, React/UI, runtime/session/timer, score formula/economy, spawn/arena/entity/projectile/cap/budget/FOTON/formation authorities.
 
 ## J9 — Boss & Miniboss Expansion
 Status: PLANNED

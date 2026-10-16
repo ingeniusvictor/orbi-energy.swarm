@@ -18,16 +18,16 @@ Never infer deployment/certification from conversation text alone.
 
 ## Current certified gameplay canonical
 
-`d41f00a1a87140dba1ddc2d04b207261df862307`
+`9ec6a76bf34057881326530af9581e0eca1a0c74`
 
-Phase: **ES-13J8L — Pure Score Attack Runtime Activation Envelope Contract**
+Phase: **ES-13J8M — Pure Score Attack Attempt Finalization Plan Contract**
 Status: **DEPLOYED / FROZEN**
-Issue: #457 — CLOSED / completed
-Delivery: PR #458 — squash merged
+Issue: #461 — CLOSED / completed
+Delivery: PR #462 — squash merged
 
-Single parent: `9d110a10e07da45f51c932d575f0ae3edb9606d4` — DOC49 documentation canonical.
+Single parent: `25fed78cc7a6855a015d10538246490c914d6818` — DOC50 documentation canonical.
 
-Canonical tree: `20e5f9a1a48a03108d1c5ea140009d56e0b8da29`.
+Canonical tree: `3fd28427b2997aaae3a5ea4b20bc4c1bfbd8e644`.
 
 Version remains `0.2.0-beta.1`. Full RC/manual certification remains intentionally deferred while ES-13 materially expands gameplay.
 
@@ -1035,14 +1035,28 @@ J8L froze the pure outer Score Attack activation envelope over exact J8H + J8K o
 
 Issue #457 CLOSED / completed. J8L is **DEPLOYED / FROZEN**.
 
+## J8M result
+J8M froze pure Score Attack terminal orchestration over exact J8L/J8J/J8F facts. It returns null until canonical TIMEBOX completion, then exposes `END_SCORE_ATTACK_ATTEMPT`, completed 60000 ms metadata and dedicated record eligibility without advancing Infinite or writing persistence/UI state.
+
+## J8M exact evidence
+- DOC50 baseline `25fed78cc7a6855a015d10538246490c914d6818`;
+- pre-PR SHA `e1d0782323797f23df07b23144343a1bad6f6ed7`, run `38967353570`, certify `117197025001` + Android `117197024558` GREEN;
+- final PR #462 head `be585fcbe0db9e3070679a248b32e3e843685557`;
+- PR CI `38967576188` / `117197754938` GREEN;
+- PR Android `38967575955` / `117197754035` GREEN including APK build/verify/upload;
+- canonical `9ec6a76bf34057881326530af9581e0eca1a0c74`, single parent `25fed78cc7a6855a015d10538246490c914d6818`, tree `3fd28427b2997aaae3a5ea4b20bc4c1bfbd8e644`, exact diff three certified files;
+- main CI `38967741204` / `117198308312` GREEN;
+- main Android `38967740979` / `117198308018` GREEN including APK build/verify/upload;
+- Pages `38967850132`: build `117198668879` + deploy `117198801507` GREEN.
+
+Issue #461 CLOSED / completed. J8M is **DEPLOYED / FROZEN**.
+
 ## Next gameplay phase
 
-### ES-13J8M — Pure Score Attack Attempt Finalization Plan Contract
-Status: **NEXT CONTRACT TARGET AFTER DOC50 CLOSURE**
+### ES-13J8N — Pure Dedicated Score Attack Stats-Commit Application Contract
+Status: **NEXT CONTRACT TARGET AFTER DOC51 CLOSURE**
 
-J8M must own only pure finalization-plan composition. It consumes a valid J8L activation envelope plus one existing runtime completion snapshot, delegates terminal resolution only to J8J/existing runtime completion policy, and returns null until canonical `END_SCORE_ATTACK_ATTEMPT`.
-
-When terminal, J8M derives exact completed TIMEBOX / 60000 metadata and delegates dedicated record eligibility only to J8F using current `scoreAttackBestScore` plus candidate score. It exposes immutable terminal + dedicated-record projection facts while leaving global `highScore`, generic `applyFinalRunCommit`, archives and Infinite progression untouched. No storage/GameStats writes, UI transition, timer/clock/cursor, session advance/end or gameplay mutation authority is allowed.
+Discovery shows Score Attack cannot safely reuse generic `commitStats(...)` / `applyFinalRunCommit(...)`: those authorities update generic run persistence/high-score/archive semantics. J8N must therefore own only a pure dedicated GameStats application boundary over J8M. It must fail closed on stale dedicated-best facts, apply NEW_BEST only to `scoreAttackBestScore`, preserve tied/below runs without stats changes, and preserve every unrelated GameStats field exactly. No save/localStorage, generic persistence/archive, React/UI, runtime/session/timer or gameplay authority is allowed.
 
 ## Resolved diagnostics
 - #254 CLOSED / NOT PLANNED: historical platform failure was not an I5 pause regression; no product merge.
