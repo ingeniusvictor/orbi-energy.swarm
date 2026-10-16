@@ -582,11 +582,45 @@ Exact deployment anchors:
 - Pages `38818209120`, build `116708074756` + deploy `116708178250` GREEN.
 
 ## J7 — Bonus Challenge Rounds
-Status: **NEXT ARCHITECTURE / DISCOVERY TARGET AFTER DOC34 CLOSURE**
+Status: **ACTIVE PROGRAM**
 
-20–40 s rhythm breakers: precision, rescue, collection, evasive corridors, pursuit, affinity puzzles, obstacle navigation, timed survival and survival without firing.
+20–40 s rhythm breakers remain the long-range design vocabulary: precision, rescue, collection, evasive corridors, pursuit, affinity puzzles, obstacle navigation, timed survival and survival without firing.
 
-DOC34 activates discovery only. The candidate list above is not a frozen implementation contract. Discovery must decide the first justified challenge and prove its mode scope, lifecycle/pause behavior, success/failure semantics, fairness, UI/telegraph needs, and whether it requires any spawn/arena/score/reward/economy authority. No J7 subphase name is frozen yet.
+### J7A — Pure Timed Survival Bonus Challenge Profile Contract
+Status: **DEPLOYED / FROZEN**
+Canonical: `8a5244e770c360d13b8218599ba3f49bbaa03b46`  
+Issue #395 / PR #396
+
+J7A selected the smallest justified first challenge without live adoption:
+- `TIMED_SURVIVAL` / `Timed Survival`;
+- family `RHYTHM_BREAKER`;
+- mode `PROFILE_ONLY`;
+- objective `SURVIVE_UNTIL_TIME_EXPIRES`;
+- compatibility intent `TIMEBOX`;
+- duration window only `20000..40000 ms`;
+- no exact duration, opportunity/cadence, source-mode, timer/pause, spawn/arena, score/reward/economy, HUD or runtime mutation authority.
+
+Existing runtime `TIMEBOX` completion and pause-safe game-loop timing remain separate authorities; J7A does not import into live runtime code. Other candidate challenge types remain uncontracted.
+
+Exact deployment anchors:
+- pre-PR `0bb6786bf20f1a3f8a8c24d8f4ec423199658f7c`, run `38849277024`, certify job `116806658248` + Android `116806889571` GREEN;
+- final PR #396 head `67d6bbff8f303b51a7f84e8e18d02eb2021c4b8f`;
+- PR CI `38849513155` / `116807380556` GREEN; Android `38849513130` / `116807380273` GREEN;
+- canonical `8a5244e770c360d13b8218599ba3f49bbaa03b46`, parent `b858b14a2682fd5855eda5093fc6b13ec3a5653c`, tree `3bcbbf230fa83cd44dc4d23cb4339ef077fd37cd`;
+- main CI `38849701016` / `116807960929` GREEN; Android `38849700878` / `116807960547` GREEN;
+- Pages `38849771214`, build `116808178956` + deploy `116808274531` GREEN.
+
+### J7B — Pure Bonus Challenge Opportunity/Cadence Contract
+Status: **NEXT DISCOVERY / CONTRACT TARGET AFTER DOC35 CLOSURE**
+
+J7B must establish deterministic eligibility before any Timed Survival live adoption. Discovery must prove:
+- source-mode scope from existing runtime architecture;
+- sparse deterministic cadence and any minimum threshold;
+- first/final-wave, milestone and recovery exclusions/semantics;
+- collision/precedence with J6 dynamic events and existing tactical/milestone seams;
+- whether eligibility can target an existing wave slot or whether a future insertion model requires separate justification.
+
+J7B remains pure: no descriptor mutation, exact duration, timer start/tick, spawn/arena composition, score/reward/economy, HUD, RNG/clock, collection/scan/index, caps/budgets, entities/projectiles, FOTON or formation changes.
 
 ## J8 — Additional Game Modes
 Status: PLANNED
