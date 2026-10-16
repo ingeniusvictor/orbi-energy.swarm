@@ -368,6 +368,7 @@ export interface RunArchiveEntry {
 
 export interface GameStats {
   highScore: number;
+  scoreAttackBestScore: number;
   bestWave: number;
   bestSwarmSize: number;
   totalRuns: number;

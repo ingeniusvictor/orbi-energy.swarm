@@ -53,6 +53,7 @@ test("empty storage loads the canonical defaults", () => {
   installStorage();
   const stats = loadGameStats();
   assert.equal(stats.highScore, 0);
+  assert.equal(stats.scoreAttackBestScore, 0);
   assert.equal(stats.bestWave, 1);
   assert.equal(stats.qualityPreset, QualityPreset.MEDIUM);
   assert.deepEqual(stats.bossCodexSeenPhases, [1]);
@@ -79,6 +80,36 @@ test("legacy/corrupt array shapes are repaired while scalar progress survives", 
   assert.deepEqual(stats.bossCodexSeenAttacks, []);
   assert.deepEqual(stats.bossCodexSeenPhases, [1]);
   assert.deepEqual(stats.recentRunArchive, []);
+});
+
+test("score attack best score storage is bounded and independent from global high score", () => {
+  const storage = installStorage();
+
+  storage.setItem(STORAGE_KEY, JSON.stringify({
+    highScore: 77,
+    scoreAttackBestScore: 1234.9,
+  }));
+  let stats = loadGameStats();
+  assert.equal(stats.highScore, 77);
+  assert.equal(stats.scoreAttackBestScore, 1234);
+
+  storage.setItem(STORAGE_KEY, JSON.stringify({
+    highScore: 88,
+    scoreAttackBestScore: Number.MAX_SAFE_INTEGER + 4096,
+  }));
+  stats = loadGameStats();
+  assert.equal(stats.highScore, 88);
+  assert.equal(stats.scoreAttackBestScore, Number.MAX_SAFE_INTEGER);
+
+  for (const malformed of [-1, "9001", null]) {
+    storage.setItem(STORAGE_KEY, JSON.stringify({
+      highScore: 99,
+      scoreAttackBestScore: malformed,
+    }));
+    stats = loadGameStats();
+    assert.equal(stats.highScore, 99);
+    assert.equal(stats.scoreAttackBestScore, 0);
+  }
 });
 
 test("flash intensity storage accepts canonical modes and fails malformed values to REDUCED", () => {
@@ -158,12 +189,22 @@ test("recent run archive migration keeps only sanitized bounded entries", () => 
 
 test("save and reset round-trip through the canonical storage key", () => {
   const storage = installStorage();
-  const next = { ...DEFAULT_STATS, highScore: 9001, totalNanoCredits: 77 };
+  const next = {
+    ...DEFAULT_STATS,
+    highScore: 9001,
+    scoreAttackBestScore: 321,
+    totalNanoCredits: 77,
+  };
   saveGameStats(next);
   assert.deepEqual(JSON.parse(storage.getItem(STORAGE_KEY) ?? "{}"), next);
 
+  const saved = loadGameStats();
+  assert.equal(saved.highScore, 9001);
+  assert.equal(saved.scoreAttackBestScore, 321);
+
   const reset = resetGameStats();
   assert.equal(reset.highScore, 0);
+  assert.equal(reset.scoreAttackBestScore, 0);
   assert.equal(reset.totalNanoCredits, 0);
   assert.deepEqual(JSON.parse(storage.getItem(STORAGE_KEY) ?? "{}"), DEFAULT_STATS);
 });

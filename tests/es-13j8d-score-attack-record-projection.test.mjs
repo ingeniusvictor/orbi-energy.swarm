@@ -39,14 +39,20 @@ test("J8D freezes a dedicated storage-neutral Score Attack record vocabulary", (
   assert.match(j8cSource, /SCORE_ATTACK_DURATION_MS = 60000 as const/);
 });
 
-test("J8D does not mutate GameStats, global highScore, storage schema or persistence authorities", () => {
-  assert.equal(typesSource.includes("scoreAttackBestScore"), false);
-  assert.equal(storage.includes("scoreAttackBestScore"), false);
+test("J8D remains storage-neutral after J8E adopts the dedicated schema field", () => {
+  // J8E now owns the schema/storage adoption; J8D itself must remain pure.
+  assert.match(typesSource, /scoreAttackBestScore:\s*number/);
+  assert.match(storage, /scoreAttackBestScore:\s*0/);
   assert.equal(persistence.includes("scoreAttackBestScore"), false);
 
   assert.match(typesSource, /highScore:\s*number/);
   assert.match(storage, /highScore:\s*0/);
   assert.match(persistence, /highScore:\s*Math\.max/);
+
+  assert.doesNotMatch(
+    source,
+    /from\s+["'][^"']*(?:storage|runPersistence)[^"']*["']/,
+  );
 
   for (const [label, liveSource] of [
     ["types", typesSource],
