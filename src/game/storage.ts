@@ -13,6 +13,7 @@ const LOCAL_STORAGE_KEY = "orbi_energy_swarm_stats_v2";
 
 export const DEFAULT_STATS: GameStats = {
   highScore: 0,
+  scoreAttackBestScore: 0,
   bestWave: 1,
   bestSwarmSize: 1,
   totalRuns: 0,
@@ -51,6 +52,11 @@ export const DEFAULT_STATS: GameStats = {
 const safeRecordInteger = (value: unknown) =>
   typeof value === "number" && Number.isFinite(value)
     ? Math.max(0, Math.floor(value))
+    : 0;
+
+const safeScoreAttackRecordInteger = (value: unknown) =>
+  typeof value === "number" && Number.isFinite(value) && value >= 0
+    ? Math.min(Number.MAX_SAFE_INTEGER, Math.floor(value))
     : 0;
 
 export const MAX_RECENT_RUN_ARCHIVE = 8;
@@ -242,6 +248,7 @@ export function loadGameStats(): GameStats {
       bossCodexSeenAttacks: Array.isArray(parsed.bossCodexSeenAttacks) ? parsed.bossCodexSeenAttacks : [],
       bossCodexSeenPhases: Array.isArray(parsed.bossCodexSeenPhases) ? parsed.bossCodexSeenPhases : [1],
       flashIntensity: normalizeFlashIntensityMode(parsed.flashIntensity),
+      scoreAttackBestScore: safeScoreAttackRecordInteger(parsed.scoreAttackBestScore),
       bestInfiniteSector: safeRecordInteger(parsed.bestInfiniteSector),
       bestInfiniteWave: safeRecordInteger(parsed.bestInfiniteWave),
       infiniteMinibossesDefeated: safeRecordInteger(parsed.infiniteMinibossesDefeated),
