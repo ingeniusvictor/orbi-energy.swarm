@@ -558,22 +558,35 @@ Exact deployment anchors:
 - Pages `38814144837`, build `116694455490` + deploy `116694621071` GREEN.
 
 ### J6B-D — Controlled Live Dynamic Event Adoption
-Status: **NEXT ACTIVE ENGINEERING SLICE AFTER DOC33 CLOSURE**
+Status: **DEPLOYED / FROZEN**
+Canonical: `247d976b6e2cc634cbc5158cdff46ac42b51c5fc`  
+Issue #391 / PR #392
 
-Required discovery direction:
-- locate and prove one existing live environmental adoption seam before any mutation;
-- Infinite only unless separately justified; preserve Campaign isolation;
-- only J6B-C `MAPPED` identities may be adopted; `DYSON_ECLIPSE` remains `UNMAPPED` and fail-closed;
-- reuse current mutator/environment effect magnitudes and clamps; no second environmental director or copied tuning;
-- preserve J6A opportunity cadence and J6B-B deterministic identity selection; no new RNG, seed, clock or timer authority;
-- prove event lifecycle/duration, expiry, pause, reset boundaries, fairness/telegraph and attribution;
-- no new collection, full-array scan/index, entity creation/removal, spawn/progression, combat/economy authority, cap/budget changes, FOTON GLB or formation changes without separate justification;
-- exact live seam and lifecycle remain unfrozen until the dedicated J6B-D Issue completes discovery.
+J6B-D adopts the frozen J6A → J6B-B → J6B-C chain through one immutable `CURRENT_WAVE_ONLY` descriptor overlay in the existing runtime projection cache.
+
+Certified boundaries:
+- Campaign unchanged;
+- single live seam in `runtimeProjectionBundleCache.ts`; `EnergySwarmGame.tsx` unchanged;
+- mapped events add at most one already-existing Infinite mutator, deduplicated;
+- existing runtime mutator/environment magnitudes, clamps and electrical-storm telegraph remain authoritative;
+- `DYSON_ECLIPSE` remains `UNMAPPED` / fail-closed with no descriptor change;
+- lifecycle expires naturally when `RuntimeProgressionState` advances;
+- no new timer/RNG/seed/clock, recipe/session mutation, collection/scan, spawn/progression, combat/economy, cap/budget, FOTON or formation authority.
+
+Exact deployment anchors:
+- pre-PR `559c44d3e7aea58e79cce5a0b30d1d28571f8959`, run `38817464641` / job `116705630774` GREEN including Android APK;
+- final PR head `479241ee9604b017ac4d062e80ebe353878aab46`;
+- PR CI `38817902374` / `116707069836` GREEN; Android `38817902279` / `116707067282` GREEN;
+- canonical `247d976b6e2cc634cbc5158cdff46ac42b51c5fc`, parent `34168aa3ed192d72ef7100103691dff8cca7e1c9`, tree `eb0890fa715fa29dfb4c124b0508bb9cdb0adfc3`;
+- main CI `38818106840` / `116707736739` GREEN; Android `38818106804` / `116707736723` GREEN;
+- Pages `38818209120`, build `116708074756` + deploy `116708178250` GREEN.
 
 ## J7 — Bonus Challenge Rounds
-Status: PLANNED
+Status: **NEXT ARCHITECTURE / DISCOVERY TARGET AFTER DOC34 CLOSURE**
 
 20–40 s rhythm breakers: precision, rescue, collection, evasive corridors, pursuit, affinity puzzles, obstacle navigation, timed survival and survival without firing.
+
+DOC34 activates discovery only. The candidate list above is not a frozen implementation contract. Discovery must decide the first justified challenge and prove its mode scope, lifecycle/pause behavior, success/failure semantics, fairness, UI/telegraph needs, and whether it requires any spawn/arena/score/reward/economy authority. No J7 subphase name is frozen yet.
 
 ## J8 — Additional Game Modes
 Status: PLANNED

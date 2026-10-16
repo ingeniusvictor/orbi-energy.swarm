@@ -52,6 +52,7 @@ Rules:
 | ES-13J6B-A — Pure Dynamic Mid-Sector Event Identity Vocabulary Contract | DEPLOYED / FROZEN | `204566693978adabba7e66995c88ae2f85818f8b` | #379 | #380 |
 | ES-13J6B-B — Pure Deterministic Dynamic Event Identity Selection Contract | DEPLOYED / FROZEN | `dcd39a173da7635bf85db6844dc86aeca6c1f38c` | #383 | #384 |
 | ES-13J6B-C — Pure Dynamic Event Effect-Mapping Compatibility Contract | DEPLOYED / FROZEN | `1ad68edc1fd15ffa15e1cf6aa139d3d97a547623` | #387 | #388 |
+| ES-13J6B-D — Controlled Live Dynamic Event Adoption | DEPLOYED / FROZEN | `247d976b6e2cc634cbc5158cdff46ac42b51c5fc` | #391 | #392 |
 
 ## Evidence anchors
 
@@ -486,7 +487,8 @@ Issue #383 CLOSED / completed. J6B-B is **DEPLOYED / FROZEN**.
 - DOC30 — J6A closure & J6B-A event identity vocabulary activation: `26554f20648f0a27c2c510c055cbec81c43416c7` — Issue #377 / PR #378.
 - DOC31 — J6B-A closure & J6B-B deterministic event selection activation: `6cadd1db296d5249ae236121088307f480685fe0` — Issue #381 / PR #382.
 - DOC32 — J6B-B closure & J6B-C contract-first effect-mapping activation: `007f1c6744300d47d9e1f43f9cb943e74d70379d` — Issue #385 / PR #386.
-- DOC33 — J6B-C closure & J6B-D controlled live adoption activation: Issue #389, branch `docs/es-13-j6bc-closure-j6bd-activation`, in progress from gameplay canonical `1ad68edc1fd15ffa15e1cf6aa139d3d97a547623`.
+- DOC33 — J6B-C closure & J6B-D controlled live adoption activation: `34168aa3ed192d72ef7100103691dff8cca7e1c9` — Issue #389 / PR #390.
+- DOC34 — J6B-D closure & J7 discovery activation: Issue #393, branch `docs/es-13-j6bd-closure-j7-discovery`, in progress from gameplay canonical `247d976b6e2cc634cbc5158cdff46ac42b51c5fc`.
 
 ### J6B-C — Pure Dynamic Event Effect-Mapping Compatibility Contract
 - Frozen mappings: `SOLAR_STORM → ELECTRICAL_STORM`, `QUANTUM_RIFT → MAGNETIC_DRIFT`, `BLACKOUT_SURGE → REDUCED_VISIBILITY`, `CRYSTAL_RUSH → UNSTABLE_RESOURCE_FIELDS`; `DYSON_ECLIPSE → UNMAPPED` fail-closed.
@@ -495,6 +497,16 @@ Issue #383 CLOSED / completed. J6B-B is **DEPLOYED / FROZEN**.
 - Canonical `1ad68edc1fd15ffa15e1cf6aa139d3d97a547623`, parent `007f1c6744300d47d9e1f43f9cb943e74d70379d`, tree `4fad16370a449e88810a5a4742ba2e9d1c969f17`, exact diff three product files.
 - Main CI `38814014351` / `116694041805` GREEN; Android `38814014266` / `116694040113` GREEN; Pages `38814144837`, build `116694455490` + deploy `116694621071` GREEN.
 - No live adoption or runtime magnitude ownership; existing Infinite environmental authorities remain authoritative.
+
+### J6B-D — Controlled Live Dynamic Event Adoption
+- Single immutable current-wave descriptor overlay in `runtimeProjectionBundleCache.ts`; no `EnergySwarmGame.tsx` change.
+- Reuses J6A opportunity timing, J6B-B deterministic identity and J6B-C compatibility mapping plus existing Infinite environmental semantics.
+- `DYSON_ECLIPSE` remains `UNMAPPED` / fail-closed; no fallback.
+- Pre-PR `559c44d3e7aea58e79cce5a0b30d1d28571f8959`, run `38817464641` / job `116705630774` GREEN including Android.
+- Final PR #392 head `479241ee9604b017ac4d062e80ebe353878aab46`; PR CI `38817902374` / `116707069836` GREEN; PR Android `38817902279` / `116707067282` GREEN.
+- Canonical `247d976b6e2cc634cbc5158cdff46ac42b51c5fc`, parent `34168aa3ed192d72ef7100103691dff8cca7e1c9`, tree `eb0890fa715fa29dfb4c124b0508bb9cdb0adfc3`, exact diff four product files.
+- Main CI `38818106840` / `116707736739` GREEN; Android `38818106804` / `116707736723` GREEN; Pages `38818209120`, build `116708074756` + deploy `116708178250` GREEN.
+- No new timer/RNG/seed/clock, collections/scans, spawn/progression, combat/economy, cap/budget, FOTON or formation authority.
 
 ## Frozen manual/physical blockers
 Remain OPEN and deferred while ES-13 materially changes gameplay:
@@ -507,12 +519,12 @@ Automated CI never substitutes for required human/device evidence.
 
 ## Next planned gameplay
 
-### ES-13J6B-D — Controlled Live Dynamic Event Adoption
-Status: **NEXT ENGINEERING TARGET AFTER DOC33 CLOSURE**.
+### ES-13J7 — Bonus Challenge Rounds Discovery
+Status: **NEXT ARCHITECTURE / DISCOVERY TARGET AFTER DOC34 CLOSURE**.
 
-J6B-D must perform architecture/discovery before any runtime write. It may consider only the four frozen J6B-C mapped identities and must leave `DYSON_ECLIPSE` unmapped/fail-closed. Existing Infinite mutator/environment projection remains authoritative for effect magnitudes and clamps. The dedicated J6B-D Issue must prove one controlled live adoption seam plus lifecycle, expiry/reset/pause behavior, fairness/telegraph and attribution without creating a parallel environmental director, RNG/clock/seed authority, collections, scan/index, cap/budget, spawn/progression or duplicate combat/economy authority.
+The existing roadmap candidate set remains: 20–40 s precision, rescue, collection, evasive-corridor, pursuit, affinity-puzzle, obstacle-navigation, timed-survival and survival-without-firing rhythm breakers. Discovery must inspect current gameplay/runtime seams and select the smallest justified first contract. No challenge type, duration/cadence, Campaign/Infinite scope, timer/pause, spawn/arena, score/reward/economy, HUD or success/failure authority is frozen by DOC34, and no J7 subphase name is assigned yet.
 
 J4D+ additional tactical families remain deferred: FORMATION_BREAKER/JAMMER require hard-control spacing/recovery proof; MINE_WEAVER/MIRROR_WARDEN require genuine mine/mirror mechanics. J3C-C remains deferred, not cancelled.
 
 ## Program sequence
-`J6B-D Controlled Live Dynamic Event Adoption → J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance → ES-14 Living Warfront`
+`J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance → ES-14 Living Warfront`
