@@ -899,13 +899,36 @@ Exact deployment anchors:
 - Pages `38946322607`, build `117126231280` + deploy `117126371840` GREEN.
 
 ### ES-13J8J — Pure Score Attack Terminal Completion Disposition Contract
-Status: **NEXT CONTRACT TARGET AFTER DOC47 CLOSURE**
+Status: **DEPLOYED / FROZEN**
+Canonical: `801b09c7ab74db18a3765db4538b8d3b23588062`  
+Issue #449 / PR #450
 
-Discovery after J8I shows that a correct `TIMEBOX / 60000 ms` descriptor is still insufficient for live adoption. Existing `isRuntimeWaveComplete(...)` only decides completion, while `EnergySwarmGame` treats every completed nested `INFINITE` runtime as progression and calls `advanceInfiniteRuntimeState(...)`. Because J8H intentionally preserves nested runtime mode `INFINITE`, an unguarded live Score Attack would advance to the next Infinite wave when its 60-second timebox expires instead of ending the attempt.
+J8J freezes the pure terminal-completion decision required before live Score Attack adoption:
+- consumes canonical frozen J8H bootstrap + J8I TIMEBOX overlay facts;
+- rebuilds the expected J8I overlay fail-closed for the supplied envelope;
+- delegates completion truth only to existing `isRuntimeWaveComplete(...)`;
+- incomplete TIMEBOX snapshots fail closed;
+- canonical completed `SCORE_ATTACK / INFINITE / TIMEBOX / 60000 ms` projects immutable `END_SCORE_ATTACK_ATTEMPT`;
+- explicitly `advanceInfiniteRuntime: false` while preserving nested runtime discriminator `INFINITE`;
+- exactly one positive authority: terminal-completion disposition projection;
+- no session status/end mutation, Infinite advancement call, runtime-cache/live integration, React/UI/result transition, persistence/archive/record write, timer/clock/cursor or combat/economy/spawn authority.
 
-J8J must freeze only a pure terminal-completion disposition. It must consume a valid J8H bootstrap envelope, a valid J8I completion overlay and a completion snapshot evaluated through existing `isRuntimeWaveComplete(...)` authority. Only canonical matching `SCORE_ATTACK` + exact `TIMEBOX / 60000 ms` + completed facts may project an immutable terminal action such as `END_SCORE_ATTACK_ATTEMPT`, with `advanceInfiniteRuntime: false`. Incomplete, mismatched or unsupported facts fail closed.
+Exact deployment anchors:
+- pre-PR SHA `c8c64c66603bc230a67c818a05fe87c9c6f184bc`, run `38949844968`, certify `117138168359` + Android `117138168740` GREEN;
+- clean PR #450 head `8d867f22a2e40f0140fd4b935b2a712b5db1d090`;
+- PR CI `38950093548` / `117139004853` GREEN; Android `38950093511` / `117139004731` GREEN;
+- canonical `801b09c7ab74db18a3765db4538b8d3b23588062`, parent `06b879f8a2af66f2dce4c02fa8d1bfe749e213c3`, tree `3a9bd3527833b866a43a60c5e2da3981a217cb45`, exact diff three certified files;
+- main CI `38950330832` / `117139808091` GREEN; Android `38950330639` / `117139806867` GREEN;
+- Pages `38950451599`, build `117140202743` + deploy `117140357609` GREEN.
 
-J8J must preserve nested runtime discriminator `INFINITE` and must not mutate/end the session, call Infinite advancement, change `EnergySwarmGame`, transition UI/results, integrate cache/live state, write persistence/records, or own timer/clock/cursor, score/economy, spawn/arena/entity/cap/FOTON/formation authority. It decides terminal disposition only; the later live mutation sequence remains unresolved.
+### ES-13J8K — Pure Score Attack Effective Runtime Projection Bundle / Overlay-Isolation Contract
+Status: **NEXT CONTRACT TARGET AFTER DOC48 CLOSURE**
+
+Discovery after J8J shows that direct use of the generic runtime projection cache is still unsafe. The generic cache applies Adaptive Invasion before J6/J7 and receives `swarm.length`; Adaptive Invasion changes descriptor id, spawn budget/composition/cadence, pressure and fairness from `liveFollowerCount`, which would violate J8G's fixed versioned recipe and J8I's exact effective-descriptor contract.
+
+J8K must therefore freeze a pure Score Attack-specific projection bundle before any cache or React integration. It must consume a valid J8H envelope, derive the exact J8I TIMEBOX overlay from the canonical base descriptor and keep that J8I descriptor as the effective descriptor. Adaptive Invasion must be explicitly bypassed. Existing J6 Dynamic Event and J7 Bonus Challenge adoption seams may be evaluated only as compatibility checks and must remain null/unchanged for canonical Sector 11 / Wave 1; J8J guarantees the attempt terminates on that wave.
+
+J8K may derive combat pressure, mutator effects, enemy budget and milestone projection only through existing pure authorities using the J8I descriptor. It must return immutable projection metadata suitable for later controlled live/cache adoption, while owning no cache writes, React refs/state, timer/clock, terminal disposition, persistence/archive/record, start/result/HUD, spawn/arena/entity/projectile/cap/budget/FOTON/formation authority. J8J remains the separate terminal-completion authority.
 
 ## J9 — Boss & Miniboss Expansion
 Status: PLANNED
