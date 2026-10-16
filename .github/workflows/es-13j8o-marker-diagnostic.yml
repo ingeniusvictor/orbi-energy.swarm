@@ -1,0 +1,87 @@
+name: ES-13J8O Marker Diagnostic
+
+on:
+  push:
+    branches: [es-13j8o-controlled-live-score-attack-engine-lifecycle]
+    paths:
+      - .github/workflows/es-13j8o-marker-diagnostic.yml
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check import anchor
+        run: python - <<'PY'
+          from pathlib import Path
+          import re
+          t=Path('src/game/EnergySwarmGame.tsx').read_text()
+          p=r'\} from "\.\/runtimeProjectionBundleCache";\n'
+          assert len(re.findall(p,t))==1
+          PY
+
+      - name: Check runtime ref anchor
+        run: python - <<'PY'
+          from pathlib import Path
+          import re
+          t=Path('src/game/EnergySwarmGame.tsx').read_text()
+          p=r'  const runtimeProgressionRef = useRef<RuntimeProgressionState>\(\s*createCampaignRuntimeState\(1\),\s*\);\n'
+          assert len(re.findall(p,t,re.S))==1
+          PY
+
+      - name: Check projection anchor
+        run: python - <<'PY'
+          from pathlib import Path
+          import re
+          t=Path('src/game/EnergySwarmGame.tsx').read_text()
+          p=r'  const getCurrentRuntimeProjection = \(\) =>\s*getCachedRuntimeProjectionBundle\(\s*runtimeProjectionBundleCacheRef\.current,\s*runtimeProgressionRef\.current,\s*swarmRef\.current\.length,\s*\);'
+          assert len(re.findall(p,t,re.S))==1
+          PY
+
+      - name: Check start and reset anchors
+        run: python - <<'PY'
+          from pathlib import Path
+          import re
+          t=Path('src/game/EnergySwarmGame.tsx').read_text()
+          a=t.index('  const startGame = () => {')
+          b=t.index('  // --- REBOOT GAME ON LOSS ---',a)
+          s=t[a:b]
+          assert len(re.findall(r'  const startGame = \(\) => \{\s*initAudio\(\);',s,re.S))==1
+          assert len(re.findall(r'    currentWaveRef\.current = 1;\s*runtimeProgressionRef\.current = createCampaignRuntimeState\(1\);\s*waveActiveRef\.current = false;',s,re.S))==1
+          assert s.rfind('  };\n\n')>=0
+          PY
+
+      - name: Check completion snapshot anchor
+        run: python - <<'PY'
+          from pathlib import Path
+          import re
+          t=Path('src/game/EnergySwarmGame.tsx').read_text()
+          p=r'      const baseWaveComplete = isRuntimeWaveComplete\(\s*completionDescriptor,\s*\{\s*remainingTimeMs: waveTimeRemainingRef\.current,\s*spawnedEnemyCount: waveBudgetSpawnedRef\.current,\s*livingEnemyCount,\s*bossDefeated: false,\s*\},\s*\);'
+          assert len(re.findall(p,t,re.S))==1
+          PY
+
+      - name: Check wave terminal anchor
+        run: python - <<'PY'
+          from pathlib import Path
+          import re
+          t=Path('src/game/EnergySwarmGame.tsx').read_text()
+          p=r'      if \(waveComplete\) \{\s*// Wave complete! Transition into intermission'
+          assert len(re.findall(p,t,re.S))==1
+          PY
+
+      - name: Check game-over anchors
+        run: python - <<'PY'
+          from pathlib import Path
+          import re
+          t=Path('src/game/EnergySwarmGame.tsx').read_text()
+          a=t.index('  const triggerGameOver = (won: boolean) => {')
+          b=t.index('  const handleOverdriveActivation = () => {',a)
+          s=t[a:b]
+          assert len(re.findall(r'  const triggerGameOver = \(won: boolean\) => \{\s*loopActiveRef\.current = false;',s,re.S))==1
+          p=r'    if \(won\) \{\s*playVictorySound\(\);\s*postDialogue\("COMPANION",\s*"¡RESONANCIA PURIFICADA! El Devorador de la red ha sido desmantelado\."\);\s*\} else \{\s*playGameOverSound\(\);\s*postDialogue\("SYSTEM",\s*"ENIGM-CORE CRASHED\. Sincronización del enjambre perdida\."\);\s*\}'
+          assert len(re.findall(p,s,re.S))==1
+          PY
