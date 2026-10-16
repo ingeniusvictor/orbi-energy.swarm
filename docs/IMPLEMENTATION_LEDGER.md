@@ -53,6 +53,7 @@ Rules:
 | ES-13J6B-B — Pure Deterministic Dynamic Event Identity Selection Contract | DEPLOYED / FROZEN | `dcd39a173da7635bf85db6844dc86aeca6c1f38c` | #383 | #384 |
 | ES-13J6B-C — Pure Dynamic Event Effect-Mapping Compatibility Contract | DEPLOYED / FROZEN | `1ad68edc1fd15ffa15e1cf6aa139d3d97a547623` | #387 | #388 |
 | ES-13J6B-D — Controlled Live Dynamic Event Adoption | DEPLOYED / FROZEN | `247d976b6e2cc634cbc5158cdff46ac42b51c5fc` | #391 | #392 |
+| ES-13J7A — Pure Timed Survival Bonus Challenge Profile Contract | DEPLOYED / FROZEN | `8a5244e770c360d13b8218599ba3f49bbaa03b46` | #395 | #396 |
 
 ## Evidence anchors
 
@@ -488,7 +489,8 @@ Issue #383 CLOSED / completed. J6B-B is **DEPLOYED / FROZEN**.
 - DOC31 — J6B-A closure & J6B-B deterministic event selection activation: `6cadd1db296d5249ae236121088307f480685fe0` — Issue #381 / PR #382.
 - DOC32 — J6B-B closure & J6B-C contract-first effect-mapping activation: `007f1c6744300d47d9e1f43f9cb943e74d70379d` — Issue #385 / PR #386.
 - DOC33 — J6B-C closure & J6B-D controlled live adoption activation: `34168aa3ed192d72ef7100103691dff8cca7e1c9` — Issue #389 / PR #390.
-- DOC34 — J6B-D closure & J7 discovery activation: Issue #393, branch `docs/es-13-j6bd-closure-j7-discovery`, in progress from gameplay canonical `247d976b6e2cc634cbc5158cdff46ac42b51c5fc`.
+- DOC34 — J6B-D closure & J7 discovery activation: `b858b14a2682fd5855eda5093fc6b13ec3a5653c` — Issue #393 / PR #394.
+- DOC35 — J7A closure & J7B opportunity/cadence discovery activation: Issue #397, branch `docs/es-13-j7a-closure-j7b-activation`, in progress from gameplay canonical `8a5244e770c360d13b8218599ba3f49bbaa03b46`.
 
 ### J6B-C — Pure Dynamic Event Effect-Mapping Compatibility Contract
 - Frozen mappings: `SOLAR_STORM → ELECTRICAL_STORM`, `QUANTUM_RIFT → MAGNETIC_DRIFT`, `BLACKOUT_SURGE → REDUCED_VISIBILITY`, `CRYSTAL_RUSH → UNSTABLE_RESOURCE_FIELDS`; `DYSON_ECLIPSE → UNMAPPED` fail-closed.
@@ -508,6 +510,17 @@ Issue #383 CLOSED / completed. J6B-B is **DEPLOYED / FROZEN**.
 - Main CI `38818106840` / `116707736739` GREEN; Android `38818106804` / `116707736723` GREEN; Pages `38818209120`, build `116708074756` + deploy `116708178250` GREEN.
 - No new timer/RNG/seed/clock, collections/scans, spawn/progression, combat/economy, cap/budget, FOTON or formation authority.
 
+### J7A — Pure Timed Survival Bonus Challenge Profile Contract
+- Exactly one immutable profile: `TIMED_SURVIVAL` / `Timed Survival`, family `RHYTHM_BREAKER`, mode `PROFILE_ONLY`, objective `SURVIVE_UNTIL_TIME_EXPIRES`.
+- Compatibility intent is the existing `TIMEBOX` completion vocabulary; J7A owns no completion/timer authority.
+- Duration remains a window only: `20000..40000 ms`; no exact duration/cadence/source mode is selected.
+- Unsupported/padded/deferred challenge ids fail closed; no live runtime import/adoption.
+- Pre-PR `0bb6786bf20f1a3f8a8c24d8f4ec423199658f7c`, run `38849277024`, certify `116806658248` GREEN + Android `116806889571` GREEN.
+- Final PR #396 head `67d6bbff8f303b51a7f84e8e18d02eb2021c4b8f`; PR CI `38849513155` / `116807380556` GREEN; PR Android `38849513130` / `116807380273` GREEN.
+- Canonical `8a5244e770c360d13b8218599ba3f49bbaa03b46`, parent `b858b14a2682fd5855eda5093fc6b13ec3a5653c`, tree `3bcbbf230fa83cd44dc4d23cb4339ef077fd37cd`, exact diff three product files.
+- Main CI `38849701016` / `116807960929` GREEN; Android `38849700878` / `116807960547` GREEN; Pages `38849771214`, build `116808178956` + deploy `116808274531` GREEN.
+- No live timer/pause, spawn/arena, progression, combat, score/reward/economy, HUD, scan/index, cap/budget, entity/projectile or formation authority.
+
 ## Frozen manual/physical blockers
 Remain OPEN and deferred while ES-13 materially changes gameplay:
 - #4 — visual/responsive certification;
@@ -519,10 +532,10 @@ Automated CI never substitutes for required human/device evidence.
 
 ## Next planned gameplay
 
-### ES-13J7 — Bonus Challenge Rounds Discovery
-Status: **NEXT ARCHITECTURE / DISCOVERY TARGET AFTER DOC34 CLOSURE**.
+### ES-13J7B — Pure Bonus Challenge Opportunity/Cadence Contract
+Status: **NEXT DISCOVERY / CONTRACT TARGET AFTER DOC35 CLOSURE**.
 
-The existing roadmap candidate set remains: 20–40 s precision, rescue, collection, evasive-corridor, pursuit, affinity-puzzle, obstacle-navigation, timed-survival and survival-without-firing rhythm breakers. Discovery must inspect current gameplay/runtime seams and select the smallest justified first contract. No challenge type, duration/cadence, Campaign/Infinite scope, timer/pause, spawn/arena, score/reward/economy, HUD or success/failure authority is frozen by DOC34, and no J7 subphase name is assigned yet.
+J7A has selected only the semantic `TIMED_SURVIVAL` profile and a 20–40 s compatibility window. J7B must remain pure and determine eligibility/cadence from existing progression facts: source-mode scope, sparse deterministic opportunity rule, threshold, first/final-wave exclusions, milestone/recovery handling, J6 collision/precedence and whether the opportunity targets an existing wave slot. No exact duration, descriptor mutation, live timer, spawn/arena, reward/economy, HUD, RNG/clock, collections/scans or cap/budget authority is allowed in J7B.
 
 J4D+ additional tactical families remain deferred: FORMATION_BREAKER/JAMMER require hard-control spacing/recovery proof; MINE_WEAVER/MIRROR_WARDEN require genuine mine/mirror mechanics. J3C-C remains deferred, not cancelled.
 
