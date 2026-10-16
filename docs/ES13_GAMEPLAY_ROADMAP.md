@@ -710,11 +710,37 @@ Exact deployment anchors:
 - Pages `38903209694`, build `116980287001` + deploy `116980431323` GREEN.
 
 ### ES-13J8B — Pure Score Attack Execution-Substrate / Lifecycle Compatibility Contract
-Status: **NEXT DISCOVERY / CONTRACT TARGET AFTER DOC39 CLOSURE**
+Status: **DEPLOYED / FROZEN**
+Canonical: `d6277d4162c23f9b3edbbd69ccac8424b90d99ee`  
+Issue #416 / PR #417
 
-J8B must prove direct compatibility with the existing self-contained `INFINITE_SESSION` execution substrate without creating a mode-specific engine fork. Discovery must verify fresh sector-11/wave-1 semantics, existing Infinite advancement, existing runtime projection compatibility, independence from Campaign victory checkpointing, and preservation of the current `CAMPAIGN | INFINITE` runtime discriminator.
+J8B freezes compatibility with the existing execution core without live adoption:
+- frozen J8A `SCORE_ATTACK` identity is consumed;
+- mode `COMPATIBILITY_ONLY`;
+- execution substrate `INFINITE_SESSION`;
+- runtime progression compatibility remains existing `INFINITE`;
+- canonical fresh facts sector 11 / wave 1 / zero completed sectors+waves / ACTIVE;
+- Campaign victory checkpoint is not required by this compatibility contract;
+- existing Infinite advancement + descriptor/runtime projection pipeline remain authoritative;
+- Score Attack remains outside `RuntimeProgressionState`; no third discriminator;
+- no session construction/seed/advance/live adoption;
+- only execution-substrate compatibility authority is positive.
 
-J8B remains pure: no exact Score Attack run duration/timer, live session construction, seed/replay policy, StartScreen/ResultScreen/HUD, dedicated persistence/high-score/archive, score formula, rewards/economy, spawn/arena, collections/scans/indexes, caps/budgets, entities/projectiles, FOTON or formation changes. Other J8 candidate modes remain uncontracted, not cancelled.
+Exact deployment anchors:
+- pre-PR `e0de848e31b25e5cec7617f5b040ca09be8370a6`, run `38907084776`, certify `116993249057` + Android `116993248957` GREEN;
+- final PR #417 head `7df7351b9f07830e5f5a808037c6b98e924ed002`;
+- PR CI `38907309802` / `116994022888` GREEN; Android `38907309276` / `116994021442` GREEN;
+- canonical `d6277d4162c23f9b3edbbd69ccac8424b90d99ee`, parent `b283a61b26a8491888ff251d3ee55006b5872806`, tree `b214a876b3c5f5945b52adc524965de86da930cb`;
+- main CI `38907541228` / `116994816999` GREEN; Android `38907541135` / `116994817103` GREEN;
+- Pages `38907624340`, build `116995103030` + deploy `116995284394` GREEN.
+
+### ES-13J8C — Pure Score Attack Exact Duration / TIMEBOX Projection Contract
+Status: **NEXT CONTRACT TARGET AFTER DOC40 CLOSURE**
+
+J8C must freeze exactly one pure Score Attack completion metadata projection: `60000 ms` with `{ type: "TIMEBOX", durationMs: 60000 }`. It must consume J8A + J8B, fail closed for unsupported/incompatible facts, and leave current timer/completion runtime authority unchanged. `60000 ms` intentionally reuses the existing Sector 9 normal Campaign TIMEBOX value and remains separate from J7 Timed Survival's `30000 ms` bonus-challenge authority.
+
+J8C must not mutate live descriptors, create/tick/reset timers, construct sessions, choose seed/replay policy, change StartScreen/ResultScreen/HUD, add dedicated persistence/high-score/archive, mutate score/reward/economy, change spawn/arena, scans/indexes, caps/budgets, entities/projectiles, FOTON or formations. Dedicated persistence is a later contract; live Score Attack UI/start flow remains later still.
+
 
 ## J9 — Boss & Miniboss Expansion
 Status: PLANNED
