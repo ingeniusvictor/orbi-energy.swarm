@@ -18,6 +18,13 @@ def replace_once(text: str, old: str, new: str, label: str) -> str:
     return text.replace(old, new, 1)
 
 
+def replace_count(text: str, old: str, new: str, expected: int, label: str) -> str:
+    count = text.count(old)
+    if count != expected:
+        raise SystemExit(f"{label}: expected {expected} markers, got {count}")
+    return text.replace(old, new)
+
+
 text = GAME.read_text()
 
 text = sub_once(
@@ -71,23 +78,17 @@ segment = text[start_index:reboot_index]
 segment = sub_once(
     segment,
     r'''  const startGame = \(\) => \{\s*initAudio\(\);''',
-    '''  const startGameWithMode = (mode: ScoreAttackLiveEngineStartMode) => {
+    '''  const startGame = () => {
     const requestedScoreAttackActivation =
-      resolveScoreAttackLiveEngineActivation(mode);
-    if (mode === "SCORE_ATTACK" && !requestedScoreAttackActivation) {
-      return false;
-    }
-
-    scoreAttackActivationRef.current = null;
+      scoreAttackActivationRef.current;
     initAudio();''',
-    "J8O internal start mode",
+    "J8O start activation capture",
     re.S,
 )
 segment = sub_once(
     segment,
     r'''    currentWaveRef\.current = 1;\s*runtimeProgressionRef\.current = createCampaignRuntimeState\(1\);\s*waveActiveRef\.current = false;''',
     '''    if (requestedScoreAttackActivation) {
-      scoreAttackActivationRef.current = requestedScoreAttackActivation;
       runtimeProgressionRef.current =
         requestedScoreAttackActivation.runtimeProgression;
       currentWaveRef.current = getRuntimeSector(
@@ -106,11 +107,16 @@ close_index = segment.rfind("  };\n\n")
 if close_index < 0:
     raise SystemExit("J8O startGame closing marker missing")
 segment = (
-    segment[:close_index]
-    + '''    return true;
+    segment[:close_index + len("  };\n\n")]
+    + '''  const startGameWithMode = (mode: ScoreAttackLiveEngineStartMode) => {
+    const activation = resolveScoreAttackLiveEngineActivation(mode);
+    if (mode === "SCORE_ATTACK" && !activation) return false;
+    scoreAttackActivationRef.current = activation;
+    startGame();
+    return true;
   };
 
-  const startGame = () => {
+  const startCampaignGame = () => {
     void startGameWithMode("CAMPAIGN");
   };
 
@@ -118,6 +124,42 @@ segment = (
     + segment[close_index + len("  };\n\n"):]
 )
 text = text[:start_index] + segment + text[reboot_index:]
+
+text = replace_once(
+    text,
+    '''        if (e.key === "Enter") {
+          startGame();
+        }''',
+    '''        if (e.key === "Enter") {
+          startCampaignGame();
+        }''',
+    "J8O keyboard campaign start",
+)
+text = replace_once(
+    text,
+    '''  const rebootGame = () => {
+    playClickSound();
+    startGame();
+  };''',
+    '''  const rebootGame = () => {
+    playClickSound();
+    startCampaignGame();
+  };''',
+    "J8O reboot campaign start",
+)
+text = replace_once(
+    text,
+    "onStartGame={startGame}",
+    "onStartGame={startCampaignGame}",
+    "J8O StartScreen campaign binding",
+)
+text = replace_count(
+    text,
+    "onRestart={startGame}",
+    "onRestart={startCampaignGame}",
+    2,
+    "J8O restart campaign bindings",
+)
 
 text = sub_once(
     text,
@@ -158,7 +200,7 @@ text = sub_once(
             terminalApplication.statsCommitApplication
               .changedDedicatedRecord
           ) {
-            updateStatsAndSave(terminalApplication.stats);
+            updateStatsAndSave({ ...terminalApplication.stats });
           }
           triggerGameOver(true);
           return;
