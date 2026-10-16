@@ -57,6 +57,7 @@ Rules:
 | ES-13J7B — Pure Timed Survival Opportunity/Cadence Contract | DEPLOYED / FROZEN | `93af4e999af5e3b3afed7f684706536bdfaedd89` | #399 | #400 |
 | ES-13J7C — Pure Timed Survival Duration & TIMEBOX Projection Contract | DEPLOYED / FROZEN | `1ad86de5155a3e6e73630e5244f7ce7ec107f4af` | #404 | #405 |
 | ES-13J7D — Controlled Live Timed Survival Adoption | DEPLOYED / FROZEN | `9440b31b0c8dca2da0cfe92a5f02cbf7065e6d67` | #408 | #409 |
+| ES-13J8A — Pure Score Attack Mode Profile Contract | DEPLOYED / FROZEN | `4a78c942a3ebdb509f67185d6799b0724ac27238` | #412 | #413 |
 
 ## Evidence anchors
 
@@ -496,7 +497,8 @@ Issue #383 CLOSED / completed. J6B-B is **DEPLOYED / FROZEN**.
 - DOC35 — J7A closure & J7B opportunity/cadence discovery activation: `bd4c5c7061337aec3c857f548e086516bbea04e0` — Issue #397 / PR #398.
 - DOC36 — J7B closure & J7C duration/TIMEBOX projection activation: `af998aa40c1f767727bbe2c999b4c7b3bc872a3c` — Issue #401 / PR #403.
 - DOC37 — J7C closure & J7D controlled live Timed Survival adoption activation: `84d259c2a0f5f0284db5f67742a052e6c3003f62` — Issue #406 / PR #407.
-- DOC38 — J7D/J7 closure & J8 architecture discovery activation: Issue #410, branch `docs/es-13-j7d-j7-closure-j8-discovery`, in progress from gameplay canonical `9440b31b0c8dca2da0cfe92a5f02cbf7065e6d67`.
+- DOC38 — J7D/J7 closure & J8 architecture discovery activation: `0b7e61820d139327046f02adbef604f65f1909ff` — Issue #410 / PR #411.
+- DOC39 — J8A closure & J8B execution-substrate discovery activation: Issue #414, branch `docs/es-13-j8a-closure-j8b-substrate`, in progress from gameplay canonical `4a78c942a3ebdb509f67185d6799b0724ac27238`.
 
 ### J6B-C — Pure Dynamic Event Effect-Mapping Compatibility Contract
 - Frozen mappings: `SOLAR_STORM → ELECTRICAL_STORM`, `QUANTUM_RIFT → MAGNETIC_DRIFT`, `BLACKOUT_SURGE → REDUCED_VISIBILITY`, `CRYSTAL_RUSH → UNSTABLE_RESOURCE_FIELDS`; `DYSON_ECLIPSE → UNMAPPED` fail-closed.
@@ -561,6 +563,17 @@ Issue #383 CLOSED / completed. J6B-B is **DEPLOYED / FROZEN**.
 ### J7 program closure
 J7A→J7D certifies the first complete `TIMED_SURVIVAL` Bonus Challenge vertical slice. Other listed Bonus Challenge concepts remain future vocabulary and are neither cancelled nor implemented by implication.
 
+### J8A — Pure Score Attack Mode Profile Contract
+- Exactly one immutable `SCORE_ATTACK` / `Score Attack` profile, family `ARCADE_SCORE_CHASE`, mode `PROFILE_ONLY`.
+- Objective `MAXIMIZE_EXISTING_RUN_SCORE`, completion compatibility `TIMEBOX`, score-source compatibility `EXISTING_RUN_SCORE`.
+- Only profile-definition authority is positive; exact duration, progression substrate, runtime discriminator, start flow, persistence/high-score/archive, result presentation, seed/replay, score formula, rewards/economy and live adoption remain unresolved.
+- No live runtime/UI/storage file imports J8A.
+- Pre-PR `69fea866809cba4764414df2a5e4f7bfcc97e895`, run `38902639119`, certify `116978369434` + Android `116978369920` GREEN.
+- Final PR #413 head `979640051e9568c2b710d68ec77690db69b5a68b`; PR CI `38902906173` / `116979264896` GREEN; PR Android `38902906158` / `116979264759` GREEN.
+- Canonical `4a78c942a3ebdb509f67185d6799b0724ac27238`, parent `0b7e61820d139327046f02adbef604f65f1909ff`, tree `feabb1b5b8beb2923ebd30f0c646a46ab73e990a`, exact diff three product/test files.
+- Main CI final `38903099548` / `116979916188` GREEN; duplicate exact-SHA CI `38903092522` / `116979892581` GREEN; Android final `38903099249` / `116979914940` GREEN; Pages `38903209694`, build `116980287001` + deploy `116980431323` GREEN.
+- No runtime/progression, timer/clock/pause, spawn/arena, damage/defeat, score mutation/formula, persistence/storage, UI/HUD, RNG/hash/seed, scan/index, cap/budget, entity/projectile, FOTON or formation authority.
+
 ## Frozen manual/physical blockers
 Remain OPEN and deferred while ES-13 materially changes gameplay:
 - #4 — visual/responsive certification;
@@ -572,10 +585,10 @@ Automated CI never substitutes for required human/device evidence.
 
 ## Next planned gameplay
 
-### ES-13J8 — Additional Game Modes Architecture Discovery
-Status: **NEXT ARCHITECTURE / DISCOVERY TARGET AFTER DOC38 CLOSURE**.
+### ES-13J8B — Pure Score Attack Execution-Substrate / Lifecycle Compatibility Contract
+Status: **NEXT DISCOVERY / CONTRACT TARGET AFTER DOC39 CLOSURE**.
 
-Candidate vocabulary remains Score Attack, Boss Rush, Survival/Last Light, Swarm Trials, Anomaly Runs, Daily Seed, Elite Hunt, Endless Crisis and Perfect Sector. Discovery must select the smallest mode that can reuse the certified runtime/session/progression/persistence engine without a mode-specific fork, proving lifecycle/reset/end semantics, Campaign/Infinite coexistence, persistence/high-score implications, descriptor/progression reuse, UI impact, seed/replay semantics if applicable and Android parity. DOC38 freezes no concrete mode, scoring rule, duration, rewards/economy, seed policy, persistence schema, runtime state, UI or live behavior.
+J8B must prove whether the frozen J8A Score Attack profile can reuse a fresh existing `INFINITE_SESSION` substrate (sector 11 / wave 1), existing Infinite advancement and the existing runtime descriptor pipeline without adding a `SCORE_ATTACK` runtime discriminator or requiring a Campaign victory checkpoint. J8B remains pure and must not choose exact run duration, timer, seed/replay policy, live start flow, UI, dedicated persistence/high-score/archive semantics, score formula, rewards/economy, spawn/arena, collections/scans/indexes, caps/budgets, entities/projectiles or formation authority.
 
 J4D+ additional tactical families remain deferred: FORMATION_BREAKER/JAMMER require hard-control spacing/recovery proof; MINE_WEAVER/MIRROR_WARDEN require genuine mine/mirror mechanics. J3C-C remains deferred, not cancelled.
 

@@ -18,16 +18,16 @@ Never infer deployment/certification from conversation text alone.
 
 ## Current certified gameplay canonical
 
-`9440b31b0c8dca2da0cfe92a5f02cbf7065e6d67`
+`4a78c942a3ebdb509f67185d6799b0724ac27238`
 
-Phase: **ES-13J7D — Controlled Live Timed Survival Adoption**
+Phase: **ES-13J8A — Pure Score Attack Mode Profile Contract**
 Status: **DEPLOYED / FROZEN**
-Issue: #408 — CLOSED / completed
-Delivery: PR #409 — squash merged
+Issue: #412 — CLOSED / completed
+Delivery: PR #413 — squash merged
 
-Single parent: `84d259c2a0f5f0284db5f67742a052e6c3003f62` — DOC37 documentation canonical.
+Single parent: `0b7e61820d139327046f02adbef604f65f1909ff` — DOC38 documentation canonical.
 
-Canonical tree: `e7d54e341de9d4995f13c62f6a7a2f41922798e9`.
+Canonical tree: `feabb1b5b8beb2923ebd30f0c646a46ab73e990a`.
 
 Version remains `0.2.0-beta.1`. Full RC/manual certification remains intentionally deferred while ES-13 materially expands gameplay.
 
@@ -539,7 +539,8 @@ J3C-C stateful formation patterns remain **DEFERRED / NOT CURRENTLY JUSTIFIED**,
 - DOC35 — J7A closure & J7B opportunity/cadence discovery activation: `bd4c5c7061337aec3c857f548e086516bbea04e0` — Issue #397 / PR #398.
 - DOC36 — J7B closure & J7C duration/TIMEBOX projection activation: `af998aa40c1f767727bbe2c999b4c7b3bc872a3c` — Issue #401 / PR #403.
 - DOC37 — J7C closure & J7D controlled live Timed Survival adoption activation: `84d259c2a0f5f0284db5f67742a052e6c3003f62` — Issue #406 / PR #407.
-- DOC38 — J7D/J7 closure & J8 architecture discovery activation: Issue #410, branch `docs/es-13-j7d-j7-closure-j8-discovery`, documentation-only closure in progress from gameplay canonical `9440b31b0c8dca2da0cfe92a5f02cbf7065e6d67`.
+- DOC38 — J7D/J7 closure & J8 architecture discovery activation: `0b7e61820d139327046f02adbef604f65f1909ff` — Issue #410 / PR #411.
+- DOC39 — J8A closure & J8B execution-substrate discovery activation: Issue #414, branch `docs/es-13-j8a-closure-j8b-substrate`, documentation-only closure in progress from gameplay canonical `4a78c942a3ebdb509f67185d6799b0724ac27238`.
 
 ## J6B-C result
 J6B-C froze a pure compatibility-only mapping from the deterministic J6B-B event identity selection onto already-existing Infinite mutator semantics. It does not apply live effects, project runtime magnitudes or create fallback semantics.
@@ -752,14 +753,56 @@ Issue #408 CLOSED / completed. J7D is **DEPLOYED / FROZEN**.
 ## J7 program closure
 J7A → J7D completes one fully certified end-to-end Bonus Challenge vertical slice: `TIMED_SURVIVAL` profile → deterministic opportunity → exact TIMEBOX projection → controlled live adoption. Precision, rescue, collection, evasive corridors, pursuit, affinity puzzles, obstacle navigation and survival-without-firing remain future Bonus Challenge vocabulary; they are not cancelled and are not implicitly implemented.
 
+## J8A result
+J8A selected Score Attack as the smallest justified first Additional Game Mode contract without adopting a new live mode.
+
+Certified contract:
+- exactly one immutable profile: `SCORE_ATTACK` / `Score Attack`;
+- family `ARCADE_SCORE_CHASE`;
+- mode `PROFILE_ONLY`;
+- objective `MAXIMIZE_EXISTING_RUN_SCORE`;
+- completion compatibility `TIMEBOX`;
+- score-source compatibility `EXISTING_RUN_SCORE`;
+- existing centralized run score and TIMEBOX vocabulary are compatibility facts only, not newly owned authorities;
+- unsupported/padded/deferred mode ids fail closed;
+- only positive authority is semantic profile definition;
+- no exact duration, progression substrate, runtime discriminator, start flow, descriptor mutation, score-formula change, rewards/economy, persistence/high-score/archive schema, ResultScreen/HUD, seed/replay or live execution authority;
+- no live runtime/UI/storage authority imports J8A.
+
+Final product scope exactly:
+- `src/game/scoreAttackModeContract.ts`;
+- `tests/es-13j8a-score-attack-mode-contract.test.mjs`;
+- `tests/gameplay/score-attack-mode-contract.test.ts`.
+
+## J8A exact evidence
+- DOC38 baseline `0b7e61820d139327046f02adbef604f65f1909ff`;
+- pre-PR SHA `69fea866809cba4764414df2a5e4f7bfcc97e895`, run `38902639119`, certify `116978369434` + Android `116978369920` GREEN;
+- final PR #413 head `979640051e9568c2b710d68ec77690db69b5a68b`;
+- PR CI `38902906173` / `116979264896` GREEN;
+- PR Android `38902906158` / `116979264759` GREEN including Build/Verify/Upload APK;
+- canonical `4a78c942a3ebdb509f67185d6799b0724ac27238`, single parent `0b7e61820d139327046f02adbef604f65f1909ff`, tree `feabb1b5b8beb2923ebd30f0c646a46ab73e990a`;
+- canonical diff exactly three certified product/test files;
+- main CI final `38903099548` / `116979916188` GREEN; duplicate exact-SHA CI `38903092522` / `116979892581` also GREEN;
+- main Android final `38903099249` / `116979914940` GREEN including Build/Verify/Upload APK;
+- Pages `38903209694`: build `116980287001` + deploy `116980431323` GREEN.
+
+Issue #412 CLOSED / completed. J8A is **DEPLOYED / FROZEN**.
+
 ## Next gameplay phase
 
-### ES-13J8 — Additional Game Modes Architecture Discovery
-Status: **NEXT ARCHITECTURE / DISCOVERY TARGET AFTER DOC38 CLOSURE**
+### ES-13J8B — Pure Score Attack Execution-Substrate / Lifecycle Compatibility Contract
+Status: **NEXT DISCOVERY / CONTRACT TARGET AFTER DOC39 CLOSURE**
 
-J7's first end-to-end Bonus Challenge vertical slice is frozen. J8 now begins as architecture/discovery only; DOC38 selects no concrete game mode.
+J8A profile semantics are frozen. J8B must remain pure and prove whether Score Attack can reuse a fresh existing `INFINITE_SESSION` execution substrate without adding a third `RuntimeProgressionState` discriminator or forking the engine.
 
-Candidate vocabulary remains Score Attack, Boss Rush, Survival/Last Light, Swarm Trials, Anomaly Runs, Daily Seed, Elite Hunt, Endless Crisis and Perfect Sector. Discovery must inspect current runtime/session/progression/persistence/start-screen/result-screen architecture and select the smallest mode that can reuse the certified engine/core without a mode-specific fork. It must explicitly prove lifecycle/reset/end semantics, Campaign/Infinite coexistence, persistence/high-score implications, descriptor/progression reuse, UI impact, seed/replay semantics if applicable and Android parity. No scoring rule, duration, rewards/economy, seed policy, persistence schema, runtime state, UI or live behavior is frozen by DOC38.
+Required discovery:
+- prove compatibility with fresh Infinite session start semantics at sector 11 / wave 1;
+- reuse existing `advanceInfiniteSession(...)` progression and `createInfiniteRuntimeState(...)` descriptor pipeline rather than a Score-Attack-specific wave director;
+- prove Score Attack compatibility does not require the Campaign victory checkpoint in `beginInfiniteAfterCampaignVictory(...)`;
+- keep top-level `SCORE_ATTACK` identity outside the runtime progression discriminator;
+- fail closed if the expected Infinite-session compatibility facts are not present.
+
+J8B must not choose exact Score Attack duration, live run timer, seed/replay policy, live session construction, StartScreen/ResultScreen/HUD, dedicated persistence/high-score/archive semantics, score formula changes, rewards/economy, clock/pause, spawn/arena, collections/scans/indexes, caps/budgets, entities/projectiles, FOTON or formations. Live Score Attack start flow remains later.
 
 ## Resolved diagnostics
 - #254 CLOSED / NOT PLANNED: historical platform failure was not an I5 pause regression; no product merge.
@@ -796,7 +839,7 @@ Post-J15 direction: **ES-14 — Living Warfront**.
 Read this file, `IMPLEMENTATION_LEDGER.md`, `ES13_GAMEPLAY_ROADMAP.md`, `TRACEABILITY_POLICY.md` and `ES13_PHASE_CHECKLIST.md`, then active Issues/PRs. Verify live `main` before any write.
 
 Suggested handoff:
-> Continue ORBI Energy Swarm autonomously. Repository `ingeniusvictor/orbi-energy.swarm`. J7D gameplay canonical is `9440b31b0c8dca2da0cfe92a5f02cbf7065e6d67`, fully DEPLOYED / FROZEN via Issue #408 / PR #409 with controlled live Timed Survival adoption and post-main CI/Android/Pages GREEN. Complete DOC38 if still open, then perform J8 Additional Game Modes architecture discovery before selecting or implementing any concrete mode. Reuse the certified runtime/session/progression/persistence core and avoid mode-specific forks; preserve caps/budgets, Campaign/Infinite isolation, FOTON GLB/formations, J3C-C/J4D+ deferrals and manual blockers. Follow Issue → Branch → full gates → PR → exact-SHA post-merge evidence. Never touch `main` directly or weaken tests.
+> Continue ORBI Energy Swarm autonomously. Repository `ingeniusvictor/orbi-energy.swarm`. J8A gameplay canonical is `4a78c942a3ebdb509f67185d6799b0724ac27238`, fully DEPLOYED / FROZEN via Issue #412 / PR #413 with one pure SCORE_ATTACK profile and post-main CI/Android/Pages GREEN. Complete DOC39 if still open, then perform J8B pure execution-substrate/lifecycle compatibility discovery before any Score Attack duration, persistence, UI or live adoption. Investigate direct reuse of fresh `INFINITE_SESSION` semantics while keeping `RuntimeProgressionState` as CAMPAIGN | INFINITE and avoiding mode-specific engine forks. Preserve caps/budgets, Campaign/Infinite isolation, FOTON GLB/formations, J3C-C/J4D+ deferrals and manual blockers. Follow Issue → Branch → full gates → PR → exact-SHA post-merge evidence. Never touch `main` directly or weaken tests.
 
 ## Update obligation
 Every merged gameplay phase must record exact gameplay canonical, Issue/PR, final head, pre-PR certification, PR CI/Android, main CI/Android/Pages, implementation result, unresolved follow-ups and next roadmap phase. A gameplay phase is not administratively closed until these records are current.
