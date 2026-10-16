@@ -134,10 +134,14 @@ export const resolveScoreAttackLiveTerminalApplication = (
   activation: ScoreAttackLiveEngineActivation | null,
   runtimeProgression: RuntimeProgressionState,
   snapshot: RuntimeCompletionSnapshot,
-  stats: Readonly<GameStats>,
+  stats: Readonly<GameStats> | null,
   candidateScore: number,
 ): Readonly<ScoreAttackLiveEngineTerminalApplication> | null => {
-  if (!activation || !activationMatchesRuntime(activation, runtimeProgression)) {
+  if (
+    !activation ||
+    !stats ||
+    !activationMatchesRuntime(activation, runtimeProgression)
+  ) {
     return null;
   }
 
