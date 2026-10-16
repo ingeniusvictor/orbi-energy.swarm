@@ -44,7 +44,7 @@ test("J8J delegates canonical facts to J8H/J8I and completion truth to runtimeCo
 
   assert.match(bootstrapSource, /modeId:\s*"SCORE_ATTACK"/);
   assert.match(bootstrapSource, /runtimeProgressionMode:\s*runtimeProgression\.mode/);
-  assert.match(overlaySource, /completionPolicy:\s*Object\.freeze/);
+  assert.match(overlaySource, /const completionPolicy = Object\.freeze\(/);
   assert.match(overlaySource, /type:\s*"TIMEBOX" as const/);
   assert.match(completionPolicySource, /case\s+"TIMEBOX":/);
   assert.match(completionPolicySource, /snapshot\.remainingTimeMs\s*<=\s*0/);
