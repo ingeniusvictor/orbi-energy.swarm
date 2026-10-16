@@ -18,16 +18,16 @@ Never infer deployment/certification from conversation text alone.
 
 ## Current certified gameplay canonical
 
-`9ec6a76bf34057881326530af9581e0eca1a0c74`
+`d0e9af1c3c8f94524187f7d8ee48c975e2bd9f3e`
 
-Phase: **ES-13J8M — Pure Score Attack Attempt Finalization Plan Contract**
+Phase: **ES-13J8N — Pure Dedicated Score Attack Stats-Commit Application Contract**
 Status: **DEPLOYED / FROZEN**
-Issue: #461 — CLOSED / completed
-Delivery: PR #462 — squash merged
+Issue: #465 — CLOSED / completed
+Delivery: PR #466 — squash merged
 
-Single parent: `25fed78cc7a6855a015d10538246490c914d6818` — DOC50 documentation canonical.
+Single parent: `41da66dac942accb714899f189fce86dc24d1d79` — DOC51 documentation canonical.
 
-Canonical tree: `3fd28427b2997aaae3a5ea4b20bc4c1bfbd8e644`.
+Canonical tree: `cb8587b7a3c584a4516e0e5f49be9129e11d9d6f`.
 
 Version remains `0.2.0-beta.1`. Full RC/manual certification remains intentionally deferred while ES-13 materially expands gameplay.
 
@@ -1051,12 +1051,32 @@ J8M froze pure Score Attack terminal orchestration over exact J8L/J8J/J8F facts.
 
 Issue #461 CLOSED / completed. J8M is **DEPLOYED / FROZEN**.
 
+## J8N result
+J8N froze the dedicated Score Attack GameStats application boundary over J8M. It fails closed on stale dedicated-best facts; NEW_BEST changes only `scoreAttackBestScore`; tied/below outcomes preserve stats semantically unchanged. Global highScore, generic persistence/archive/run counters, Campaign/Infinite records and unrelated settings remain isolated. J8N owns no storage, React/UI or runtime authority.
+
+## J8N exact evidence
+- DOC51 baseline `41da66dac942accb714899f189fce86dc24d1d79`;
+- initial pre-PR run `38969412380` exposed a real no-op normalization bug before PR;
+- isolated diagnostic v2 `38969724953` / `117204857053` passed all five properties after correction;
+- final pre-PR SHA `71a00a5f756c9dd865932763d8e92c96536facbe`, run `38969868757`, certify `117205320392` + Android `117205320719` GREEN;
+- final PR #466 head `fdb3575add29d632ffc020cbfadee7615fae6496`;
+- PR CI `38970083272` / `117206023607` GREEN;
+- PR Android `38970083435` / `117206024349` GREEN including APK build/verify/upload;
+- canonical `d0e9af1c3c8f94524187f7d8ee48c975e2bd9f3e`, single parent `41da66dac942accb714899f189fce86dc24d1d79`, tree `cb8587b7a3c584a4516e0e5f49be9129e11d9d6f`, exact diff three certified files;
+- main CI `38970263772` / `117206620329` GREEN;
+- main Android `38970263775` / `117206620338` GREEN including APK build/verify/upload;
+- Pages `38970380507`: build `117207004493` + deploy `117207154206` GREEN.
+
+Issue #465 CLOSED / completed. J8N is **DEPLOYED / FROZEN**.
+
 ## Next gameplay phase
 
-### ES-13J8N — Pure Dedicated Score Attack Stats-Commit Application Contract
-Status: **NEXT CONTRACT TARGET AFTER DOC51 CLOSURE**
+### ES-13J8O — Controlled Live Score Attack Engine Lifecycle Adoption
+Status: **NEXT CONTRACT TARGET AFTER DOC52 CLOSURE**
 
-Discovery shows Score Attack cannot safely reuse generic `commitStats(...)` / `applyFinalRunCommit(...)`: those authorities update generic run persistence/high-score/archive semantics. J8N must therefore own only a pure dedicated GameStats application boundary over J8M. It must fail closed on stale dedicated-best facts, apply NEW_BEST only to `scoreAttackBestScore`, preserve tied/below runs without stats changes, and preserve every unrelated GameStats field exactly. No save/localStorage, generic persistence/archive, React/UI, runtime/session/timer or gameplay authority is allowed.
+The pure prerequisite chain is now complete. J8O must adopt Score Attack only inside `EnergySwarmGame` lifecycle seams: Campaign remains the default start path; one scalar J8L activation envelope identifies an internal Score Attack attempt; effective runtime descriptor/projection comes from frozen J8L/J8K rather than the generic cache; the existing TIMEBOX timer uses 60000 ms; terminal completion is intercepted before Infinite advancement; J8M composes finalization facts and J8N applies the dedicated record; storage is updated only through the existing `updateStatsAndSave(...)` seam when the record actually changes. The activation ref is cleared at reset/terminal boundaries.
+
+This phase remains engine-only. StartScreen stays Campaign-only with no Score Attack button, and ResultScreen/HUD/presentation remain deferred. No new runtime discriminator/cache/timer, generic highScore/archive/counter semantics, score formula/economy, spawn/arena/cap/budget/entity/projectile/FOTON/formation authority may be introduced.
 
 ## Resolved diagnostics
 - #254 CLOSED / NOT PLANNED: historical platform failure was not an I5 pause regression; no product merge.
@@ -1093,7 +1113,7 @@ Post-J15 direction: **ES-14 — Living Warfront**.
 Read this file, `IMPLEMENTATION_LEDGER.md`, `ES13_GAMEPLAY_ROADMAP.md`, `TRACEABILITY_POLICY.md` and `ES13_PHASE_CHECKLIST.md`, then active Issues/PRs. Verify live `main` before any write.
 
 Suggested handoff:
-> Continue ORBI Energy Swarm autonomously. Repository `ingeniusvictor/orbi-energy.swarm`. J8K gameplay canonical is `ac943f609e427618465104f51b8f023620c8bf98`, fully DEPLOYED / FROZEN via Issue #453 / PR #454 with pure Score Attack effective runtime projection bundle, Adaptive Invasion bypass, J6/J7 null compatibility and post-main CI/Android/Pages GREEN. Complete DOC49 if still open, then implement J8L as a pure Score Attack runtime activation envelope: compose J8H + exact J8K facts, preserve outer SCORE_ATTACK while nested runtime remains INFINITE, prove same runtime/session identity, and do not adopt React/cache/start flow/timer/J8J/persistence yet. Preserve Campaign/Infinite, caps/budgets, FOTON/formations, J3C-C/J4D+ deferrals and manual blockers. Follow Issue → Branch → full gates → PR → exact-SHA post-merge evidence. Never touch `main` directly or weaken tests.
+> Continue ORBI Energy Swarm autonomously. Repository `ingeniusvictor/orbi-energy.swarm`. J8N gameplay canonical is `d0e9af1c3c8f94524187f7d8ee48c975e2bd9f3e`, fully DEPLOYED / FROZEN via Issue #465 / PR #466; dedicated Score Attack stats application is frozen with stale-plan fail-closed semantics and post-main CI/Android/Pages GREEN. Complete DOC52 if still open, then implement J8O as the first controlled live Score Attack engine-lifecycle adoption: internal-mode start with Campaign unchanged by default, install exact J8L runtime/envelope, source effective descriptor from J8L/J8K, reuse the existing 60000 ms TIMEBOX timer, intercept terminal completion before Infinite advancement, compose J8M, apply J8N and persist only changed dedicated record through `updateStatsAndSave(...)`. Keep StartScreen/ResultScreen/HUD out of scope and no public Score Attack button yet. Preserve Campaign/Infinite, caps/budgets, FOTON/formations, J3C-C/J4D+ deferrals and manual blockers. Follow Issue → Branch → full gates → PR → exact-SHA post-merge evidence. Never touch `main` directly or weaken tests.
 
 ## Update obligation
 Every merged gameplay phase must record exact gameplay canonical, Issue/PR, final head, pre-PR certification, PR CI/Android, main CI/Android/Pages, implementation result, unresolved follow-ups and next roadmap phase. A gameplay phase is not administratively closed until these records are current.

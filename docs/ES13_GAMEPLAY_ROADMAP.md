@@ -990,13 +990,36 @@ Exact deployment anchors:
 - Pages `38967850132`, build `117198668879` + deploy `117198801507` GREEN.
 
 ### ES-13J8N — Pure Dedicated Score Attack Stats-Commit Application Contract
-Status: **NEXT CONTRACT TARGET AFTER DOC51 CLOSURE**
+Status: **DEPLOYED / FROZEN**
+Canonical: `d0e9af1c3c8f94524187f7d8ee48c975e2bd9f3e`  
+Issue #465 / PR #466
 
-Discovery after J8M shows live adoption is still unsafe if Score Attack falls through the generic run finalizer: current `commitStats(...)` delegates to `applyFinalRunCommit(...)`, while the dedicated Score Attack record must remain isolated from global `highScore`, generic archive/run counters and Infinite persistence. Generic live projection also consumes live follower count, and generic Infinite completion advances the runtime, so those seams remain deferred until dedicated record application is frozen.
+J8N freezes the dedicated Score Attack GameStats application boundary required before live integration:
+- consumes one valid frozen J8M finalization plan plus existing GameStats;
+- stale `scoreAttackBestScore` facts fail closed;
+- NEW_BEST changes only `scoreAttackBestScore`;
+- TIED_BEST / BELOW_BEST produce exact semantic no-ops;
+- global `highScore`, generic run persistence/archive/counters, Campaign/Infinite records and every unrelated GameStats field remain isolated;
+- no storage I/O, React/UI, runtime/session/timer or gameplay authority.
 
-J8N must consume one valid J8M finalization plan plus existing `GameStats`, fail closed if the current `scoreAttackBestScore` no longer matches J8M's normalized existing-best fact, and return a new immutable stats application result. NEW_BEST may change only `scoreAttackBestScore` to J8M `projectedBestScore`; TIED_BEST / BELOW_BEST must preserve stats semantically unchanged. Every unrelated GameStats field, including global `highScore`, Campaign/Infinite records, totalRuns, credits, memories and recent-run archive, must remain exact.
+J8N certification caught and corrected one real no-op normalization bug before PR. Final anchors:
+- initial pre-PR run `38969412380` exposed the issue before PR;
+- isolated diagnostic v2 `38969724953` / `117204857053` passed all five properties after correction;
+- final pre-PR SHA `71a00a5f756c9dd865932763d8e92c96536facbe`, run `38969868757`, certify `117205320392` + Android `117205320719` GREEN;
+- clean PR #466 head `fdb3575add29d632ffc020cbfadee7615fae6496`;
+- PR CI `38970083272` / `117206023607` GREEN; Android `38970083435` / `117206024349` GREEN;
+- canonical `d0e9af1c3c8f94524187f7d8ee48c975e2bd9f3e`, parent `41da66dac942accb714899f189fce86dc24d1d79`, tree `cb8587b7a3c584a4516e0e5f49be9129e11d9d6f`, exact diff three certified files;
+- main CI `38970263772` / `117206620329` GREEN; Android `38970263775` / `117206620338` GREEN;
+- Pages `38970380507`, build `117207004493` + deploy `117207154206` GREEN.
 
-J8N owns only dedicated Score Attack stats-commit application semantics. It must not call `saveGameStats`, localStorage, `applyFinalRunCommit`, archive append, React/UI, runtime/session/timer, score formula/economy, spawn/arena/entity/projectile/cap/budget/FOTON/formation authorities.
+### ES-13J8O — Controlled Live Score Attack Engine Lifecycle Adoption
+Status: **NEXT CONTRACT TARGET AFTER DOC52 CLOSURE**
+
+J8K→J8N completed the pure prerequisite chain before live adoption. J8L now supplies exact SCORE_ATTACK activation identity, fresh nested INFINITE runtime/session and an effective TIMEBOX / 60000 ms descriptor with generic cache/adaptive/dynamic/bonus adoption bypassed. J8M + J8N provide a terminal dedicated-record path without generic `applyFinalRunCommit(...)` semantics.
+
+J8O must therefore adopt only the engine lifecycle core, not public UI. The existing engine start path may accept an internal mode with Campaign unchanged as default; SCORE_ATTACK must install the frozen J8L runtime plus one scalar activation-envelope ref. While active, descriptor/projection reads must use frozen J8L/J8K facts rather than the generic runtime projection cache. The existing timer remains authoritative and is initialized from TIMEBOX / 60000 ms. On terminal completion, J8O must intercept before generic Infinite advancement, compose J8M from the exact active envelope + completion snapshot + dedicated best + live candidate score, apply J8N, persist only a changed dedicated record through the existing `updateStatsAndSave(...)` seam, clear Score Attack activation identity and never advance Infinite progression.
+
+J8O is **engine-only**: StartScreen remains Campaign-only with no public Score Attack button; ResultScreen/HUD/presentation stay deferred to the following slice. No new runtime discriminator, cache, timer/clock, score formula, reward/economy, generic highScore/archive/counter, spawn/arena/cap/budget/entity/projectile/FOTON/formation authority is allowed.
 
 ## J9 — Boss & Miniboss Expansion
 Status: PLANNED
