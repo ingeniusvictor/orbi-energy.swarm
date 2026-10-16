@@ -1,0 +1,54 @@
+name: ES-13DOC52 Apply
+
+on:
+  push:
+    branches: [docs/es-13-j8n-closure-j8o-live-engine-lifecycle]
+    paths:
+      - .github/workflows/es-13doc52-apply.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Guard exact J8N ancestry
+        run: test "$(git merge-base d0e9af1c3c8f94524187f7d8ee48c975e2bd9f3e HEAD)" = "d0e9af1c3c8f94524187f7d8ee48c975e2bd9f3e"
+
+      - name: Apply DOC52 patch fail closed
+        run: python scripts/es13doc52_apply.py
+
+      - name: Guard exact documentation scope and preservation
+        run: |
+          git diff --name-only | sort > /tmp/actual
+          printf '%s\n' docs/ES13_GAMEPLAY_ROADMAP.md docs/IMPLEMENTATION_LEDGER.md docs/PROJECT_CONTINUITY.md > /tmp/expected
+          diff -u /tmp/expected /tmp/actual
+          grep -Fq 'd0e9af1c3c8f94524187f7d8ee48c975e2bd9f3e' docs/PROJECT_CONTINUITY.md
+          grep -Fq 'ES-13J8O' docs/ES13_GAMEPLAY_ROADMAP.md
+          grep -Fq 'Controlled Live Score Attack Engine Lifecycle Adoption' docs/ES13_GAMEPLAY_ROADMAP.md
+          grep -Fq 'StartScreen remains Campaign-only' docs/ES13_GAMEPLAY_ROADMAP.md
+          grep -Fq 'updateStatsAndSave' docs/PROJECT_CONTINUITY.md
+          grep -Fq '#4' docs/IMPLEMENTATION_LEDGER.md
+          grep -Fq '#5' docs/IMPLEMENTATION_LEDGER.md
+          grep -Fq '#202' docs/IMPLEMENTATION_LEDGER.md
+          grep -Fq '#248' docs/IMPLEMENTATION_LEDGER.md
+          grep -Fq '#254' docs/PROJECT_CONTINUITY.md
+          grep -Fq '#283' docs/PROJECT_CONTINUITY.md
+          grep -Fq '## J9 — Boss & Miniboss Expansion' docs/ES13_GAMEPLAY_ROADMAP.md
+          grep -Fq '## J15' docs/ES13_GAMEPLAY_ROADMAP.md
+          grep -Fq 'ES-14' docs/ES13_GAMEPLAY_ROADMAP.md
+
+      - name: Commit DOC52 documents
+        run: |
+          git config user.name ingeniusvictor
+          git config user.email ingenius.victor@gmail.com
+          git add docs/ES13_GAMEPLAY_ROADMAP.md docs/IMPLEMENTATION_LEDGER.md docs/PROJECT_CONTINUITY.md
+          git commit -m 'docs(doc52): close J8N and activate J8O live engine lifecycle'
+          git push
