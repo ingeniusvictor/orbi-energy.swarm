@@ -26,7 +26,13 @@ test("J8L composes one canonical Score Attack activation envelope from exact J8H
     durationMs: 60000,
   });
   assert.equal(Object.isFrozen(activation.completionPolicy), true);
-  assert.deepEqual(activation.canonicalFreshStart, { sector: 11, wave: 1 });
+  assert.deepEqual(activation.canonicalFreshStart, {
+    sector: 11,
+    wave: 1,
+    sectorsCompleted: 0,
+    wavesCompleted: 0,
+    status: "ACTIVE",
+  });
 });
 
 test("J8L preserves exact runtime/session and effective-descriptor object identity across the composed authorities", () => {
