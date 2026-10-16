@@ -68,6 +68,7 @@ Rules:
 | ES-13J8I — Pure Score Attack Runtime Descriptor Completion Overlay Contract | DEPLOYED / FROZEN | `9ccec58c5454e25e33cf58d2b4bf6030424f475d` | #445 | #446 |
 | ES-13J8J — Pure Score Attack Terminal Completion Disposition Contract | DEPLOYED / FROZEN | `801b09c7ab74db18a3765db4538b8d3b23588062` | #449 | #450 |
 | ES-13J8K — Pure Score Attack Effective Runtime Projection Bundle / Overlay-Isolation Contract | DEPLOYED / FROZEN | `ac943f609e427618465104f51b8f023620c8bf98` | #453 | #454 |
+| ES-13J8L — Pure Score Attack Runtime Activation Envelope Contract | DEPLOYED / FROZEN | `d41f00a1a87140dba1ddc2d04b207261df862307` | #457 | #458 |
 
 ## Evidence anchors
 
@@ -703,12 +704,21 @@ Automated CI never substitutes for required human/device evidence.
 - Canonical `ac943f609e427618465104f51b8f023620c8bf98`, parent `cea92b2304797ac2af597a3416a2b23b17563154`, tree `648c34b28bb03695aa0288998b8d992638cb489a`, exact diff three certified files.
 - Main CI `38960883456` / `117175332888`, Android `38960883435` / `117175333148`, Pages `38961007520` build `117175743388` + deploy `117175888611` GREEN.
 
+### J8L — Pure Score Attack Runtime Activation Envelope Contract
+- Pure outer `SCORE_ATTACK` activation envelope over exact J8H + J8K object identity.
+- Nested runtime remains `INFINITE`; effective descriptor remains TIMEBOX / 60000 with J8K isolation facts.
+- Initial test-only mismatch was corrected without product-scope widening; isolated J8L diagnostic passed all six tests.
+- Final pre-PR `1c9f9e65b8307d1f73dfc6215c6f77b387cfbf0b`: run `38963464711`, certify `117184022310` + Android `117184023007` GREEN.
+- PR #458 head `a06c71e7ca72991051e7bcc7752f0f50089e41d4`: CI `38963705565` / `117184830694` + Android `38963705688` / `117184831351` GREEN.
+- Canonical `d41f00a1a87140dba1ddc2d04b207261df862307`, parent `9d110a10e07da45f51c932d575f0ae3edb9606d4`, tree `20e5f9a1a48a03108d1c5ea140009d56e0b8da29`, exact diff three certified files.
+- Main CI `38963938606` / `117185611390`, Android `38963938646` / `117185612137`, Pages `38964054007` build `117186003430` + deploy `117186140619` GREEN.
+
 ## Next planned gameplay
 
-### ES-13J8L — Pure Score Attack Runtime Activation Envelope Contract
-Status: **NEXT CONTRACT TARGET AFTER DOC49 CLOSURE**.
+### ES-13J8M — Pure Score Attack Attempt Finalization Plan Contract
+Status: **NEXT CONTRACT TARGET AFTER DOC50 CLOSURE**.
 
-J8L must compose valid J8H + J8K facts into one immutable outer `SCORE_ATTACK` activation envelope that carries the exact nested fresh INFINITE runtime/session and effective TIMEBOX/60000 projection bundle without changing `RuntimeProgressionState`. It must prove same-object/runtime-session identity and own no React/cache/start-screen/timer/terminal/persistence/gameplay mutation authority.
+J8M must compose J8L + J8J + J8F into one immutable pure finalization plan: fail closed until canonical TIMEBOX completion, then expose END_SCORE_ATTACK_ATTEMPT plus dedicated-record projection/eligibility from existing `scoreAttackBestScore` and candidate score. No storage/GameStats/global-highScore/generic-run-persistence/archive/UI/timer/session/gameplay mutation authority.
 
 J4D+ additional tactical families remain deferred: FORMATION_BREAKER/JAMMER require hard-control spacing/recovery proof; MINE_WEAVER/MIRROR_WARDEN require genuine mine/mirror mechanics. J3C-C remains deferred, not cancelled.
 
