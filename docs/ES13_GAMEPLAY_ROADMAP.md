@@ -758,11 +758,35 @@ Exact deployment anchors:
 - Pages `38910628638`, build `117005259913` + deploy `117005436887` GREEN.
 
 ### ES-13J8D — Pure Dedicated Score Attack Record Projection Contract
-Status: **NEXT CONTRACT TARGET AFTER DOC41 CLOSURE**
+Status: **DEPLOYED / FROZEN**
+Canonical: `de37f4a818b05b09c136617b71cf3620bf4e1e83`  
+Issue #424 / PR #425
 
-J8D must prevent mode-specific Score Attack records from contaminating the current global `GameStats.highScore` path. It remains pure and storage-neutral: define dedicated `SCORE_ATTACK_BEST_SCORE`, accept only finite non-negative existing/candidate scores, floor and clamp accepted values to `Number.MAX_SAFE_INTEGER`, project the maximum, and expose deterministic `NEW_BEST | TIED_BEST | BELOW_BEST` metadata. Frozen J8A identity and J8C `60000 ms` duration are compatibility facts, not duplicated authorities.
+J8D freezes the record semantics required before storage or live-write adoption:
+- canonical `SCORE_ATTACK` only;
+- `SCORE_ATTACK_BEST_SCORE` / `RECORD_PROJECTION_ONLY`;
+- finite non-negative existing/candidate values only;
+- floor + `Number.MAX_SAFE_INTEGER` clamp;
+- projected best = maximum normalized value;
+- deterministic `NEW_BEST | TIED_BEST | BELOW_BEST`;
+- J8A identity + J8C `60000 ms` duration consumed as compatibility facts;
+- exactly one positive authority: dedicated record projection;
+- no GameStats/global-highScore, storage/persistence/archive, UI or live runtime adoption.
 
-J8D must not add a `GameStats` field, touch `DEFAULT_STATS`/load/save/local-storage schema, change final-run/campaign commit behavior, write archives, change UI/HUD, adopt live Score Attack runtime/session/timer behavior, mutate score generation/rewards/economy, or alter spawn/arena, scans/indexes, caps/budgets, entities/projectiles, FOTON or formations. Dedicated storage/schema adoption remains a later slice; live UI/start flow remains later still.
+Exact deployment anchors:
+- pre-PR `2c282fab13079039bc1302ba6918e53765100197`, run `38912394130`, certify `117011204544` + Android `117011204314` GREEN;
+- final PR #425 head `5e91f121cb5f2f66dc6f3dcf5bbd928592103a46`;
+- PR CI `38914825464` / `117019490041` GREEN; Android `38914825953` / `117019492058` GREEN;
+- canonical `de37f4a818b05b09c136617b71cf3620bf4e1e83`, parent `2e4eb93a06e303c42cd8c97a133a176860eb2e38`, tree `4bb5318cff768ec4cd5390be0d76daf3b1013b26`;
+- main CI `38915074594` / `117020337717` GREEN; Android `38915074301` / `117020336281` GREEN;
+- Pages `38915180390`, build `117020692263` + deploy `117020841804` GREEN.
+
+### ES-13J8E — Dedicated Score Attack Storage-Schema Adoption
+Status: **NEXT CONTRACT TARGET AFTER DOC42 CLOSURE**
+
+J8E may reserve one persisted field for frozen J8D semantics without making Score Attack live. Add `scoreAttackBestScore: number` to `GameStats`, default it to `0`, sanitize legacy/persisted values to a non-negative integer capped at `Number.MAX_SAFE_INTEGER`, keep the existing `orbi_energy_swarm_stats_v2` key and existing save/reset path, and prove that global `highScore` remains unchanged and independent.
+
+J8E must not modify campaign/final-run commit functions, write the dedicated record at run completion, alter run-archive format/outcomes, StartScreen/ResultScreen/HUD, live Score Attack runtime/session/timer/completion, score generation/rewards/economy, spawn/arena, scans/indexes, caps/budgets, entities/projectiles, FOTON or formations. Effective run-completion record-write adoption and live UI/start flow remain later slices.
 
 
 ## J9 — Boss & Miniboss Expansion
