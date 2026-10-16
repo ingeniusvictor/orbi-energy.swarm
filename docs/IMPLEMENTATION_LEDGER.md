@@ -66,6 +66,7 @@ Rules:
 | ES-13J8G — Pure Score Attack Canonical Run Recipe / Seed Policy Contract | DEPLOYED / FROZEN | `55a31de7ad7989e3daaead8311aa08d3927096f7` | #436 | #437 |
 | ES-13J8H — Pure Score Attack Bootstrap Envelope Contract | DEPLOYED / FROZEN | `8ed798beaa688f73ab8513c0e7ecb9bd112a2824` | #440 | #442 |
 | ES-13J8I — Pure Score Attack Runtime Descriptor Completion Overlay Contract | DEPLOYED / FROZEN | `9ccec58c5454e25e33cf58d2b4bf6030424f475d` | #445 | #446 |
+| ES-13J8J — Pure Score Attack Terminal Completion Disposition Contract | DEPLOYED / FROZEN | `801b09c7ab74db18a3765db4538b8d3b23588062` | #449 | #450 |
 
 ## Evidence anchors
 
@@ -514,7 +515,8 @@ Issue #383 CLOSED / completed. J6B-B is **DEPLOYED / FROZEN**.
 - DOC44 — J8F closure & J8G canonical Score Attack run-recipe/seed-policy activation: `2e07ea501c36728bdc369a66dfecb64f6d8e5e01` — Issue #434 / PR #435.
 - DOC45 — J8G closure & J8H Score Attack bootstrap-envelope activation: `0557f91982534248765f2a5f7e5a2648f99ba58a` — Issue #438 / PR #439.
 - DOC46 — J8H closure & J8I Score Attack descriptor-completion overlay activation: `12efb3029cf54581c81bad5a2fc629332f7be6c4` — Issue #443 / PR #444.
-- DOC47 — J8I closure & J8J Score Attack terminal-completion disposition activation: Issue #447, branch `docs/es-13-j8i-closure-j8j-terminal-completion-disposition`, documentation-only closure in progress from gameplay canonical `9ccec58c5454e25e33cf58d2b4bf6030424f475d`.
+- DOC47 — J8I closure & J8J Score Attack terminal-completion disposition activation: `06b879f8a2af66f2dce4c02fa8d1bfe749e213c3` — Issue #447 / PR #448.
+- DOC48 — J8J closure & J8K Score Attack effective-runtime projection isolation activation: Issue #451, branch `docs/es-13-j8j-closure-j8k-runtime-projection-isolation`, documentation-only closure in progress from gameplay canonical `801b09c7ab74db18a3765db4538b8d3b23588062`.
 
 ### J6B-C — Pure Dynamic Event Effect-Mapping Compatibility Contract
 - Frozen mappings: `SOLAR_STORM → ELECTRICAL_STORM`, `QUANTUM_RIFT → MAGNETIC_DRIFT`, `BLACKOUT_SURGE → REDUCED_VISIBILITY`, `CRYSTAL_RUSH → UNSTABLE_RESOURCE_FIELDS`; `DYSON_ECLIPSE → UNMAPPED` fail-closed.
@@ -682,12 +684,20 @@ Automated CI never substitutes for required human/device evidence.
 - Canonical `9ccec58c5454e25e33cf58d2b4bf6030424f475d`, parent `12efb3029cf54581c81bad5a2fc629332f7be6c4`, tree `48e3f69e1d112ddc4843df7d83515cf752a23b36`, exact diff three certified files.
 - Main CI `38946233419` / `117125924994`, Android `38946233414` / `117125924762`, Pages `38946322607` build `117126231280` + deploy `117126371840` GREEN.
 
+### J8J — Pure Score Attack Terminal Completion Disposition Contract
+- Pure/fail-closed terminal disposition over frozen J8H + J8I facts and existing runtime completion evaluation.
+- Completed canonical TIMEBOX projects `END_SCORE_ATTACK_ATTEMPT` and `advanceInfiniteRuntime: false`; nested runtime remains `INFINITE`.
+- Pre-PR `c8c64c66603bc230a67c818a05fe87c9c6f184bc`: run `38949844968`, certify `117138168359` + Android `117138168740` GREEN.
+- PR #450 head `8d867f22a2e40f0140fd4b935b2a712b5db1d090`: CI `38950093548` / `117139004853` + Android `38950093511` / `117139004731` GREEN.
+- Canonical `801b09c7ab74db18a3765db4538b8d3b23588062`, parent `06b879f8a2af66f2dce4c02fa8d1bfe749e213c3`, tree `3a9bd3527833b866a43a60c5e2da3981a217cb45`, exact diff three certified files.
+- Main CI `38950330832` / `117139808091`, Android `38950330639` / `117139806867`, Pages `38950451599` build `117140202743` + deploy `117140357609` GREEN.
+
 ## Next planned gameplay
 
-### ES-13J8J — Pure Score Attack Terminal Completion Disposition Contract
-Status: **NEXT CONTRACT TARGET AFTER DOC47 CLOSURE**.
+### ES-13J8K — Pure Score Attack Effective Runtime Projection Bundle / Overlay-Isolation Contract
+Status: **NEXT CONTRACT TARGET AFTER DOC48 CLOSURE**.
 
-J8J must consume valid frozen J8H + J8I facts and delegate completion evaluation to existing `isRuntimeWaveComplete(...)`. Only a completed canonical `SCORE_ATTACK` `TIMEBOX / 60000 ms` attempt may project a terminal action such as `END_SCORE_ATTACK_ATTEMPT` with `advanceInfiniteRuntime: false`; incomplete or mismatched facts fail closed. It must not mutate/end sessions, call Infinite advancement, change the game loop/UI, integrate cache/live state, write persistence, or own timer/clock/cursor.
+J8K must consume valid J8H/J8I facts and freeze the effective Score Attack runtime projection bundle before live cache integration. The J8I descriptor stays authoritative; Adaptive Invasion is explicitly bypassed because `liveFollowerCount` would break canonical fixed-recipe comparability; J6/J7 must resolve null/unchanged on the canonical Sector 11 / Wave 1. Existing pure pressure/mutator/budget/milestone projectors may derive bundle facts from J8I only. No cache write, React/start flow, timer, persistence or terminal authority is allowed.
 
 J4D+ additional tactical families remain deferred: FORMATION_BREAKER/JAMMER require hard-control spacing/recovery proof; MINE_WEAVER/MIRROR_WARDEN require genuine mine/mirror mechanics. J3C-C remains deferred, not cancelled.
 
