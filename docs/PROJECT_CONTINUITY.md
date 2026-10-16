@@ -18,16 +18,16 @@ Never infer deployment/certification from conversation text alone.
 
 ## Current certified gameplay canonical
 
-`801b09c7ab74db18a3765db4538b8d3b23588062`
+`ac943f609e427618465104f51b8f023620c8bf98`
 
-Phase: **ES-13J8J — Pure Score Attack Terminal Completion Disposition Contract**
+Phase: **ES-13J8K — Pure Score Attack Effective Runtime Projection Bundle / Overlay-Isolation Contract**
 Status: **DEPLOYED / FROZEN**
-Issue: #449 — CLOSED / completed
-Delivery: PR #450 — squash merged
+Issue: #453 — CLOSED / completed
+Delivery: PR #454 — squash merged
 
-Single parent: `06b879f8a2af66f2dce4c02fa8d1bfe749e213c3` — DOC47 documentation canonical.
+Single parent: `cea92b2304797ac2af597a3416a2b23b17563154` — DOC48 documentation canonical.
 
-Canonical tree: `3a9bd3527833b866a43a60c5e2da3981a217cb45`.
+Canonical tree: `648c34b28bb03695aa0288998b8d992638cb489a`.
 
 Version remains `0.2.0-beta.1`. Full RC/manual certification remains intentionally deferred while ES-13 materially expands gameplay.
 
@@ -549,7 +549,8 @@ J3C-C stateful formation patterns remain **DEFERRED / NOT CURRENTLY JUSTIFIED**,
 - DOC45 — J8G closure & J8H Score Attack bootstrap-envelope activation: `0557f91982534248765f2a5f7e5a2648f99ba58a` — Issue #438 / PR #439.
 - DOC46 — J8H closure & J8I Score Attack descriptor-completion overlay activation: `12efb3029cf54581c81bad5a2fc629332f7be6c4` — Issue #443 / PR #444.
 - DOC47 — J8I closure & J8J Score Attack terminal-completion disposition activation: `06b879f8a2af66f2dce4c02fa8d1bfe749e213c3` — Issue #447 / PR #448.
-- DOC48 — J8J closure & J8K Score Attack effective-runtime projection isolation activation: Issue #451, branch `docs/es-13-j8j-closure-j8k-runtime-projection-isolation`, documentation-only closure in progress from gameplay canonical `801b09c7ab74db18a3765db4538b8d3b23588062`.
+- DOC48 — J8J closure & J8K Score Attack effective-runtime projection isolation activation: `cea92b2304797ac2af597a3416a2b23b17563154` — Issue #451 / PR #452.
+- DOC49 — J8K closure & J8L Score Attack runtime-activation envelope activation: Issue #455, branch `docs/es-13-j8k-closure-j8l-activation-envelope`, documentation-only closure in progress from gameplay canonical `ac943f609e427618465104f51b8f023620c8bf98`.
 
 ## J6B-C result
 J6B-C froze a pure compatibility-only mapping from the deterministic J6B-B event identity selection onto already-existing Infinite mutator semantics. It does not apply live effects, project runtime magnitudes or create fallback semantics.
@@ -1000,14 +1001,30 @@ J8J froze the pure terminal-completion disposition needed before live Score Atta
 
 Issue #449 CLOSED / completed. J8J is **DEPLOYED / FROZEN**.
 
+## J8K result
+J8K froze the pure Score Attack-specific effective runtime projection bundle before any live cache/start-flow adoption. It consumes J8H/J8I facts, keeps the J8I descriptor effective, bypasses Adaptive Invasion, requires J6/J7 null/unchanged compatibility, and derives existing pressure/mutator/budget/milestone projections only from that descriptor while leaving J8J separate.
+
+## J8K exact evidence
+- DOC48 baseline `cea92b2304797ac2af597a3416a2b23b17563154`;
+- pre-PR SHA `8f5f22799af0239877da4df2fab20d26d1469082`, run `38952325860`, certify `117146510883` + Android `117146511249` GREEN;
+- final PR #454 head `083fe70f1c8d4e43dfa114f1564e55ef8e846730`;
+- PR CI `38960654252` / `117174564413` GREEN;
+- PR Android `38960654387` / `117174564610` GREEN including APK build/verify/upload;
+- canonical `ac943f609e427618465104f51b8f023620c8bf98`, single parent `cea92b2304797ac2af597a3416a2b23b17563154`, tree `648c34b28bb03695aa0288998b8d992638cb489a`, exact diff three certified files;
+- main CI `38960883456` / `117175332888` GREEN;
+- main Android `38960883435` / `117175333148` GREEN including APK build/verify/upload;
+- Pages `38961007520`: build `117175743388` + deploy `117175888611` GREEN.
+
+Issue #453 CLOSED / completed. J8K is **DEPLOYED / FROZEN**.
+
 ## Next gameplay phase
 
-### ES-13J8K — Pure Score Attack Effective Runtime Projection Bundle / Overlay-Isolation Contract
-Status: **NEXT CONTRACT TARGET AFTER DOC48 CLOSURE**
+### ES-13J8L — Pure Score Attack Runtime Activation Envelope Contract
+Status: **NEXT CONTRACT TARGET AFTER DOC49 CLOSURE**
 
-Discovery shows the generic runtime projection cache is not yet a safe Score Attack seam because it always receives `swarm.length` and applies Adaptive Invasion before J6/J7. Adaptive Invasion changes spawn/pressure/fairness from live follower count, conflicting with J8G's fixed versioned recipe and J8I's exact descriptor preservation.
+Discovery shows that generic-cache/live adoption remains unsafe because `EnergySwarmGame` currently has no explicit Score Attack live identity. `runtimeProgressionRef` intentionally remains CAMPAIGN/INFINITE, `startGame()` still resets to Campaign, and the generic cache receives only runtime state plus optional follower count. Inferring Score Attack from an INFINITE runtime would violate the outer identity preserved by J8H.
 
-J8K must therefore own only a pure Score Attack projection-composition boundary. It consumes a valid J8H envelope and derives J8I from the exact canonical base descriptor; the J8I descriptor remains the effective descriptor. Adaptive Invasion is explicitly bypassed. Existing J6/J7 seams may only be used as compatibility checks and must remain null/unchanged for canonical Sector 11 / Wave 1. Existing pure combat-pressure, mutator-effect, enemy-budget and milestone projectors may derive bundle facts from that effective descriptor. No runtime cache write, React/start/result/HUD adoption, timer/clock, J8J terminal authority, persistence/archive/record, progression, spawn/arena/entity/cap/FOTON/formation mutation is allowed.
+J8L must therefore own only a pure activation-envelope construction boundary: compose one valid J8H bootstrap envelope with its exact J8K projection bundle, preserve outer `SCORE_ATTACK`, expose the same nested fresh INFINITE runtime/session and effective TIMEBOX/60000 descriptor/bundle, and prove all facts refer to the same runtime/session identity. No React/cache/start/result/HUD adoption, timer/clock/cursor, J8J execution, persistence/archive/record, progression, score/economy, spawn/arena/entity/cap/FOTON/formation mutation is allowed.
 
 ## Resolved diagnostics
 - #254 CLOSED / NOT PLANNED: historical platform failure was not an I5 pause regression; no product merge.
@@ -1044,7 +1061,7 @@ Post-J15 direction: **ES-14 — Living Warfront**.
 Read this file, `IMPLEMENTATION_LEDGER.md`, `ES13_GAMEPLAY_ROADMAP.md`, `TRACEABILITY_POLICY.md` and `ES13_PHASE_CHECKLIST.md`, then active Issues/PRs. Verify live `main` before any write.
 
 Suggested handoff:
-> Continue ORBI Energy Swarm autonomously. Repository `ingeniusvictor/orbi-energy.swarm`. J8J gameplay canonical is `801b09c7ab74db18a3765db4538b8d3b23588062`, fully DEPLOYED / FROZEN via Issue #449 / PR #450 with terminal `END_SCORE_ATTACK_ATTEMPT`, `advanceInfiniteRuntime: false`, nested INFINITE preservation and post-main CI/Android/Pages GREEN. Complete DOC48 if still open, then implement J8K as a pure Score Attack effective runtime projection bundle / overlay-isolation contract: derive J8I from canonical J8H, keep J8I descriptor exact, bypass Adaptive Invasion, require J6/J7 null/unchanged on Sector 11 Wave 1, derive existing pressure/mutator/budget/milestone projections only, and do not write cache/React/timer/persistence. Preserve Campaign/Infinite, caps/budgets, FOTON/formations, J3C-C/J4D+ deferrals and manual blockers. Follow Issue → Branch → full gates → PR → exact-SHA post-merge evidence. Never touch `main` directly or weaken tests.
+> Continue ORBI Energy Swarm autonomously. Repository `ingeniusvictor/orbi-energy.swarm`. J8K gameplay canonical is `ac943f609e427618465104f51b8f023620c8bf98`, fully DEPLOYED / FROZEN via Issue #453 / PR #454 with pure Score Attack effective runtime projection bundle, Adaptive Invasion bypass, J6/J7 null compatibility and post-main CI/Android/Pages GREEN. Complete DOC49 if still open, then implement J8L as a pure Score Attack runtime activation envelope: compose J8H + exact J8K facts, preserve outer SCORE_ATTACK while nested runtime remains INFINITE, prove same runtime/session identity, and do not adopt React/cache/start flow/timer/J8J/persistence yet. Preserve Campaign/Infinite, caps/budgets, FOTON/formations, J3C-C/J4D+ deferrals and manual blockers. Follow Issue → Branch → full gates → PR → exact-SHA post-merge evidence. Never touch `main` directly or weaken tests.
 
 ## Update obligation
 Every merged gameplay phase must record exact gameplay canonical, Issue/PR, final head, pre-PR certification, PR CI/Android, main CI/Android/Pages, implementation result, unresolved follow-ups and next roadmap phase. A gameplay phase is not administratively closed until these records are current.

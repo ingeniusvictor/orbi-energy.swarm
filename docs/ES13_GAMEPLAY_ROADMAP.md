@@ -922,13 +922,35 @@ Exact deployment anchors:
 - Pages `38950451599`, build `117140202743` + deploy `117140357609` GREEN.
 
 ### ES-13J8K — Pure Score Attack Effective Runtime Projection Bundle / Overlay-Isolation Contract
-Status: **NEXT CONTRACT TARGET AFTER DOC48 CLOSURE**
+Status: **DEPLOYED / FROZEN**
+Canonical: `ac943f609e427618465104f51b8f023620c8bf98`  
+Issue #453 / PR #454
 
-Discovery after J8J shows that direct use of the generic runtime projection cache is still unsafe. The generic cache applies Adaptive Invasion before J6/J7 and receives `swarm.length`; Adaptive Invasion changes descriptor id, spawn budget/composition/cadence, pressure and fairness from `liveFollowerCount`, which would violate J8G's fixed versioned recipe and J8I's exact effective-descriptor contract.
+J8K freezes the Score Attack-specific pure runtime projection bundle before any live cache/start-flow integration:
+- consumes frozen J8H and derives the exact frozen J8I effective descriptor;
+- explicitly bypasses Adaptive Invasion and accepts no live follower-count input;
+- checks J6 Dynamic Event and J7 Bonus Challenge adoption only as fail-closed compatibility seams, requiring null adoption and descriptor identity preservation on canonical Sector 11 / Wave 1;
+- derives combat pressure, mutator effects, effective enemy budget and milestone only through existing pure projectors from the J8I descriptor;
+- preserves canonical recipe/runtime comparability and keeps J8J terminal completion separate;
+- exactly one positive authority: Score Attack runtime projection-bundle composition;
+- no generic cache, React/UI, timer/clock/cursor, persistence/archive/record, progression/spawn/arena/entity/projectile/cap/budget/FOTON/formation mutation.
 
-J8K must therefore freeze a pure Score Attack-specific projection bundle before any cache or React integration. It must consume a valid J8H envelope, derive the exact J8I TIMEBOX overlay from the canonical base descriptor and keep that J8I descriptor as the effective descriptor. Adaptive Invasion must be explicitly bypassed. Existing J6 Dynamic Event and J7 Bonus Challenge adoption seams may be evaluated only as compatibility checks and must remain null/unchanged for canonical Sector 11 / Wave 1; J8J guarantees the attempt terminates on that wave.
+Exact deployment anchors:
+- pre-PR SHA `8f5f22799af0239877da4df2fab20d26d1469082`, run `38952325860`, certify `117146510883` + Android `117146511249` GREEN;
+- clean PR #454 head `083fe70f1c8d4e43dfa114f1564e55ef8e846730`;
+- PR CI `38960654252` / `117174564413` GREEN; Android `38960654387` / `117174564610` GREEN;
+- canonical `ac943f609e427618465104f51b8f023620c8bf98`, parent `cea92b2304797ac2af597a3416a2b23b17563154`, tree `648c34b28bb03695aa0288998b8d992638cb489a`, exact diff three certified files;
+- main CI `38960883456` / `117175332888` GREEN; Android `38960883435` / `117175333148` GREEN;
+- Pages `38961007520`, build `117175743388` + deploy `117175888611` GREEN.
 
-J8K may derive combat pressure, mutator effects, enemy budget and milestone projection only through existing pure authorities using the J8I descriptor. It must return immutable projection metadata suitable for later controlled live/cache adoption, while owning no cache writes, React refs/state, timer/clock, terminal disposition, persistence/archive/record, start/result/HUD, spawn/arena/entity/projectile/cap/budget/FOTON/formation authority. J8J remains the separate terminal-completion authority.
+### ES-13J8L — Pure Score Attack Runtime Activation Envelope Contract
+Status: **NEXT CONTRACT TARGET AFTER DOC49 CLOSURE**
+
+Discovery after J8K shows that direct generic-cache/live adoption is still unsafe because `EnergySwarmGame` has no explicit Score Attack live identity. `runtimeProgressionRef` remains intentionally `CAMPAIGN | INFINITE`, `startGame()` still resets to Campaign, and the generic cache accepts only runtime state plus optional follower count. A Score Attack runtime therefore cannot be safely identified from the runtime discriminator alone without undoing J8H's outer identity boundary.
+
+J8L must freeze a pure activation envelope that composes one valid J8H bootstrap envelope with its exact J8K projection bundle while preserving explicit outer `modeId: SCORE_ATTACK`. It must expose the same nested fresh `INFINITE` runtime/session plus effective TIMEBOX/60000 descriptor/bundle as immutable metadata for later controlled start/cache adoption and prove all composed facts refer to the same runtime/session identity.
+
+J8L must not add `SCORE_ATTACK` to `RuntimeProgressionState`; write React state/refs or generic caches; alter StartScreen/ResultScreen/HUD; start/tick/reset timers; advance/end session; execute J8J terminal completion; write persistence/archive/record; or mutate score/economy, spawn/arena, entities/projectiles, caps/budgets, FOTON or formations.
 
 ## J9 — Boss & Miniboss Expansion
 Status: PLANNED
