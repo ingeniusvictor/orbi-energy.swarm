@@ -850,13 +850,37 @@ Exact deployment anchors:
 - Pages `38927967468`, build `117064302340` + deploy `117064549189` GREEN.
 
 ### ES-13J8H — Pure Score Attack Bootstrap Envelope Contract
-Status: **NEXT CONTRACT TARGET AFTER DOC45 CLOSURE**
+Status: **DEPLOYED / FROZEN**
+Canonical: `8ed798beaa688f73ab8513c0e7ecb9bd112a2824`  
+Issue #440 / PR #442
 
-Discovery after J8G shows that live UI adoption is still premature: `EnergySwarmGame.startGame()` initializes Campaign directly and `RuntimeProgressionState` intentionally contains only `CAMPAIGN | INFINITE`. A Score Attack bootstrap must therefore preserve canonical `SCORE_ATTACK` identity outside the existing runtime discriminator while reusing existing Infinite construction authorities.
+J8H freezes the pure bootstrap boundary between canonical Score Attack recipe facts and a later controlled live runtime adoption:
+- consumes frozen J8G `resolveScoreAttackCanonicalRunRecipe(...)` only;
+- constructs one fresh Infinite session through existing `createInfiniteSession(seed, context)`;
+- validates frozen J8B fresh-substrate compatibility and J8C `TIMEBOX / 60000 ms` compatibility;
+- constructs runtime only through existing `createInfiniteRuntimeState(session)`;
+- preserves canonical outer `modeId: SCORE_ATTACK` while nested runtime progression remains exactly `INFINITE`;
+- session exists only as `runtimeProgression.session`; no duplicate live/session authority;
+- repeated calls produce equivalent canonical facts but independently fresh runtime/session objects;
+- exactly one positive authority: bootstrap-envelope construction;
+- no React/UI, timer ticking, session advancement/end, descriptor mutation, persistence/archive, score/economy or spawn authority.
 
-J8H must consume the frozen J8G recipe, construct one fresh Infinite session through existing `createInfiniteSession(seed, context)`, construct its runtime through existing `createInfiniteRuntimeState(session)`, preserve outer `modeId: SCORE_ATTACK`, and carry frozen J8C `TIMEBOX / 60000 ms` facts. Runtime progression must remain intentionally `INFINITE`; no third runtime discriminator is allowed.
+Exact deployment anchors:
+- pre-PR SHA `09ce57d304018d74aa3b19d5689463c2a48910e7`, run `38929746848`, certify `117070383670` + Android `117070383889` GREEN;
+- clean PR #442 head `914d6a86d4bb3f87630fdb9366cd35db6b9e83ae`;
+- PR CI `38943441225` / `117116516840` GREEN; Android `38943441011` / `117116514885` GREEN;
+- canonical `8ed798beaa688f73ab8513c0e7ecb9bd112a2824`, parent `0557f91982534248765f2a5f7e5a2648f99ba58a`, tree `cf3b70ab9d6e0afd06dd9c552146934b094356ca`, exact diff three certified files;
+- main CI `38943657919` / `117117249622` GREEN; Android `38943658003` / `117117250045` GREEN;
+- Pages `38943771427`, build `117117654170` + deploy `117117807868` GREEN.
 
-J8H must remain bootstrap/projection only: no React state/ref adoption, StartScreen/ResultScreen/HUD, timer ticking, wave advancement, descriptor mutation, persistence/storage/archive/write, score/reward/economy, spawn/arena/entity/projectile/cap/budget/FOTON/formation authority.
+### ES-13J8I — Pure Score Attack Runtime Descriptor Completion Overlay Contract
+Status: **NEXT CONTRACT TARGET AFTER DOC46 CLOSURE**
+
+Discovery after J8H shows that direct live adoption is still unsafe: the J8H runtime is intentionally `INFINITE`, whose base descriptor remains `BUDGET_AND_CLEAR`, while the existing live timer decrements only for effective `TIMEBOX` descriptors. J8H carries J8C's `TIMEBOX / 60000 ms` facts but intentionally owns no descriptor mutation.
+
+J8I must therefore freeze a pure/fail-closed descriptor completion overlay before any StartScreen/start-flow or runtime-cache integration. It must consume a valid J8H envelope plus its corresponding current fresh Infinite descriptor, require `BUDGET_AND_CLEAR`, and return an immutable descriptor copy whose only gameplay-semantic change is `completionPolicy: { type: "TIMEBOX", durationMs: 60000 }`. Score Attack attribution must remain outside `RuntimeProgressionState`.
+
+J8I must preserve sector/wave, biome, spawn, modifiers, pressure, rewards, milestone, fairness and source seed/recipe/wave facts exactly; reuse J8C duration and the existing timer/completion authorities; and own no clock/timer/cursor, React/UI, cache/live adoption, progression, persistence/archive, score/reward/economy, spawn/arena/entity/projectile/cap/budget/FOTON/formation authority.
 
 ## J9 — Boss & Miniboss Expansion
 Status: PLANNED
