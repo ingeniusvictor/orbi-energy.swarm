@@ -735,11 +735,34 @@ Exact deployment anchors:
 - Pages `38907624340`, build `116995103030` + deploy `116995284394` GREEN.
 
 ### ES-13J8C — Pure Score Attack Exact Duration / TIMEBOX Projection Contract
-Status: **NEXT CONTRACT TARGET AFTER DOC40 CLOSURE**
+Status: **DEPLOYED / FROZEN**
+Canonical: `78dfd39af5172499e7d82b8a62385a8e49f0e403`  
+Issue #420 / PR #421
 
-J8C must freeze exactly one pure Score Attack completion metadata projection: `60000 ms` with `{ type: "TIMEBOX", durationMs: 60000 }`. It must consume J8A + J8B, fail closed for unsupported/incompatible facts, and leave current timer/completion runtime authority unchanged. `60000 ms` intentionally reuses the existing Sector 9 normal Campaign TIMEBOX value and remains separate from J7 Timed Survival's `30000 ms` bonus-challenge authority.
+J8C freezes the pure completion metadata needed before records or live adoption:
+- frozen J8A `SCORE_ATTACK` + J8B fresh `INFINITE_SESSION` compatibility are consumed;
+- mode `PROJECTION_ONLY`;
+- exact duration `60000 ms`;
+- immutable TIMEBOX completion metadata at `60000 ms`;
+- `60000 ms` reuses existing normal Campaign wave-9 duration and stays separate from J7 Timed Survival `30000 ms`;
+- unsupported/incompatible/advanced/inactive facts fail closed;
+- exactly duration projection + completion metadata projection are positive authorities;
+- no live descriptor/session/timer/UI/storage adoption.
 
-J8C must not mutate live descriptors, create/tick/reset timers, construct sessions, choose seed/replay policy, change StartScreen/ResultScreen/HUD, add dedicated persistence/high-score/archive, mutate score/reward/economy, change spawn/arena, scans/indexes, caps/budgets, entities/projectiles, FOTON or formations. Dedicated persistence is a later contract; live Score Attack UI/start flow remains later still.
+Exact deployment anchors:
+- pre-PR `2a92e4b2ef851a3b96d3d8b2111916572ef4f3d2`, run `38909886244`, certify `117002752149` + Android `117002752623` GREEN;
+- final PR #421 head `cefbffebbc0e6f67e70632acf3e1b008ccd16fa4`;
+- PR CI `38910134577` / `117003581935` GREEN; Android `38910134565` / `117003581574` GREEN;
+- canonical `78dfd39af5172499e7d82b8a62385a8e49f0e403`, parent `51e383f95d6725184616866a46f65fe09d115dd6`, tree `19e808817722d7dafd020c35ea1083a3f52e1d2f`;
+- main CI `38910510957` / `117004857754` GREEN; Android `38910510842` / `117004856738` GREEN;
+- Pages `38910628638`, build `117005259913` + deploy `117005436887` GREEN.
+
+### ES-13J8D — Pure Dedicated Score Attack Record Projection Contract
+Status: **NEXT CONTRACT TARGET AFTER DOC41 CLOSURE**
+
+J8D must prevent mode-specific Score Attack records from contaminating the current global `GameStats.highScore` path. It remains pure and storage-neutral: define dedicated `SCORE_ATTACK_BEST_SCORE`, accept only finite non-negative existing/candidate scores, floor and clamp accepted values to `Number.MAX_SAFE_INTEGER`, project the maximum, and expose deterministic `NEW_BEST | TIED_BEST | BELOW_BEST` metadata. Frozen J8A identity and J8C `60000 ms` duration are compatibility facts, not duplicated authorities.
+
+J8D must not add a `GameStats` field, touch `DEFAULT_STATS`/load/save/local-storage schema, change final-run/campaign commit behavior, write archives, change UI/HUD, adopt live Score Attack runtime/session/timer behavior, mutate score generation/rewards/economy, or alter spawn/arena, scans/indexes, caps/budgets, entities/projectiles, FOTON or formations. Dedicated storage/schema adoption remains a later slice; live UI/start flow remains later still.
 
 
 ## J9 — Boss & Miniboss Expansion

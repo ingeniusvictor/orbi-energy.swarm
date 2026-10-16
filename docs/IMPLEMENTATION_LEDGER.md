@@ -59,6 +59,7 @@ Rules:
 | ES-13J7D — Controlled Live Timed Survival Adoption | DEPLOYED / FROZEN | `9440b31b0c8dca2da0cfe92a5f02cbf7065e6d67` | #408 | #409 |
 | ES-13J8A — Pure Score Attack Mode Profile Contract | DEPLOYED / FROZEN | `4a78c942a3ebdb509f67185d6799b0724ac27238` | #412 | #413 |
 | ES-13J8B — Pure Score Attack Execution-Substrate / Lifecycle Compatibility Contract | DEPLOYED / FROZEN | `d6277d4162c23f9b3edbbd69ccac8424b90d99ee` | #416 | #417 |
+| ES-13J8C — Pure Score Attack Exact Duration / TIMEBOX Projection Contract | DEPLOYED / FROZEN | `78dfd39af5172499e7d82b8a62385a8e49f0e403` | #420 | #421 |
 
 ## Evidence anchors
 
@@ -500,7 +501,8 @@ Issue #383 CLOSED / completed. J6B-B is **DEPLOYED / FROZEN**.
 - DOC37 — J7C closure & J7D controlled live Timed Survival adoption activation: `84d259c2a0f5f0284db5f67742a052e6c3003f62` — Issue #406 / PR #407.
 - DOC38 — J7D/J7 closure & J8 architecture discovery activation: `0b7e61820d139327046f02adbef604f65f1909ff` — Issue #410 / PR #411.
 - DOC39 — J8A closure & J8B execution-substrate discovery activation: `b283a61b26a8491888ff251d3ee55006b5872806` — Issue #414 / PR #415.
-- DOC40 — J8B closure & J8C Score Attack duration/TIMEBOX projection activation: Issue #418, branch `docs/es-13-j8b-closure-j8c-duration`, in progress from gameplay canonical `d6277d4162c23f9b3edbbd69ccac8424b90d99ee`.
+- DOC40 — J8B closure & J8C Score Attack duration/TIMEBOX projection activation: `51e383f95d6725184616866a46f65fe09d115dd6` — Issue #418 / PR #419.
+- DOC41 — J8C closure & J8D dedicated Score Attack record projection activation: Issue #422, branch `docs/es-13-j8c-closure-j8d-record-projection`, in progress from gameplay canonical `78dfd39af5172499e7d82b8a62385a8e49f0e403`.
 
 ### J6B-C — Pure Dynamic Event Effect-Mapping Compatibility Contract
 - Frozen mappings: `SOLAR_STORM → ELECTRICAL_STORM`, `QUANTUM_RIFT → MAGNETIC_DRIFT`, `BLACKOUT_SURGE → REDUCED_VISIBILITY`, `CRYSTAL_RUSH → UNSTABLE_RESOURCE_FIELDS`; `DYSON_ECLIPSE → UNMAPPED` fail-closed.
@@ -589,6 +591,18 @@ J7A→J7D certifies the first complete `TIMED_SURVIVAL` Bonus Challenge vertical
 - Main CI `38907541228` / `116994816999` GREEN; Android `38907541135` / `116994817103` GREEN; Pages `38907624340`, build `116995103030` + deploy `116995284394` GREEN.
 - No live descriptor/session mutation, timer/clock/pause, seed policy, UI, persistence/storage, score formula/reward/economy, spawn/arena, scan/index, cap/budget, entity/projectile, FOTON or formation authority.
 
+### J8C — Pure Score Attack Exact Duration / TIMEBOX Projection Contract
+- Consumes frozen J8A identity + J8B fresh Infinite substrate compatibility; mode `PROJECTION_ONLY`.
+- Exact duration `60000 ms` with immutable TIMEBOX completion metadata.
+- Reuses existing normal Campaign wave-9 duration as a compatibility value and remains separate from J7 Timed Survival `30000 ms`.
+- Unsupported ids and incompatible/advanced/inactive substrate facts fail closed; input session remains unchanged.
+- Exactly two positive authorities: duration projection + completion metadata projection.
+- Pre-PR `2a92e4b2ef851a3b96d3d8b2111916572ef4f3d2`, run `38909886244`, certify `117002752149` + Android `117002752623` GREEN.
+- Final PR #421 head `cefbffebbc0e6f67e70632acf3e1b008ccd16fa4`; PR CI `38910134577` / `117003581935` GREEN; PR Android `38910134565` / `117003581574` GREEN.
+- Canonical `78dfd39af5172499e7d82b8a62385a8e49f0e403`, parent `51e383f95d6725184616866a46f65fe09d115dd6`, tree `19e808817722d7dafd020c35ea1083a3f52e1d2f`, exact diff three product/test files.
+- Main CI `38910510957` / `117004857754` GREEN; Android `38910510842` / `117004856738` GREEN; Pages `38910628638`, build `117005259913` + deploy `117005436887` GREEN.
+- No live descriptor/session/timer/clock/pause, runtime discriminator/progression, seed policy, UI, persistence/storage, score mutation/formula, reward/economy, spawn/arena, scan/index, cap/budget, entity/projectile, FOTON or formation authority.
+
 ## Frozen manual/physical blockers
 Remain OPEN and deferred while ES-13 materially changes gameplay:
 - #4 — visual/responsive certification;
@@ -600,10 +614,10 @@ Automated CI never substitutes for required human/device evidence.
 
 ## Next planned gameplay
 
-### ES-13J8C — Pure Score Attack Exact Duration / TIMEBOX Projection Contract
-Status: **NEXT CONTRACT TARGET AFTER DOC40 CLOSURE**.
+### ES-13J8D — Pure Dedicated Score Attack Record Projection Contract
+Status: **NEXT CONTRACT TARGET AFTER DOC41 CLOSURE**.
 
-J8C must consume frozen J8A profile + J8B substrate compatibility and project exact `60000 ms` / `{ type: "TIMEBOX", durationMs: 60000 }` metadata only. It must reuse current runtime completion/timer semantics, fail closed on unsupported/incompatible facts, and remain independent from J7 Timed Survival's `30000 ms` authority. No live descriptor mutation, timer creation/ticking/reset, seed/replay, UI, dedicated persistence/high-score/archive, score formula, rewards/economy, spawn/arena, scans/indexes, caps/budgets, entities/projectiles or formation authority.
+J8D must keep persistence semantics pure and storage-neutral before any schema write. It should define dedicated `SCORE_ATTACK_BEST_SCORE` identity, require finite non-negative existing/candidate scores, normalize with floor + `Number.MAX_SAFE_INTEGER` clamp, project the maximum, and expose deterministic `NEW_BEST | TIED_BEST | BELOW_BEST` metadata while consuming frozen J8A identity + J8C `60000 ms` compatibility. It must not modify `GameStats`, global `highScore`, `DEFAULT_STATS`, local storage, run commit functions, archives, UI or live runtime. Dedicated storage adoption remains later.
 
 
 J4D+ additional tactical families remain deferred: FORMATION_BREAKER/JAMMER require hard-control spacing/recovery proof; MINE_WEAVER/MIRROR_WARDEN require genuine mine/mirror mechanics. J3C-C remains deferred, not cancelled.
