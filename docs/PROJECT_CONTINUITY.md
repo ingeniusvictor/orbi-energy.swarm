@@ -18,16 +18,16 @@ Never infer deployment/certification from conversation text alone.
 
 ## Current certified gameplay canonical
 
-`78dfd39af5172499e7d82b8a62385a8e49f0e403`
+`de37f4a818b05b09c136617b71cf3620bf4e1e83`
 
-Phase: **ES-13J8C — Pure Score Attack Exact Duration / TIMEBOX Projection Contract**
+Phase: **ES-13J8D — Pure Dedicated Score Attack Record Projection Contract**
 Status: **DEPLOYED / FROZEN**
-Issue: #420 — CLOSED / completed
-Delivery: PR #421 — squash merged
+Issue: #424 — CLOSED / completed
+Delivery: PR #425 — squash merged
 
-Single parent: `51e383f95d6725184616866a46f65fe09d115dd6` — DOC40 documentation canonical.
+Single parent: `2e4eb93a06e303c42cd8c97a133a176860eb2e38` — DOC41 documentation canonical.
 
-Canonical tree: `19e808817722d7dafd020c35ea1083a3f52e1d2f`.
+Canonical tree: `4bb5318cff768ec4cd5390be0d76daf3b1013b26`.
 
 Version remains `0.2.0-beta.1`. Full RC/manual certification remains intentionally deferred while ES-13 materially expands gameplay.
 
@@ -542,7 +542,8 @@ J3C-C stateful formation patterns remain **DEFERRED / NOT CURRENTLY JUSTIFIED**,
 - DOC38 — J7D/J7 closure & J8 architecture discovery activation: `0b7e61820d139327046f02adbef604f65f1909ff` — Issue #410 / PR #411.
 - DOC39 — J8A closure & J8B execution-substrate discovery activation: `b283a61b26a8491888ff251d3ee55006b5872806` — Issue #414 / PR #415.
 - DOC40 — J8B closure & J8C Score Attack duration/TIMEBOX projection activation: `51e383f95d6725184616866a46f65fe09d115dd6` — Issue #418 / PR #419.
-- DOC41 — J8C closure & J8D dedicated Score Attack record projection activation: Issue #422, branch `docs/es-13-j8c-closure-j8d-record-projection`, documentation-only closure in progress from gameplay canonical `78dfd39af5172499e7d82b8a62385a8e49f0e403`.
+- DOC41 — J8C closure & J8D dedicated Score Attack record projection activation: `2e4eb93a06e303c42cd8c97a133a176860eb2e38` — Issue #422 / PR #423.
+- DOC42 — J8D closure & J8E dedicated Score Attack storage-schema adoption activation: Issue #426, branch `docs/es-13-j8d-closure-j8e-storage-schema`, documentation-only closure in progress from gameplay canonical `de37f4a818b05b09c136617b71cf3620bf4e1e83`.
 
 ## J6B-C result
 J6B-C froze a pure compatibility-only mapping from the deterministic J6B-B event identity selection onto already-existing Infinite mutator semantics. It does not apply live effects, project runtime magnitudes or create fallback semantics.
@@ -858,25 +859,60 @@ Final product scope exactly:
 
 Issue #420 CLOSED / completed. J8C is **DEPLOYED / FROZEN**.
 
+## J8D result
+J8D froze the dedicated Score Attack record/comparator semantics required before any storage or live-run write adoption.
+
+Certified contract:
+- canonical mode `SCORE_ATTACK` only;
+- record identity `SCORE_ATTACK_BEST_SCORE`;
+- projection mode `RECORD_PROJECTION_ONLY`;
+- existing/candidate scores must be finite and non-negative or fail closed;
+- accepted values use `Math.floor` and clamp to `Number.MAX_SAFE_INTEGER`;
+- projected best is the maximum of normalized existing/candidate values;
+- deterministic status is `NEW_BEST`, `TIED_BEST` or `BELOW_BEST`;
+- frozen J8A identity + J8C `60000 ms` duration are compatibility facts;
+- exactly one positive authority: dedicated record projection;
+- global `GameStats.highScore`, GameStats schema, storage, persistence, archives, UI and live runtime remain untouched.
+
+Final product scope exactly:
+- `src/game/scoreAttackRecordProjection.ts`;
+- `tests/es-13j8d-score-attack-record-projection.test.mjs`;
+- `tests/gameplay/score-attack-record-projection.test.ts`.
+
+## J8D exact evidence
+- DOC41 baseline `2e4eb93a06e303c42cd8c97a133a176860eb2e38`;
+- pre-PR SHA `2c282fab13079039bc1302ba6918e53765100197`, run `38912394130`, certify `117011204544` + Android `117011204314` GREEN;
+- final PR #425 head `5e91f121cb5f2f66dc6f3dcf5bbd928592103a46`;
+- PR CI `38914825464` / `117019490041` GREEN;
+- PR Android `38914825953` / `117019492058` GREEN including Build/Verify/Upload APK;
+- canonical `de37f4a818b05b09c136617b71cf3620bf4e1e83`, single parent `2e4eb93a06e303c42cd8c97a133a176860eb2e38`, tree `4bb5318cff768ec4cd5390be0d76daf3b1013b26`;
+- canonical diff exactly three certified product/test files;
+- main CI `38915074594` / `117020337717` GREEN;
+- main Android `38915074301` / `117020336281` GREEN including Build/Verify/Upload APK;
+- Pages `38915180390`: build `117020692263` + deploy `117020841804` GREEN.
+
+Traceability: one accidental empty branch-only file was created after certification cleanup and immediately removed before PR; the final PR/canonical diff remained exactly the three approved J8D files.
+
+Issue #424 CLOSED / completed. J8D is **DEPLOYED / FROZEN**.
+
 ## Next gameplay phase
 
-### ES-13J8D — Pure Dedicated Score Attack Record Projection Contract
-Status: **NEXT CONTRACT TARGET AFTER DOC41 CLOSURE**
+### ES-13J8E — Dedicated Score Attack Storage-Schema Adoption
+Status: **NEXT CONTRACT TARGET AFTER DOC42 CLOSURE**
 
-J8A identity, J8B substrate compatibility and J8C `60000 ms` TIMEBOX projection are frozen. J8D must remain pure and storage-neutral so Score Attack cannot contaminate the existing global `GameStats.highScore` path.
+J8D record semantics are frozen. J8E may now reserve one dedicated persisted field without wiring any live run to update it.
 
-Required contract:
-- canonical `SCORE_ATTACK` only;
-- dedicated record identity `SCORE_ATTACK_BEST_SCORE`;
-- projection mode `RECORD_PROJECTION_ONLY`;
-- inputs `existingBestScore` and `candidateScore` must be finite, non-negative numbers or fail closed;
-- normalize accepted inputs with `Math.floor` and clamp to `Number.MAX_SAFE_INTEGER`;
-- `projectedBestScore = max(existingBestScore, candidateScore)` after normalization;
-- deterministic result metadata `NEW_BEST | TIED_BEST | BELOW_BEST`;
-- consume frozen J8A identity and J8C `60000 ms` duration as compatibility facts;
-- explicitly own no global `highScore`, `GameStats`, storage-schema or write authority.
+Required narrow adoption:
+- add `scoreAttackBestScore: number` to `GameStats`;
+- `DEFAULT_STATS.scoreAttackBestScore = 0`;
+- `loadGameStats()` sanitizes persisted values to a non-negative integer clamped to `Number.MAX_SAFE_INTEGER`;
+- missing, negative, non-number or non-finite legacy values normalize to `0`;
+- keep the existing `orbi_energy_swarm_stats_v2` key and existing save/reset path; no parallel key/store/migration subsystem;
+- preserve global `highScore` exactly and keep it semantically independent from Score Attack;
+- consume frozen J8D identity/normalization semantics instead of inventing a second record comparator;
+- tests must prove v2 backward compatibility, bounded load behavior and highScore isolation.
 
-J8D must not add a `GameStats` field, modify `DEFAULT_STATS`/load/save/local-storage key, change `applyFinalRunCommit` or campaign checkpoint behavior, write recent-run archives, alter StartScreen/ResultScreen/HUD, adopt live runtime/session/timer behavior, mutate score generation/rewards/economy, or change spawn/arena, scans/indexes, caps/budgets, entities/projectiles, FOTON or formations. Dedicated storage/schema adoption remains a later slice; live UI/start adoption remains later still.
+J8E must not change `applyCampaignVictoryCheckpoint(...)` or `applyFinalRunCommit(...)`, must not write Score Attack at run completion, must not alter recent-run archive format/outcomes, StartScreen/ResultScreen/HUD, live Score Attack runtime/session/timer/completion, score formula, rewards/economy, spawn/arena, scans/indexes, caps/budgets, entities/projectiles, FOTON or formations. Effective run-completion record writes and live UI/start adoption remain later slices.
 
 ## Resolved diagnostics
 - #254 CLOSED / NOT PLANNED: historical platform failure was not an I5 pause regression; no product merge.
@@ -913,7 +949,7 @@ Post-J15 direction: **ES-14 — Living Warfront**.
 Read this file, `IMPLEMENTATION_LEDGER.md`, `ES13_GAMEPLAY_ROADMAP.md`, `TRACEABILITY_POLICY.md` and `ES13_PHASE_CHECKLIST.md`, then active Issues/PRs. Verify live `main` before any write.
 
 Suggested handoff:
-> Continue ORBI Energy Swarm autonomously. Repository `ingeniusvictor/orbi-energy.swarm`. J8C gameplay canonical is `78dfd39af5172499e7d82b8a62385a8e49f0e403`, fully DEPLOYED / FROZEN via Issue #420 / PR #421 with pure SCORE_ATTACK `60000 ms` TIMEBOX projection and post-main CI/Android/Pages GREEN. Complete DOC41 if still open, then implement J8D as a pure storage-neutral dedicated `SCORE_ATTACK_BEST_SCORE` record projection before any GameStats/storage adoption, UI or live Score Attack flow. Preserve the existing global highScore path, caps/budgets, Campaign/Infinite isolation, FOTON GLB/formations, J3C-C/J4D+ deferrals and manual blockers. Follow Issue → Branch → full gates → PR → exact-SHA post-merge evidence. Never touch `main` directly or weaken tests.
+> Continue ORBI Energy Swarm autonomously. Repository `ingeniusvictor/orbi-energy.swarm`. J8D gameplay canonical is `de37f4a818b05b09c136617b71cf3620bf4e1e83`, fully DEPLOYED / FROZEN via Issue #424 / PR #425 with pure storage-neutral `SCORE_ATTACK_BEST_SCORE` projection and post-main CI/Android/Pages GREEN. Complete DOC42 if still open, then implement J8E as narrow dedicated Score Attack storage-schema adoption: one `scoreAttackBestScore` GameStats field, default 0, bounded legacy-safe load sanitization, same v2 storage key, and no live run-completion write yet. Preserve global highScore, existing run commit functions, archives, UI/runtime, caps/budgets, Campaign/Infinite isolation, FOTON GLB/formations, J3C-C/J4D+ deferrals and manual blockers. Follow Issue → Branch → full gates → PR → exact-SHA post-merge evidence. Never touch `main` directly or weaken tests.
 
 ## Update obligation
 Every merged gameplay phase must record exact gameplay canonical, Issue/PR, final head, pre-PR certification, PR CI/Android, main CI/Android/Pages, implementation result, unresolved follow-ups and next roadmap phase. A gameplay phase is not administratively closed until these records are current.
