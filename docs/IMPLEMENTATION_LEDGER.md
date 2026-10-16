@@ -62,6 +62,7 @@ Rules:
 | ES-13J8C — Pure Score Attack Exact Duration / TIMEBOX Projection Contract | DEPLOYED / FROZEN | `78dfd39af5172499e7d82b8a62385a8e49f0e403` | #420 | #421 |
 | ES-13J8D — Pure Dedicated Score Attack Record Projection Contract | DEPLOYED / FROZEN | `de37f4a818b05b09c136617b71cf3620bf4e1e83` | #424 | #425 |
 | ES-13J8E — Dedicated Score Attack Storage-Schema Adoption | DEPLOYED / FROZEN | `5260ffc4e63061646b180d4da419d5d7b794db68` | #428 | #429 |
+| ES-13J8F — Pure Score Attack Record-Commit Eligibility Contract | DEPLOYED / FROZEN | `1ce459780fb543afec8b8bb1828ce946fe6cbcc3` | #432 | #433 |
 
 ## Evidence anchors
 
@@ -506,7 +507,8 @@ Issue #383 CLOSED / completed. J6B-B is **DEPLOYED / FROZEN**.
 - DOC40 — J8B closure & J8C Score Attack duration/TIMEBOX projection activation: `51e383f95d6725184616866a46f65fe09d115dd6` — Issue #418 / PR #419.
 - DOC41 — J8C closure & J8D dedicated Score Attack record projection activation: `2e4eb93a06e303c42cd8c97a133a176860eb2e38` — Issue #422 / PR #423.
 - DOC42 — J8D closure & J8E dedicated Score Attack storage-schema adoption activation: `7da459c56ab27d7891cf859db9c1065347cd2736` — Issue #426 / PR #427.
-- DOC43 — J8E closure & J8F pure Score Attack record-commit eligibility activation: Issue #430, branch `docs/es-13-j8e-closure-j8f-record-commit-eligibility`, documentation-only closure in progress from gameplay canonical `5260ffc4e63061646b180d4da419d5d7b794db68`.
+- DOC43 — J8E closure & J8F pure Score Attack record-commit eligibility activation: `2d26c391e056a433893f9d7ca2b6681c5952a181` — Issue #430 / PR #431.
+- DOC44 — J8F closure & J8G canonical Score Attack run-recipe/seed-policy activation: Issue #434, branch `docs/es-13-j8f-closure-j8g-run-recipe-seed-policy`, documentation-only closure in progress from gameplay canonical `1ce459780fb543afec8b8bb1828ce946fe6cbcc3`.
 
 ### J6B-C — Pure Dynamic Event Effect-Mapping Compatibility Contract
 - Frozen mappings: `SOLAR_STORM → ELECTRICAL_STORM`, `QUANTUM_RIFT → MAGNETIC_DRIFT`, `BLACKOUT_SURGE → REDUCED_VISIBILITY`, `CRYSTAL_RUSH → UNSTABLE_RESOURCE_FIELDS`; `DYSON_ECLIPSE → UNMAPPED` fail-closed.
@@ -638,12 +640,21 @@ Automated CI never substitutes for required human/device evidence.
 - Canonical `5260ffc4e63061646b180d4da419d5d7b794db68`, parent `7da459c56ab27d7891cf859db9c1065347cd2736`, tree `6094ca2b366463179233fb63383d355c03839d4b`, exact diff four certified files.
 - Main CI `38919920231` / `117036889398`, Android `38919920210` / `117036889938`, Pages `38920010388` build `117037206191` + deploy `117037367882` GREEN.
 
+### J8F — Pure Score Attack Record-Commit Eligibility Contract
+- Validates canonical `SCORE_ATTACK` plus explicit completed `TIMEBOX / 60000 ms` facts.
+- Delegates score normalization/comparison to frozen J8D; only `NEW_BEST` is eligible to advance the dedicated record.
+- Keeps storage, GameStats/global `highScore`, `runPersistence`, archives, live runtime/session/timer/UI and economy untouched.
+- Pre-PR `e45e6f8a5d9af5a4d718f9e4fb900dca19a084ba`: run `38925005305`, certify `117054181592` + Android `117054181176` GREEN.
+- PR #433 head `2338b66ab82c144ac7dcc00eca81eaf5ebbbe766`: CI `38925256442` / `117055034726` + Android `38925257401` / `117055039833` GREEN.
+- Canonical `1ce459780fb543afec8b8bb1828ce946fe6cbcc3`, parent `2d26c391e056a433893f9d7ca2b6681c5952a181`, tree `59954890fee59e1158dc9bb9779bdd9fbf6c82cf`, exact diff three certified files.
+- Main CI `38925493205` / `117055846575`, Android `38925492978` / `117055847442`, Pages `38925614881` build `117056259248` + deploy `117056409385` GREEN.
+
 ## Next planned gameplay
 
-### ES-13J8F — Pure Score Attack Record-Commit Eligibility Contract
-Status: **NEXT CONTRACT TARGET AFTER DOC43 CLOSURE**.
+### ES-13J8G — Pure Score Attack Canonical Run Recipe / Seed Policy Contract
+Status: **NEXT CONTRACT TARGET AFTER DOC44 CLOSURE**.
 
-J8F is pure decision policy only. It must consume explicit canonical Score Attack identity + explicit TIMEBOX-completion facts and delegate best/candidate comparison to frozen J8D projection semantics. Only `NEW_BEST` may project record advancement eligibility; unsupported/missing identity/completion facts fail closed. It must not mutate `GameStats`, storage or `applyFinalRunCommit`, and must not acquire live runtime/session/timer/UI/archive/score/reward/economy/spawn/arena/entity authority.
+J8G must freeze reproducible Score Attack recipe inputs before any live session/start flow. It should select one fixed/versioned seed policy, reuse the existing neutral Infinite run context, and prove that the resulting recipe remains compatible with J8B fresh `INFINITE_SESSION` facts and J8C `60000 ms` TIMEBOX semantics. It must not execute or persist a run, mutate runtime descriptors, own timer/UI/score/economy/spawn authorities, or create a third runtime mode.
 
 J4D+ additional tactical families remain deferred: FORMATION_BREAKER/JAMMER require hard-control spacing/recovery proof; MINE_WEAVER/MIRROR_WARDEN require genuine mine/mirror mechanics. J3C-C remains deferred, not cancelled.
 
