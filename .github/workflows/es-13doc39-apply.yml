@@ -31,20 +31,33 @@ jobs:
             docs/IMPLEMENTATION_LEDGER.md \
             docs/PROJECT_CONTINUITY.md | sort > /tmp/expected.txt
           diff -u /tmp/expected.txt /tmp/files.txt
-          grep -Fq '#4' docs/PROJECT_CONTINUITY.md
-          grep -Fq '#5' docs/PROJECT_CONTINUITY.md
-          grep -Fq '#202' docs/PROJECT_CONTINUITY.md
-          grep -Fq '#248' docs/PROJECT_CONTINUITY.md
-          grep -Fq '#254' docs/PROJECT_CONTINUITY.md
-          grep -Fq '#283' docs/PROJECT_CONTINUITY.md
-          grep -Fq 'J3C-C' docs/PROJECT_CONTINUITY.md
-          grep -Fq 'J4D+' docs/PROJECT_CONTINUITY.md
-          grep -Fq '## J9 — Boss & Miniboss Expansion' docs/ES13_GAMEPLAY_ROADMAP.md
-          grep -Fq 'ES-14' docs/ES13_GAMEPLAY_ROADMAP.md
-          grep -Fq '4a78c942a3ebdb509f67185d6799b0724ac27238' docs/PROJECT_CONTINUITY.md
-          grep -Fq 'ES-13J8B' docs/PROJECT_CONTINUITY.md
-          grep -Fq 'ES-13J8B' docs/IMPLEMENTATION_LEDGER.md
-          grep -Fq 'ES-13J8B' docs/ES13_GAMEPLAY_ROADMAP.md
+
+          check() {
+            local pattern="$1"
+            local file="$2"
+            local label="$3"
+            if grep -Fq "$pattern" "$file"; then
+              echo "PRESERVED: $label"
+            else
+              echo "MISSING: $label :: $pattern :: $file"
+              exit 1
+            fi
+          }
+
+          check '#4' docs/PROJECT_CONTINUITY.md 'manual blocker #4'
+          check '#5' docs/PROJECT_CONTINUITY.md 'manual blocker #5'
+          check '#202' docs/PROJECT_CONTINUITY.md 'manual blocker #202'
+          check '#248' docs/PROJECT_CONTINUITY.md 'manual blocker #248'
+          check '#254' docs/PROJECT_CONTINUITY.md 'resolved diagnostic #254'
+          check '#283' docs/PROJECT_CONTINUITY.md 'resolved diagnostic #283'
+          check 'J3C-C' docs/PROJECT_CONTINUITY.md 'J3C-C deferred state'
+          check 'J4D+' docs/PROJECT_CONTINUITY.md 'J4D+ deferred state'
+          check '## J9 — Boss & Miniboss Expansion' docs/ES13_GAMEPLAY_ROADMAP.md 'J9 roadmap preservation'
+          check 'ES-14' docs/ES13_GAMEPLAY_ROADMAP.md 'ES-14 roadmap preservation'
+          check '4a78c942a3ebdb509f67185d6799b0724ac27238' docs/PROJECT_CONTINUITY.md 'J8A canonical evidence'
+          check 'ES-13J8B' docs/PROJECT_CONTINUITY.md 'J8B continuity activation'
+          check 'ES-13J8B' docs/IMPLEMENTATION_LEDGER.md 'J8B ledger activation'
+          check 'ES-13J8B' docs/ES13_GAMEPLAY_ROADMAP.md 'J8B roadmap activation'
       - name: Commit DOC39 docs
         run: |
           set -euo pipefail
