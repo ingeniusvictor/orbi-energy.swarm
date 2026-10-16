@@ -70,6 +70,7 @@ Rules:
 | ES-13J8K — Pure Score Attack Effective Runtime Projection Bundle / Overlay-Isolation Contract | DEPLOYED / FROZEN | `ac943f609e427618465104f51b8f023620c8bf98` | #453 | #454 |
 | ES-13J8L — Pure Score Attack Runtime Activation Envelope Contract | DEPLOYED / FROZEN | `d41f00a1a87140dba1ddc2d04b207261df862307` | #457 | #458 |
 | ES-13J8M — Pure Score Attack Attempt Finalization Plan Contract | DEPLOYED / FROZEN | `9ec6a76bf34057881326530af9581e0eca1a0c74` | #461 | #462 |
+| ES-13J8N — Pure Dedicated Score Attack Stats-Commit Application Contract | DEPLOYED / FROZEN | `d0e9af1c3c8f94524187f7d8ee48c975e2bd9f3e` | #465 | #466 |
 
 ## Evidence anchors
 
@@ -723,12 +724,21 @@ Automated CI never substitutes for required human/device evidence.
 - Canonical `9ec6a76bf34057881326530af9581e0eca1a0c74`, parent `25fed78cc7a6855a015d10538246490c914d6818`, tree `3fd28427b2997aaae3a5ea4b20bc4c1bfbd8e644`, exact diff three certified files.
 - Main CI `38967741204` / `117198308312`, Android `38967740979` / `117198308018`, Pages `38967850132` build `117198668879` + deploy `117198801507` GREEN.
 
+### J8N — Pure Dedicated Score Attack Stats-Commit Application Contract
+- Dedicated GameStats application over frozen J8M only; no storage I/O or generic run persistence.
+- Stale dedicated-best facts fail closed; NEW_BEST changes only `scoreAttackBestScore`; TIED/BELOW are exact no-ops.
+- Initial pre-PR `38969412380` caught the no-op normalization bug before PR; isolated diagnostic v2 `38969724953` / `117204857053` passed after correction.
+- Final pre-PR `71a00a5f756c9dd865932763d8e92c96536facbe`: run `38969868757`, certify `117205320392` + Android `117205320719` GREEN.
+- PR #466 head `fdb3575add29d632ffc020cbfadee7615fae6496`: CI `38970083272` / `117206023607` + Android `38970083435` / `117206024349` GREEN.
+- Canonical `d0e9af1c3c8f94524187f7d8ee48c975e2bd9f3e`, parent `41da66dac942accb714899f189fce86dc24d1d79`, tree `cb8587b7a3c584a4516e0e5f49be9129e11d9d6f`, exact diff three certified files.
+- Main CI `38970263772` / `117206620329`, Android `38970263775` / `117206620338`, Pages `38970380507` build `117207004493` + deploy `117207154206` GREEN.
+
 ## Next planned gameplay
 
-### ES-13J8N — Pure Dedicated Score Attack Stats-Commit Application Contract
-Status: **NEXT CONTRACT TARGET AFTER DOC51 CLOSURE**.
+### ES-13J8O — Controlled Live Score Attack Engine Lifecycle Adoption
+Status: **NEXT CONTRACT TARGET AFTER DOC52 CLOSURE**.
 
-J8N must apply one valid J8M plan to existing GameStats without storage I/O: stale current dedicated-best facts fail closed; NEW_BEST changes only `scoreAttackBestScore`; TIED/BELOW preserve all stats. Global highScore, generic run persistence/archive, Infinite progression and every unrelated field remain isolated. No storage/UI/runtime/timer/gameplay authority.
+J8O is the first controlled live slice after the pure J8K→J8N prerequisite chain. It must adopt J8L/J8M/J8N only inside the engine lifecycle: internal-mode start with Campaign unchanged by default, one scalar active Score Attack envelope, effective descriptor from frozen J8L/J8K, existing TIMEBOX timer only, terminal interception before generic Infinite advancement, dedicated-record persistence only through existing `updateStatsAndSave(...)` when J8N changes the record, and full activation cleanup on terminal/reset boundaries. StartScreen/ResultScreen/HUD remain out of scope and Score Attack is not publicly selectable yet.
 
 J4D+ additional tactical families remain deferred: FORMATION_BREAKER/JAMMER require hard-control spacing/recovery proof; MINE_WEAVER/MIRROR_WARDEN require genuine mine/mirror mechanics. J3C-C remains deferred, not cancelled.
 
