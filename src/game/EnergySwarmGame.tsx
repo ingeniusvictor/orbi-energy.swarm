@@ -62,6 +62,13 @@ import {
   getCachedRuntimeProjectionBundle,
   type RuntimeProjectionBundleCache,
 } from "./runtimeProjectionBundleCache";
+import {
+  resolveScoreAttackLiveEngineActivation,
+  resolveScoreAttackLiveRuntimeProjection,
+  resolveScoreAttackLiveTerminalApplication,
+  type ScoreAttackLiveEngineActivation,
+  type ScoreAttackLiveEngineStartMode,
+} from "./scoreAttackLiveEngineLifecycle";
 import { resolveEvolvedEnemySpawn } from "./runtimeEnemyEvolution";
 import { resolveRuntimeTacticalEnemySpawn } from "./runtimeTacticalEnemyAdoption";
 import { createEnemySignatureBehaviorCache } from "./enemySignatureBehaviorCache";
@@ -401,6 +408,8 @@ export const EnergySwarmGame: React.FC = () => {
   const runtimeProgressionRef = useRef<RuntimeProgressionState>(
     createCampaignRuntimeState(1),
   );
+  const scoreAttackActivationRef =
+    useRef<ScoreAttackLiveEngineActivation | null>(null);
   const waveActiveRef = useRef(false);
   const waveBudgetSpawnedRef = useRef(0);
   const waveTimeRemainingRef = useRef(0);
@@ -573,6 +582,10 @@ export const EnergySwarmGame: React.FC = () => {
     );
 
   const getCurrentRuntimeProjection = () =>
+    resolveScoreAttackLiveRuntimeProjection(
+      scoreAttackActivationRef.current,
+      runtimeProgressionRef.current,
+    ) ??
     getCachedRuntimeProjectionBundle(
       runtimeProjectionBundleCacheRef.current,
       runtimeProgressionRef.current,
@@ -1050,7 +1063,7 @@ export const EnergySwarmGame: React.FC = () => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!isPlaying) {
         if (e.key === "Enter") {
-          startGame();
+          startCampaignGame();
         }
         return;
       }
@@ -1365,6 +1378,8 @@ export const EnergySwarmGame: React.FC = () => {
   };
 
   const startGame = () => {
+    const requestedScoreAttackActivation =
+      scoreAttackActivationRef.current;
     initAudio();
     setIsPlaying(true);
     setIsPhotoMode(false);
@@ -1447,8 +1462,17 @@ export const EnergySwarmGame: React.FC = () => {
     gaiaMemberRef.current = null;
     swarmDoctrineRef.current = createSwarmDoctrineState();
 
-    currentWaveRef.current = 1;
-    runtimeProgressionRef.current = createCampaignRuntimeState(1);
+    if (requestedScoreAttackActivation) {
+      runtimeProgressionRef.current =
+        requestedScoreAttackActivation.runtimeProgression;
+      currentWaveRef.current = getRuntimeSector(
+        requestedScoreAttackActivation.runtimeProgression,
+      );
+      setCurrentWave(currentWaveRef.current);
+    } else {
+      currentWaveRef.current = 1;
+      runtimeProgressionRef.current = createCampaignRuntimeState(1);
+    }
     waveActiveRef.current = false;
     enemyFormationDirectorRef.current =
       createLiveEnemyFormationDirectorState();
@@ -1532,10 +1556,22 @@ export const EnergySwarmGame: React.FC = () => {
     requestAnimationFrame(gameLoop);
   };
 
+  const startGameWithMode = (mode: ScoreAttackLiveEngineStartMode) => {
+    const activation = resolveScoreAttackLiveEngineActivation(mode);
+    if (mode === "SCORE_ATTACK" && !activation) return false;
+    scoreAttackActivationRef.current = activation;
+    startGame();
+    return true;
+  };
+
+  const startCampaignGame = () => {
+    void startGameWithMode("CAMPAIGN");
+  };
+
   // --- REBOOT GAME ON LOSS ---
   const rebootGame = () => {
     playClickSound();
-    startGame();
+    startCampaignGame();
   };
 
   // --- TOGGLE PAUSE ---
@@ -2025,6 +2061,8 @@ export const EnergySwarmGame: React.FC = () => {
 
   // --- CORE GAME OVER TRIGGER ---
   const triggerGameOver = (won: boolean) => {
+    const scoreAttackAttemptActive =
+      scoreAttackActivationRef.current !== null;
     loopActiveRef.current = false;
     setIsPhotoMode(false);
     setPhotoHintVisible(false);
@@ -2043,6 +2081,11 @@ export const EnergySwarmGame: React.FC = () => {
     } else {
       playGameOverSound();
       postDialogue("SYSTEM", "ENIGM-CORE CRASHED. Sincronización del enjambre perdida.");
+    }
+
+    if (scoreAttackAttemptActive) {
+      scoreAttackActivationRef.current = null;
+      return;
     }
 
     // Persist scores
@@ -2353,14 +2396,15 @@ export const EnergySwarmGame: React.FC = () => {
         }
       }
 
-      const baseWaveComplete = isRuntimeWaveComplete(
-        completionDescriptor,
-        {
+      const completionSnapshot = {
         remainingTimeMs: waveTimeRemainingRef.current,
         spawnedEnemyCount: waveBudgetSpawnedRef.current,
         livingEnemyCount,
-          bossDefeated: false,
-        },
+        bossDefeated: false,
+      };
+      const baseWaveComplete = isRuntimeWaveComplete(
+        completionDescriptor,
+        completionSnapshot,
       );
       const waveComplete =
         baseWaveComplete &&
@@ -2370,6 +2414,30 @@ export const EnergySwarmGame: React.FC = () => {
         );
 
       if (waveComplete) {
+        const activeScoreAttack = scoreAttackActivationRef.current;
+        if (activeScoreAttack) {
+          const terminalApplication =
+            resolveScoreAttackLiveTerminalApplication(
+              activeScoreAttack,
+              runtimeProgressionRef.current,
+              completionSnapshot,
+              statsRef.current,
+              scoreRef.current,
+            );
+          if (!terminalApplication) {
+            triggerGameOver(false);
+            return;
+          }
+          if (
+            terminalApplication.statsCommitApplication
+              .changedDedicatedRecord
+          ) {
+            updateStatsAndSave({ ...terminalApplication.stats });
+          }
+          triggerGameOver(true);
+          return;
+        }
+
         // Wave complete! Transition into intermission
         waveActiveRef.current = false;
         waveBreakTimerRef.current = INTER_WAVE_DURATION;
@@ -7249,7 +7317,7 @@ export const EnergySwarmGame: React.FC = () => {
       {!isPlaying && (
         <StartScreen
           stats={stats}
-          onStartGame={startGame}
+          onStartGame={startCampaignGame}
           onResetStats={() => {
             const defaults = resetGameStats();
             setStats(defaults);
@@ -7281,7 +7349,7 @@ export const EnergySwarmGame: React.FC = () => {
       {isPlaying && isPaused && !isPhotoMode && (
         <PauseMenu
           onResume={togglePause}
-          onRestart={startGame}
+          onRestart={startCampaignGame}
           onEnterPhotoMode={enterPhotoMode}
           onExitToMenu={() => {
             stopBgm();
@@ -7339,7 +7407,7 @@ export const EnergySwarmGame: React.FC = () => {
           infiniteMinibossesDefeated={stats.infiniteMinibossesDefeated}
           infiniteBossRematchesDefeated={stats.infiniteBossRematchesDefeated}
           recentRunArchive={stats.recentRunArchive}
-          onRestart={startGame}
+          onRestart={startCampaignGame}
           onExitToMenu={() => {
             setIsPlaying(false);
             setIsGameOver(false);
