@@ -828,13 +828,35 @@ Exact deployment anchors:
 - Pages `38925614881`, build `117056259248` + deploy `117056409385` GREEN.
 
 ### ES-13J8G — Pure Score Attack Canonical Run Recipe / Seed Policy Contract
-Status: **NEXT CONTRACT TARGET AFTER DOC44 CLOSURE**
+Status: **DEPLOYED / FROZEN**
+Canonical: `55a31de7ad7989e3daaead8311aa08d3927096f7`  
+Issue #436 / PR #437
 
-Discovery after J8F shows that live Score Attack adoption remains premature because the existing Infinite substrate is deterministic from seed + run context while J8A/J8B/J8C all explicitly leave `selectsSeedPolicy: false`. `createInfiniteSession(seed, context)` and the certified Infinite plan builder already provide the construction authorities; J8G must freeze only the Score Attack recipe inputs needed for reproducible/comparable attempts.
+J8G freezes reproducible Score Attack challenge inputs before any live start/session/persistence adoption:
+- recipe version `1`;
+- fixed/versioned seed `orbi-score-attack-v1`;
+- existing authoritative `NEUTRAL_INFINITE_RUN_CONTEXT`, exposed through a frozen copy;
+- transient internal proof session only, created through existing Infinite authority and never returned/advanced/persisted/adopted live;
+- deterministic compatibility with J8B fresh sector-11/wave-1 `INFINITE_SESSION` facts and J8C `TIMEBOX / 60000 ms` facts;
+- exactly one positive authority: canonical run-recipe/seed-policy selection;
+- no runtime/UI/persistence/archive/score/reward/economy/spawn/arena/entity/cap/FOTON/formation authority.
 
-J8G must select a fixed/versioned deterministic Score Attack seed policy, reuse the existing neutral Infinite run context, and prove compatibility with J8B's fresh sector-11/wave-1 substrate and J8C's frozen `60000 ms` TIMEBOX semantics. The implementation may freeze the exact seed literal after code-level discovery.
+Exact deployment anchors:
+- pre-PR SHA `96d8eff6dbdc91f5800e154a5d6309a48bed3802`, run `38927391978`, certify `117062322683` + Android `117062322404` GREEN;
+- clean PR #437 head `87b9bbe63ca5d8d07016713f58ef42e1ddd86a23`;
+- PR CI `38927641423` / `117063169406` GREEN; Android `38927641413` / `117063169539` GREEN;
+- canonical `55a31de7ad7989e3daaead8311aa08d3927096f7`, parent `2e07ea501c36728bdc369a66dfecb64f6d8e5e01`, tree `67e0b9da68544d0f4c134e37f08d1a84df1df264`, exact diff three certified files;
+- main CI `38927850983` / `117063891102` GREEN; Android `38927850891` / `117063891169` GREEN;
+- Pages `38927967468`, build `117064302340` + deploy `117064549189` GREEN.
 
-J8G must remain pure recipe/projection policy only: no StartScreen/ResultScreen/HUD, no live session lifecycle, no timer/clock/pause, no runtime discriminator or descriptor mutation, no persistence/write/archive, no score-formula/reward/economy changes, no spawn/arena/entity/projectile/cap/budget/FOTON/formation authority.
+### ES-13J8H — Pure Score Attack Bootstrap Envelope Contract
+Status: **NEXT CONTRACT TARGET AFTER DOC45 CLOSURE**
+
+Discovery after J8G shows that live UI adoption is still premature: `EnergySwarmGame.startGame()` initializes Campaign directly and `RuntimeProgressionState` intentionally contains only `CAMPAIGN | INFINITE`. A Score Attack bootstrap must therefore preserve canonical `SCORE_ATTACK` identity outside the existing runtime discriminator while reusing existing Infinite construction authorities.
+
+J8H must consume the frozen J8G recipe, construct one fresh Infinite session through existing `createInfiniteSession(seed, context)`, construct its runtime through existing `createInfiniteRuntimeState(session)`, preserve outer `modeId: SCORE_ATTACK`, and carry frozen J8C `TIMEBOX / 60000 ms` facts. Runtime progression must remain intentionally `INFINITE`; no third runtime discriminator is allowed.
+
+J8H must remain bootstrap/projection only: no React state/ref adoption, StartScreen/ResultScreen/HUD, timer ticking, wave advancement, descriptor mutation, persistence/storage/archive/write, score/reward/economy, spawn/arena/entity/projectile/cap/budget/FOTON/formation authority.
 
 ## J9 — Boss & Miniboss Expansion
 Status: PLANNED
