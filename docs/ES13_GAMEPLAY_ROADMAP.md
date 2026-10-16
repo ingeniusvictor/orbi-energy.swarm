@@ -805,13 +805,36 @@ Exact closure evidence:
 - Pages `38920010388`, build `117037206191` + deploy `117037367882` GREEN.
 
 ### ES-13J8F — Pure Score Attack Record-Commit Eligibility Contract
-Status: **NEXT CONTRACT TARGET AFTER DOC43 CLOSURE**
+Status: **DEPLOYED / FROZEN**
+Canonical: `1ce459780fb543afec8b8bb1828ce946fe6cbcc3`  
+Issue #432 / PR #433
 
-Discovery after J8E shows that effective record writes are still premature: `FinalRunCommitInput` has no mode/completion discriminator, generic `applyFinalRunCommit(...)` always owns global `highScore`, J8B does not construct/execute a live Score Attack session and J8C only projects TIMEBOX completion.
+J8F freezes the pure/fail-closed decision boundary between frozen Score Attack record semantics and a later controlled write:
+- canonical `SCORE_ATTACK` only;
+- explicit completed `TIMEBOX / 60000 ms` facts only;
+- normalization/comparison delegates to frozen J8D `resolveScoreAttackRecordProjection(...)`;
+- only `NEW_BEST` projects `eligibleToAdvanceRecord: true`;
+- `TIED_BEST` / `BELOW_BEST` remain valid but ineligible;
+- invalid identity/completion/score facts fail closed;
+- exactly one positive authority: record-commit eligibility;
+- no storage/GameStats/global-highScore mutation, `runPersistence`, live session/runtime/timer/UI/archive/reward/economy/spawn authority.
 
-J8F must therefore freeze a pure/fail-closed decision boundary only. It may consume explicit `SCORE_ATTACK` identity, explicit TIMEBOX-completion facts, the existing dedicated best score and candidate score through frozen J8D projection semantics, and report record advancement eligibility only for `NEW_BEST`. Non-Score-Attack, absent/wrong completion facts and non-advancing projections fail closed.
+Exact deployment anchors:
+- pre-PR SHA `e45e6f8a5d9af5a4d718f9e4fb900dca19a084ba`, run `38925005305`, certify `117054181592` + Android `117054181176` GREEN;
+- clean PR #433 head `2338b66ab82c144ac7dcc00eca81eaf5ebbbe766`;
+- PR CI `38925256442` / `117055034726` GREEN; Android `38925257401` / `117055039833` GREEN;
+- canonical `1ce459780fb543afec8b8bb1828ce946fe6cbcc3`, parent `2d26c391e056a433893f9d7ca2b6681c5952a181`, tree `59954890fee59e1158dc9bb9779bdd9fbf6c82cf`, exact diff three certified files;
+- main CI `38925493205` / `117055846575` GREEN; Android `38925492978` / `117055847442` GREEN;
+- Pages `38925614881`, build `117056259248` + deploy `117056409385` GREEN.
 
-J8F must not write storage, mutate `GameStats`, change `applyFinalRunCommit`, add live mode/session/timer/clock/pause authority, alter StartScreen/ResultScreen/HUD, score formula, rewards/economy, archives, Campaign/Infinite behavior, spawn/arena, scans/indexes, caps/budgets, entities/projectiles, FOTON or formations.
+### ES-13J8G — Pure Score Attack Canonical Run Recipe / Seed Policy Contract
+Status: **NEXT CONTRACT TARGET AFTER DOC44 CLOSURE**
+
+Discovery after J8F shows that live Score Attack adoption remains premature because the existing Infinite substrate is deterministic from seed + run context while J8A/J8B/J8C all explicitly leave `selectsSeedPolicy: false`. `createInfiniteSession(seed, context)` and the certified Infinite plan builder already provide the construction authorities; J8G must freeze only the Score Attack recipe inputs needed for reproducible/comparable attempts.
+
+J8G must select a fixed/versioned deterministic Score Attack seed policy, reuse the existing neutral Infinite run context, and prove compatibility with J8B's fresh sector-11/wave-1 substrate and J8C's frozen `60000 ms` TIMEBOX semantics. The implementation may freeze the exact seed literal after code-level discovery.
+
+J8G must remain pure recipe/projection policy only: no StartScreen/ResultScreen/HUD, no live session lifecycle, no timer/clock/pause, no runtime discriminator or descriptor mutation, no persistence/write/archive, no score-formula/reward/economy changes, no spawn/arena/entity/projectile/cap/budget/FOTON/formation authority.
 
 ## J9 — Boss & Miniboss Expansion
 Status: PLANNED
