@@ -874,13 +874,38 @@ Exact deployment anchors:
 - Pages `38943771427`, build `117117654170` + deploy `117117807868` GREEN.
 
 ### ES-13J8I — Pure Score Attack Runtime Descriptor Completion Overlay Contract
-Status: **NEXT CONTRACT TARGET AFTER DOC46 CLOSURE**
+Status: **DEPLOYED / FROZEN**
+Canonical: `9ccec58c5454e25e33cf58d2b4bf6030424f475d`  
+Issue #445 / PR #446
 
-Discovery after J8H shows that direct live adoption is still unsafe: the J8H runtime is intentionally `INFINITE`, whose base descriptor remains `BUDGET_AND_CLEAR`, while the existing live timer decrements only for effective `TIMEBOX` descriptors. J8H carries J8C's `TIMEBOX / 60000 ms` facts but intentionally owns no descriptor mutation.
+J8I freezes the pure/fail-closed descriptor-completion bridge needed before live Score Attack adoption:
+- consumes a valid frozen J8H bootstrap envelope plus its exact canonical current fresh Infinite descriptor;
+- rejects absent, mismatched, mutated or already-overlaid facts;
+- requires base `BUDGET_AND_CLEAR` completion;
+- returns immutable projection metadata and an immutable descriptor copy;
+- the only descriptor-semantic change is `completionPolicy -> TIMEBOX / 60000 ms`, reusing frozen J8C/J8H duration facts;
+- preserves descriptor identity, runtime source mode, sector/wave/waveCount, display, biome, spawn, modifiers, pressure, rewards, milestone, fairness and source facts exactly;
+- outer `SCORE_ATTACK` attribution remains outside `RuntimeProgressionState`;
+- exactly one positive authority: descriptor-completion overlay projection;
+- no cache/live integration, React/UI/start flow, timer/clock/cursor, session progression, persistence/archive, score/economy or spawn authority.
 
-J8I must therefore freeze a pure/fail-closed descriptor completion overlay before any StartScreen/start-flow or runtime-cache integration. It must consume a valid J8H envelope plus its corresponding current fresh Infinite descriptor, require `BUDGET_AND_CLEAR`, and return an immutable descriptor copy whose only gameplay-semantic change is `completionPolicy: { type: "TIMEBOX", durationMs: 60000 }`. Score Attack attribution must remain outside `RuntimeProgressionState`.
+Exact deployment anchors:
+- pre-PR SHA `9fb290186ad56c3c4321eb69c51c37b3c8653ac1`, run `38945640439`, certify `117123936029` + Android `117123936267` GREEN;
+- clean PR #446 head `6c07e4e0119c05255f37c0752f8aa4db8f5b2b3a`;
+- the initial native PR hook was delayed/missed; closing/reopening the same unchanged PR recovered the native checks without code/base/head changes;
+- PR CI `38945992045` / `117125131570` GREEN; Android `38945992000` / `117125131449` GREEN;
+- canonical `9ccec58c5454e25e33cf58d2b4bf6030424f475d`, parent `12efb3029cf54581c81bad5a2fc629332f7be6c4`, tree `48e3f69e1d112ddc4843df7d83515cf752a23b36`, exact diff three certified files;
+- main CI `38946233419` / `117125924994` GREEN; Android `38946233414` / `117125924762` GREEN;
+- Pages `38946322607`, build `117126231280` + deploy `117126371840` GREEN.
 
-J8I must preserve sector/wave, biome, spawn, modifiers, pressure, rewards, milestone, fairness and source seed/recipe/wave facts exactly; reuse J8C duration and the existing timer/completion authorities; and own no clock/timer/cursor, React/UI, cache/live adoption, progression, persistence/archive, score/reward/economy, spawn/arena/entity/projectile/cap/budget/FOTON/formation authority.
+### ES-13J8J — Pure Score Attack Terminal Completion Disposition Contract
+Status: **NEXT CONTRACT TARGET AFTER DOC47 CLOSURE**
+
+Discovery after J8I shows that a correct `TIMEBOX / 60000 ms` descriptor is still insufficient for live adoption. Existing `isRuntimeWaveComplete(...)` only decides completion, while `EnergySwarmGame` treats every completed nested `INFINITE` runtime as progression and calls `advanceInfiniteRuntimeState(...)`. Because J8H intentionally preserves nested runtime mode `INFINITE`, an unguarded live Score Attack would advance to the next Infinite wave when its 60-second timebox expires instead of ending the attempt.
+
+J8J must freeze only a pure terminal-completion disposition. It must consume a valid J8H bootstrap envelope, a valid J8I completion overlay and a completion snapshot evaluated through existing `isRuntimeWaveComplete(...)` authority. Only canonical matching `SCORE_ATTACK` + exact `TIMEBOX / 60000 ms` + completed facts may project an immutable terminal action such as `END_SCORE_ATTACK_ATTEMPT`, with `advanceInfiniteRuntime: false`. Incomplete, mismatched or unsupported facts fail closed.
+
+J8J must preserve nested runtime discriminator `INFINITE` and must not mutate/end the session, call Infinite advancement, change `EnergySwarmGame`, transition UI/results, integrate cache/live state, write persistence/records, or own timer/clock/cursor, score/economy, spawn/arena/entity/cap/FOTON/formation authority. It decides terminal disposition only; the later live mutation sequence remains unresolved.
 
 ## J9 — Boss & Miniboss Expansion
 Status: PLANNED
