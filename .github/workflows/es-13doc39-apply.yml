@@ -1,0 +1,59 @@
+name: ES-13DOC39 Apply
+
+on:
+  push:
+    branches:
+      - docs/es-13-j8a-closure-j8b-substrate
+    paths:
+      - scripts/es13doc39_apply.py
+      - .github/workflows/es-13doc39-apply.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: docs/es-13-j8a-closure-j8b-substrate
+          fetch-depth: 0
+      - name: Apply DOC39 fail-closed
+        run: python scripts/es13doc39_apply.py
+      - name: Validate exact DOC39 scope and preservation
+        run: |
+          set -euo pipefail
+          git diff --name-only 4a78c942a3ebdb509f67185d6799b0724ac27238 -- \
+            ':!.github/workflows/es-13doc39-apply.yml' ':!scripts/es13doc39_apply.py' | sort > /tmp/files.txt
+          printf '%s\n' \
+            docs/ES13_GAMEPLAY_ROADMAP.md \
+            docs/IMPLEMENTATION_LEDGER.md \
+            docs/PROJECT_CONTINUITY.md | sort > /tmp/expected.txt
+          diff -u /tmp/expected.txt /tmp/files.txt
+          grep -Fq '#4' docs/PROJECT_CONTINUITY.md
+          grep -Fq '#5' docs/PROJECT_CONTINUITY.md
+          grep -Fq '#202' docs/PROJECT_CONTINUITY.md
+          grep -Fq '#248' docs/PROJECT_CONTINUITY.md
+          grep -Fq '#254' docs/PROJECT_CONTINUITY.md
+          grep -Fq '#283' docs/PROJECT_CONTINUITY.md
+          grep -Fq 'J3C-C' docs/PROJECT_CONTINUITY.md
+          grep -Fq 'J4D+' docs/PROJECT_CONTINUITY.md
+          grep -Fq '## J9 — Boss & Miniboss Expansion' docs/ES13_GAMEPLAY_ROADMAP.md
+          grep -Fq 'ES-14' docs/ES13_GAMEPLAY_ROADMAP.md
+          grep -Fq '4a78c942a3ebdb509f67185d6799b0724ac27238' docs/PROJECT_CONTINUITY.md
+          grep -Fq 'ES-13J8B' docs/PROJECT_CONTINUITY.md
+          grep -Fq 'ES-13J8B' docs/IMPLEMENTATION_LEDGER.md
+          grep -Fq 'ES-13J8B' docs/ES13_GAMEPLAY_ROADMAP.md
+      - name: Commit DOC39 docs
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- docs/; then
+            echo 'No documentation changes to commit.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add docs/ES13_GAMEPLAY_ROADMAP.md docs/IMPLEMENTATION_LEDGER.md docs/PROJECT_CONTINUITY.md
+          git commit -m 'ES-13DOC39: close J8A and activate J8B substrate discovery'
+          git push origin HEAD:docs/es-13-j8a-closure-j8b-substrate
