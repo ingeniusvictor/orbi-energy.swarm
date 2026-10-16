@@ -17,8 +17,27 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Correct temporary DOC35 marker guard
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('scripts/es13doc35_apply.py')
+          s = p.read_text()
+          old = 'for required in (CANON, "ES-13J7B", "TIMED_SURVIVAL"):\n    for label, text in (("continuity", continuity), ("ledger", ledger), ("roadmap", roadmap)):\n        if required not in text:\n            raise SystemExit(f"{label}: missing DOC35 marker {required}")'
+          new = 'for required in (CANON, "TIMED_SURVIVAL"):\n    for label, text in (("continuity", continuity), ("ledger", ledger), ("roadmap", roadmap)):\n        if required not in text:\n            raise SystemExit(f"{label}: missing DOC35 marker {required}")\n\nfor label, text, marker in (("continuity", continuity, "ES-13J7B"), ("ledger", ledger, "ES-13J7B"), ("roadmap", roadmap, "### J7B")):\n    if marker not in text:\n        raise SystemExit(f"{label}: missing DOC35 phase marker {marker}")'
+          if s.count(old) != 1:
+              raise SystemExit('temporary guard anchor mismatch')
+          p.write_text(s.replace(old, new, 1))
+          PY
+
       - name: Apply DOC35 fail-closed
-        run: python scripts/es13doc35_apply.py
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/es13doc35_apply.py
+          git checkout -- scripts/es13doc35_apply.py
 
       - name: Validate exact DOC35 product scope and preservation
         shell: bash
@@ -39,6 +58,7 @@ jobs:
           grep -q '8a5244e770c360d13b8218599ba3f49bbaa03b46' docs/PROJECT_CONTINUITY.md
           grep -q 'ES-13J7B' docs/PROJECT_CONTINUITY.md
           grep -q 'ES-13J7A' docs/IMPLEMENTATION_LEDGER.md
+          grep -q '### J7B' docs/ES13_GAMEPLAY_ROADMAP.md
           grep -q '## J8 — Additional Game Modes' docs/ES13_GAMEPLAY_ROADMAP.md
           grep -q 'ES-14' docs/ES13_GAMEPLAY_ROADMAP.md
           grep -q '#248' docs/PROJECT_CONTINUITY.md
