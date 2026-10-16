@@ -1,5 +1,6 @@
 name: ES-13J7D Certification
 
+# Retrigger after aligning the static completion-authority assertion with RuntimeCompletionSnapshot.
 on:
   push:
     branches:
