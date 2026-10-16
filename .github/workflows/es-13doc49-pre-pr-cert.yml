@@ -1,0 +1,88 @@
+name: ES-13DOC49 Pre-PR Certification
+
+on:
+  push:
+    branches: [docs/es-13-j8k-closure-j8l-activation-envelope]
+    paths:
+      - .github/workflows/es-13doc49-pre-pr-cert.yml
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Guard exact DOC49 scope and preservation
+        run: |
+          test "$(git merge-base ac943f609e427618465104f51b8f023620c8bf98 HEAD)" = "ac943f609e427618465104f51b8f023620c8bf98"
+          printf '%s\n' \
+            .github/workflows/es-13doc49-pre-pr-cert.yml \
+            docs/ES13_GAMEPLAY_ROADMAP.md \
+            docs/IMPLEMENTATION_LEDGER.md \
+            docs/PROJECT_CONTINUITY.md > /tmp/expected
+          git diff --name-only ac943f609e427618465104f51b8f023620c8bf98...HEAD | sort > /tmp/actual
+          diff -u /tmp/expected /tmp/actual
+          test ! -e scripts/es13doc49_apply.py
+          test ! -e .github/workflows/es-13doc49-apply.yml
+          grep -Fq 'ES-13J8L' docs/ES13_GAMEPLAY_ROADMAP.md
+          grep -Fq 'Runtime Activation Envelope' docs/ES13_GAMEPLAY_ROADMAP.md
+          grep -Fq 'ac943f609e427618465104f51b8f023620c8bf98' docs/PROJECT_CONTINUITY.md
+          grep -Fq '#4' docs/IMPLEMENTATION_LEDGER.md
+          grep -Fq '#5' docs/IMPLEMENTATION_LEDGER.md
+          grep -Fq '#202' docs/IMPLEMENTATION_LEDGER.md
+          grep -Fq '#248' docs/IMPLEMENTATION_LEDGER.md
+          grep -Fq '#254' docs/PROJECT_CONTINUITY.md
+          grep -Fq '#283' docs/PROJECT_CONTINUITY.md
+          grep -Fq '## J9 — Boss & Miniboss Expansion' docs/ES13_GAMEPLAY_ROADMAP.md
+          grep -Fq '## J15' docs/ES13_GAMEPLAY_ROADMAP.md
+          grep -Fq 'ES-14' docs/ES13_GAMEPLAY_ROADMAP.md
+
+      - name: Repository smoke
+        run: npm run test:repo
+
+      - name: Gameplay regression
+        run: npm run test:gameplay
+
+      - name: Platform regression
+        run: npm run test:platform
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Release contract
+        run: npm run release:verify
+
+      - name: Manual certification dossier
+        run: npm run release:evidence:verify
+
+      - name: Production build
+        run: npm run build
+
+      - name: RC readiness evidence
+        env:
+          ORBI_RELEASE_SHA: ${{ github.sha }}
+        run: npm run release:readiness -- --output release-readiness.json
+
+      - name: Upload readiness evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: es-13doc49-readiness-${{ github.sha }}
+          path: release-readiness.json
+          if-no-files-found: error
+          retention-days: 30
