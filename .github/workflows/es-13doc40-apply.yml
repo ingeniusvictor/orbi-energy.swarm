@@ -33,6 +33,20 @@ jobs:
           p.write_text(s.replace(old, new, 1))
           print('DOC40 temporary helper brace escape repaired locally')
           PY
+      - name: Repair temporary roadmap delimiter fail-closed
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('scripts/es13doc40_apply.py')
+          s = p.read_text()
+          old = 'r"### ES-13J8B — Pure Score Attack Execution-Substrate / Lifecycle Compatibility Contract\\nStatus: \\*\\*NEXT DISCOVERY / CONTRACT TARGET AFTER DOC39 CLOSURE\\*\\*\\n\\n.*?(?=\\n---\\n\\n## J9)",'
+          new = 'r"### ES-13J8B — Pure Score Attack Execution-Substrate / Lifecycle Compatibility Contract\\nStatus: \\*\\*NEXT DISCOVERY / CONTRACT TARGET AFTER DOC39 CLOSURE\\*\\*\\n\\n.*?(?=\\n## J9)",'
+          count = s.count(old)
+          if count != 1:
+              raise SystemExit(f'DOC40 fail-closed: expected one roadmap delimiter anchor, got {count}')
+          p.write_text(s.replace(old, new, 1))
+          print('DOC40 temporary roadmap delimiter repaired locally')
+          PY
       - name: Apply DOC40 fail-closed
         run: python scripts/es13doc40_apply.py
       - name: Validate exact DOC40 scope and preservation
