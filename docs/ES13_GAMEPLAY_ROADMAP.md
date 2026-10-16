@@ -944,13 +944,36 @@ Exact deployment anchors:
 - Pages `38961007520`, build `117175743388` + deploy `117175888611` GREEN.
 
 ### ES-13J8L — Pure Score Attack Runtime Activation Envelope Contract
-Status: **NEXT CONTRACT TARGET AFTER DOC49 CLOSURE**
+Status: **DEPLOYED / FROZEN**
+Canonical: `d41f00a1a87140dba1ddc2d04b207261df862307`  
+Issue #457 / PR #458
 
-Discovery after J8K shows that direct generic-cache/live adoption is still unsafe because `EnergySwarmGame` has no explicit Score Attack live identity. `runtimeProgressionRef` remains intentionally `CAMPAIGN | INFINITE`, `startGame()` still resets to Campaign, and the generic cache accepts only runtime state plus optional follower count. A Score Attack runtime therefore cannot be safely identified from the runtime discriminator alone without undoing J8H's outer identity boundary.
+J8L freezes the pure outer Score Attack activation carrier required before controlled live adoption:
+- consumes one valid frozen J8H bootstrap envelope and its exact J8K projection bundle;
+- preserves explicit outer `modeId: SCORE_ATTACK` while nested runtime remains exactly `INFINITE`;
+- carries exact object identity for bootstrap envelope, runtime/session, J8K bundle and effective descriptor;
+- inherits canonical Sector 11 / Wave 1, fixed seed, TIMEBOX / 60000 ms, Adaptive Invasion bypass and J6/J7 null compatibility;
+- owns only activation-envelope construction/composition;
+- no React/cache/start/result/HUD adoption, timer/clock/cursor, session advance/end, persistence/archive/record write or gameplay mutation authority.
 
-J8L must freeze a pure activation envelope that composes one valid J8H bootstrap envelope with its exact J8K projection bundle while preserving explicit outer `modeId: SCORE_ATTACK`. It must expose the same nested fresh `INFINITE` runtime/session plus effective TIMEBOX/60000 descriptor/bundle as immutable metadata for later controlled start/cache adoption and prove all composed facts refer to the same runtime/session identity.
+Exact deployment anchors:
+- initial pre-PR run `38962595762` exposed only a test-side truncation of frozen J8B `canonicalFreshStart`; product scope/repo smoke remained GREEN and Android succeeded;
+- isolated corrected diagnostic `38963366915` / `117183693510` passed all six J8L tests;
+- final pre-PR SHA `1c9f9e65b8307d1f73dfc6215c6f77b387cfbf0b`, run `38963464711`, certify `117184022310` + Android `117184023007` GREEN;
+- clean PR #458 head `a06c71e7ca72991051e7bcc7752f0f50089e41d4`;
+- PR CI `38963705565` / `117184830694` GREEN; Android `38963705688` / `117184831351` GREEN;
+- canonical `d41f00a1a87140dba1ddc2d04b207261df862307`, parent `9d110a10e07da45f51c932d575f0ae3edb9606d4`, tree `20e5f9a1a48a03108d1c5ea140009d56e0b8da29`, exact diff three certified files;
+- main CI `38963938606` / `117185611390` GREEN; Android `38963938646` / `117185612137` GREEN;
+- Pages `38964054007`, build `117186003430` + deploy `117186140619` GREEN.
 
-J8L must not add `SCORE_ATTACK` to `RuntimeProgressionState`; write React state/refs or generic caches; alter StartScreen/ResultScreen/HUD; start/tick/reset timers; advance/end session; execute J8J terminal completion; write persistence/archive/record; or mutate score/economy, spawn/arena, entities/projectiles, caps/budgets, FOTON or formations.
+### ES-13J8M — Pure Score Attack Attempt Finalization Plan Contract
+Status: **NEXT CONTRACT TARGET AFTER DOC50 CLOSURE**
+
+J8M must freeze the final pure terminal-orchestration prerequisite before live Score Attack UI/runtime/persistence adoption. It must consume one valid J8L activation envelope plus one existing `RuntimeCompletionSnapshot`, delegate terminal completion only to frozen J8J/existing runtime completion policy, and return null until J8J resolves canonical `END_SCORE_ATTACK_ATTEMPT`.
+
+Once terminal, J8M must derive the completed TIMEBOX fact exactly `{ type: "TIMEBOX", durationMs: 60000, completed: true }`, delegate dedicated record eligibility only to frozen J8F using current `scoreAttackBestScore` plus candidate run score, and expose immutable finalization metadata: terminal disposition, normalized existing/candidate scores, projected dedicated best, record status and dedicated-record-advance eligibility.
+
+J8M must keep global `highScore`, generic run persistence/archive and generic Infinite progression separate. It owns no storage/GameStats writes, `saveGameStats`, `applyFinalRunCommit`, React/ResultScreen/HUD transition, timer/clock/cursor, session progression, score formula/economy, spawn/arena/entity/projectile/cap/budget/FOTON/formation authority.
 
 ## J9 — Boss & Miniboss Expansion
 Status: PLANNED
