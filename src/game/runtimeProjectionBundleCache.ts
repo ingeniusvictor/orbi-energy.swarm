@@ -21,6 +21,10 @@ import {
   applyDynamicMidSectorEventRuntimeAdoption,
   type DynamicMidSectorEventRuntimeAdoption,
 } from "./dynamicMidSectorEventRuntimeAdoption";
+import {
+  applyBonusChallengeRuntimeAdoption,
+  type BonusChallengeRuntimeAdoption,
+} from "./bonusChallengeRuntimeAdoption";
 
 export interface RuntimeProjectionBundle {
   descriptor: RuntimeWaveDescriptor;
@@ -29,6 +33,7 @@ export interface RuntimeProjectionBundle {
   enemyBudget: number;
   milestoneEncounter: InfiniteMilestoneEncounterProfile | null;
   dynamicEventAdoption: Readonly<DynamicMidSectorEventRuntimeAdoption> | null;
+  bonusChallengeAdoption: Readonly<BonusChallengeRuntimeAdoption> | null;
 }
 
 export type RuntimeProjectionBundleCache = WeakMap<
@@ -60,7 +65,12 @@ export const getCachedRuntimeProjectionBundle = (
       state,
       adaptiveDescriptor,
     );
-  const descriptor = dynamicEventProjection.descriptor;
+  const bonusChallengeProjection =
+    applyBonusChallengeRuntimeAdoption(
+      state,
+      dynamicEventProjection.descriptor,
+    );
+  const descriptor = bonusChallengeProjection.descriptor;
   const bundle: RuntimeProjectionBundle = {
     descriptor,
     combatPressure:
@@ -73,6 +83,8 @@ export const getCachedRuntimeProjectionBundle = (
       projectInfiniteMilestoneEncounter(descriptor),
     dynamicEventAdoption:
       dynamicEventProjection.adoption,
+    bonusChallengeAdoption:
+      bonusChallengeProjection.adoption,
   };
 
   cache.set(state, bundle);
