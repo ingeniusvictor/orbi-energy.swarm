@@ -611,16 +611,41 @@ Exact deployment anchors:
 - Pages `38849771214`, build `116808178956` + deploy `116808274531` GREEN.
 
 ### J7B — Pure Bonus Challenge Opportunity/Cadence Contract
-Status: **NEXT DISCOVERY / CONTRACT TARGET AFTER DOC35 CLOSURE**
+Status: **DEPLOYED / FROZEN**
+Canonical: `93af4e999af5e3b3afed7f684706536bdfaedd89`  
+Issue #399 / PR #400
 
-J7B must establish deterministic eligibility before any Timed Survival live adoption. Discovery must prove:
-- source-mode scope from existing runtime architecture;
-- sparse deterministic cadence and any minimum threshold;
-- first/final-wave, milestone and recovery exclusions/semantics;
-- collision/precedence with J6 dynamic events and existing tactical/milestone seams;
-- whether eligibility can target an existing wave slot or whether a future insertion model requires separate justification.
+Certified J7B opportunity policy:
+- Infinite only;
+- sector >= 33 and cadence `(sector - 33) % 10 === 0`;
+- waveCount `4..7`;
+- uses an existing interior slot only: wave 2 unless frozen J6 owns wave 2, then wave 3;
+- no inserted wave, no copied J6 hash/RNG;
+- first/final, milestone and recovery fail closed;
+- challenge remains J7A `TIMED_SURVIVAL`;
+- `OPPORTUNITY_ONLY` with no live execution, exact duration, descriptor mutation, timer/clock/pause, spawn/arena, progression, combat/economy, HUD, RNG/hash, scans/indexes, caps/budgets, entities/projectiles, FOTON or formation authority.
 
-J7B remains pure: no descriptor mutation, exact duration, timer start/tick, spawn/arena composition, score/reward/economy, HUD, RNG/clock, collection/scan/index, caps/budgets, entities/projectiles, FOTON or formation changes.
+Exact deployment anchors:
+- pre-PR `7757b9c780f5af4cf17f3ededc50363b1adab4ae`, run `38851031270`, certify `116812048577` + Android `116812367521` GREEN;
+- final PR #400 head `0265df56ef6ebda8a887926ac810087af1432336`;
+- PR CI `38851299136` / `116812860905` GREEN; Android `38851299196` / `116812860926` GREEN;
+- canonical `93af4e999af5e3b3afed7f684706536bdfaedd89`, parent `bd4c5c7061337aec3c857f548e086516bbea04e0`, tree `75698c115814e371173ad3e16adc6dff6e6dba22`;
+- main CI `38851462985` / `116813368003` GREEN; Android `38851462903` / `116813367709` GREEN;
+- Pages `38851545491`, build `116813624422` + deploy `116813744666` GREEN.
+
+### J7C — Pure Timed Survival Duration & TIMEBOX Projection Contract
+Status: **NEXT DISCOVERY / CONTRACT TARGET AFTER DOC36 CLOSURE**
+
+J7C closes the final pure-contract gap before any live Timed Survival adoption:
+- consume frozen J7A profile + J7B opportunity authority rather than duplicate them;
+- choose one deterministic exact duration inside the frozen `20000..40000 ms` window;
+- investigate `30000 ms` as the leading candidate because it is the exact midpoint of the window and shorter than the minimum normal Campaign TIMEBOX wave (`35000 ms`), without DOC36 freezing the value;
+- emit immutable TIMEBOX projection metadata only;
+- existing `runtimeCompletionPolicy` and game-loop TIMEBOX timer/pause path remain the future live execution authority;
+- fail closed on noncanonical/noneligible facts;
+- no live runtime import, descriptor mutation, timer/clock/pause authority, spawn/arena, progression, combat, score/reward/economy, HUD, RNG/hash, collections/scans/indexes, caps/budgets, entities/projectiles, FOTON or formations.
+
+Live Timed Survival adoption remains J7D+ and requires a dedicated Issue proving one descriptor seam plus lifecycle/reset/pause and attribution/telegraph behavior.
 
 ## J8 — Additional Game Modes
 Status: PLANNED
