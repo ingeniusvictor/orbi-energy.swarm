@@ -634,18 +634,42 @@ Exact deployment anchors:
 - Pages `38851545491`, build `116813624422` + deploy `116813744666` GREEN.
 
 ### J7C — Pure Timed Survival Duration & TIMEBOX Projection Contract
-Status: **NEXT DISCOVERY / CONTRACT TARGET AFTER DOC36 CLOSURE**
+Status: **DEPLOYED / FROZEN**
+Canonical: `1ad86de5155a3e6e73630e5244f7ce7ec107f4af`  
+Issue #404 / PR #405
 
-J7C closes the final pure-contract gap before any live Timed Survival adoption:
-- consume frozen J7A profile + J7B opportunity authority rather than duplicate them;
-- choose one deterministic exact duration inside the frozen `20000..40000 ms` window;
-- investigate `30000 ms` as the leading candidate because it is the exact midpoint of the window and shorter than the minimum normal Campaign TIMEBOX wave (`35000 ms`), without DOC36 freezing the value;
-- emit immutable TIMEBOX projection metadata only;
-- existing `runtimeCompletionPolicy` and game-loop TIMEBOX timer/pause path remain the future live execution authority;
-- fail closed on noncanonical/noneligible facts;
-- no live runtime import, descriptor mutation, timer/clock/pause authority, spawn/arena, progression, combat, score/reward/economy, HUD, RNG/hash, collections/scans/indexes, caps/budgets, entities/projectiles, FOTON or formations.
+Certified J7C contract:
+- exact duration `30000 ms`;
+- exact midpoint of J7A `20000..40000 ms` and below minimum normal Campaign TIMEBOX `35000 ms`;
+- consumes J7A profile + J7B opportunity authority;
+- immutable `PROJECTION_ONLY` TIMEBOX metadata `{ type: "TIMEBOX", durationMs: 30000 }`;
+- noneligible facts fail closed;
+- no live descriptor/timer/clock/pause/spawn/arena/progression/combat/economy/HUD/RNG/hash/collection/scan/cap/entity/FOTON/formation authority.
 
-Live Timed Survival adoption remains J7D+ and requires a dedicated Issue proving one descriptor seam plus lifecycle/reset/pause and attribution/telegraph behavior.
+Exact deployment anchors:
+- pre-PR `7716741ea46d4926672ac13a88e89b1b7ef2fc30`, run `38862130838`, certify `116846577888` + Android `116846578106` GREEN;
+- final PR #405 head `e553330a434b138bb6dae304a0bffedf442403d3`;
+- PR CI `38862303820` / `116847134910` GREEN; Android `38862303706` / `116847134685` GREEN;
+- canonical `1ad86de5155a3e6e73630e5244f7ce7ec107f4af`, parent `af998aa40c1f767727bbe2c999b4c7b3bc872a3c`, tree `5025f401e8562cff5097a0592b9c5345ec96f366`;
+- main CI `38862461080` / `116847645968` GREEN; Android `38862461028` / `116847645716` GREEN;
+- Pages `38862526063`, build `116847854661` + deploy `116847951677` GREEN.
+
+### J7D — Controlled Live Timed Survival Adoption
+Status: **NEXT DISCOVERY / LIVE ADOPTION TARGET AFTER DOC37 CLOSURE**
+
+J7D is the first J7 slice allowed to investigate live Timed Survival execution:
+- Infinite only unless separately justified; Campaign unchanged;
+- consume frozen J7C projection and J7B selection, without copied profile/cadence/duration logic;
+- prove exactly one smallest existing runtime descriptor seam before mutation;
+- adopt only the selected current wave, never insert a new wave;
+- preserve unrelated descriptor/spawn/pressure/budget/mutator/milestone facts;
+- reuse existing TIMEBOX completion, timer cursor/tick and pause lifecycle with no second clock/timer/ref/completion authority;
+- prove initialization, expiry/completion, pause, transition/reset and no stale carry-over;
+- prove coexistence/order with J6 dynamic-event and adaptive descriptor overlays;
+- bounded attribution/telegraph only; no independent HUD/timer system without separate justification;
+- no new RNG/hash, collections/scans/indexes, spawn/arena/combat/score/reward/economy authority, cap/budget changes, entities/projectiles, FOTON or formations.
+
+DOC37 does not freeze the exact runtime file/seam; dedicated J7D architecture discovery must do so.
 
 ## J8 — Additional Game Modes
 Status: PLANNED
