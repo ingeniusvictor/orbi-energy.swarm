@@ -1,0 +1,54 @@
+name: ES-13DOC35 Apply
+
+on:
+  push:
+    branches:
+      - docs/es-13-j7a-closure-j7b-activation
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply DOC35 fail-closed
+        run: python scripts/es13doc35_apply.py
+
+      - name: Validate exact DOC35 product scope and preservation
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code -- src tests package.json public android || true
+          mapfile -t changed < <(git diff --name-only | sort)
+          expected=(
+            docs/ES13_GAMEPLAY_ROADMAP.md
+            docs/IMPLEMENTATION_LEDGER.md
+            docs/PROJECT_CONTINUITY.md
+          )
+          mapfile -t expected_sorted < <(printf '%s\n' "${expected[@]}" | sort)
+          if [[ "${changed[*]}" != "${expected_sorted[*]}" ]]; then
+            printf 'Unexpected DOC35 changed files:\n%s\n' "${changed[*]}"
+            exit 1
+          fi
+          grep -q '8a5244e770c360d13b8218599ba3f49bbaa03b46' docs/PROJECT_CONTINUITY.md
+          grep -q 'ES-13J7B' docs/PROJECT_CONTINUITY.md
+          grep -q 'ES-13J7A' docs/IMPLEMENTATION_LEDGER.md
+          grep -q '## J8 — Additional Game Modes' docs/ES13_GAMEPLAY_ROADMAP.md
+          grep -q 'ES-14' docs/ES13_GAMEPLAY_ROADMAP.md
+          grep -q '#248' docs/PROJECT_CONTINUITY.md
+
+      - name: Commit DOC35 docs
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add docs/ES13_GAMEPLAY_ROADMAP.md docs/IMPLEMENTATION_LEDGER.md docs/PROJECT_CONTINUITY.md
+          git commit -m 'ES-13DOC35: close J7A and activate J7B discovery'
+          git push origin HEAD:docs/es-13-j7a-closure-j7b-activation
