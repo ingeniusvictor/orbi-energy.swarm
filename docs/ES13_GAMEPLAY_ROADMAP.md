@@ -944,13 +944,40 @@ Exact deployment anchors:
 - Pages `38961007520`, build `117175743388` + deploy `117175888611` GREEN.
 
 ### ES-13J8L — Pure Score Attack Runtime Activation Envelope Contract
-Status: **NEXT CONTRACT TARGET AFTER DOC49 CLOSURE**
+Status: **DEPLOYED / FROZEN**
+Canonical: `d41f00a1a87140dba1ddc2d04b207261df862307`  
+Issue #457 / PR #458
 
-Discovery after J8K shows that direct generic-cache/live adoption is still unsafe because `EnergySwarmGame` has no explicit Score Attack live identity. `runtimeProgressionRef` remains intentionally `CAMPAIGN | INFINITE`, `startGame()` still resets to Campaign, and the generic cache accepts only runtime state plus optional follower count. A Score Attack runtime therefore cannot be safely identified from the runtime discriminator alone without undoing J8H's outer identity boundary.
+J8L freezes the pure outer activation carrier required before any live Score Attack start/cache adoption:
+- resolves one fresh frozen J8H bootstrap envelope and passes that exact object to J8K;
+- preserves explicit outer `modeId: SCORE_ATTACK` while nested runtime remains exactly `INFINITE`;
+- exposes exact J8H bootstrap/runtime/session and J8K bundle/effective-descriptor object identity;
+- carries canonical Sector 11 / Wave 1 fresh-start facts including zero completed sectors/waves and ACTIVE session status;
+- preserves TIMEBOX / 60000 ms and J8K Adaptive Invasion bypass + J6/J7 null compatibility;
+- repeated resolutions are canonically equivalent but independently fresh object graphs;
+- exactly one positive authority: runtime activation-envelope construction;
+- no generic cache/live React/UI/start flow, timer/clock/cursor, J8J execution, persistence/archive/record, score/economy or spawn authority.
 
-J8L must freeze a pure activation envelope that composes one valid J8H bootstrap envelope with its exact J8K projection bundle while preserving explicit outer `modeId: SCORE_ATTACK`. It must expose the same nested fresh `INFINITE` runtime/session plus effective TIMEBOX/60000 descriptor/bundle as immutable metadata for later controlled start/cache adoption and prove all composed facts refer to the same runtime/session identity.
+One initial pre-certification failure was test-only: the J8L gameplay test incorrectly truncated frozen J8B `canonicalFreshStart` to `{sector,wave}`. The canonical J8B object also contains `sectorsCompleted`, `wavesCompleted`, and `status`. Product code remained unchanged; the test was corrected to the full frozen shape.
 
-J8L must not add `SCORE_ATTACK` to `RuntimeProgressionState`; write React state/refs or generic caches; alter StartScreen/ResultScreen/HUD; start/tick/reset timers; advance/end session; execute J8J terminal completion; write persistence/archive/record; or mutate score/economy, spawn/arena, entities/projectiles, caps/budgets, FOTON or formations.
+Exact deployment anchors:
+- initial pre-PR run `38962595762`: scope guard + repo smoke GREEN; gameplay exposed the test-only shape mismatch; Android `117181121364` GREEN;
+- corrected isolated gameplay diagnostic `38963366915` / `117183693510` GREEN across all six J8L tests;
+- final pre-PR SHA `1c9f9e65b8307d1f73dfc6215c6f77b387cfbf0b`, run `38963464711`, certify `117184022310` + Android `117184023007` GREEN;
+- clean PR #458 head `a06c71e7ca72991051e7bcc7752f0f50089e41d4`;
+- PR CI `38963705565` / `117184830694` GREEN; Android `38963705688` / `117184831351` GREEN;
+- canonical `d41f00a1a87140dba1ddc2d04b207261df862307`, parent `9d110a10e07da45f51c932d575f0ae3edb9606d4`, tree `20e5f9a1a48a03108d1c5ea140009d56e0b8da29`, exact diff three certified files;
+- main CI `38963938606` / `117185611390` GREEN; Android `38963938646` / `117185612137` GREEN;
+- Pages `38964054007`, build `117186003430` + deploy `117186140619` GREEN.
+
+### ES-13J8M — Pure Score Attack Attempt Finalization Plan Contract
+Status: **NEXT CONTRACT TARGET AFTER DOC50 CLOSURE**
+
+Discovery after J8L shows that live adoption is still unsafe at the terminal boundary. J8J owns pure `END_SCORE_ATTACK_ATTEMPT` projection after existing runtime completion policy evaluates the J8I TIMEBOX descriptor; J8F owns dedicated record eligibility from a completed TIMEBOX fact; storage already owns independent `scoreAttackBestScore`; and generic `applyFinalRunCommit()` still updates global `highScore` plus generic telemetry/archive. A live Score Attack finalizer must therefore not improvise a generic final commit or couple the dedicated record back into global high score.
+
+J8M must freeze a pure/fail-closed attempt-finalization plan: consume one valid J8L activation envelope, one existing `RuntimeCompletionSnapshot`, existing dedicated best score, and current candidate run score; delegate terminal completion only to J8J; return null until canonical `END_SCORE_ATTACK_ATTEMPT`; then derive exactly `{ type: "TIMEBOX", durationMs: 60000, completed: true }` and delegate dedicated record comparison/eligibility only to J8F. It may expose immutable terminal disposition, normalized existing/candidate scores, projected dedicated best, record status, and dedicated-record advance eligibility.
+
+J8M must own only finalization-plan composition. It must not write storage/GameStats, call `saveGameStats`/`applyFinalRunCommit`, mutate global `highScore`, write archive, transition ResultScreen/HUD/React, own timer/clock/cursor, advance/end session, or alter score formula/economy/spawn/arena/entities/caps/FOTON/formations.
 
 ## J9 — Boss & Miniboss Expansion
 Status: PLANNED
