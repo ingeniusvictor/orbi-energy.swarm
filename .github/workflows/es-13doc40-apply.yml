@@ -19,6 +19,20 @@ jobs:
         with:
           ref: docs/es-13-j8b-closure-j8c-duration
           fetch-depth: 0
+      - name: Repair temporary helper brace escape fail-closed
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('scripts/es13doc40_apply.py')
+          s = p.read_text()
+          old = 'J8C must freeze exactly one pure Score Attack completion metadata projection: `60000 ms` with `{ type: "TIMEBOX", durationMs: 60000 }`. It must consume J8A + J8B, fail closed for unsupported/incompatible facts, and leave current timer/completion runtime authority unchanged.'
+          new = 'J8C must freeze exactly one pure Score Attack completion metadata projection: `60000 ms` with `{{ type: "TIMEBOX", durationMs: 60000 }}`. It must consume J8A + J8B, fail closed for unsupported/incompatible facts, and leave current timer/completion runtime authority unchanged.'
+          count = s.count(old)
+          if count != 1:
+              raise SystemExit(f'DOC40 fail-closed: expected one roadmap brace-escape anchor, got {count}')
+          p.write_text(s.replace(old, new, 1))
+          print('DOC40 temporary helper brace escape repaired locally')
+          PY
       - name: Apply DOC40 fail-closed
         run: python scripts/es13doc40_apply.py
       - name: Validate exact DOC40 scope and preservation
