@@ -782,12 +782,36 @@ Exact deployment anchors:
 - Pages `38915180390`, build `117020692263` + deploy `117020841804` GREEN.
 
 ### ES-13J8E — Dedicated Score Attack Storage-Schema Adoption
-Status: **NEXT CONTRACT TARGET AFTER DOC42 CLOSURE**
+Status: **DEPLOYED / FROZEN**
+Canonical: `5260ffc4e63061646b180d4da419d5d7b794db68`  
+Issue #428 / PR #429
 
-J8E may reserve one persisted field for frozen J8D semantics without making Score Attack live. Add `scoreAttackBestScore: number` to `GameStats`, default it to `0`, sanitize legacy/persisted values to a non-negative integer capped at `Number.MAX_SAFE_INTEGER`, keep the existing `orbi_energy_swarm_stats_v2` key and existing save/reset path, and prove that global `highScore` remains unchanged and independent.
+J8E reserves the dedicated Score Attack record in the existing persistence schema without making Score Attack live:
+- `GameStats.scoreAttackBestScore: number` is required and defaults to `0`;
+- the existing `orbi_energy_swarm_stats_v2` key and save/reset path remain authoritative;
+- load sanitization is finite, non-negative, floored and capped at `Number.MAX_SAFE_INTEGER`; malformed/negative values fail closed to `0`;
+- global `highScore` remains independent;
+- `scoreAttackRecordProjection.ts` and `runPersistence.ts` remain unchanged;
+- no run-completion record write, archive change, live session/runtime/timer/UI adoption or Campaign/Infinite behavior change was introduced.
 
-J8E must not modify campaign/final-run commit functions, write the dedicated record at run completion, alter run-archive format/outcomes, StartScreen/ResultScreen/HUD, live Score Attack runtime/session/timer/completion, score generation/rewards/economy, spawn/arena, scans/indexes, caps/budgets, entities/projectiles, FOTON or formations. Effective run-completion record-write adoption and live UI/start flow remain later slices.
+Exact closure evidence:
+- initial certifier `38919090012` correctly went RED on one historical pre-J8E J8D test; Android `117034051271` still passed with APK;
+- evidence-driven test-only transition was documented on #428 without modifying J8D implementation or `runPersistence.ts`;
+- final pre-PR SHA `7298d284e3c78801a14cef2416240732417186f1`, run `38919470032`, certify `117035335947` + Android `117035335482` GREEN;
+- clean PR head `4cc7c247b91429b1cccbefeebaba690e156c89d1`;
+- PR CI `38919716924` / `117036177752` GREEN; Android `38919717107` / `117036177762` GREEN;
+- canonical `5260ffc4e63061646b180d4da419d5d7b794db68`, parent `7da459c56ab27d7891cf859db9c1065347cd2736`, tree `6094ca2b366463179233fb63383d355c03839d4b`, exact diff four certified source/test files;
+- main CI `38919920231` / `117036889398` GREEN; Android `38919920210` / `117036889938` GREEN;
+- Pages `38920010388`, build `117037206191` + deploy `117037367882` GREEN.
 
+### ES-13J8F — Pure Score Attack Record-Commit Eligibility Contract
+Status: **NEXT CONTRACT TARGET AFTER DOC43 CLOSURE**
+
+Discovery after J8E shows that effective record writes are still premature: `FinalRunCommitInput` has no mode/completion discriminator, generic `applyFinalRunCommit(...)` always owns global `highScore`, J8B does not construct/execute a live Score Attack session and J8C only projects TIMEBOX completion.
+
+J8F must therefore freeze a pure/fail-closed decision boundary only. It may consume explicit `SCORE_ATTACK` identity, explicit TIMEBOX-completion facts, the existing dedicated best score and candidate score through frozen J8D projection semantics, and report record advancement eligibility only for `NEW_BEST`. Non-Score-Attack, absent/wrong completion facts and non-advancing projections fail closed.
+
+J8F must not write storage, mutate `GameStats`, change `applyFinalRunCommit`, add live mode/session/timer/clock/pause authority, alter StartScreen/ResultScreen/HUD, score formula, rewards/economy, archives, Campaign/Infinite behavior, spawn/arena, scans/indexes, caps/budgets, entities/projectiles, FOTON or formations.
 
 ## J9 — Boss & Miniboss Expansion
 Status: PLANNED

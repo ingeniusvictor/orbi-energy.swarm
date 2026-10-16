@@ -61,6 +61,7 @@ Rules:
 | ES-13J8B — Pure Score Attack Execution-Substrate / Lifecycle Compatibility Contract | DEPLOYED / FROZEN | `d6277d4162c23f9b3edbbd69ccac8424b90d99ee` | #416 | #417 |
 | ES-13J8C — Pure Score Attack Exact Duration / TIMEBOX Projection Contract | DEPLOYED / FROZEN | `78dfd39af5172499e7d82b8a62385a8e49f0e403` | #420 | #421 |
 | ES-13J8D — Pure Dedicated Score Attack Record Projection Contract | DEPLOYED / FROZEN | `de37f4a818b05b09c136617b71cf3620bf4e1e83` | #424 | #425 |
+| ES-13J8E — Dedicated Score Attack Storage-Schema Adoption | DEPLOYED / FROZEN | `5260ffc4e63061646b180d4da419d5d7b794db68` | #428 | #429 |
 
 ## Evidence anchors
 
@@ -504,7 +505,8 @@ Issue #383 CLOSED / completed. J6B-B is **DEPLOYED / FROZEN**.
 - DOC39 — J8A closure & J8B execution-substrate discovery activation: `b283a61b26a8491888ff251d3ee55006b5872806` — Issue #414 / PR #415.
 - DOC40 — J8B closure & J8C Score Attack duration/TIMEBOX projection activation: `51e383f95d6725184616866a46f65fe09d115dd6` — Issue #418 / PR #419.
 - DOC41 — J8C closure & J8D dedicated Score Attack record projection activation: `2e4eb93a06e303c42cd8c97a133a176860eb2e38` — Issue #422 / PR #423.
-- DOC42 — J8D closure & J8E dedicated Score Attack storage-schema adoption activation: Issue #426, branch `docs/es-13-j8d-closure-j8e-storage-schema`, in progress from gameplay canonical `de37f4a818b05b09c136617b71cf3620bf4e1e83`.
+- DOC42 — J8D closure & J8E dedicated Score Attack storage-schema adoption activation: `7da459c56ab27d7891cf859db9c1065347cd2736` — Issue #426 / PR #427.
+- DOC43 — J8E closure & J8F pure Score Attack record-commit eligibility activation: Issue #430, branch `docs/es-13-j8e-closure-j8f-record-commit-eligibility`, documentation-only closure in progress from gameplay canonical `5260ffc4e63061646b180d4da419d5d7b794db68`.
 
 ### J6B-C — Pure Dynamic Event Effect-Mapping Compatibility Contract
 - Frozen mappings: `SOLAR_STORM → ELECTRICAL_STORM`, `QUANTUM_RIFT → MAGNETIC_DRIFT`, `BLACKOUT_SURGE → REDUCED_VISIBILITY`, `CRYSTAL_RUSH → UNSTABLE_RESOURCE_FIELDS`; `DYSON_ECLIPSE → UNMAPPED` fail-closed.
@@ -626,13 +628,22 @@ Remain OPEN and deferred while ES-13 materially changes gameplay:
 
 Automated CI never substitutes for required human/device evidence.
 
+### J8E — Dedicated Score Attack Storage-Schema Adoption
+- Required `GameStats.scoreAttackBestScore`, default `0`, existing v2 storage key/save/reset path retained.
+- Persisted values sanitize to finite non-negative floored integers capped at `Number.MAX_SAFE_INTEGER`; malformed/negative values fail closed to `0`.
+- Global `highScore` remains independent; J8D source and `runPersistence.ts` unchanged.
+- Initial certifier `38919090012` exposed one obsolete pre-J8E architecture expectation; scope amendment was documented on #428 and fixed test-only without weakening J8D purity.
+- Final pre-PR `7298d284e3c78801a14cef2416240732417186f1`: run `38919470032`, certify `117035335947` + Android `117035335482` GREEN.
+- PR #429 head `4cc7c247b91429b1cccbefeebaba690e156c89d1`: CI `38919716924` / `117036177752` + Android `38919717107` / `117036177762` GREEN.
+- Canonical `5260ffc4e63061646b180d4da419d5d7b794db68`, parent `7da459c56ab27d7891cf859db9c1065347cd2736`, tree `6094ca2b366463179233fb63383d355c03839d4b`, exact diff four certified files.
+- Main CI `38919920231` / `117036889398`, Android `38919920210` / `117036889938`, Pages `38920010388` build `117037206191` + deploy `117037367882` GREEN.
+
 ## Next planned gameplay
 
-### ES-13J8E — Dedicated Score Attack Storage-Schema Adoption
-Status: **NEXT CONTRACT TARGET AFTER DOC42 CLOSURE**.
+### ES-13J8F — Pure Score Attack Record-Commit Eligibility Contract
+Status: **NEXT CONTRACT TARGET AFTER DOC43 CLOSURE**.
 
-J8E is schema/storage adoption only: add `scoreAttackBestScore` to `GameStats`, default it to `0`, sanitize legacy/persisted values to a bounded non-negative integer capped at `Number.MAX_SAFE_INTEGER`, retain the existing v2 storage key/save/reset path, and prove global `highScore` isolation. It must consume J8D semantics and must not change run-commit functions, write the field at run completion, alter archives, UI/HUD, live runtime/session/timer/completion, score formula/rewards/economy, spawn/arena, scans/indexes, caps/budgets, entities/projectiles or formation authority. Effective record-write adoption remains later.
-
+J8F is pure decision policy only. It must consume explicit canonical Score Attack identity + explicit TIMEBOX-completion facts and delegate best/candidate comparison to frozen J8D projection semantics. Only `NEW_BEST` may project record advancement eligibility; unsupported/missing identity/completion facts fail closed. It must not mutate `GameStats`, storage or `applyFinalRunCommit`, and must not acquire live runtime/session/timer/UI/archive/score/reward/economy/spawn/arena/entity authority.
 
 J4D+ additional tactical families remain deferred: FORMATION_BREAKER/JAMMER require hard-control spacing/recovery proof; MINE_WEAVER/MIRROR_WARDEN require genuine mine/mirror mechanics. J3C-C remains deferred, not cancelled.
 
