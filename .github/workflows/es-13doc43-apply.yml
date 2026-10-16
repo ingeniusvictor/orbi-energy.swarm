@@ -1,0 +1,74 @@
+name: ES-13DOC43 Apply
+
+on:
+  push:
+    branches: [docs/es-13-j8e-closure-j8f-record-commit-eligibility]
+    paths:
+      - scripts/es13doc43_apply.py
+      - .github/workflows/es-13doc43-apply.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Guard exact canonical ancestry
+        run: |
+          test "$(git merge-base 5260ffc4e63061646b180d4da419d5d7b794db68 HEAD)" = "5260ffc4e63061646b180d4da419d5d7b794db68"
+
+      - name: Apply DOC43 fail-closed patch
+        run: python3 scripts/es13doc43_apply.py
+
+      - name: Validate exact DOC43 product scope and preservation
+        run: |
+          printf '%s\n' \
+            docs/ES13_GAMEPLAY_ROADMAP.md \
+            docs/IMPLEMENTATION_LEDGER.md \
+            docs/PROJECT_CONTINUITY.md > /tmp/expected
+          git diff --name-only | sort > /tmp/actual
+          diff -u /tmp/expected /tmp/actual
+          grep -Fq '5260ffc4e63061646b180d4da419d5d7b794db68' docs/PROJECT_CONTINUITY.md
+          grep -Fq 'ES-13J8F' docs/ES13_GAMEPLAY_ROADMAP.md
+          grep -Fq 'Record-Commit Eligibility' docs/PROJECT_CONTINUITY.md
+          grep -Fq 'FinalRunCommitInput' docs/ES13_GAMEPLAY_ROADMAP.md
+          grep -Fq '#4' docs/IMPLEMENTATION_LEDGER.md
+          grep -Fq '#5' docs/IMPLEMENTATION_LEDGER.md
+          grep -Fq '#202' docs/IMPLEMENTATION_LEDGER.md
+          grep -Fq '#248' docs/IMPLEMENTATION_LEDGER.md
+          grep -Fq '#254' docs/PROJECT_CONTINUITY.md
+          grep -Fq '#283' docs/PROJECT_CONTINUITY.md
+          grep -Fq '## J9 — Boss & Miniboss Expansion' docs/ES13_GAMEPLAY_ROADMAP.md
+          grep -Fq '## J15' docs/ES13_GAMEPLAY_ROADMAP.md
+          grep -Fq 'ES-14' docs/ES13_GAMEPLAY_ROADMAP.md
+          git diff --exit-code 5260ffc4e63061646b180d4da419d5d7b794db68 -- . ':!docs/ES13_GAMEPLAY_ROADMAP.md' ':!docs/IMPLEMENTATION_LEDGER.md' ':!docs/PROJECT_CONTINUITY.md' ':!scripts/es13doc43_apply.py' ':!.github/workflows/es-13doc43-apply.yml'
+
+      - name: Commit DOC43 docs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/ES13_GAMEPLAY_ROADMAP.md docs/IMPLEMENTATION_LEDGER.md docs/PROJECT_CONTINUITY.md
+          git diff --cached --name-only | sort > /tmp/staged
+          printf '%s\n' \
+            docs/ES13_GAMEPLAY_ROADMAP.md \
+            docs/IMPLEMENTATION_LEDGER.md \
+            docs/PROJECT_CONTINUITY.md > /tmp/expected
+          diff -u /tmp/expected /tmp/staged
+          git commit -m "docs(doc43): close J8E and activate J8F eligibility contract"
+          git push origin HEAD:docs/es-13-j8e-closure-j8f-record-commit-eligibility
