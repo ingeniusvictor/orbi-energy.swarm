@@ -1,0 +1,136 @@
+name: ES-13J8K Pre-PR Certification
+
+on:
+  push:
+    branches: [es-13j8k-pure-score-attack-runtime-projection-bundle]
+    paths:
+      - .github/workflows/es-13j8k-pre-pr-cert.yml
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Guard exact J8K scope and frozen seams
+        run: |
+          test "$(git merge-base cea92b2304797ac2af597a3416a2b23b17563154 HEAD)" = "cea92b2304797ac2af597a3416a2b23b17563154"
+          printf '%s\n' \
+            .github/workflows/es-13j8k-pre-pr-cert.yml \
+            src/game/scoreAttackRuntimeProjectionBundle.ts \
+            tests/es-13j8k-score-attack-runtime-projection-bundle.test.mjs \
+            tests/gameplay/score-attack-runtime-projection-bundle.test.ts > /tmp/expected
+          git diff --name-only cea92b2304797ac2af597a3416a2b23b17563154...HEAD | sort > /tmp/actual
+          diff -u /tmp/expected /tmp/actual
+          git diff --quiet cea92b2304797ac2af597a3416a2b23b17563154...HEAD -- src/game/scoreAttackBootstrapEnvelope.ts
+          git diff --quiet cea92b2304797ac2af597a3416a2b23b17563154...HEAD -- src/game/scoreAttackRuntimeDescriptorCompletionOverlay.ts
+          git diff --quiet cea92b2304797ac2af597a3416a2b23b17563154...HEAD -- src/game/scoreAttackTerminalCompletionDisposition.ts
+          git diff --quiet cea92b2304797ac2af597a3416a2b23b17563154...HEAD -- src/game/adaptiveInvasionRuntime.ts
+          git diff --quiet cea92b2304797ac2af597a3416a2b23b17563154...HEAD -- src/game/runtimeProjectionBundleCache.ts
+          git diff --quiet cea92b2304797ac2af597a3416a2b23b17563154...HEAD -- src/game/EnergySwarmGame.tsx
+          git diff --quiet cea92b2304797ac2af597a3416a2b23b17563154...HEAD -- src/game/runPersistence.ts
+          grep -Fq 'adaptiveInvasionBypassed: true' src/game/scoreAttackRuntimeProjectionBundle.ts
+          grep -Fq 'usesLiveFollowerCount: false' src/game/scoreAttackRuntimeProjectionBundle.ts
+          grep -Fq 'dynamicEventCompatibility.adoption !== null' src/game/scoreAttackRuntimeProjectionBundle.ts
+          grep -Fq 'bonusChallengeCompatibility.adoption !== null' src/game/scoreAttackRuntimeProjectionBundle.ts
+          grep -Fq 'ownsScoreAttackRuntimeProjectionBundleAuthority: true' src/game/scoreAttackRuntimeProjectionBundle.ts
+          ! grep -Eq 'applyAdaptiveInvasionToDescriptor|from "./adaptiveInvasionRuntime"|getCachedRuntimeProjectionBundle|scoreAttackTerminalCompletionDisposition|advanceInfiniteRuntimeState\s*\(|localStorage|sessionStorage|applyFinalRunCommit|Date\.now|performance\.now|Math\.random' src/game/scoreAttackRuntimeProjectionBundle.ts
+          ! grep -q 'scoreAttackRuntimeProjectionBundle' src/game/runtimeProjectionBundleCache.ts
+          ! grep -q 'scoreAttackRuntimeProjectionBundle' src/game/EnergySwarmGame.tsx
+
+      - name: Repository smoke
+        run: npm run test:repo
+
+      - name: Gameplay regression
+        run: npm run test:gameplay
+
+      - name: Platform regression
+        run: npm run test:platform
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Release contract
+        run: npm run release:verify
+
+      - name: Manual certification dossier
+        run: npm run release:evidence:verify
+
+      - name: Production build
+        run: npm run build
+
+      - name: RC readiness evidence
+        env:
+          ORBI_RELEASE_SHA: ${{ github.sha }}
+        run: npm run release:readiness -- --output release-readiness.json
+
+      - name: Upload readiness evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: es-13j8k-readiness-${{ github.sha }}
+          path: release-readiness.json
+          if-no-files-found: error
+          retention-days: 30
+
+  android-debug:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      ORBI_BUILD_SHA: ${{ github.sha }}
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Setup Java 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+
+      - name: Install Android 16 SDK
+        run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0' >/dev/null
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Android debug APK
+        run: npm run android:debug
+
+      - name: Verify APK
+        run: test -s android/app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: es-13j8k-debug-${{ github.sha }}
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14
