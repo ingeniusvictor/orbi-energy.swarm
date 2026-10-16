@@ -56,6 +56,7 @@ Rules:
 | ES-13J7A — Pure Timed Survival Bonus Challenge Profile Contract | DEPLOYED / FROZEN | `8a5244e770c360d13b8218599ba3f49bbaa03b46` | #395 | #396 |
 | ES-13J7B — Pure Timed Survival Opportunity/Cadence Contract | DEPLOYED / FROZEN | `93af4e999af5e3b3afed7f684706536bdfaedd89` | #399 | #400 |
 | ES-13J7C — Pure Timed Survival Duration & TIMEBOX Projection Contract | DEPLOYED / FROZEN | `1ad86de5155a3e6e73630e5244f7ce7ec107f4af` | #404 | #405 |
+| ES-13J7D — Controlled Live Timed Survival Adoption | DEPLOYED / FROZEN | `9440b31b0c8dca2da0cfe92a5f02cbf7065e6d67` | #408 | #409 |
 
 ## Evidence anchors
 
@@ -494,7 +495,8 @@ Issue #383 CLOSED / completed. J6B-B is **DEPLOYED / FROZEN**.
 - DOC34 — J6B-D closure & J7 discovery activation: `b858b14a2682fd5855eda5093fc6b13ec3a5653c` — Issue #393 / PR #394.
 - DOC35 — J7A closure & J7B opportunity/cadence discovery activation: `bd4c5c7061337aec3c857f548e086516bbea04e0` — Issue #397 / PR #398.
 - DOC36 — J7B closure & J7C duration/TIMEBOX projection activation: `af998aa40c1f767727bbe2c999b4c7b3bc872a3c` — Issue #401 / PR #403.
-- DOC37 — J7C closure & J7D controlled live Timed Survival adoption activation: Issue #406, branch `docs/es-13-j7c-closure-j7d-activation`, in progress from gameplay canonical `1ad86de5155a3e6e73630e5244f7ce7ec107f4af`.
+- DOC37 — J7C closure & J7D controlled live Timed Survival adoption activation: `84d259c2a0f5f0284db5f67742a052e6c3003f62` — Issue #406 / PR #407.
+- DOC38 — J7D/J7 closure & J8 architecture discovery activation: Issue #410, branch `docs/es-13-j7d-j7-closure-j8-discovery`, in progress from gameplay canonical `9440b31b0c8dca2da0cfe92a5f02cbf7065e6d67`.
 
 ### J6B-C — Pure Dynamic Event Effect-Mapping Compatibility Contract
 - Frozen mappings: `SOLAR_STORM → ELECTRICAL_STORM`, `QUANTUM_RIFT → MAGNETIC_DRIFT`, `BLACKOUT_SURGE → REDUCED_VISIBILITY`, `CRYSTAL_RUSH → UNSTABLE_RESOURCE_FIELDS`; `DYSON_ECLIPSE → UNMAPPED` fail-closed.
@@ -545,6 +547,20 @@ Issue #383 CLOSED / completed. J6B-B is **DEPLOYED / FROZEN**.
 - Canonical `1ad86de5155a3e6e73630e5244f7ce7ec107f4af`, parent `af998aa40c1f767727bbe2c999b4c7b3bc872a3c`, tree `5025f401e8562cff5097a0592b9c5345ec96f366`, exact diff three product/test files.
 - Main CI `38862461080` / `116847645968` GREEN; Android `38862461028` / `116847645716` GREEN; Pages `38862526063`, build `116847854661` + deploy `116847951677` GREEN.
 
+### J7D — Controlled Live Timed Survival Adoption
+- Single descriptor overlay in `runtimeProjectionBundleCache.ts` after adaptive + J6 and before downstream pressure/mutator/budget/milestone projections; no `EnergySwarmGame.tsx` change.
+- Reuses J7A/J7B/J7C; selected current Infinite descriptor must still be `BUDGET_AND_CLEAR`, then only completion policy becomes `TIMEBOX 30000` plus bounded wave-announcement attribution.
+- Existing timer/pause/completion lifecycle remains authoritative; Campaign and unrelated descriptor fields remain unchanged.
+- Diagnostic run `38863999290` failed only a new static assertion (`cursor.remainingTimeMs` vs frozen `snapshot.remainingTimeMs`); Android `116852516295` was GREEN. Assertion-only repair `35707b94e33658143d535b3c3aef84010f97ba94`; no runtime authority changed to satisfy the test.
+- Final pre-PR `6edcd8350beb2206755bf98518e301849cd99cea`, run `38900414518`, certify `116970988704` + Android `116970988120` GREEN.
+- Final PR #409 head `8e4b0c17cf4db232f11e4cd3c34bbcde83358aff`; PR CI `38900636271` / `116971729124` GREEN; PR Android `38900635979` / `116971728007` GREEN.
+- Canonical `9440b31b0c8dca2da0cfe92a5f02cbf7065e6d67`, parent `84d259c2a0f5f0284db5f67742a052e6c3003f62`, tree `e7d54e341de9d4995f13c62f6a7a2f41922798e9`, exact diff four product/test files.
+- Main CI `38900847691` / `116972435417` GREEN; Android `38900847145` / `116972433572` GREEN; Pages `38900976181`, build `116972852085` + deploy `116973051764` GREEN.
+- No second timer/clock/ref/progression director, inserted wave, recipe/session mutation, RNG/hash, collection/scan/index, spawn/combat/economy, cap/budget, entity/projectile, FOTON or formation authority.
+
+### J7 program closure
+J7A→J7D certifies the first complete `TIMED_SURVIVAL` Bonus Challenge vertical slice. Other listed Bonus Challenge concepts remain future vocabulary and are neither cancelled nor implemented by implication.
+
 ## Frozen manual/physical blockers
 Remain OPEN and deferred while ES-13 materially changes gameplay:
 - #4 — visual/responsive certification;
@@ -556,10 +572,10 @@ Automated CI never substitutes for required human/device evidence.
 
 ## Next planned gameplay
 
-### ES-13J7D — Controlled Live Timed Survival Adoption
-Status: **NEXT DISCOVERY / LIVE ADOPTION TARGET AFTER DOC37 CLOSURE**.
+### ES-13J8 — Additional Game Modes Architecture Discovery
+Status: **NEXT ARCHITECTURE / DISCOVERY TARGET AFTER DOC38 CLOSURE**.
 
-J7D must complete architecture discovery before any runtime write. It may adopt only the frozen J7C `TIMEBOX 30000` projection for the current J7B-selected Infinite wave, through one bounded existing descriptor seam. Existing TIMEBOX completion/timer/pause lifecycle must remain authoritative; no second clock/timer/ref/progression director is allowed. It must preserve unrelated descriptor fields, spawn/arena/combat/economy/caps/budgets and prove transition/reset/no-stale behavior plus coexistence/order with J6 and adaptive descriptor overlays. Exact live file/seam is not frozen by DOC37 and requires the dedicated J7D Issue.
+Candidate vocabulary remains Score Attack, Boss Rush, Survival/Last Light, Swarm Trials, Anomaly Runs, Daily Seed, Elite Hunt, Endless Crisis and Perfect Sector. Discovery must select the smallest mode that can reuse the certified runtime/session/progression/persistence engine without a mode-specific fork, proving lifecycle/reset/end semantics, Campaign/Infinite coexistence, persistence/high-score implications, descriptor/progression reuse, UI impact, seed/replay semantics if applicable and Android parity. DOC38 freezes no concrete mode, scoring rule, duration, rewards/economy, seed policy, persistence schema, runtime state, UI or live behavior.
 
 J4D+ additional tactical families remain deferred: FORMATION_BREAKER/JAMMER require hard-control spacing/recovery proof; MINE_WEAVER/MIRROR_WARDEN require genuine mine/mirror mechanics. J3C-C remains deferred, not cancelled.
 

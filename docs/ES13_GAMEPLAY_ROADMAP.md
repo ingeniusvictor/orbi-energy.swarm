@@ -582,7 +582,7 @@ Exact deployment anchors:
 - Pages `38818209120`, build `116708074756` + deploy `116708178250` GREEN.
 
 ## J7 — Bonus Challenge Rounds
-Status: **ACTIVE PROGRAM**
+Status: **DEPLOYED / FROZEN — FIRST CERTIFIED VERTICAL SLICE**
 
 20–40 s rhythm breakers remain the long-range design vocabulary: precision, rescue, collection, evasive corridors, pursuit, affinity puzzles, obstacle navigation, timed survival and survival without firing.
 
@@ -655,26 +655,38 @@ Exact deployment anchors:
 - Pages `38862526063`, build `116847854661` + deploy `116847951677` GREEN.
 
 ### J7D — Controlled Live Timed Survival Adoption
-Status: **NEXT DISCOVERY / LIVE ADOPTION TARGET AFTER DOC37 CLOSURE**
+Status: **DEPLOYED / FROZEN**
+Canonical: `9440b31b0c8dca2da0cfe92a5f02cbf7065e6d67`  
+Issue #408 / PR #409
 
-J7D is the first J7 slice allowed to investigate live Timed Survival execution:
-- Infinite only unless separately justified; Campaign unchanged;
-- consume frozen J7C projection and J7B selection, without copied profile/cadence/duration logic;
-- prove exactly one smallest existing runtime descriptor seam before mutation;
-- adopt only the selected current wave, never insert a new wave;
-- preserve unrelated descriptor/spawn/pressure/budget/mutator/milestone facts;
-- reuse existing TIMEBOX completion, timer cursor/tick and pause lifecycle with no second clock/timer/ref/completion authority;
-- prove initialization, expiry/completion, pause, transition/reset and no stale carry-over;
-- prove coexistence/order with J6 dynamic-event and adaptive descriptor overlays;
-- bounded attribution/telegraph only; no independent HUD/timer system without separate justification;
-- no new RNG/hash, collections/scans/indexes, spawn/arena/combat/score/reward/economy authority, cap/budget changes, entities/projectiles, FOTON or formations.
+Certified J7D live policy:
+- Infinite-only current-wave adoption; Campaign unchanged;
+- consumes frozen J7A/J7B/J7C instead of copying profile/cadence/duration logic;
+- one immutable descriptor overlay after adaptive + J6 and before downstream pressure/mutator/budget/milestone projections;
+- selected descriptor must still be `BUDGET_AND_CLEAR`, otherwise fail closed;
+- overlays only `TIMEBOX 30000` completion plus bounded Timed Survival wave-announcement attribution;
+- spawn, pressure, modifiers, rewards, milestone, fairness, biome and source remain unchanged;
+- existing runtime timer/pause/completion lifecycle remains authoritative;
+- no `EnergySwarmGame.tsx` change, inserted wave, recipe/session mutation, second clock/timer/ref/director, RNG/hash, collections/scans/indexes, spawn/combat/economy, cap/budget, entity/projectile, FOTON or formation authority.
 
-DOC37 does not freeze the exact runtime file/seam; dedicated J7D architecture discovery must do so.
+Exact deployment anchors:
+- initial diagnostic run `38863999290` exposed only a static test assertion mismatch (`cursor.remainingTimeMs` vs frozen `snapshot.remainingTimeMs`); Android `116852516295` GREEN;
+- assertion-only repair `35707b94e33658143d535b3c3aef84010f97ba94`;
+- final pre-PR `6edcd8350beb2206755bf98518e301849cd99cea`, run `38900414518`, certify `116970988704` + Android `116970988120` GREEN;
+- final PR #409 head `8e4b0c17cf4db232f11e4cd3c34bbcde83358aff`;
+- PR CI `38900636271` / `116971729124` GREEN; Android `38900635979` / `116971728007` GREEN;
+- canonical `9440b31b0c8dca2da0cfe92a5f02cbf7065e6d67`, parent `84d259c2a0f5f0284db5f67742a052e6c3003f62`, tree `e7d54e341de9d4995f13c62f6a7a2f41922798e9`;
+- main CI `38900847691` / `116972435417` GREEN; Android `38900847145` / `116972433572` GREEN;
+- Pages `38900976181`, build `116972852085` + deploy `116973051764` GREEN.
+
+J7A→J7D completes the first fully certified end-to-end Bonus Challenge vertical slice: `TIMED_SURVIVAL`. Precision, rescue, collection, evasive corridors, pursuit, affinity puzzles, obstacle navigation and survival without firing remain future vocabulary, not cancelled and not implicitly implemented.
 
 ## J8 — Additional Game Modes
-Status: PLANNED
+Status: **NEXT ARCHITECTURE / DISCOVERY TARGET AFTER DOC38 CLOSURE**
 
-Score Attack, Boss Rush, Survival/Last Light, Swarm Trials, Anomaly Runs, Daily Seed, Elite Hunt, Endless Crisis and Perfect Sector. Reuse one certified engine/core; avoid mode-specific forks.
+Candidate vocabulary: Score Attack, Boss Rush, Survival/Last Light, Swarm Trials, Anomaly Runs, Daily Seed, Elite Hunt, Endless Crisis and Perfect Sector. Reuse one certified engine/core; avoid mode-specific forks.
+
+DOC38 activates discovery only. No first J8 mode is frozen. Architecture discovery must inspect runtime/session/progression/persistence/start-screen/result-screen seams and prove the smallest reusable mode boundary, lifecycle/reset/end semantics, Campaign/Infinite coexistence, persistence/high-score impact, descriptor/progression reuse, UI implications, seed/replay behavior if applicable and Android parity before any implementation slice is named.
 
 ## J9 — Boss & Miniboss Expansion
 Status: PLANNED
