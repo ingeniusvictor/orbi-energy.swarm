@@ -65,7 +65,21 @@ jobs:
           ! grep -q 'SCORE_ATTACK' src/components/ResultScreen.tsx
 
       - name: Repository smoke
-        run: npm run test:repo
+        run: |
+          set +e
+          npm run test:repo > j8o-repo-smoke-diagnostic.txt 2>&1
+          status=$?
+          set -e
+          if [ "$status" -ne 0 ]; then
+            git restore src/game/EnergySwarmGame.tsx
+            git config user.name ingeniusvictor
+            git config user.email ingenius.victor@gmail.com
+            git add j8o-repo-smoke-diagnostic.txt
+            git commit -m 'chore(j8o): capture temporary repository smoke diagnostic'
+            git push
+            exit "$status"
+          fi
+          rm -f j8o-repo-smoke-diagnostic.txt
 
       - name: Gameplay regression
         run: npm run test:gameplay
