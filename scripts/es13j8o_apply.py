@@ -169,35 +169,29 @@ text = sub_once(
     re.S,
 )
 
-trigger_marker = "  const triggerGameOver = (won: boolean) => {"
-handle_marker = "  const handleOverdriveActivation = () => {"
-trigger_index = text.find(trigger_marker)
-handle_index = text.find(handle_marker, trigger_index)
-if trigger_index < 0 or handle_index < 0:
-    raise SystemExit("J8O triggerGameOver segment markers missing")
-trigger_segment = text[trigger_index:handle_index]
-trigger_segment = sub_once(
-    trigger_segment,
+text = sub_once(
+    text,
     r'''  const triggerGameOver = \(won: boolean\) => \{\s*loopActiveRef\.current = false;''',
     '''  const triggerGameOver = (won: boolean) => {
     const scoreAttackAttemptActive =
       scoreAttackActivationRef.current !== null;
     loopActiveRef.current = false;''',
-    "J8O generic persistence guard capture",
+    "J8O game-over activation capture",
     re.S,
 )
-trigger_segment = sub_once(
-    trigger_segment,
-    r'''(    if \(won\) \{\s*playVictorySound\(\);\s*postDialogue\("COMPANION",\s*"¡RESONANCIA PURIFICADA! El Devorador de la red ha sido desmantelado\."\);\s*\} else \{\s*playGameOverSound\(\);\s*postDialogue\("SYSTEM",\s*"ENIGM-CORE CRASHED\. Sincronización del enjambre perdida\."\);\s*\})''',
-    r'''\1
 
-    if (scoreAttackAttemptActive) {
+text = replace_once(
+    text,
+    '''    // Persist scores
+    commitStats(won, scoreRef.current);''',
+    '''    if (scoreAttackAttemptActive) {
       scoreAttackActivationRef.current = null;
       return;
-    }''',
-    "J8O generic run persistence bypass",
-    re.S,
+    }
+
+    // Persist scores
+    commitStats(won, scoreRef.current);''',
+    "J8O generic persistence bypass",
 )
-text = text[:trigger_index] + trigger_segment + text[handle_index:]
 
 GAME.write_text(text)
