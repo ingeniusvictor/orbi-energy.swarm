@@ -5,6 +5,7 @@ on:
     branches: [es-13j8o-controlled-live-score-attack-engine-lifecycle]
     paths:
       - .github/workflows/es-13j8o-apply.yml
+      - scripts/es13j8o_apply.py
 
 permissions:
   contents: write
