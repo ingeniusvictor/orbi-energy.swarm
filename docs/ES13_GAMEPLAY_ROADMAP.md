@@ -682,11 +682,39 @@ Exact deployment anchors:
 J7A→J7D completes the first fully certified end-to-end Bonus Challenge vertical slice: `TIMED_SURVIVAL`. Precision, rescue, collection, evasive corridors, pursuit, affinity puzzles, obstacle navigation and survival without firing remain future vocabulary, not cancelled and not implicitly implemented.
 
 ## J8 — Additional Game Modes
-Status: **NEXT ARCHITECTURE / DISCOVERY TARGET AFTER DOC38 CLOSURE**
+Status: **ACTIVE PROGRAM**
 
-Candidate vocabulary: Score Attack, Boss Rush, Survival/Last Light, Swarm Trials, Anomaly Runs, Daily Seed, Elite Hunt, Endless Crisis and Perfect Sector. Reuse one certified engine/core; avoid mode-specific forks.
+Candidate vocabulary remains Score Attack, Boss Rush, Survival/Last Light, Swarm Trials, Anomaly Runs, Daily Seed, Elite Hunt, Endless Crisis and Perfect Sector. Reuse one certified engine/core; avoid mode-specific forks.
 
-DOC38 activates discovery only. No first J8 mode is frozen. Architecture discovery must inspect runtime/session/progression/persistence/start-screen/result-screen seams and prove the smallest reusable mode boundary, lifecycle/reset/end semantics, Campaign/Infinite coexistence, persistence/high-score impact, descriptor/progression reuse, UI implications, seed/replay behavior if applicable and Android parity before any implementation slice is named.
+### J8A — Pure Score Attack Mode Profile Contract
+Status: **DEPLOYED / FROZEN**
+Canonical: `4a78c942a3ebdb509f67185d6799b0724ac27238`  
+Issue #412 / PR #413
+
+J8A selects Score Attack as the smallest justified first Additional Game Mode contract without live adoption:
+- `SCORE_ATTACK` / `Score Attack`;
+- family `ARCADE_SCORE_CHASE`;
+- mode `PROFILE_ONLY`;
+- objective `MAXIMIZE_EXISTING_RUN_SCORE`;
+- completion compatibility `TIMEBOX`;
+- score-source compatibility `EXISTING_RUN_SCORE`;
+- only semantic profile-definition authority is owned;
+- exact duration, progression substrate, runtime discriminator, start flow, persistence/high-score/archive, result presentation, seed/replay, score formula, rewards/economy and live adoption remain unresolved.
+
+Exact deployment anchors:
+- pre-PR `69fea866809cba4764414df2a5e4f7bfcc97e895`, run `38902639119`, certify `116978369434` + Android `116978369920` GREEN;
+- final PR #413 head `979640051e9568c2b710d68ec77690db69b5a68b`;
+- PR CI `38902906173` / `116979264896` GREEN; Android `38902906158` / `116979264759` GREEN;
+- canonical `4a78c942a3ebdb509f67185d6799b0724ac27238`, parent `0b7e61820d139327046f02adbef604f65f1909ff`, tree `feabb1b5b8beb2923ebd30f0c646a46ab73e990a`;
+- main CI final `38903099548` / `116979916188` GREEN; Android final `38903099249` / `116979914940` GREEN;
+- Pages `38903209694`, build `116980287001` + deploy `116980431323` GREEN.
+
+### ES-13J8B — Pure Score Attack Execution-Substrate / Lifecycle Compatibility Contract
+Status: **NEXT DISCOVERY / CONTRACT TARGET AFTER DOC39 CLOSURE**
+
+J8B must prove direct compatibility with the existing self-contained `INFINITE_SESSION` execution substrate without creating a mode-specific engine fork. Discovery must verify fresh sector-11/wave-1 semantics, existing Infinite advancement, existing runtime projection compatibility, independence from Campaign victory checkpointing, and preservation of the current `CAMPAIGN | INFINITE` runtime discriminator.
+
+J8B remains pure: no exact Score Attack run duration/timer, live session construction, seed/replay policy, StartScreen/ResultScreen/HUD, dedicated persistence/high-score/archive, score formula, rewards/economy, spawn/arena, collections/scans/indexes, caps/budgets, entities/projectiles, FOTON or formation changes. Other J8 candidate modes remain uncontracted, not cancelled.
 
 ## J9 — Boss & Miniboss Expansion
 Status: PLANNED
