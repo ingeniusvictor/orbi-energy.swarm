@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { DEFAULT_STATS } from "../../src/game/storage";
-import type { GameStats } from "../../src/game/types";
+import { FormationType, type GameStats } from "../../src/game/types";
 import {
   SCORE_ATTACK_STATS_COMMIT_APPLICATION_AUTHORITY_CONTRACT,
   applyScoreAttackStatsCommit,
@@ -42,7 +42,7 @@ const makeStats = (best: number): GameStats => ({
       enemiesDestroyed: 12,
       maxSwarmSize: 6,
       strongestAffinity: "solar",
-      mostUsedFormation: "LINE",
+      mostUsedFormation: FormationType.LINE,
       temporaryBuild: { alpha: 1 },
     },
   ],
