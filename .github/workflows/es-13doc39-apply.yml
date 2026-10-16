@@ -21,6 +21,19 @@ jobs:
           fetch-depth: 0
       - name: Apply DOC39 fail-closed
         run: python scripts/es13doc39_apply.py
+      - name: Normalize J8B roadmap identifier fail-closed
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('docs/ES13_GAMEPLAY_ROADMAP.md')
+          s = p.read_text()
+          old = '### J8B — Pure Score Attack Execution-Substrate / Lifecycle Compatibility Contract'
+          new = '### ES-13J8B — Pure Score Attack Execution-Substrate / Lifecycle Compatibility Contract'
+          count = s.count(old)
+          if count != 1:
+              raise SystemExit(f'DOC39 fail-closed: expected exactly one J8B roadmap heading, got {count}')
+          p.write_text(s.replace(old, new, 1))
+          PY
       - name: Validate exact DOC39 scope and preservation
         run: |
           set -euo pipefail
