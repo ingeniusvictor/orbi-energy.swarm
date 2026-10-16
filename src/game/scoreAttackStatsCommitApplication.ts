@@ -202,10 +202,14 @@ export const applyScoreAttackStatsCommit = (
     return null;
   }
 
-  const nextStats: Readonly<GameStats> = Object.freeze({
-    ...stats,
-    scoreAttackBestScore: nextBestScore,
-  });
+  const nextStats: Readonly<GameStats> = Object.freeze(
+    changedDedicatedRecord
+      ? {
+          ...stats,
+          scoreAttackBestScore: nextBestScore,
+        }
+      : { ...stats },
+  );
 
   return Object.freeze({
     kind: "SCORE_ATTACK_STATS_COMMIT_APPLICATION",
