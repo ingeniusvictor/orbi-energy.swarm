@@ -71,21 +71,7 @@ jobs:
         run: npm run test:gameplay
 
       - name: Typecheck
-        run: |
-          set +e
-          npm run typecheck > j8o-typecheck-diagnostic.txt 2>&1
-          status=$?
-          set -e
-          if [ "$status" -ne 0 ]; then
-            git restore src/game/EnergySwarmGame.tsx
-            git config user.name ingeniusvictor
-            git config user.email ingenius.victor@gmail.com
-            git add j8o-typecheck-diagnostic.txt
-            git commit -m 'chore(j8o): capture temporary typecheck diagnostic'
-            git push
-            exit "$status"
-          fi
-          rm -f j8o-typecheck-diagnostic.txt
+        run: npm run typecheck
 
       - name: Commit J8O game adoption
         run: |
