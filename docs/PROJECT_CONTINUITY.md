@@ -18,16 +18,16 @@ Never infer deployment/certification from conversation text alone.
 
 ## Current certified gameplay canonical
 
-`1ce459780fb543afec8b8bb1828ce946fe6cbcc3`
+`55a31de7ad7989e3daaead8311aa08d3927096f7`
 
-Phase: **ES-13J8F — Pure Score Attack Record-Commit Eligibility Contract**
+Phase: **ES-13J8G — Pure Score Attack Canonical Run Recipe / Seed Policy Contract**
 Status: **DEPLOYED / FROZEN**
-Issue: #432 — CLOSED / completed
-Delivery: PR #433 — squash merged
+Issue: #436 — CLOSED / completed
+Delivery: PR #437 — squash merged
 
-Single parent: `2d26c391e056a433893f9d7ca2b6681c5952a181` — DOC43 documentation canonical.
+Single parent: `2e07ea501c36728bdc369a66dfecb64f6d8e5e01` — DOC44 documentation canonical.
 
-Canonical tree: `59954890fee59e1158dc9bb9779bdd9fbf6c82cf`.
+Canonical tree: `67e0b9da68544d0f4c134e37f08d1a84df1df264`.
 
 Version remains `0.2.0-beta.1`. Full RC/manual certification remains intentionally deferred while ES-13 materially expands gameplay.
 
@@ -545,7 +545,8 @@ J3C-C stateful formation patterns remain **DEFERRED / NOT CURRENTLY JUSTIFIED**,
 - DOC41 — J8C closure & J8D dedicated Score Attack record projection activation: `2e4eb93a06e303c42cd8c97a133a176860eb2e38` — Issue #422 / PR #423.
 - DOC42 — J8D closure & J8E dedicated Score Attack storage-schema adoption activation: `7da459c56ab27d7891cf859db9c1065347cd2736` — Issue #426 / PR #427.
 - DOC43 — J8E closure & J8F pure Score Attack record-commit eligibility activation: `2d26c391e056a433893f9d7ca2b6681c5952a181` — Issue #430 / PR #431.
-- DOC44 — J8F closure & J8G canonical Score Attack run-recipe/seed-policy activation: Issue #434, branch `docs/es-13-j8f-closure-j8g-run-recipe-seed-policy`, documentation-only closure in progress from gameplay canonical `1ce459780fb543afec8b8bb1828ce946fe6cbcc3`.
+- DOC44 — J8F closure & J8G canonical Score Attack run-recipe/seed-policy activation: `2e07ea501c36728bdc369a66dfecb64f6d8e5e01` — Issue #434 / PR #435.
+- DOC45 — J8G closure & J8H Score Attack bootstrap-envelope activation: Issue #438, branch `docs/es-13-j8g-closure-j8h-bootstrap-envelope`, documentation-only closure in progress from gameplay canonical `55a31de7ad7989e3daaead8311aa08d3927096f7`.
 
 ## J6B-C result
 J6B-C froze a pure compatibility-only mapping from the deterministic J6B-B event identity selection onto already-existing Infinite mutator semantics. It does not apply live effects, project runtime magnitudes or create fallback semantics.
@@ -931,14 +932,30 @@ J8F froze a pure/fail-closed record-commit eligibility projection without adopti
 
 Issue #432 CLOSED / completed. J8F is **DEPLOYED / FROZEN**.
 
+## J8G result
+J8G froze reproducible Score Attack challenge inputs without making Score Attack live: recipe version `1`, fixed seed `orbi-score-attack-v1`, frozen copy of the existing neutral Infinite context, and an internal transient proof session that validates J8B fresh substrate + J8C `TIMEBOX / 60000 ms`. The proof session never escapes, advances, persists or becomes live.
+
+## J8G exact evidence
+- DOC44 baseline `2e07ea501c36728bdc369a66dfecb64f6d8e5e01`;
+- pre-PR SHA `96d8eff6dbdc91f5800e154a5d6309a48bed3802`, run `38927391978`, certify `117062322683` + Android `117062322404` GREEN;
+- final PR #437 head `87b9bbe63ca5d8d07016713f58ef42e1ddd86a23`;
+- PR CI `38927641423` / `117063169406` GREEN;
+- PR Android `38927641413` / `117063169539` GREEN including APK build/verify/upload;
+- canonical `55a31de7ad7989e3daaead8311aa08d3927096f7`, single parent `2e07ea501c36728bdc369a66dfecb64f6d8e5e01`, tree `67e0b9da68544d0f4c134e37f08d1a84df1df264`, exact diff three certified product/test files;
+- main CI `38927850983` / `117063891102` GREEN;
+- main Android `38927850891` / `117063891169` GREEN including APK build/verify/upload;
+- Pages `38927967468`: build `117064302340` + deploy `117064549189` GREEN.
+
+Issue #436 CLOSED / completed. J8G is **DEPLOYED / FROZEN**.
+
 ## Next gameplay phase
 
-### ES-13J8G — Pure Score Attack Canonical Run Recipe / Seed Policy Contract
-Status: **NEXT CONTRACT TARGET AFTER DOC44 CLOSURE**
+### ES-13J8H — Pure Score Attack Bootstrap Envelope Contract
+Status: **NEXT CONTRACT TARGET AFTER DOC45 CLOSURE**
 
-Discovery shows the Infinite substrate already constructs deterministic certified plans from `seed + context`, but frozen J8A/J8B/J8C intentionally do not select a Score Attack seed policy. Live execution before freezing reproducible challenge inputs would make record comparison semantically under-specified.
+Discovery is explicit: `EnergySwarmGame.startGame()` currently resets to Campaign, while `RuntimeProgressionState` intentionally discriminates only `CAMPAIGN | INFINITE`. A Score Attack start projected only as runtime `INFINITE` would lose canonical `SCORE_ATTACK` identity before later finalization/persistence can distinguish it.
 
-J8G must therefore own only a pure canonical Score Attack run-recipe/seed-policy projection: select one fixed/versioned deterministic seed policy, reuse the existing neutral Infinite context, and prove compatibility with J8B fresh sector-11/wave-1 substrate facts plus J8C `60000 ms` TIMEBOX semantics. The exact seed literal is an implementation-level decision to certify in J8G. No live StartScreen/session lifecycle/timer/runtime-discriminator/descriptor/persistence/archive/UI/score/reward/economy/spawn/arena/entity/cap/FOTON/formation authority is allowed.
+J8H must therefore own only a pure bootstrap-envelope construction boundary: consume J8G, construct fresh Infinite session/runtime through existing authorities, preserve outer `modeId: SCORE_ATTACK`, retain runtime progression mode `INFINITE`, and carry frozen J8C `TIMEBOX / 60000 ms` facts. It must not add a third runtime discriminator or adopt the envelope into React refs/state, StartScreen/ResultScreen/HUD, timer, persistence/archive/write, score/economy, spawn/arena/entity/cap/FOTON/formation systems.
 
 ## Resolved diagnostics
 - #254 CLOSED / NOT PLANNED: historical platform failure was not an I5 pause regression; no product merge.
@@ -975,7 +992,7 @@ Post-J15 direction: **ES-14 — Living Warfront**.
 Read this file, `IMPLEMENTATION_LEDGER.md`, `ES13_GAMEPLAY_ROADMAP.md`, `TRACEABILITY_POLICY.md` and `ES13_PHASE_CHECKLIST.md`, then active Issues/PRs. Verify live `main` before any write.
 
 Suggested handoff:
-> Continue ORBI Energy Swarm autonomously. Repository `ingeniusvictor/orbi-energy.swarm`. J8F gameplay canonical is `1ce459780fb543afec8b8bb1828ce946fe6cbcc3`, fully DEPLOYED / FROZEN via Issue #432 / PR #433 with pure Score Attack record-commit eligibility and post-main CI/Android/Pages GREEN. Complete DOC44 if still open, then implement J8G as a pure canonical Score Attack run-recipe/seed-policy contract: fixed/versioned deterministic seed policy + existing neutral Infinite context, prove J8B fresh substrate and J8C 60000 ms compatibility, but do not adopt StartScreen/live session/timer/persistence/UI. Preserve Campaign/Infinite, caps/budgets, FOTON/formations, J3C-C/J4D+ deferrals and manual blockers. Follow Issue → Branch → full gates → PR → exact-SHA post-merge evidence. Never touch `main` directly or weaken tests.
+> Continue ORBI Energy Swarm autonomously. Repository `ingeniusvictor/orbi-energy.swarm`. J8G gameplay canonical is `55a31de7ad7989e3daaead8311aa08d3927096f7`, fully DEPLOYED / FROZEN via Issue #436 / PR #437 with recipe v1, fixed seed `orbi-score-attack-v1`, neutral Infinite context and post-main CI/Android/Pages GREEN. Complete DOC45 if still open, then implement J8H as a pure Score Attack bootstrap envelope: consume J8G, build fresh Infinite session/runtime through existing authorities, preserve outer `SCORE_ATTACK` identity while runtime remains `INFINITE`, carry J8C 60000 ms facts, but do not adopt React/UI/timer/persistence. Preserve Campaign/Infinite, caps/budgets, FOTON/formations, J3C-C/J4D+ deferrals and manual blockers. Follow Issue → Branch → full gates → PR → exact-SHA post-merge evidence. Never touch `main` directly or weaken tests.
 
 ## Update obligation
 Every merged gameplay phase must record exact gameplay canonical, Issue/PR, final head, pre-PR certification, PR CI/Android, main CI/Android/Pages, implementation result, unresolved follow-ups and next roadmap phase. A gameplay phase is not administratively closed until these records are current.

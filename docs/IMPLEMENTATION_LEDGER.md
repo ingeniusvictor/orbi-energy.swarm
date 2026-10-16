@@ -63,6 +63,7 @@ Rules:
 | ES-13J8D — Pure Dedicated Score Attack Record Projection Contract | DEPLOYED / FROZEN | `de37f4a818b05b09c136617b71cf3620bf4e1e83` | #424 | #425 |
 | ES-13J8E — Dedicated Score Attack Storage-Schema Adoption | DEPLOYED / FROZEN | `5260ffc4e63061646b180d4da419d5d7b794db68` | #428 | #429 |
 | ES-13J8F — Pure Score Attack Record-Commit Eligibility Contract | DEPLOYED / FROZEN | `1ce459780fb543afec8b8bb1828ce946fe6cbcc3` | #432 | #433 |
+| ES-13J8G — Pure Score Attack Canonical Run Recipe / Seed Policy Contract | DEPLOYED / FROZEN | `55a31de7ad7989e3daaead8311aa08d3927096f7` | #436 | #437 |
 
 ## Evidence anchors
 
@@ -508,7 +509,8 @@ Issue #383 CLOSED / completed. J6B-B is **DEPLOYED / FROZEN**.
 - DOC41 — J8C closure & J8D dedicated Score Attack record projection activation: `2e4eb93a06e303c42cd8c97a133a176860eb2e38` — Issue #422 / PR #423.
 - DOC42 — J8D closure & J8E dedicated Score Attack storage-schema adoption activation: `7da459c56ab27d7891cf859db9c1065347cd2736` — Issue #426 / PR #427.
 - DOC43 — J8E closure & J8F pure Score Attack record-commit eligibility activation: `2d26c391e056a433893f9d7ca2b6681c5952a181` — Issue #430 / PR #431.
-- DOC44 — J8F closure & J8G canonical Score Attack run-recipe/seed-policy activation: Issue #434, branch `docs/es-13-j8f-closure-j8g-run-recipe-seed-policy`, documentation-only closure in progress from gameplay canonical `1ce459780fb543afec8b8bb1828ce946fe6cbcc3`.
+- DOC44 — J8F closure & J8G canonical Score Attack run-recipe/seed-policy activation: `2e07ea501c36728bdc369a66dfecb64f6d8e5e01` — Issue #434 / PR #435.
+- DOC45 — J8G closure & J8H Score Attack bootstrap-envelope activation: Issue #438, branch `docs/es-13-j8g-closure-j8h-bootstrap-envelope`, documentation-only closure in progress from gameplay canonical `55a31de7ad7989e3daaead8311aa08d3927096f7`.
 
 ### J6B-C — Pure Dynamic Event Effect-Mapping Compatibility Contract
 - Frozen mappings: `SOLAR_STORM → ELECTRICAL_STORM`, `QUANTUM_RIFT → MAGNETIC_DRIFT`, `BLACKOUT_SURGE → REDUCED_VISIBILITY`, `CRYSTAL_RUSH → UNSTABLE_RESOURCE_FIELDS`; `DYSON_ECLIPSE → UNMAPPED` fail-closed.
@@ -649,12 +651,21 @@ Automated CI never substitutes for required human/device evidence.
 - Canonical `1ce459780fb543afec8b8bb1828ce946fe6cbcc3`, parent `2d26c391e056a433893f9d7ca2b6681c5952a181`, tree `59954890fee59e1158dc9bb9779bdd9fbf6c82cf`, exact diff three certified files.
 - Main CI `38925493205` / `117055846575`, Android `38925492978` / `117055847442`, Pages `38925614881` build `117056259248` + deploy `117056409385` GREEN.
 
+### J8G — Pure Score Attack Canonical Run Recipe / Seed Policy Contract
+- Recipe version `1`, fixed/versioned seed `orbi-score-attack-v1`, existing neutral Infinite context.
+- Internal transient proof session validates frozen J8B fresh-substrate and J8C `60000 ms` TIMEBOX compatibility but never escapes or becomes live.
+- Exactly one positive authority: canonical run-recipe/seed-policy selection; runtime/UI/persistence/economy remain untouched.
+- Pre-PR `96d8eff6dbdc91f5800e154a5d6309a48bed3802`: run `38927391978`, certify `117062322683` + Android `117062322404` GREEN.
+- PR #437 head `87b9bbe63ca5d8d07016713f58ef42e1ddd86a23`: CI `38927641423` / `117063169406` + Android `38927641413` / `117063169539` GREEN.
+- Canonical `55a31de7ad7989e3daaead8311aa08d3927096f7`, parent `2e07ea501c36728bdc369a66dfecb64f6d8e5e01`, tree `67e0b9da68544d0f4c134e37f08d1a84df1df264`, exact diff three certified files.
+- Main CI `38927850983` / `117063891102`, Android `38927850891` / `117063891169`, Pages `38927967468` build `117064302340` + deploy `117064549189` GREEN.
+
 ## Next planned gameplay
 
-### ES-13J8G — Pure Score Attack Canonical Run Recipe / Seed Policy Contract
-Status: **NEXT CONTRACT TARGET AFTER DOC44 CLOSURE**.
+### ES-13J8H — Pure Score Attack Bootstrap Envelope Contract
+Status: **NEXT CONTRACT TARGET AFTER DOC45 CLOSURE**.
 
-J8G must freeze reproducible Score Attack recipe inputs before any live session/start flow. It should select one fixed/versioned seed policy, reuse the existing neutral Infinite run context, and prove that the resulting recipe remains compatible with J8B fresh `INFINITE_SESSION` facts and J8C `60000 ms` TIMEBOX semantics. It must not execute or persist a run, mutate runtime descriptors, own timer/UI/score/economy/spawn authorities, or create a third runtime mode.
+J8H must consume J8G and construct a fresh Infinite session/runtime through existing authorities while preserving canonical `SCORE_ATTACK` identity in an outer bootstrap envelope. Runtime progression remains `INFINITE`; J8C `TIMEBOX / 60000 ms` facts remain authoritative. No third runtime discriminator, React/live adoption, timer, persistence, archive, score/economy or spawn authority.
 
 J4D+ additional tactical families remain deferred: FORMATION_BREAKER/JAMMER require hard-control spacing/recovery proof; MINE_WEAVER/MIRROR_WARDEN require genuine mine/mirror mechanics. J3C-C remains deferred, not cancelled.
 
