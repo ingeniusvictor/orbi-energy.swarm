@@ -76,6 +76,7 @@ Rules:
 | ES-13J9A — Pure Blackout Architect Battlefield-Control Profile Contract | DEPLOYED / FROZEN | `171a8104900be17de62d91a765aab59c626b9d21` | #477 | #478 |
 | ES-13J9B — Pure Blackout Architect Structural-Zone Topology Contract | DEPLOYED / FROZEN | `18dd628981182740905fa6e05a463c525c699e37` | #481 | #482 |
 | ES-13J9C — Pure Blackout Architect Chassis Compatibility Contract | DEPLOYED / FROZEN | `370f770171993760a3e11fa0aa95bcaa4318b758` | #485 | #486 |
+| ES-13J9D — Pure Blackout Architect Chassis Selection/Binding Contract | DEPLOYED / FROZEN | `4bc4d70b1d54217dcbfca1a4745042dbb8770fe6` | #489 | #490 |
 
 ## Evidence anchors
 
@@ -789,14 +790,24 @@ Automated CI never substitutes for required human/device evidence.
 - Canonical `370f770171993760a3e11fa0aa95bcaa4318b758`, parent `cf745bb7b17cd2c2421d3531cf2646dd726774c3`, tree `8e6d7edae749c4ed1a02520ebeb46224e0625c51`, exact diff 3 files.
 - Main CI #573 `39063581950` / `117486443399`, Android #132 `39063581938` / `117486443301`, Pages #172 `39063646443` build `117486635370` + deploy `117486721807` GREEN.
 
+## J9D — Pure Blackout Architect Chassis Selection/Binding Contract
+- Consumes frozen J9C compatibility only and binds `BLACKOUT_ARCHITECT -> TITAN_CORE`.
+- Exact J9C shape is required; malformed/padded/tampered selection input fails closed.
+- Emits only immutable `SELECTION_ONLY / BINDING_ONLY` metadata.
+- Does not re-read chassis descriptors, select EnemyType or inherit any Titan live configuration.
+- Final pre-PR `4b76ecab06d9f6f4821124a691281a985be7878d`: run `39064919895`, certify `117490426242` + Android `117490630927` GREEN.
+- PR #490 head `9b830a66685e23f8f5f0d6f5bf1ac1f7dd5a650c`: CI #576 `39065137175` / `117491073954` + Android #133 `39065137241` / `117491074272` GREEN.
+- Canonical `4bc4d70b1d54217dcbfca1a4745042dbb8770fe6`, parent `e5c64daa4f3aa84868c5411cdd767e7d0b4ce1f4`, tree `56e1a19d3f1c5b632a23589b6442c70f372e80bc`, exact diff 3 files.
+- Main CI #577 `39065273273` / `117491506912`, Android #134 `39065273265` / `117491507018`, Pages #174 `39065343745` build `117491719509` + deploy `117491803289` GREEN.
+
 ## Next planned gameplay
 
-### ES-13J9D — Pure Blackout Architect Chassis Selection/Binding Contract
-Status: **NEXT CONTRACT TARGET AFTER DOC57 CLOSURE**
+### ES-13J9E — Pure Blackout Architect EnemyType Compatibility Mapping Contract
+Status: **NEXT CONTRACT TARGET AFTER DOC58 CLOSURE**
 
-J9D must consume the frozen J9C `COMPATIBILITY_ONLY` projection as its immediate authority input and freeze only the selected Blackout Architect chassis identity. The exact positive binding is `BLACKOUT_ARCHITECT -> TITAN_CORE`; the result remains pure `SELECTION_ONLY / BINDING_ONLY`, immutable and fail-closed on null, malformed, padded or tampered J9C projections.
+J9E must consume the frozen J9D `SELECTION_ONLY / BINDING_ONLY` projection as its immediate selection authority and freeze only the descriptive executable-type compatibility mapping for the selected chassis. The exact mapping is `BLACKOUT_ARCHITECT / TITAN_CORE -> EnemyType.BOSS_TITAN`, validated against the existing pure `bossChassis.ts` descriptor fact. Existing `infiniteRaidEscalation.ts` independently confirms the same `TITAN_CORE / BOSS_TITAN` pair but contributes no cadence, multiplier, reward, spawn or runtime authority.
 
-J9D owns only boss-chassis selection/binding authority. It must not re-read or duplicate physical chassis compatibility rules, modify J9A/J9B/J9C, select `EnemyType`, inherit the Titan `6000 ms` exposure duration, weakpoint health/geometry/damage, base health, intro timing, attacks/weights, rewards or Infinite raid configuration, spawn/adopt a live boss, or acquire milestone/rematch/runtime, timer/clock, arena mutation, HUD, economy/persistence, collection/entity/projectile, randomness, cap/budget, FOTON or formation authority. Any `EnemyType` or recipe/effect compatibility mapping remains a later separate prerequisite before live adoption.
+J9E must emit immutable `COMPATIBILITY_ONLY` / mapping-only metadata and fail closed on null, malformed, padded or tampered J9D selection facts or canonical descriptor drift. It owns only EnemyType compatibility/mapping authority. It must not spawn or live-adopt Blackout Architect, inherit Titan base/weakpoint health, geometry, damage multipliers, `6000 ms` exposure duration, intro timing, attacks/weights, rewards, raid cadence/multipliers, or acquire milestone/rematch/runtime, timer/clock, arena mutation, HUD, economy/persistence, collection/entity/projectile, randomness, cap/budget, FOTON or formation authority.
 
 ## Program sequence
 `J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance → ES-14 Living Warfront`
