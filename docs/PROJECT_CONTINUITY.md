@@ -18,16 +18,16 @@ Never infer deployment/certification from conversation text alone.
 
 ## Current certified gameplay canonical
 
-`370f770171993760a3e11fa0aa95bcaa4318b758`
+`4bc4d70b1d54217dcbfca1a4745042dbb8770fe6`
 
-Phase: **ES-13J9C — Pure Blackout Architect Chassis Compatibility Contract**
+Phase: **ES-13J9D — Pure Blackout Architect Chassis Selection/Binding Contract**
 Status: **DEPLOYED / FROZEN**
-Issue: #485 — CLOSED / completed
-Delivery: PR #486 — squash merged
+Issue: #489 — CLOSED / completed
+Delivery: PR #490 — squash merged
 
-Single parent: `cf745bb7b17cd2c2421d3531cf2646dd726774c3` — DOC56 documentation canonical.
+Single parent: `e5c64daa4f3aa84868c5411cdd767e7d0b4ce1f4` — DOC57 documentation canonical.
 
-Canonical tree: `8e6d7edae749c4ed1a02520ebeb46224e0625c51`.
+Canonical tree: `56e1a19d3f1c5b632a23589b6442c70f372e80bc`.
 
 Version remains `0.2.0-beta.1`. Full RC/manual certification remains intentionally deferred while ES-13/J9 materially expands gameplay contracts.
 
@@ -1157,14 +1157,30 @@ J9C froze the Blackout Architect structural chassis compatibility prerequisite w
 
 Issue #485 CLOSED / completed. J9C is **DEPLOYED / FROZEN**.
 
+## J9D result
+J9D froze only the selected Blackout Architect chassis identity after frozen J9C compatibility. It consumes exact J9C `COMPATIBILITY_ONLY` metadata, validates the canonical `BLACKOUT_ARCHITECT / TITAN_CORE / structuralAnchorCount=4` shape and emits immutable `SELECTION_ONLY / BINDING_ONLY` metadata. Malformed, missing, padded or tampered input fails closed. It grants exactly one positive composite authority: boss-chassis selection/binding, with no direct chassis-descriptor read, EnemyType selection or live runtime authority.
+
+## J9D exact evidence
+- DOC57 baseline `e5c64daa4f3aa84868c5411cdd767e7d0b4ce1f4`;
+- final pre-PR certification SHA `4b76ecab06d9f6f4821124a691281a985be7878d`, run `39064919895`, certify `117490426242` + Android `117490630927` GREEN including APK build/verify/upload;
+- clean PR #490 head `9b830a66685e23f8f5f0d6f5bf1ac1f7dd5a650c`, exact final diff 3 files;
+- PR CI #576 `39065137175` / `117491073954` GREEN;
+- PR Android #133 `39065137241` / `117491074272` GREEN including APK build/verify/upload;
+- canonical `4bc4d70b1d54217dcbfca1a4745042dbb8770fe6`, single parent `e5c64daa4f3aa84868c5411cdd767e7d0b4ce1f4`, tree `56e1a19d3f1c5b632a23589b6442c70f372e80bc`, exact final diff 3 files;
+- main CI #577 `39065273273` / `117491506912` GREEN;
+- main Android #134 `39065273265` / `117491507018` GREEN including APK build/verify/upload;
+- Pages/Web Beta #174 `39065343745`: build `117491719509` + deploy `117491803289` GREEN.
+
+Issue #489 CLOSED / completed. J9D is **DEPLOYED / FROZEN**.
+
 ## Next gameplay phase
 
-### ES-13J9D — Pure Blackout Architect Chassis Selection/Binding Contract
-Status: **NEXT CONTRACT TARGET AFTER DOC57 CLOSURE**
+### ES-13J9E — Pure Blackout Architect EnemyType Compatibility Mapping Contract
+Status: **NEXT CONTRACT TARGET AFTER DOC58 CLOSURE**
 
-J9D must consume the frozen J9C `COMPATIBILITY_ONLY` projection as its immediate authority input and freeze only the selected Blackout Architect chassis identity. The exact positive binding is `BLACKOUT_ARCHITECT -> TITAN_CORE`; the result remains pure `SELECTION_ONLY / BINDING_ONLY`, immutable and fail-closed on null, malformed, padded or tampered J9C projections.
+J9E must consume the frozen J9D `SELECTION_ONLY / BINDING_ONLY` projection as its immediate selection authority and freeze only the descriptive executable-type compatibility mapping for the selected chassis. The exact mapping is `BLACKOUT_ARCHITECT / TITAN_CORE -> EnemyType.BOSS_TITAN`, validated against the existing pure `bossChassis.ts` descriptor fact. Existing `infiniteRaidEscalation.ts` independently confirms the same `TITAN_CORE / BOSS_TITAN` pair but contributes no cadence, multiplier, reward, spawn or runtime authority.
 
-J9D owns only boss-chassis selection/binding authority. It must not re-read or duplicate physical chassis compatibility rules, modify J9A/J9B/J9C, select `EnemyType`, inherit the Titan `6000 ms` exposure duration, weakpoint health/geometry/damage, base health, intro timing, attacks/weights, rewards or Infinite raid configuration, spawn/adopt a live boss, or acquire milestone/rematch/runtime, timer/clock, arena mutation, HUD, economy/persistence, collection/entity/projectile, randomness, cap/budget, FOTON or formation authority. Any `EnemyType` or recipe/effect compatibility mapping remains a later separate prerequisite before live adoption.
+J9E must emit immutable `COMPATIBILITY_ONLY` / mapping-only metadata and fail closed on null, malformed, padded or tampered J9D selection facts or canonical descriptor drift. It owns only EnemyType compatibility/mapping authority. It must not spawn or live-adopt Blackout Architect, inherit Titan base/weakpoint health, geometry, damage multipliers, `6000 ms` exposure duration, intro timing, attacks/weights, rewards, raid cadence/multipliers, or acquire milestone/rematch/runtime, timer/clock, arena mutation, HUD, economy/persistence, collection/entity/projectile, randomness, cap/budget, FOTON or formation authority.
 
 ## Resolved diagnostics
 - #254 CLOSED / NOT PLANNED: historical platform failure was not an I5 pause regression; no product merge.
@@ -1201,7 +1217,7 @@ Post-J15 direction: **ES-14 — Living Warfront**.
 Read this file, `IMPLEMENTATION_LEDGER.md`, `ES13_GAMEPLAY_ROADMAP.md`, `TRACEABILITY_POLICY.md` and `ES13_PHASE_CHECKLIST.md`, then active Issues/PRs. Verify live `main` before any write.
 
 Suggested handoff:
-> Continue ORBI Energy Swarm autonomously. Repository `ingeniusvictor/orbi-energy.swarm`. J9C gameplay canonical is `370f770171993760a3e11fa0aa95bcaa4318b758`, fully DEPLOYED / FROZEN via Issue #485 / PR #486 with exact pre-PR, PR-head and post-main CI/Android/Pages GREEN. Complete DOC57 if still open, then implement ES-13J9D as the pure Blackout Architect chassis selection/binding prerequisite: consume only the frozen J9C compatibility projection; bind `BLACKOUT_ARCHITECT -> TITAN_CORE` in immutable `SELECTION_ONLY / BINDING_ONLY` metadata; fail closed on malformed/tampered J9C projections; do not re-read chassis descriptors, select EnemyType, inherit 6000 ms/health/geometry/damage/attacks/rewards, or adopt spawn/runtime/timer/HUD/persistence/cap-budget authority. Preserve existing Infinite Titan raid behavior, Campaign/Infinite/Score Attack authorities, J3C-C/J4D+ deferrals, manual blockers #4/#5/#202/#248, FOTON and formations. Follow Issue → exact-base branch → full gates → PR → exact-SHA post-merge evidence. Never touch main directly or weaken tests.
+> Continue ORBI Energy Swarm autonomously. Repository `ingeniusvictor/orbi-energy.swarm`. J9D gameplay canonical is `4bc4d70b1d54217dcbfca1a4745042dbb8770fe6`, fully DEPLOYED / FROZEN via Issue #489 / PR #490 with exact pre-PR, PR-head and post-main CI/Android/Pages GREEN. Complete DOC58 if still open, then implement ES-13J9E as the pure Blackout Architect EnemyType compatibility mapping prerequisite: consume frozen J9D selection; validate only the existing `TITAN_CORE -> EnemyType.BOSS_TITAN` chassis descriptor fact; emit immutable `COMPATIBILITY_ONLY` mapping metadata; do not inherit Titan health/geometry/damage/6000 ms/attacks/rewards/raid cadence or adopt spawn/runtime/timer/HUD/persistence/cap-budget authority. Preserve existing Infinite Titan raid behavior, Campaign/Infinite/Score Attack authorities, J3C-C/J4D+ deferrals, manual blockers #4/#5/#202/#248, FOTON and formations. Follow Issue → exact-base branch → full gates → PR → exact-SHA post-merge evidence. Never touch main directly or weaken tests.
 
 ## Update obligation
 Every merged gameplay phase must record exact gameplay canonical, Issue/PR, final head, pre-PR certification, PR CI/Android, main CI/Android/Pages, implementation result, unresolved follow-ups and next roadmap phase. A gameplay phase is not administratively closed until these records are current.
