@@ -1,0 +1,64 @@
+name: ES-13DOC55 guarded docs applicator
+
+on:
+  push:
+    branches:
+      - docs/es-13-doc55-close-j9a-activate-j9b-structural-zone-topology
+    paths:
+      - .github/workflows/es-13doc55-apply.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout DOC55 branch
+        uses: actions/checkout@v4
+        with:
+          ref: docs/es-13-doc55-close-j9a-activate-j9b-structural-zone-topology
+          fetch-depth: 0
+
+      - name: Apply exact DOC55 patch
+        run: python3 scripts/es-13doc55-apply.py
+
+      - name: Verify whitespace and exact docs scope
+        shell: bash
+        run: |
+          git diff --check
+          mapfile -t changed < <(git diff --name-only HEAD | sort)
+          printf '%s\n' "${changed[@]}"
+          expected=(
+            docs/ES13_GAMEPLAY_ROADMAP.md
+            docs/IMPLEMENTATION_LEDGER.md
+            docs/PROJECT_CONTINUITY.md
+          )
+          if [ "${#changed[@]}" -ne "${#expected[@]}" ]; then
+            echo "Unexpected DOC55 docs count: ${#changed[@]}" >&2
+            exit 1
+          fi
+          for path in "${expected[@]}"; do
+            printf '%s\n' "${changed[@]}" | grep -Fx -- "$path" >/dev/null || {
+              echo "Missing expected DOC55 path: $path" >&2
+              exit 1
+            }
+          done
+          grep -F 'Canonical: `171a8104900be17de62d91a765aab59c626b9d21`' docs/ES13_GAMEPLAY_ROADMAP.md >/dev/null
+          grep -F 'Status: **NEXT CONTRACT TARGET AFTER DOC55 CLOSURE**' docs/ES13_GAMEPLAY_ROADMAP.md >/dev/null
+          grep -F '| ES-13J9A — Pure Blackout Architect Battlefield-Control Profile Contract | DEPLOYED / FROZEN | `171a8104900be17de62d91a765aab59c626b9d21` | #477 | #478 |' docs/IMPLEMENTATION_LEDGER.md >/dev/null
+          grep -F 'ES-13J9B — Pure Blackout Architect Structural-Zone Topology Contract' docs/IMPLEMENTATION_LEDGER.md >/dev/null
+          grep -F '`171a8104900be17de62d91a765aab59c626b9d21`' docs/PROJECT_CONTINUITY.md >/dev/null
+          grep -F 'Status: **NEXT CONTRACT TARGET AFTER DOC55 CLOSURE**' docs/PROJECT_CONTINUITY.md >/dev/null
+
+      - name: Commit and push DOC55 docs
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            docs/ES13_GAMEPLAY_ROADMAP.md \
+            docs/IMPLEMENTATION_LEDGER.md \
+            docs/PROJECT_CONTINUITY.md
+          git commit -m "ES-13DOC55 — close J9A and activate J9B topology"
+          git push origin HEAD:docs/es-13-doc55-close-j9a-activate-j9b-structural-zone-topology
