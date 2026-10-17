@@ -41,6 +41,9 @@ jobs:
             src/components/ResultScreen.tsx
             src/components/StartScreen.tsx
             src/game/EnergySwarmGame.tsx
+            tests/es-13j8a-score-attack-mode-contract.test.mjs
+            tests/es-13j8c-score-attack-timebox-projection.test.mjs
+            tests/es-13j8o-score-attack-live-engine-lifecycle.test.mjs
             tests/es-13j8p-public-score-attack-presentation.test.mjs
             tests/gameplay/score-attack-public-presentation.test.ts
           )
