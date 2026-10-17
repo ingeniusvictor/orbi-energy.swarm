@@ -69,7 +69,19 @@ jobs:
           npx tsx --test tests/gameplay/score-attack-public-presentation.test.ts
 
       - name: Repository smoke regression
-        run: npm run test:repo
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run test:repo 2>&1 | tee repo-smoke.log
+
+      - name: Upload repository smoke diagnostic
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: es-13j8p-repo-smoke-${{ github.sha }}
+          path: repo-smoke.log
+          if-no-files-found: warn
+          retention-days: 7
 
       - name: Gameplay regression
         run: npm run test:gameplay
