@@ -1,0 +1,40 @@
+name: ES-13DOC53 repair applicator whitespace
+
+on:
+  push:
+    branches:
+      - docs/es-13-j8o-closure-j8p-public-score-attack-ui
+    paths:
+      - .github/workflows/es-13doc53-repair.yml
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: docs/es-13-j8o-closure-j8p-public-score-attack-ui
+      - name: Repair exact whitespace and self-remove
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('.github/workflows/es-13doc53-apply.yml')
+          text = path.read_text(encoding='utf-8')
+          bad = 'Canonical: `89d1dea159f8478c2e2ccc01f027c2e9041a4542`  \n'
+          good = 'Canonical: `89d1dea159f8478c2e2ccc01f027c2e9041a4542`\n'
+          if text.count(bad) != 1:
+              raise SystemExit(f'expected exactly one bad whitespace occurrence, got {text.count(bad)}')
+          path.write_text(text.replace(bad, good, 1), encoding='utf-8')
+          PY
+          rm .github/workflows/es-13doc53-repair.yml
+          git diff --check
+          git config user.name "ingeniusvictor"
+          git config user.email "ingenius.victor@gmail.com"
+          git add .github/workflows/es-13doc53-apply.yml .github/workflows/es-13doc53-repair.yml
+          git commit -m "chore(doc53): fix applicator trailing whitespace"
+          git push origin HEAD:docs/es-13-j8o-closure-j8p-public-score-attack-ui
