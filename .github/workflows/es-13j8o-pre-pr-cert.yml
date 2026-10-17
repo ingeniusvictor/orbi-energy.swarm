@@ -36,7 +36,8 @@ jobs:
             src/game/EnergySwarmGame.tsx \
             src/game/scoreAttackLiveEngineLifecycle.ts \
             tests/es-13j8o-score-attack-live-engine-lifecycle.test.mjs \
-            tests/gameplay/score-attack-live-engine-lifecycle.test.ts | sort > /tmp/expected
+            tests/gameplay/score-attack-live-engine-lifecycle.test.ts \
+            tests/runtime-completion-adoption.test.ts | sort > /tmp/expected
           git diff --name-only 7ed00b7f28f8c3dd6578932f8e77845e8618d853...HEAD | sort > /tmp/actual
           diff -u /tmp/expected /tmp/actual
           git diff --quiet 7ed00b7f28f8c3dd6578932f8e77845e8618d853...HEAD -- src/game/scoreAttackRuntimeProjectionBundle.ts
