@@ -73,6 +73,7 @@ Rules:
 | ES-13J8N — Pure Dedicated Score Attack Stats-Commit Application Contract | DEPLOYED / FROZEN | `d0e9af1c3c8f94524187f7d8ee48c975e2bd9f3e` | #465 | #466 |
 | ES-13J8O — Controlled Live Score Attack Engine Lifecycle Adoption | DEPLOYED / FROZEN | `89d1dea159f8478c2e2ccc01f027c2e9041a4542` | #469 | #470 |
 | ES-13J8P — Controlled Public Score Attack Selection & Presentation Adoption | DEPLOYED / FROZEN | `c29df45aebf4a0b3d58038a42b8c539234b42745` | #473 | #474 |
+| ES-13J9A — Pure Blackout Architect Battlefield-Control Profile Contract | DEPLOYED / FROZEN | `171a8104900be17de62d91a765aab59c626b9d21` | #477 | #478 |
 
 ## Evidence anchors
 
@@ -756,9 +757,26 @@ Automated CI never substitutes for required human/device evidence.
 - Canonical `c29df45aebf4a0b3d58038a42b8c539234b42745`, parent `120fe00a61ad7a84984871ec19ec435be23535a0`, tree `5d9637b8e1df6d565ffffd08cb840b45c102c65c`, exact diff 9 files.
 - Main CI #561 `38997649166` / `117293618514`, Android #126 `38997649158` / `117293618407`, Pages #166 `38997711279` build `117293808563` + deploy `117293885541` GREEN.
 
-## Roadmap hold
+### J9A — Pure Blackout Architect Battlefield-Control Profile Contract
+- First authorized J9 slice after DOC54; pure/fail-closed profile only.
+- Canonical `BLACKOUT_ARCHITECT` / `BATTLEFIELD_CONTROL` / `PROFILE_ONLY` / `SPATIAL_CONTROL_CAPITAL` identity.
+- Compatibility vocabulary only: multiphase, structural zones, affinity/formation pressure, arena-geometry manipulation and telegraphed exposure windows.
+- Exactly one positive authority: profile definition; all live/chassis/timing/spawn/damage/economy/persistence/HUD/cap/FOTON/formation choices remain unresolved or negative.
+- Final pre-PR `472a18a517c04e2e82c93ef810448eaf34477581`: run `39043701649`, certify `117428112142` + Android `117428293682` GREEN.
+- PR #478 head `efb18fb0983e86034ca0e6a59e6b726a2d3b529a`: CI #564 `39043937609` / `117428803297` + Android #127 `39043937582` / `117428803218` GREEN.
+- Canonical `171a8104900be17de62d91a765aab59c626b9d21`, parent `abe1ce116f3b92620afa99377008eb38382e56d1`, tree `afb16253b9c88864246b8766b9b7daabe0e485e3`, exact diff 3 files.
+- Main CI #565 `39044053175` / `117429143893`, Android #128 `39044053230` / `117429144497`, Pages #168 `39044123765` build `117429345859` + deploy `117429422116` GREEN.
 
-No gameplay target is active after DOC54. J8 is complete through J8P. J9–J15 remain **PLANNED / DEFERRED — NOT ACTIVE** pending explicit authorization and fresh discovery; ES-14 remains **FUTURE PROGRAM / NOT YET COMMITTED**. J4D+ and J3C-C remain deferred/not cancelled.
+## Next planned gameplay
+
+### ES-13J9B — Pure Blackout Architect Structural-Zone Topology Contract
+Status: **NEXT CONTRACT TARGET AFTER DOC55 CLOSURE**
+
+J9B must consume frozen J9A identity and freeze only the bounded structural topology needed before a physical chassis or live encounter can be justified: exactly four immutable cardinal anchors (`NORTH`, `EAST`, `SOUTH`, `WEST`) and one fail-closed core-exposure eligibility projection. Core exposure is ineligible until all four canonical anchors are destroyed and eligible only when all four are destroyed. Duplicate, unknown, missing or padded anchor facts fail closed.
+
+J9B owns no coordinates/rendering, anchor health, damage application, phase count/thresholds, vulnerability duration, `EnemyType`, `BossChassisId`, attacks/cooldowns, spawn/milestone/rematch/runtime adoption, timer/clock, arena mutation, HUD, reward/economy/persistence, entity/projectile collection or scan, cap/budget, FOTON or formation authority. It does not make Blackout Architect live.
+
+J10–J15 remain **PLANNED / DEFERRED — NOT ACTIVE** while J9 is active. ES-14 remains **FUTURE PROGRAM / NOT YET COMMITTED**. J4D+ and J3C-C remain deferred/not cancelled.
 
 ## Program sequence
 `J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance → ES-14 Living Warfront`

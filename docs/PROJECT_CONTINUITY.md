@@ -18,18 +18,18 @@ Never infer deployment/certification from conversation text alone.
 
 ## Current certified gameplay canonical
 
-`c29df45aebf4a0b3d58038a42b8c539234b42745`
+`171a8104900be17de62d91a765aab59c626b9d21`
 
-Phase: **ES-13J8P — Controlled Public Score Attack Selection & Presentation Adoption**
+Phase: **ES-13J9A — Pure Blackout Architect Battlefield-Control Profile Contract**
 Status: **DEPLOYED / FROZEN**
-Issue: #473 — CLOSED / completed
-Delivery: PR #474 — squash merged
+Issue: #477 — CLOSED / completed
+Delivery: PR #478 — squash merged
 
-Single parent: `120fe00a61ad7a84984871ec19ec435be23535a0` — DOC53 documentation canonical.
+Single parent: `abe1ce116f3b92620afa99377008eb38382e56d1` — DOC54 documentation canonical.
 
-Canonical tree: `5d9637b8e1df6d565ffffd08cb840b45c102c65c`.
+Canonical tree: `afb16253b9c88864246b8766b9b7daabe0e485e3`.
 
-Version remains `0.2.0-beta.1`. Full RC/manual certification remains intentionally deferred while ES-13 roadmap programs remain uncommitted/deferred.
+Version remains `0.2.0-beta.1`. Full RC/manual certification remains intentionally deferred while ES-13/J9 materially expands gameplay contracts.
 
 ## J4C-C result
 J4C-C adopted the already-certified `ARTILLERY_CARRIER / SIEGE_PRISM` family into bounded normal Infinite progression through the existing tactical replacement seam.
@@ -1107,8 +1107,34 @@ Repository smoke initially exposed exactly three historical pre-J8P expectations
 
 Issue #473 CLOSED / completed. J8P is **DEPLOYED / FROZEN**.
 
-## Roadmap hold after J8
-No gameplay phase is active after DOC54. J8 Additional Modes is complete through J8P. J9–J15 remain **PLANNED / DEFERRED — NOT ACTIVE** until explicit scope/discovery authorization; ES-14 remains **FUTURE PROGRAM / NOT YET COMMITTED**. J3C-C and J4D+ remain deferred/not cancelled. Manual blockers #4/#5/#202/#248 remain open and are not replaced by CI evidence.
+## J9A result
+J9A opened the explicitly authorized J9 Boss & Miniboss Expansion program without adopting a new live boss. It defines `BLACKOUT_ARCHITECT` / `Blackout Architect` as a pure battlefield-control capital-boss profile compatible with multiphase structure, destructible structural zones, affinity/formation pressure, arena-geometry manipulation and telegraphed exposure windows. Unsupported ids fail closed and only profile-definition authority is positive.
+
+J9A intentionally does not select `EnemyType`, `BossChassisId`, health, phase thresholds/count, structural-zone topology/health/geometry, vulnerability duration, attacks/cooldowns, spawn/runtime, timers, arena mutation, damage/economy/persistence/HUD, collections/scans, caps/budgets or FOTON/formation authority. Existing Devourer/Titan/Worm and Campaign/Infinite/Score Attack authorities remain unchanged.
+
+## J9A exact evidence
+- DOC54 baseline `abe1ce116f3b92620afa99377008eb38382e56d1`;
+- final pre-PR certification SHA `472a18a517c04e2e82c93ef810448eaf34477581`, run `39043701649`, certify `117428112142` + Android `117428293682` GREEN including APK build/verify/upload;
+- clean PR #478 head `efb18fb0983e86034ca0e6a59e6b726a2d3b529a`, exact final diff 3 files;
+- PR CI #564 `39043937609` / `117428803297` GREEN;
+- PR Android #127 `39043937582` / `117428803218` GREEN including APK build/verify/upload;
+- canonical `171a8104900be17de62d91a765aab59c626b9d21`, single parent `abe1ce116f3b92620afa99377008eb38382e56d1`, tree `afb16253b9c88864246b8766b9b7daabe0e485e3`, exact final diff 3 files;
+- main CI #565 `39044053175` / `117429143893` GREEN;
+- main Android #128 `39044053230` / `117429144497` GREEN including APK build/verify/upload;
+- Pages/Web Beta #168 `39044123765`: build `117429345859` + deploy `117429422116` GREEN.
+
+Issue #477 CLOSED / completed. J9A is **DEPLOYED / FROZEN**.
+
+## Next gameplay phase
+
+### ES-13J9B — Pure Blackout Architect Structural-Zone Topology Contract
+Status: **NEXT CONTRACT TARGET AFTER DOC55 CLOSURE**
+
+J9B must consume frozen J9A identity and freeze only the bounded structural topology needed before a physical chassis or live encounter can be justified: exactly four immutable cardinal anchors (`NORTH`, `EAST`, `SOUTH`, `WEST`) and one fail-closed core-exposure eligibility projection. Core exposure is ineligible until all four canonical anchors are destroyed and eligible only when all four are destroyed. Duplicate, unknown, missing or padded anchor facts fail closed.
+
+J9B owns no coordinates/rendering, anchor health, damage application, phase count/thresholds, vulnerability duration, `EnemyType`, `BossChassisId`, attacks/cooldowns, spawn/milestone/rematch/runtime adoption, timer/clock, arena mutation, HUD, reward/economy/persistence, entity/projectile collection or scan, cap/budget, FOTON or formation authority. It does not make Blackout Architect live.
+
+J10–J15 remain planned/deferred and are not active. J3C-C/J4D+ remain deferred/not cancelled. Manual blockers #4/#5/#202/#248 remain open and are not replaced by CI evidence.
 
 ## Resolved diagnostics
 - #254 CLOSED / NOT PLANNED: historical platform failure was not an I5 pause regression; no product merge.
@@ -1145,7 +1171,7 @@ Post-J15 direction: **ES-14 — Living Warfront**.
 Read this file, `IMPLEMENTATION_LEDGER.md`, `ES13_GAMEPLAY_ROADMAP.md`, `TRACEABILITY_POLICY.md` and `ES13_PHASE_CHECKLIST.md`, then active Issues/PRs. Verify live `main` before any write.
 
 Suggested handoff:
-> Continue ORBI Energy Swarm autonomously. Repository `ingeniusvictor/orbi-energy.swarm`. J8P gameplay canonical is `c29df45aebf4a0b3d58038a42b8c539234b42745`, fully DEPLOYED / FROZEN via Issue #473 / PR #474 with exact pre-PR, PR-head and post-main CI/Android/Pages GREEN. Complete DOC54 if still open. After DOC54, do not activate J9–J15 or ES-14 by sequence/inference: no gameplay target is active until explicit scope plus fresh live discovery authorizes one. Preserve J3C-C/J4D+ deferrals, manual blockers #4/#5/#202/#248, Campaign/Infinite isolation, caps/budgets/entities, FOTON GLB/formations and all frozen J8 authorities. Follow Issue → exact-base branch → full gates → PR → exact-SHA post-merge evidence for any later authorized work. Never touch `main` directly or weaken tests.
+> Continue ORBI Energy Swarm autonomously. Repository `ingeniusvictor/orbi-energy.swarm`. J9A gameplay canonical is `171a8104900be17de62d91a765aab59c626b9d21`, fully DEPLOYED / FROZEN via Issue #477 / PR #478 with exact pre-PR, PR-head and post-main CI/Android/Pages GREEN. Complete DOC55 if still open, then implement ES-13J9B as the pure Blackout Architect structural-zone topology prerequisite: consume frozen J9A identity; exactly four cardinal structural anchors; core exposure eligibility only after all four canonical anchors are destroyed; fail closed on malformed topology facts; do not select coordinates, health, phases, exposure duration, chassis/EnemyType, attacks, spawn/runtime, timers, damage/economy/persistence/HUD or caps/budgets. Preserve existing Devourer/Titan/Worm, Campaign/Infinite/Score Attack authorities, J3C-C/J4D+ deferrals, manual blockers #4/#5/#202/#248 and FOTON/formations. Follow Issue → exact-base branch → full gates → PR → exact-SHA post-merge evidence. Never touch `main` directly or weaken tests.
 
 ## Update obligation
 Every merged gameplay phase must record exact gameplay canonical, Issue/PR, final head, pre-PR certification, PR CI/Android, main CI/Android/Pages, implementation result, unresolved follow-ups and next roadmap phase. A gameplay phase is not administratively closed until these records are current.
