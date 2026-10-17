@@ -1068,7 +1068,7 @@ Exact deployment anchors:
 - Issue #473 CLOSED / completed.
 
 ## J9 — Boss & Miniboss Expansion
-Status: **ACTIVE PROGRAM — J9A DEPLOYED / J9B NEXT**
+Status: **ACTIVE PROGRAM — J9B DEPLOYED / J9C NEXT**
 
 Blackout Architect, Helios Devourer, Null Choir, Quantum Leviathan, Dyson Breaker, Swarm Sovereign and Singularity Engine remain the long-range J9 vocabulary. New boss work must use phases, destructible zones, affinity/formation pressure, battlefield manipulation and telegraphed vulnerability windows without bypassing existing caps/budgets or certified boss authorities.
 
