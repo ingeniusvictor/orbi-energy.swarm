@@ -1068,7 +1068,7 @@ Exact deployment anchors:
 - Issue #473 CLOSED / completed.
 
 ## J9 — Boss & Miniboss Expansion
-Status: **ACTIVE PROGRAM — J9A DEPLOYED / J9B NEXT**
+Status: **ACTIVE PROGRAM — J9B DEPLOYED / J9C NEXT**
 
 Blackout Architect, Helios Devourer, Null Choir, Quantum Leviathan, Dyson Breaker, Swarm Sovereign and Singularity Engine remain the long-range J9 vocabulary. New boss work must use phases, destructible zones, affinity/formation pressure, battlefield manipulation and telegraphed vulnerability windows without bypassing existing caps/budgets or certified boss authorities.
 
@@ -1098,11 +1098,33 @@ Exact deployment anchors:
 - Issue #477 CLOSED / completed.
 
 ### ES-13J9B — Pure Blackout Architect Structural-Zone Topology Contract
-Status: **NEXT CONTRACT TARGET AFTER DOC55 CLOSURE**
+Status: **DEPLOYED / FROZEN**
+Canonical: `18dd628981182740905fa6e05a463c525c699e37`
+Issue #481 / PR #482
 
-J9B must consume frozen J9A identity and freeze only the bounded structural topology needed before a physical chassis or live encounter can be justified: exactly four immutable cardinal anchors (`NORTH`, `EAST`, `SOUTH`, `WEST`) and one fail-closed core-exposure eligibility projection. Core exposure is ineligible until all four canonical anchors are destroyed and eligible only when all four are destroyed. Duplicate, unknown, missing or padded anchor facts fail closed.
+J9B freezes the bounded structural prerequisite over J9A without selecting a physical chassis or live encounter:
+- exactly four immutable canonical anchors: `NORTH`, `EAST`, `SOUTH`, `WEST`;
+- exact four unique `{ anchorId, destroyed }` facts only;
+- unknown, duplicate, missing, padded or non-boolean facts fail closed;
+- core exposure remains `LOCKED` until all four anchors are destroyed and becomes `ELIGIBLE` only when all four are destroyed;
+- exactly two positive authorities: structural-topology definition and pure core-exposure eligibility projection;
+- no coordinates/rendering, anchor health, damage, phase/timer, chassis, attacks, spawn/runtime, HUD, economy/persistence, collection/cap/budget/FOTON/formation authority.
 
-J9B owns no coordinates/rendering, anchor health, damage application, phase count/thresholds, vulnerability duration, `EnemyType`, `BossChassisId`, attacks/cooldowns, spawn/milestone/rematch/runtime adoption, timer/clock, arena mutation, HUD, reward/economy/persistence, entity/projectile collection or scan, cap/budget, FOTON or formation authority. It does not make Blackout Architect live.
+Exact deployment anchors:
+- final pre-PR certification SHA `f26ce4869e77e287fd81ad63bbba1918c5317b66`, run `39055709331`, certify `117463126475` + Android `117463318912` GREEN with APK build/verify/upload;
+- clean PR #482 head `9a9aecbd7ecc275673408f5ef4371e20accbc624`, exact final diff 3 files;
+- PR CI #568 `39055907357` / `117463703000` GREEN; Android #129 `39055907372` / `117463703013` GREEN with APK build/verify/upload;
+- canonical `18dd628981182740905fa6e05a463c525c699e37`, parent `f9b343ee4a8a89bd64a09ac4e291c931dd60309f`, tree `d5ef99a040022dcdd7aaffe1ece027ef5b18d5a7`, exact final diff 3 files;
+- main CI #569 `39056014167` / `117464017817` GREEN; Android #130 `39056014168` / `117464017941` GREEN with APK build/verify/upload;
+- Pages/Web Beta #170 `39056065279`, build `117464181336` + deploy `117464235678` GREEN;
+- Issue #481 CLOSED / completed.
+
+### ES-13J9C — Pure Blackout Architect Chassis Compatibility Contract
+Status: **NEXT CONTRACT TARGET AFTER DOC56 CLOSURE**
+
+J9C must consume frozen J9A + J9B facts plus the existing pure boss-chassis descriptors and establish only structural compatibility, not live selection. Existing `TITAN_CORE` is the sole compatible candidate because it supplies exactly four weakpoints with `ANCHORED` motion and zero angular velocity, matching J9B's four fixed structural anchors. Unsupported chassis ids and mismatched/mutated compatibility facts must fail closed.
+
+J9C may expose only a pure compatibility result for `TITAN_CORE`. It must not select/adopt `TITAN_CORE` into Blackout Architect runtime and must not inherit its `6000 ms` exposure duration, weakpoint health/geometry, damage multipliers, `EnemyType`, base health, intro timing, attacks/weights, rewards, Infinite raid cadence/spawn/rematch authority, timer/clock, HUD, economy/persistence, collections/caps/budgets/entities/projectiles, FOTON or formations. Existing Infinite Titan raid behavior remains unchanged and authoritative for its own flow.
 
 ## J10 — Expert Risk / Reward
 Status: **PLANNED / DEFERRED — NOT ACTIVE**
