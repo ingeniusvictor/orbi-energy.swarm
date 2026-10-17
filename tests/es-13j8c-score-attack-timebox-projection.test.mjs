@@ -34,6 +34,10 @@ const startScreen = readFileSync(
   "src/components/StartScreen.tsx",
   "utf8",
 );
+const gameHud = readFileSync(
+  "src/components/GameHud.tsx",
+  "utf8",
+);
 const resultScreen = readFileSync(
   "src/components/ResultScreen.tsx",
   "utf8",
@@ -121,12 +125,10 @@ test("J8C does not create a live timer, mutate runtime descriptors or adopt UI/s
   assert.doesNotMatch(source, /Math\.random|Date\.now|performance\.now|localStorage|sessionStorage/);
 });
 
-test("J8C leaves existing live completion, runtime, UI and persistence authorities unadopted", () => {
+test("J8C stays runtime and persistence neutral while J8P may present the frozen duration", () => {
   for (const [label, liveSource] of [
     ["runtimeCompletionPolicy", completionSource],
     ["EnergySwarmGame", gameSource],
-    ["StartScreen", startScreen],
-    ["ResultScreen", resultScreen],
     ["runPersistence", persistence],
     ["storage", storage],
   ]) {
@@ -134,6 +136,23 @@ test("J8C leaves existing live completion, runtime, UI and persistence authoriti
       liveSource.includes("scoreAttackTimeboxProjection"),
       false,
       `${label} must not import J8C`,
+    );
+  }
+
+  for (const [label, presentationSource] of [
+    ["StartScreen", startScreen],
+    ["GameHud", gameHud],
+    ["ResultScreen", resultScreen],
+  ]) {
+    assert.equal(
+      presentationSource.includes("scoreAttackTimeboxProjection"),
+      true,
+      `${label} may read the frozen J8C duration for presentation`,
+    );
+    assert.match(presentationSource, /SCORE_ATTACK_DURATION_MS/);
+    assert.doesNotMatch(
+      presentationSource,
+      /setInterval|setTimeout|requestAnimationFrame|Date\.now|performance\.now/,
     );
   }
 

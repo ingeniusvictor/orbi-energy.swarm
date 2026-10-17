@@ -2,13 +2,17 @@ import React from "react";
 import { RotateCcw, Home, Award, Users, Crosshair, Coins, Flame } from "lucide-react";
 import { playClickSound } from "../game/audio";
 import type { RunArchiveEntry } from "../game/types";
+import type { ScoreAttackLiveEngineStartMode } from "../game/scoreAttackLiveEngineLifecycle";
+import { SCORE_ATTACK_DURATION_MS } from "../game/scoreAttackTimeboxProjection";
 import { useGameTranslation, formatNumber } from "../i18n";
 import RecentRunArchivePanel from "./RecentRunArchivePanel";
 
 interface ResultScreenProps {
+  presentationMode: ScoreAttackLiveEngineStartMode;
   victory: boolean;
   score: number;
   highScore: number;
+  scoreAttackBestScore: number;
   waveReached: number;
   maxSwarmSize: number;
   enemiesDestroyed: number;
@@ -40,9 +44,11 @@ interface ResultScreenProps {
 }
 
 export const ResultScreen: React.FC<ResultScreenProps> = ({
+  presentationMode,
   victory,
   score,
   highScore,
+  scoreAttackBestScore,
   waveReached,
   maxSwarmSize,
   enemiesDestroyed,
@@ -77,6 +83,100 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
     if (found && found !== `formations.${id.toUpperCase()}.name`) return found;
     return id;
   };
+
+  const isScoreAttack = presentationMode === "SCORE_ATTACK";
+  const scoreAttackDurationSeconds = SCORE_ATTACK_DURATION_MS / 1000;
+  const scoreAttackDisplayRecord = Math.max(scoreAttackBestScore, score);
+
+  if (isScoreAttack) {
+    return (
+      <div
+        className="absolute inset-0 z-50 flex flex-col items-center justify-center p-4 bg-slate-950/95 text-white select-none backdrop-blur-md overflow-y-auto"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="score-attack-result-title"
+      >
+        <div
+          data-score-attack-result="true"
+          className="w-full max-w-md bg-slate-900/80 border border-cyan-500/25 rounded-2xl p-6 shadow-2xl relative space-y-4 text-center backdrop-blur-xl my-8"
+        >
+          <div className="space-y-1.5">
+            <div className="w-14 h-14 rounded-full bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center mx-auto shadow-[0_0_20px_rgba(34,211,238,0.25)] text-cyan-300">
+              <Award size={28} />
+            </div>
+            <h2 id="score-attack-result-title" className="text-xl md:text-2xl font-sans font-black tracking-tight text-cyan-300 uppercase">
+              {language === "es" ? "SCORE ATTACK COMPLETADO" : "SCORE ATTACK COMPLETE"}
+            </h2>
+            <div className="text-[10px] font-mono text-cyan-500 font-bold uppercase tracking-wide">
+              {victory
+                ? `${scoreAttackDurationSeconds}S TIMEBOX COMPLETE`
+                : (language === "es" ? "INTENTO INTERRUMPIDO" : "ATTEMPT INTERRUPTED")}
+            </div>
+          </div>
+
+          <div className="bg-slate-950/50 rounded-xl p-3 border border-slate-800/60 divide-y divide-slate-900">
+            <div className="pb-2 flex justify-between items-center font-mono">
+              <span className="text-[11px] text-slate-400 flex items-center gap-1.5 uppercase">
+                <Award size={12} className="text-cyan-300" />
+                {language === "es" ? "PUNTUACIÓN DEL INTENTO" : "ATTEMPT SCORE"}
+              </span>
+              <span className="text-base font-bold text-cyan-300">{formatNumber(score)}</span>
+            </div>
+            <div className="py-1.5 flex justify-between items-center font-mono text-[10px]">
+              <span className="text-slate-500 uppercase">
+                {language === "es" ? "RÉCORD SCORE ATTACK" : "SCORE ATTACK RECORD"}
+              </span>
+              <span className="font-semibold text-amber-300">{formatNumber(scoreAttackDisplayRecord)}</span>
+            </div>
+            <div className="py-1.5 flex justify-between items-center font-mono text-[10px]">
+              <span className="text-slate-400 flex items-center gap-1.5 uppercase">
+                <Users size={11} className="text-cyan-400" />
+                {t("results.stats.maxPopulation")}
+              </span>
+              <span className="font-semibold text-cyan-400 uppercase">{maxSwarmSize} ORBIS</span>
+            </div>
+            <div className="pt-2 flex justify-between items-center font-mono text-[10px]">
+              <span className="text-slate-400 flex items-center gap-1.5 uppercase">
+                <Crosshair size={11} className="text-rose-400" />
+                {language === "es" ? "AMENAZAS PURGADAS" : "THREATS PURGED"}
+              </span>
+              <span className="font-semibold text-rose-400">{formatNumber(enemiesDestroyed)}</span>
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-cyan-500/15 bg-cyan-950/10 p-3 text-[10px] font-mono leading-relaxed text-slate-400">
+            {language === "es"
+              ? "Este resultado usa únicamente el récord dedicado de Score Attack. No altera el récord global, el archivo de runs ni las recompensas de Campaign."
+              : "This result uses only the dedicated Score Attack record. It does not alter the global record, run archive, or Campaign rewards."}
+          </div>
+
+          <div className="space-y-2 pt-1">
+            <button
+              autoFocus
+              onClick={() => {
+                playClickSound();
+                onRestart();
+              }}
+              className="w-full py-2.5 rounded-lg bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 font-semibold text-xs flex justify-center items-center gap-2 cursor-pointer transition shadow-[0_0_15px_rgba(34,211,238,0.18)] active:scale-[0.98] uppercase"
+            >
+              <RotateCcw size={14} />
+              {language === "es" ? "REINTENTAR SCORE ATTACK" : "RETRY SCORE ATTACK"}
+            </button>
+            <button
+              onClick={() => {
+                playClickSound();
+                onExitToMenu();
+              }}
+              className="w-full py-2 rounded bg-slate-800 hover:bg-slate-700 font-medium text-[11px] flex justify-center items-center gap-2 cursor-pointer transition text-slate-300 uppercase"
+            >
+              <Home size={12} />
+              {t("results.returnToMenu")}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div

@@ -69,10 +69,9 @@ test("J8A stays profile-only and does not choose live mode mechanics", () => {
   assert.doesNotMatch(source, /^import\s/m);
 });
 
-test("J8A does not alter or get adopted by current live runtime UI or persistence authorities", () => {
+test("J8A stays runtime and persistence neutral while J8P may read frozen profile facts", () => {
   for (const [label, liveSource] of [
     ["EnergySwarmGame", gameSource],
-    ["StartScreen", startScreen],
     ["ResultScreen", resultScreen],
     ["runtimeProgressionRouter", runtimeRouter],
     ["runPersistence", persistence],
@@ -85,10 +84,13 @@ test("J8A does not alter or get adopted by current live runtime UI or persistenc
     );
   }
 
+  assert.equal(startScreen.includes("scoreAttackModeContract"), true);
+  assert.match(startScreen, /getAdditionalGameModeProfile\("SCORE_ATTACK"\)/);
   assert.match(runtimeRouter, /mode:\s*"CAMPAIGN"/);
   assert.match(runtimeRouter, /mode:\s*"INFINITE"/);
   assert.doesNotMatch(runtimeRouter, /mode:\s*"SCORE_ATTACK"/);
   assert.match(startScreen, /onStartGame:\s*\(\)\s*=>\s*void/);
+  assert.match(startScreen, /onStartScoreAttack:\s*\(\)\s*=>\s*void/);
   assert.match(typesSource, /highScore:\s*number/);
   assert.match(
     typesSource,

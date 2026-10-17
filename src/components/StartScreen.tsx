@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { Play, Cpu, Volume2, VolumeX, Globe } from "lucide-react";
 import { GameStats, QualityPreset } from "../game/types";
 import { playClickSound } from "../game/audio";
+import { getAdditionalGameModeProfile } from "../game/scoreAttackModeContract";
+import { SCORE_ATTACK_DURATION_MS } from "../game/scoreAttackTimeboxProjection";
 import { useGameTranslation, formatNumber } from "../i18n";
 import PremiumBackdrop from "./presentation/PremiumBackdrop";
 import CampaignArc from "./CampaignArc";
@@ -14,6 +16,7 @@ const LazyFoton3DHero = React.lazy(
 interface StartScreenProps {
   stats: GameStats;
   onStartGame: () => void;
+  onStartScoreAttack: () => void;
   onResetStats: () => void;
   onChangePreset: (preset: QualityPreset) => void;
   onToggleMute: () => void;
@@ -23,6 +26,7 @@ interface StartScreenProps {
 export const StartScreen: React.FC<StartScreenProps> = ({
   stats,
   onStartGame,
+  onStartScoreAttack,
   onResetStats,
   onChangePreset,
   onToggleMute,
@@ -31,6 +35,8 @@ export const StartScreen: React.FC<StartScreenProps> = ({
   const { language, setLanguage, t } = useGameTranslation();
   const [activeTab, setActiveTab] = useState<"MAIN" | "HOW_TO" | "CONTROLS" | "SETTINGS" | "ABOUT" | "CODEX">("MAIN");
   const hasInfiniteRecord = stats.bestInfiniteSector >= 11;
+  const scoreAttackProfile = getAdditionalGameModeProfile("SCORE_ATTACK");
+  const scoreAttackDurationSeconds = SCORE_ATTACK_DURATION_MS / 1000;
 
   const clickTab = (tab: "MAIN" | "HOW_TO" | "CONTROLS" | "SETTINGS" | "ABOUT" | "CODEX") => {
     playClickSound();
@@ -329,6 +335,43 @@ export const StartScreen: React.FC<StartScreenProps> = ({
                   {t("startScreen.activateSync")}
                 </span>
               </button>
+
+              <div
+                data-score-attack-panel="true"
+                className="mt-3 rounded-xl border border-cyan-400/25 bg-cyan-950/15 p-3"
+              >
+                <div className="flex items-center justify-between gap-2 font-mono">
+                  <div>
+                    <div className="text-[10px] font-black uppercase tracking-[0.16em] text-cyan-300">
+                      {scoreAttackProfile?.displayName ?? "Score Attack"}
+                    </div>
+                    <div className="mt-0.5 text-[8px] uppercase tracking-[0.12em] text-slate-500">
+                      {language === "es" ? "MAXIMIZA LA PUNTUACIÓN" : "MAXIMIZE SCORE"}
+                    </div>
+                  </div>
+                  <span className="rounded-full border border-cyan-400/25 bg-cyan-400/10 px-2 py-1 text-[8px] font-black text-cyan-200">
+                    {scoreAttackDurationSeconds}S TIMEBOX
+                  </span>
+                </div>
+                <div className="mt-2 flex items-center justify-between rounded-lg border border-slate-800/70 bg-slate-950/55 px-2.5 py-2 font-mono text-[9px]">
+                  <span className="uppercase text-slate-500">
+                    {language === "es" ? "MEJOR SCORE ATTACK" : "BEST SCORE ATTACK"}
+                  </span>
+                  <span className="font-black text-cyan-300">
+                    {formatNumber(stats.scoreAttackBestScore)}
+                  </span>
+                </div>
+                <button
+                  data-score-attack-start-cta="true"
+                  onClick={() => {
+                    playClickSound();
+                    onStartScoreAttack();
+                  }}
+                  className="mt-2.5 w-full rounded-lg border border-cyan-400/35 bg-cyan-500/10 px-3 py-2.5 text-[10px] font-black uppercase tracking-[0.12em] text-cyan-200 transition hover:bg-cyan-500/20 active:scale-[0.98]"
+                >
+                  {language === "es" ? "INICIAR SCORE ATTACK" : "START SCORE ATTACK"}
+                </button>
+              </div>
 
               <div className="mt-2 flex items-center justify-center gap-2 text-[8px] font-mono uppercase tracking-[0.12em] text-slate-600">
                 <span>ENTER</span>
