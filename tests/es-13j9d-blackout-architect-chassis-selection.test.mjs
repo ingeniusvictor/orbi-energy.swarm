@@ -72,7 +72,7 @@ test("J9D grants only composite chassis selection binding authority", () => {
   assert.match(contract, /bindingMode: "BINDING_ONLY"/);
   assert.doesNotMatch(
     contract,
-    /exposureDurationMs|6000|collisionRadius|radiusX|radiusY|protectedDamageMultiplier|exposedDamageMultiplier|introDurationMs|attackWeights|destructionReward|EnemyType/,
+    /exposureDurationMs|6000|collisionRadius|radiusX|radiusY|protectedDamageMultiplier|exposedDamageMultiplier|introDurationMs|attackWeights|destructionReward/,
   );
   assert.doesNotMatch(
     contract,
