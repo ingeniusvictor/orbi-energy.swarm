@@ -28,8 +28,6 @@ jobs:
           from pathlib import Path
 
           CANONICAL = "89d1dea159f8478c2e2ccc01f027c2e9041a4542"
-          PARENT = "7ed00b7f28f8c3dd6578932f8e77845e8618d853"
-          TREE = "3688799786e8700309e002a5ab75b4d0f7661f74"
 
           def read(path):
               return Path(path).read_text(encoding="utf-8")
@@ -53,7 +51,7 @@ jobs:
 
           j8o_roadmap = '''### ES-13J8O — Controlled Live Score Attack Engine Lifecycle Adoption
           Status: **DEPLOYED / FROZEN**
-          Canonical: `89d1dea159f8478c2e2ccc01f027c2e9041a4542`  
+          Canonical: `89d1dea159f8478c2e2ccc01f027c2e9041a4542`
           Issue #469 / PR #470
 
           J8O is the first controlled live Score Attack engine-lifecycle adoption over the frozen J8K→J8N prerequisite chain:
@@ -233,28 +231,23 @@ jobs:
           if CANONICAL not in continuity or "ES-13J8P" not in continuity:
               raise SystemExit("continuity validation failed")
           write(continuity_path, continuity)
-
-          # Final scope guard before committing: only three docs plus this temporary helper may differ.
           PY
 
           git diff --check
-          git status --short
           changed="$(git status --short | awk '{print $2}' | sort)"
           expected="$(printf '%s\n' \
-            '.github/workflows/es-13doc53-apply.yml' \
             'docs/ES13_GAMEPLAY_ROADMAP.md' \
             'docs/IMPLEMENTATION_LEDGER.md' \
             'docs/PROJECT_CONTINUITY.md' | sort)"
           if [ "$changed" != "$expected" ]; then
-            echo "Unexpected scope before helper cleanup"
+            echo "Unexpected DOC53 scope"
             printf 'Changed:\n%s\nExpected:\n%s\n' "$changed" "$expected"
             exit 1
           fi
 
-      - name: Commit docs and remove temporary helper
+      - name: Commit DOC53 documents
         shell: bash
         run: |
-          rm .github/workflows/es-13doc53-apply.yml
           git diff --check
           changed="$(git status --short | awk '{print $2}' | sort)"
           expected="$(printf '%s\n' \
@@ -268,6 +261,6 @@ jobs:
           fi
           git config user.name "ingeniusvictor"
           git config user.email "ingenius.victor@gmail.com"
-          git add docs/ES13_GAMEPLAY_ROADMAP.md docs/IMPLEMENTATION_LEDGER.md docs/PROJECT_CONTINUITY.md .github/workflows/es-13doc53-apply.yml
+          git add docs/ES13_GAMEPLAY_ROADMAP.md docs/IMPLEMENTATION_LEDGER.md docs/PROJECT_CONTINUITY.md
           git commit -m "ES-13DOC53 — Close J8O and activate J8P public Score Attack UI"
           git push origin HEAD:docs/es-13-j8o-closure-j8p-public-score-attack-ui
