@@ -3,8 +3,11 @@ import { Shield, Award, Users, Volume2, VolumeX, Pause, Play, Zap } from "lucide
 import { useGameTranslation, formatNumber } from "../i18n";
 import { getCampaignObjective } from "../game/campaignGuide";
 import type { ResonanceTier } from "../game/combatResonance";
+import type { ScoreAttackLiveEngineStartMode } from "../game/scoreAttackLiveEngineLifecycle";
+import { SCORE_ATTACK_DURATION_MS } from "../game/scoreAttackTimeboxProjection";
 
 interface GameHudProps {
+  presentationMode: ScoreAttackLiveEngineStartMode;
   score: number;
   shield: number;
   shieldMax: number;
@@ -32,6 +35,7 @@ interface GameHudProps {
 }
 
 export const GameHud: React.FC<GameHudProps> = ({
+  presentationMode,
   score,
   shield,
   shieldMax,
@@ -58,7 +62,14 @@ export const GameHud: React.FC<GameHudProps> = ({
   onToggleMute
 }) => {
   const { language, t } = useGameTranslation();
-  const campaignObjective = getCampaignObjective(currentWave, language);
+  const scoreAttackActive = presentationMode === "SCORE_ATTACK";
+  const scoreAttackDurationSeconds = SCORE_ATTACK_DURATION_MS / 1000;
+  const campaignObjective = scoreAttackActive
+    ? null
+    : getCampaignObjective(currentWave, language);
+  const activeObjective = scoreAttackActive
+    ? (language === "es" ? "MAXIMIZA LA PUNTUACIÓN" : "MAXIMIZE SCORE")
+    : campaignObjective;
 
   // Shield Color Selector
   const shieldPercent = (shield / shieldMax) * 100;
@@ -171,7 +182,11 @@ export const GameHud: React.FC<GameHudProps> = ({
 
       {/* 2. WAVE LEVEL / BREAK */}
       <div className="orbi-hud-wave flex items-center gap-1.5 bg-slate-900/60 border border-slate-800 px-2 py-0.5 rounded text-xs font-bold font-mono">
-        {isWaveBreak ? (
+        {scoreAttackActive ? (
+          <span className="text-cyan-300 uppercase">
+            SCORE ATTACK · {scoreAttackDurationSeconds}S TIMEBOX
+          </span>
+        ) : isWaveBreak ? (
           <span className="text-cyan-400 animate-pulse uppercase">
             {t("hud.preparation").substring(0, 4)}: {waveBreakTimeLeft}s
           </span>
@@ -182,13 +197,13 @@ export const GameHud: React.FC<GameHudProps> = ({
         )}
       </div>
 
-      {campaignObjective && (
+      {activeObjective && (
         <div className="orbi-hud-objective flex items-center gap-2 min-w-0">
           <span className="text-[8px] uppercase tracking-[0.15em] text-cyan-400/80 font-bold shrink-0">
             {language === "es" ? "OBJETIVO" : "OBJECTIVE"}
           </span>
           <span className="text-[9px] text-slate-400 truncate">
-            {campaignObjective}
+            {activeObjective}
           </span>
         </div>
       )}

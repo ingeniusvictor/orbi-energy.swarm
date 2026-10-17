@@ -295,6 +295,8 @@ export const EnergySwarmGame: React.FC = () => {
     useState(0);
   const [isGameOver, setIsGameOver] = useState(false);
   const [victory, setVictory] = useState(false);
+  const [presentationMode, setPresentationMode] =
+    useState<ScoreAttackLiveEngineStartMode>("CAMPAIGN");
 
   const [score, setScore] = useState(0);
   const [highScore, setHighScore] = useState(0);
@@ -1188,7 +1190,7 @@ export const EnergySwarmGame: React.FC = () => {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
-  }, [isPlaying, isPaused, isPhotoMode, isGameOver, upgradesLevel]);
+  }, [isPlaying, isPaused, isPhotoMode, isGameOver, upgradesLevel, presentationMode]);
 
   // --- ANDROID / WEB APP LIFECYCLE SAFETY ---
   useEffect(() => {
@@ -1560,6 +1562,7 @@ export const EnergySwarmGame: React.FC = () => {
     const activation = resolveScoreAttackLiveEngineActivation(mode);
     if (mode === "SCORE_ATTACK" && !activation) return false;
     scoreAttackActivationRef.current = activation;
+    setPresentationMode(mode);
     startGame();
     return true;
   };
@@ -1571,7 +1574,7 @@ export const EnergySwarmGame: React.FC = () => {
   // --- REBOOT GAME ON LOSS ---
   const rebootGame = () => {
     playClickSound();
-    startCampaignGame();
+    void startGameWithMode(presentationMode);
   };
 
   // --- TOGGLE PAUSE ---
@@ -7318,6 +7321,9 @@ export const EnergySwarmGame: React.FC = () => {
         <StartScreen
           stats={stats}
           onStartGame={startCampaignGame}
+          onStartScoreAttack={() => {
+            void startGameWithMode("SCORE_ATTACK");
+          }}
           onResetStats={() => {
             const defaults = resetGameStats();
             setStats(defaults);
@@ -7349,13 +7355,16 @@ export const EnergySwarmGame: React.FC = () => {
       {isPlaying && isPaused && !isPhotoMode && (
         <PauseMenu
           onResume={togglePause}
-          onRestart={startCampaignGame}
+          onRestart={() => {
+            void startGameWithMode(presentationMode);
+          }}
           onEnterPhotoMode={enterPhotoMode}
           onExitToMenu={() => {
             stopBgm();
             setIsPhotoMode(false);
             setPhotoHintVisible(false);
             setIsPlaying(false);
+            setPresentationMode("CAMPAIGN");
             setPausedState(false);
           }}
           audioMuted={audioMuted}
@@ -7395,9 +7404,11 @@ export const EnergySwarmGame: React.FC = () => {
       {/* GAMEOVER / VICTORY SUMMARY BOARDS */}
       {isGameOver && (
         <ResultScreen
+          presentationMode={presentationMode}
           victory={victory}
           score={score}
           highScore={highScore}
+          scoreAttackBestScore={stats.scoreAttackBestScore}
           waveReached={currentWave}
           maxSwarmSize={runMaxSwarmSizeRef.current}
           enemiesDestroyed={runEnemiesDestroyedRef.current}
@@ -7407,10 +7418,13 @@ export const EnergySwarmGame: React.FC = () => {
           infiniteMinibossesDefeated={stats.infiniteMinibossesDefeated}
           infiniteBossRematchesDefeated={stats.infiniteBossRematchesDefeated}
           recentRunArchive={stats.recentRunArchive}
-          onRestart={startCampaignGame}
+          onRestart={() => {
+            void startGameWithMode(presentationMode);
+          }}
           onExitToMenu={() => {
             setIsPlaying(false);
             setIsGameOver(false);
+            setPresentationMode("CAMPAIGN");
           }}
           activeRunUpgrades={activeRunUpgrades}
           strongestAffinity={getStrongestAffinity()}
@@ -7702,6 +7716,7 @@ export const EnergySwarmGame: React.FC = () => {
             {/* COLUMN 2: BATTLEFIELD CORE (Center Column) */}
             <div className="orbi-battlefield flex-1 flex flex-col gap-2">
               <GameHud
+                presentationMode={presentationMode}
                 score={score}
                 shield={shield}
                 shieldMax={SHIELD_MAX + (upgradesLevel.hydrogen_deflector || 0) * 15 + (activeRunUpgrades.foton_integrity || 0) * 30}
