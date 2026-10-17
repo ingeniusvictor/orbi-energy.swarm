@@ -71,6 +71,7 @@ Rules:
 | ES-13J8L — Pure Score Attack Runtime Activation Envelope Contract | DEPLOYED / FROZEN | `d41f00a1a87140dba1ddc2d04b207261df862307` | #457 | #458 |
 | ES-13J8M — Pure Score Attack Attempt Finalization Plan Contract | DEPLOYED / FROZEN | `9ec6a76bf34057881326530af9581e0eca1a0c74` | #461 | #462 |
 | ES-13J8N — Pure Dedicated Score Attack Stats-Commit Application Contract | DEPLOYED / FROZEN | `d0e9af1c3c8f94524187f7d8ee48c975e2bd9f3e` | #465 | #466 |
+| ES-13J8O — Controlled Live Score Attack Engine Lifecycle Adoption | DEPLOYED / FROZEN | `89d1dea159f8478c2e2ccc01f027c2e9041a4542` | #469 | #470 |
 
 ## Evidence anchors
 
@@ -733,12 +734,25 @@ Automated CI never substitutes for required human/device evidence.
 - Canonical `d0e9af1c3c8f94524187f7d8ee48c975e2bd9f3e`, parent `41da66dac942accb714899f189fce86dc24d1d79`, tree `cb8587b7a3c584a4516e0e5f49be9129e11d9d6f`, exact diff three certified files.
 - Main CI `38970263772` / `117206620329`, Android `38970263775` / `117206620338`, Pages `38970380507` build `117207004493` + deploy `117207154206` GREEN.
 
+### J8O — Controlled Live Score Attack Engine Lifecycle Adoption
+- Internal Score Attack start consumes frozen J8L and preserves Campaign as the default/public start path in J8O.
+- Frozen J8L/J8K owns effective runtime projection; the existing TIMEBOX / 60000 timer remains the sole timer/clock.
+- Terminal completion is intercepted before Infinite advancement; frozen J8M + J8N own finalization/dedicated record semantics; generic run persistence/highScore/archive/counters remain isolated.
+- Initial run `38975238440` exposed one historical static Platform assertion; diagnostic `38984992393` proved shared completion-snapshot extraction, not a live-engine defect.
+- Minimum test-only widening was `tests/runtime-completion-adoption.test.ts` (`+5/-1`); frozen J8K/J8L/J8M/J8N source remained unchanged.
+- Final pre-PR `01ca757d75f6c36c486277088cb90985ca4037a2`: run `38985148756`, certify `117254768498` + Android `117254768331` GREEN.
+- PR #470 head `d2e8935cfa321d47fe4c01373823ea400548c976`: CI `38985359191` / `117255442942` + Android `38985359228` / `117255443134` GREEN.
+- Canonical `89d1dea159f8478c2e2ccc01f027c2e9041a4542`, parent `7ed00b7f28f8c3dd6578932f8e77845e8618d853`, tree `3688799786e8700309e002a5ab75b4d0f7661f74`, exact final diff five files.
+- Main CI `38985499689` / `117255904499`, Android `38985499754` / `117255905187`, Pages `38985557153` build `117256089658` + deploy `117256175826` GREEN.
+
 ## Next planned gameplay
 
-### ES-13J8O — Controlled Live Score Attack Engine Lifecycle Adoption
-Status: **NEXT CONTRACT TARGET AFTER DOC52 CLOSURE**.
+### ES-13J8P — Controlled Public Score Attack Selection & Presentation Adoption
+Status: **NEXT CONTRACT TARGET AFTER DOC53 CLOSURE**.
 
-J8O is the first controlled live slice after the pure J8K→J8N prerequisite chain. It must adopt J8L/J8M/J8N only inside the engine lifecycle: internal-mode start with Campaign unchanged by default, one scalar active Score Attack envelope, effective descriptor from frozen J8L/J8K, existing TIMEBOX timer only, terminal interception before generic Infinite advancement, dedicated-record persistence only through existing `updateStatsAndSave(...)` when J8N changes the record, and full activation cleanup on terminal/reset boundaries. StartScreen/ResultScreen/HUD remain out of scope and Score Attack is not publicly selectable yet.
+J8P must expose frozen J8O through controlled public UI only: Campaign remains the default/primary launch path; Score Attack delegates to `startGameWithMode("SCORE_ATTACK")`; one low-frequency presentation-mode identity may survive terminal activation cleanup only for StartScreen/HUD/ResultScreen attribution and same-mode restart continuity; it stays outside `RuntimeProgressionState` and owns no engine semantics. StartScreen may display canonical Score Attack/60 s/dedicated-best facts, HUD may attribute the active mode using existing timer facts, and ResultScreen must use the dedicated Score Attack record rather than generic/global highScore semantics. Campaign/Infinite remain unchanged.
+
+No new runtime discriminator/cache/timer/clock/completion cursor, score formula/reward/economy, generic archive/counter/highScore write, spawn/arena/caps/budgets/entities/projectiles/FOTON/formation authority.
 
 J4D+ additional tactical families remain deferred: FORMATION_BREAKER/JAMMER require hard-control spacing/recovery proof; MINE_WEAVER/MIRROR_WARDEN require genuine mine/mirror mechanics. J3C-C remains deferred, not cancelled.
 
