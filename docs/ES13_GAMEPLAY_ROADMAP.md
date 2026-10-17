@@ -1013,13 +1013,42 @@ J8N certification caught and corrected one real no-op normalization bug before P
 - Pages `38970380507`, build `117207004493` + deploy `117207154206` GREEN.
 
 ### ES-13J8O — Controlled Live Score Attack Engine Lifecycle Adoption
-Status: **NEXT CONTRACT TARGET AFTER DOC52 CLOSURE**
+Status: **DEPLOYED / FROZEN**
+Canonical: `89d1dea159f8478c2e2ccc01f027c2e9041a4542`
+Issue #469 / PR #470
 
-J8K→J8N completed the pure prerequisite chain before live adoption. J8L now supplies exact SCORE_ATTACK activation identity, fresh nested INFINITE runtime/session and an effective TIMEBOX / 60000 ms descriptor with generic cache/adaptive/dynamic/bonus adoption bypassed. J8M + J8N provide a terminal dedicated-record path without generic `applyFinalRunCommit(...)` semantics.
+J8O is the first controlled live Score Attack engine-lifecycle adoption over the frozen J8K→J8N prerequisite chain:
+- Campaign remains the unchanged/default public start path; Score Attack is still not publicly selectable in J8O;
+- internal `SCORE_ATTACK` start consumes only frozen J8L activation authority and installs its exact nested INFINITE runtime/session plus one scalar activation-envelope ref;
+- active Score Attack runtime reads reuse frozen J8L/J8K projection facts and bypass the generic runtime projection cache/adaptive/dynamic/bonus adoption path for that attempt;
+- the existing TIMEBOX timer remains the sole timer/clock and uses the frozen `60000 ms` descriptor;
+- terminal completion is intercepted before generic Infinite advancement and never advances Infinite progression;
+- J8M + J8N supply finalization and dedicated-record application; storage is touched only through existing `updateStatsAndSave(...)` when `scoreAttackBestScore` actually changes;
+- tied/below outcomes do not write GameStats/storage and premature Score Attack game-over skips generic `applyFinalRunCommit(...)`, global highScore, archive and generic counters;
+- Score Attack activation identity is cleared at reset/new-run and terminal boundaries;
+- `StartScreen`, `ResultScreen` and `GameHud` remain unchanged in J8O.
 
-J8O must therefore adopt only the engine lifecycle core, not public UI. The existing engine start path may accept an internal mode with Campaign unchanged as default; SCORE_ATTACK must install the frozen J8L runtime plus one scalar activation-envelope ref. While active, descriptor/projection reads must use frozen J8L/J8K facts rather than the generic runtime projection cache. The existing timer remains authoritative and is initialized from TIMEBOX / 60000 ms. On terminal completion, J8O must intercept before generic Infinite advancement, compose J8M from the exact active envelope + completion snapshot + dedicated best + live candidate score, apply J8N, persist only a changed dedicated record through the existing `updateStatsAndSave(...)` seam, clear Score Attack activation identity and never advance Infinite progression.
+Certification discovered one historical static platform expectation that required evidence-driven evolution: the runtime completion snapshot fields were preserved exactly but extracted to one shared `completionSnapshot` reused by both `isRuntimeWaveComplete(...)` and Score Attack finalization. Only `tests/runtime-completion-adoption.test.ts` widened (`+5/-1`); no frozen J8K/J8L/J8M/J8N source changed.
 
-J8O is **engine-only**: StartScreen remains Campaign-only with no public Score Attack button; ResultScreen/HUD/presentation stay deferred to the following slice. No new runtime discriminator, cache, timer/clock, score formula, reward/economy, generic highScore/archive/counter, spawn/arena/cap/budget/entity/projectile/FOTON/formation authority is allowed.
+Exact deployment anchors:
+- initial pre-PR run `38975238440`: certify `117222979343` RED only on Platform regression; Android `117222978976` GREEN;
+- diagnostic run `38984992393` isolated `wave transitions tick time only through the completion policy contract` without weakening the platform command/exit semantics;
+- final pre-PR SHA `01ca757d75f6c36c486277088cb90985ca4037a2`, run `38985148756`, certify `117254768498` + Android `117254768331` GREEN;
+- clean PR #470 head `d2e8935cfa321d47fe4c01373823ea400548c976` after temporary certifier removal;
+- PR CI `38985359191` / `117255442942` GREEN; Android `38985359228` / `117255443134` GREEN;
+- canonical `89d1dea159f8478c2e2ccc01f027c2e9041a4542`, parent `7ed00b7f28f8c3dd6578932f8e77845e8618d853`, tree `3688799786e8700309e002a5ab75b4d0f7661f74`, exact final diff five files;
+- main CI `38985499689` / `117255904499` GREEN; Android `38985499754` / `117255905187` GREEN with APK build/verify/upload;
+- Pages/Web Beta `38985557153`, build `117256089658` + deploy `117256175826` GREEN;
+- Issue #469 CLOSED / completed.
+
+### ES-13J8P — Controlled Public Score Attack Selection & Presentation Adoption
+Status: **NEXT CONTRACT TARGET AFTER DOC53 CLOSURE**
+
+J8P is the first public-UI slice over frozen J8O. It must expose Score Attack on `StartScreen` while preserving Campaign as the unchanged/default primary launch path, and public Score Attack start must delegate to the existing frozen J8O `startGameWithMode("SCORE_ATTACK")` seam rather than duplicating bootstrap/runtime authority.
+
+J8P may add only a low-frequency presentation-mode identity sufficient for `StartScreen` / `GameHud` / `ResultScreen` attribution and result/restart continuity. That identity must stay outside `RuntimeProgressionState`, may not replace the J8O activation envelope, and owns no timer/clock, score, persistence or progression semantics. Presentation may consume frozen J8A display/objective identity, frozen TIMEBOX / `60000 ms` facts and dedicated `scoreAttackBestScore` only. Result presentation must not reuse global highScore/generic Campaign victory/archive/reward semantics as if they belonged to Score Attack. Campaign and normal Infinite behavior/presentation remain unchanged.
+
+J8P must not change J8A–J8O frozen authorities except the minimum controlled integration seams demonstrated necessary by UI discovery; no new runtime discriminator/cache/timer/clock/completion cursor, score formula, reward/economy, generic highScore/archive/counter write, spawn/arena/cap/budget/entity/projectile/FOTON/formation authority is allowed.
 
 ## J9 — Boss & Miniboss Expansion
 Status: PLANNED
