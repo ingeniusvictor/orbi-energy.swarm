@@ -72,6 +72,7 @@ Rules:
 | ES-13J8M — Pure Score Attack Attempt Finalization Plan Contract | DEPLOYED / FROZEN | `9ec6a76bf34057881326530af9581e0eca1a0c74` | #461 | #462 |
 | ES-13J8N — Pure Dedicated Score Attack Stats-Commit Application Contract | DEPLOYED / FROZEN | `d0e9af1c3c8f94524187f7d8ee48c975e2bd9f3e` | #465 | #466 |
 | ES-13J8O — Controlled Live Score Attack Engine Lifecycle Adoption | DEPLOYED / FROZEN | `89d1dea159f8478c2e2ccc01f027c2e9041a4542` | #469 | #470 |
+| ES-13J8P — Controlled Public Score Attack Selection & Presentation Adoption | DEPLOYED / FROZEN | `c29df45aebf4a0b3d58038a42b8c539234b42745` | #473 | #474 |
 
 ## Evidence anchors
 
@@ -745,16 +746,19 @@ Automated CI never substitutes for required human/device evidence.
 - Canonical `89d1dea159f8478c2e2ccc01f027c2e9041a4542`, parent `7ed00b7f28f8c3dd6578932f8e77845e8618d853`, tree `3688799786e8700309e002a5ab75b4d0f7661f74`, exact final diff five files.
 - Main CI `38985499689` / `117255904499`, Android `38985499754` / `117255905187`, Pages `38985557153` build `117256089658` + deploy `117256175826` GREEN.
 
-## Next planned gameplay
+### J8P — Controlled Public Score Attack Selection & Presentation Adoption
+- Public Score Attack selection/presentation over frozen J8O; Campaign remains the unchanged/default primary public launch.
+- One low-frequency presentation identity stays outside `RuntimeProgressionState`; no runtime discriminator, second timer/clock or persistence authority was added.
+- StartScreen consumes frozen identity/duration/dedicated-best facts; HUD provides mode/objective attribution; ResultScreen uses dedicated Score Attack record semantics and excludes generic Campaign reward/archive/global-highScore ownership.
+- Repository smoke initially exposed exactly three obsolete pre-J8P UI-isolation expectations in J8A/J8C/J8O tests; only those expectations evolved, preserving all runtime/timer/persistence boundaries and frozen `src/game/scoreAttack*.ts` source.
+- Final pre-PR `a5e635b8ad50f4e7199e7abaa90e4e6db2c62db7`: run `38997372822`, certify `117292769229` + Android `117292944816` GREEN.
+- PR #474 head `ccf22fb9b908ff08442a65bf9eaf6d218ef575b8`: CI #560 `38997541403` / `117293282979` + Android #125 `38997541492` / `117293283152` GREEN.
+- Canonical `c29df45aebf4a0b3d58038a42b8c539234b42745`, parent `120fe00a61ad7a84984871ec19ec435be23535a0`, tree `5d9637b8e1df6d565ffffd08cb840b45c102c65c`, exact diff 9 files.
+- Main CI #561 `38997649166` / `117293618514`, Android #126 `38997649158` / `117293618407`, Pages #166 `38997711279` build `117293808563` + deploy `117293885541` GREEN.
 
-### ES-13J8P — Controlled Public Score Attack Selection & Presentation Adoption
-Status: **NEXT CONTRACT TARGET AFTER DOC53 CLOSURE**.
+## Roadmap hold
 
-J8P must expose frozen J8O through controlled public UI only: Campaign remains the default/primary launch path; Score Attack delegates to `startGameWithMode("SCORE_ATTACK")`; one low-frequency presentation-mode identity may survive terminal activation cleanup only for StartScreen/HUD/ResultScreen attribution and same-mode restart continuity; it stays outside `RuntimeProgressionState` and owns no engine semantics. StartScreen may display canonical Score Attack/60 s/dedicated-best facts, HUD may attribute the active mode using existing timer facts, and ResultScreen must use the dedicated Score Attack record rather than generic/global highScore semantics. Campaign/Infinite remain unchanged.
-
-No new runtime discriminator/cache/timer/clock/completion cursor, score formula/reward/economy, generic archive/counter/highScore write, spawn/arena/caps/budgets/entities/projectiles/FOTON/formation authority.
-
-J4D+ additional tactical families remain deferred: FORMATION_BREAKER/JAMMER require hard-control spacing/recovery proof; MINE_WEAVER/MIRROR_WARDEN require genuine mine/mirror mechanics. J3C-C remains deferred, not cancelled.
+No gameplay target is active after DOC54. J8 is complete through J8P. J9–J15 remain **PLANNED / DEFERRED — NOT ACTIVE** pending explicit authorization and fresh discovery; ES-14 remains **FUTURE PROGRAM / NOT YET COMMITTED**. J4D+ and J3C-C remain deferred/not cancelled.
 
 ## Program sequence
 `J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance → ES-14 Living Warfront`

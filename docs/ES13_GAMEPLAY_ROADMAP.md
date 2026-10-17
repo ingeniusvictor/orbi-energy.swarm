@@ -1042,46 +1042,67 @@ Exact deployment anchors:
 - Issue #469 CLOSED / completed.
 
 ### ES-13J8P — Controlled Public Score Attack Selection & Presentation Adoption
-Status: **NEXT CONTRACT TARGET AFTER DOC53 CLOSURE**
+Status: **DEPLOYED / FROZEN**
+Canonical: `c29df45aebf4a0b3d58038a42b8c539234b42745`
+Issue #473 / PR #474
 
-J8P is the first public-UI slice over frozen J8O. It must expose Score Attack on `StartScreen` while preserving Campaign as the unchanged/default primary launch path, and public Score Attack start must delegate to the existing frozen J8O `startGameWithMode("SCORE_ATTACK")` seam rather than duplicating bootstrap/runtime authority.
+J8P closes the first public Score Attack vertical slice over frozen J8O:
+- Campaign remains the unchanged/default primary public launch path;
+- StartScreen exposes Score Attack only as an explicit secondary choice and delegates live start to frozen J8O;
+- one low-frequency `CAMPAIGN | SCORE_ATTACK` presentation identity exists only for UI attribution and same-mode restart continuity, outside `RuntimeProgressionState`;
+- frozen J8A identity and J8C `TIMEBOX / 60000 ms` are presentation facts only; no second timer/clock/countdown authority was added;
+- GameHud replaces Campaign objective vocabulary with bounded Score Attack attribution while the engine timer remains sole timing authority;
+- ResultScreen uses the dedicated Score Attack record and does not present global highScore, generic Campaign rewards or generic run archive as Score Attack ownership;
+- retry re-enters the frozen J8O start seam; menu exit clears presentation identity;
+- J8K/J8L/J8M/J8N remain isolated from direct UI imports and all runtime/scoring/persistence authorities remain frozen.
 
-J8P may add only a low-frequency presentation-mode identity sufficient for `StartScreen` / `GameHud` / `ResultScreen` attribution and result/restart continuity. That identity must stay outside `RuntimeProgressionState`, may not replace the J8O activation envelope, and owns no timer/clock, score, persistence or progression semantics. Presentation may consume frozen J8A display/objective identity, frozen TIMEBOX / `60000 ms` facts and dedicated `scoreAttackBestScore` only. Result presentation must not reuse global highScore/generic Campaign victory/archive/reward semantics as if they belonged to Score Attack. Campaign and normal Infinite behavior/presentation remain unchanged.
+Repository certification initially exposed three historical pre-J8P static expectations in J8A/J8C/J8O tests. Evidence showed they prohibited the exact bounded UI consumption J8P was created to introduce. Only those tests evolved: J8A permits StartScreen profile reads while runtime/persistence remain neutral; J8C permits Start/HUD/Result duration reads while forbidding UI clock APIs; J8O continues to forbid direct J8K/L/M/N UI imports and keeps the engine coordinator authoritative. No frozen `src/game/scoreAttack*.ts` source changed.
 
-J8P must not change J8A–J8O frozen authorities except the minimum controlled integration seams demonstrated necessary by UI discovery; no new runtime discriminator/cache/timer/clock/completion cursor, score formula, reward/economy, generic highScore/archive/counter write, spawn/arena/cap/budget/entity/projectile/FOTON/formation authority is allowed.
+Exact deployment anchors:
+- final pre-PR certification SHA `a5e635b8ad50f4e7199e7abaa90e4e6db2c62db7`, run `38997372822`, certify `117292769229` + Android `117292944816` GREEN with APK build/verify/upload;
+- clean PR #474 head `ccf22fb9b908ff08442a65bf9eaf6d218ef575b8`, exact final diff 9 files;
+- PR CI #560 `38997541403` / `117293282979` GREEN; Android #125 `38997541492` / `117293283152` GREEN with Build/Verify/Upload APK;
+- canonical `c29df45aebf4a0b3d58038a42b8c539234b42745`, parent `120fe00a61ad7a84984871ec19ec435be23535a0`, tree `5d9637b8e1df6d565ffffd08cb840b45c102c65c`, exact final diff 9 files;
+- main CI #561 `38997649166` / `117293618514` GREEN; Android #126 `38997649158` / `117293618407` GREEN with Build/Verify/Upload APK;
+- Pages/Web Beta #166 `38997711279`, build `117293808563` + deploy `117293885541` GREEN;
+- Issue #473 CLOSED / completed.
+
+## Post-J8 roadmap hold
+
+J8 Additional Modes is administratively complete through J8P. DOC54 activates **no new gameplay phase**. J9–J15 remain roadmap-level planned/deferred work and require explicit scope plus fresh discovery before any issue/branch/product write. ES-14 remains a future program / not yet committed. J3C-C and J4D+ remain deferred, not cancelled.
 
 ## J9 — Boss & Miniboss Expansion
-Status: PLANNED
+Status: **PLANNED / DEFERRED — NOT ACTIVE**
 
 Blackout Architect, Helios Devourer, Null Choir, Quantum Leviathan, Dyson Breaker, Swarm Sovereign and Singularity Engine. Use phases, destructible zones, affinity/formation pressure, battlefield manipulation and telegraphed vulnerability windows.
 
 ## J10 — Expert Risk / Reward
-Status: PLANNED
+Status: **PLANNED / DEFERRED — NOT ACTIVE**
 
 Resonance Graze, Quantum Slip, near-miss chains and optional danger-proximity bonuses. Never mandatory for baseline survival.
 
 ## J11 — Build & Synergy Expansion
-Status: PLANNED
+Status: **PLANNED / DEFERRED — NOT ACTIVE**
 
 Distinct run identities around Solar, Hydro, Wind, Thermal, Magnetic and Quantum, followed by controlled hybrid synergies.
 
 ## J12 — Rare Events & Secret Encounters
-Status: PLANNED
+Status: **PLANNED / DEFERRED — NOT ACTIVE**
 
 Golden Rift, Ancient ORBI Signal, Blackout Armada, Unknown Energy Signature, Titan-class Intruder and hidden variants. Surprise without required progression blockers.
 
 ## J13 — Score, Rank & Mastery
-Status: PLANNED
+Status: **PLANNED / DEFERRED — NOT ACTIVE**
 
 C/B/A/S/S+ ranks, optional sector objectives, perfect sectors, no-damage/swarm-preservation targets, affinity efficiency, formation mastery, time/chain goals and mode-specific mastery.
 
 ## J14 — Procedural Interaction Matrix
-Status: PLANNED
+Status: **PLANNED / DEFERRED — NOT ACTIVE**
 
 Safely combine `enemy archetype + evolved trait + formation + biome + mutator + event` with deterministic seed reproduction, explicit compatibility rejection and global caps/budgets authoritative.
 
 ## J15 — Gameplay Integration & Long-Range Balance
-Status: PLANNED
+Status: **PLANNED / DEFERRED — NOT ACTIVE**
 
 Long runs across difficulty bands, telegraph/spawn/recovery fairness, score/resonance/Overdrive economy, boss/event/mode interactions, desktop+Android performance, readability/pacing/replayability and deterministic failure evidence.
 

@@ -3,7 +3,7 @@
 > START HERE after any new chat/session, context loss or handoff.
 
 Repository: `ingeniusvictor/orbi-energy.swarm`  
-Last continuity update: 2026-10-16
+Last continuity update: 2026-10-17
 
 ## Authority order
 1. live GitHub `main` + merged history;
@@ -18,18 +18,18 @@ Never infer deployment/certification from conversation text alone.
 
 ## Current certified gameplay canonical
 
-`89d1dea159f8478c2e2ccc01f027c2e9041a4542`
+`c29df45aebf4a0b3d58038a42b8c539234b42745`
 
-Phase: **ES-13J8O — Controlled Live Score Attack Engine Lifecycle Adoption**
+Phase: **ES-13J8P — Controlled Public Score Attack Selection & Presentation Adoption**
 Status: **DEPLOYED / FROZEN**
-Issue: #469 — CLOSED / completed
-Delivery: PR #470 — squash merged
+Issue: #473 — CLOSED / completed
+Delivery: PR #474 — squash merged
 
-Single parent: `7ed00b7f28f8c3dd6578932f8e77845e8618d853` — DOC52 documentation canonical.
+Single parent: `120fe00a61ad7a84984871ec19ec435be23535a0` — DOC53 documentation canonical.
 
-Canonical tree: `3688799786e8700309e002a5ab75b4d0f7661f74`.
+Canonical tree: `5d9637b8e1df6d565ffffd08cb840b45c102c65c`.
 
-Version remains `0.2.0-beta.1`. Full RC/manual certification remains intentionally deferred while ES-13 materially expands gameplay.
+Version remains `0.2.0-beta.1`. Full RC/manual certification remains intentionally deferred while ES-13 roadmap programs remain uncommitted/deferred.
 
 ## J4C-C result
 J4C-C adopted the already-certified `ARTILLERY_CARRIER / SIEGE_PRISM` family into bounded normal Infinite progression through the existing tactical replacement seam.
@@ -1089,14 +1089,26 @@ The first pre-PR certification found one historical static platform expectation,
 
 Issue #469 CLOSED / completed. J8O is **DEPLOYED / FROZEN**.
 
-## Next gameplay phase
+## J8P result
+J8P completed the first public Score Attack selection/presentation slice over frozen J8O without creating a parallel engine authority. Campaign remains the default/primary public launch. StartScreen exposes Score Attack as a secondary option, one scalar presentation identity stays outside `RuntimeProgressionState`, HUD presents Score Attack attribution without a second timer, and ResultScreen uses dedicated Score Attack record semantics without claiming global highScore, Campaign rewards or generic run archive ownership. Retry reuses frozen J8O and menu exit clears presentation identity.
 
-### ES-13J8P — Controlled Public Score Attack Selection & Presentation Adoption
-Status: **NEXT CONTRACT TARGET AFTER DOC53 CLOSURE**
+Repository smoke initially exposed exactly three historical pre-J8P expectations: J8A forbade StartScreen profile consumption, J8C forbade Start/HUD/Result duration consumption, and J8O expected no public Score Attack UI. The evidence-driven evolution changed only those historical tests. J8A remains runtime/persistence neutral; J8C still owns no clock/timer and UI is explicitly checked for clock APIs; J8O remains the sole engine coordinator and direct J8K/L/M/N UI imports remain forbidden. No frozen `src/game/scoreAttack*.ts` source changed.
 
-Discovery after J8O shows the live engine is ready but public surfaces still cannot safely infer mode identity after terminal cleanup: `StartScreen` only has `onStartGame()`, `GameHud` has no mode identity and derives Campaign objective vocabulary, and `ResultScreen` uses generic/global `highScore`. J8P must therefore add only a presentation-mode carrier outside `RuntimeProgressionState`, expose Score Attack through the frozen J8O start seam, and give StartScreen/HUD/ResultScreen bounded Score Attack attribution using frozen J8A identity, TIMEBOX / 60000 facts and dedicated `scoreAttackBestScore`.
+## J8P exact evidence
+- DOC53 baseline `120fe00a61ad7a84984871ec19ec435be23535a0`;
+- final pre-PR certification SHA `a5e635b8ad50f4e7199e7abaa90e4e6db2c62db7`, run `38997372822`, certify `117292769229` + Android `117292944816` GREEN including APK build/verify/upload;
+- clean PR #474 head `ccf22fb9b908ff08442a65bf9eaf6d218ef575b8`, exact final diff 9 files;
+- PR CI #560 `38997541403` / `117293282979` GREEN;
+- PR Android #125 `38997541492` / `117293283152` GREEN including Build/Verify/Upload APK;
+- canonical `c29df45aebf4a0b3d58038a42b8c539234b42745`, single parent `120fe00a61ad7a84984871ec19ec435be23535a0`, tree `5d9637b8e1df6d565ffffd08cb840b45c102c65c`, exact final diff 9 files;
+- main CI #561 `38997649166` / `117293618514` GREEN;
+- main Android #126 `38997649158` / `117293618407` GREEN including Build/Verify/Upload APK;
+- Pages/Web Beta #166 `38997711279`: build `117293808563` + deploy `117293885541` GREEN.
 
-Campaign remains the default/primary start path. J8P must not duplicate J8O activation/runtime construction, create a second timer/countdown authority, change score/reward/economy, reuse generic Campaign/Infinite persistence as Score Attack persistence, or change spawn/arena/caps/budgets/entities/projectiles/FOTON/formations. Score Attack result presentation must distinguish its dedicated record from global highScore and must not imply generic Campaign victory/archive/reward semantics.
+Issue #473 CLOSED / completed. J8P is **DEPLOYED / FROZEN**.
+
+## Roadmap hold after J8
+No gameplay phase is active after DOC54. J8 Additional Modes is complete through J8P. J9–J15 remain **PLANNED / DEFERRED — NOT ACTIVE** until explicit scope/discovery authorization; ES-14 remains **FUTURE PROGRAM / NOT YET COMMITTED**. J3C-C and J4D+ remain deferred/not cancelled. Manual blockers #4/#5/#202/#248 remain open and are not replaced by CI evidence.
 
 ## Resolved diagnostics
 - #254 CLOSED / NOT PLANNED: historical platform failure was not an I5 pause regression; no product merge.
@@ -1133,7 +1145,7 @@ Post-J15 direction: **ES-14 — Living Warfront**.
 Read this file, `IMPLEMENTATION_LEDGER.md`, `ES13_GAMEPLAY_ROADMAP.md`, `TRACEABILITY_POLICY.md` and `ES13_PHASE_CHECKLIST.md`, then active Issues/PRs. Verify live `main` before any write.
 
 Suggested handoff:
-> Continue ORBI Energy Swarm autonomously. Repository `ingeniusvictor/orbi-energy.swarm`. J8O gameplay canonical is `89d1dea159f8478c2e2ccc01f027c2e9041a4542`, fully DEPLOYED / FROZEN via Issue #469 / PR #470 with exact post-main CI/Android/Pages GREEN. Complete DOC53 if still open, then implement ES-13J8P as the controlled public Score Attack selection/presentation adoption: Campaign remains the default primary launch; public Score Attack delegates to frozen J8O; keep one low-frequency presentation-mode identity outside RuntimeProgressionState for StartScreen/HUD/ResultScreen and same-mode result/restart continuity; consume frozen Score Attack identity/TIMEBOX/dedicated-best facts only; do not create another timer, runtime discriminator, score/economy/persistence authority or touch caps/budgets/FOTON/formations. Preserve J3C-C/J4D+ deferrals and manual blockers. Follow Issue → exact-base branch → full gates → PR → exact-SHA post-merge evidence. Never touch `main` directly or weaken tests.
+> Continue ORBI Energy Swarm autonomously. Repository `ingeniusvictor/orbi-energy.swarm`. J8P gameplay canonical is `c29df45aebf4a0b3d58038a42b8c539234b42745`, fully DEPLOYED / FROZEN via Issue #473 / PR #474 with exact pre-PR, PR-head and post-main CI/Android/Pages GREEN. Complete DOC54 if still open. After DOC54, do not activate J9–J15 or ES-14 by sequence/inference: no gameplay target is active until explicit scope plus fresh live discovery authorizes one. Preserve J3C-C/J4D+ deferrals, manual blockers #4/#5/#202/#248, Campaign/Infinite isolation, caps/budgets/entities, FOTON GLB/formations and all frozen J8 authorities. Follow Issue → exact-base branch → full gates → PR → exact-SHA post-merge evidence for any later authorized work. Never touch `main` directly or weaken tests.
 
 ## Update obligation
 Every merged gameplay phase must record exact gameplay canonical, Issue/PR, final head, pre-PR certification, PR CI/Android, main CI/Android/Pages, implementation result, unresolved follow-ups and next roadmap phase. A gameplay phase is not administratively closed until these records are current.
