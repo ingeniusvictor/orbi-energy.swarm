@@ -1068,7 +1068,7 @@ Exact deployment anchors:
 - Issue #473 CLOSED / completed.
 
 ## J9 — Boss & Miniboss Expansion
-Status: **ACTIVE PROGRAM — J9B DEPLOYED / J9C NEXT**
+Status: **ACTIVE PROGRAM — J9C DEPLOYED / J9D NEXT**
 
 Blackout Architect, Helios Devourer, Null Choir, Quantum Leviathan, Dyson Breaker, Swarm Sovereign and Singularity Engine remain the long-range J9 vocabulary. New boss work must use phases, destructible zones, affinity/formation pressure, battlefield manipulation and telegraphed vulnerability windows without bypassing existing caps/budgets or certified boss authorities.
 
@@ -1120,11 +1120,34 @@ Exact deployment anchors:
 - Issue #481 CLOSED / completed.
 
 ### ES-13J9C — Pure Blackout Architect Chassis Compatibility Contract
-Status: **NEXT CONTRACT TARGET AFTER DOC56 CLOSURE**
+Status: **DEPLOYED / FROZEN**
+Canonical: `370f770171993760a3e11fa0aa95bcaa4318b758`
+Issue #485 / PR #486
 
-J9C must consume frozen J9A + J9B facts plus the existing pure boss-chassis descriptors and establish only structural compatibility, not live selection. Existing `TITAN_CORE` is the sole compatible candidate because it supplies exactly four weakpoints with `ANCHORED` motion and zero angular velocity, matching J9B's four fixed structural anchors. Unsupported chassis ids and mismatched/mutated compatibility facts must fail closed.
+J9C freezes one pure/fail-closed structural chassis-compatibility result without selecting or adopting a live boss:
+- consumes frozen J9A identity, frozen J9B four-anchor topology and existing pure boss-chassis descriptor facts only;
+- `TITAN_CORE` is the sole compatible existing candidate;
+- exact compatibility requires four weakpoints, `ANCHORED` motion and angular velocity `0`;
+- malformed/padded facts, unsupported ids and canonical descriptor drift fail closed;
+- returns only immutable `COMPATIBILITY_ONLY` metadata;
+- exactly one positive authority: chassis compatibility;
+- no boss-chassis selection, `EnemyType`, health/geometry/damage, vulnerability duration, phase, attack, spawn/runtime, timer, arena, HUD, economy/persistence, collections, randomness, cap/budget, FOTON or formation authority.
 
-J9C may expose only a pure compatibility result for `TITAN_CORE`. It must not select/adopt `TITAN_CORE` into Blackout Architect runtime and must not inherit its `6000 ms` exposure duration, weakpoint health/geometry, damage multipliers, `EnemyType`, base health, intro timing, attacks/weights, rewards, Infinite raid cadence/spawn/rematch authority, timer/clock, HUD, economy/persistence, collections/caps/budgets/entities/projectiles, FOTON or formations. Existing Infinite Titan raid behavior remains unchanged and authoritative for its own flow.
+Exact deployment anchors:
+- final pre-PR certification SHA `35f4ff652c16cce0947ce4933ad2a53782bd3282`, run `39063229301`, certify `117485369790` + Android `117485575582` GREEN with APK build/verify/upload;
+- clean PR #486 head `6cbf41303a7f3a39456e41b99aa4acda3f2d1319`, exact final diff 3 files;
+- PR CI #572 `39063443167` / `117486039223` GREEN; Android #131 `39063443163` / `117486039354` GREEN with APK build/verify/upload;
+- canonical `370f770171993760a3e11fa0aa95bcaa4318b758`, parent `cf745bb7b17cd2c2421d3531cf2646dd726774c3`, tree `8e6d7edae749c4ed1a02520ebeb46224e0625c51`, exact final diff 3 files;
+- main CI #573 `39063581950` / `117486443399` GREEN; Android #132 `39063581938` / `117486443301` GREEN with APK build/verify/upload;
+- Pages/Web Beta #172 `39063646443`, build `117486635370` + deploy `117486721807` GREEN;
+- Issue #485 CLOSED / completed.
+
+### ES-13J9D — Pure Blackout Architect Chassis Selection/Binding Contract
+Status: **NEXT CONTRACT TARGET AFTER DOC57 CLOSURE**
+
+J9D must consume the frozen J9C `COMPATIBILITY_ONLY` projection as its immediate authority input and freeze only the selected Blackout Architect chassis identity. The exact positive binding is `BLACKOUT_ARCHITECT -> TITAN_CORE`; the result remains pure `SELECTION_ONLY / BINDING_ONLY`, immutable and fail-closed on null, malformed, padded or tampered J9C projections.
+
+J9D owns only boss-chassis selection/binding authority. It must not re-read or duplicate physical chassis compatibility rules, modify J9A/J9B/J9C, select `EnemyType`, inherit the Titan `6000 ms` exposure duration, weakpoint health/geometry/damage, base health, intro timing, attacks/weights, rewards or Infinite raid configuration, spawn/adopt a live boss, or acquire milestone/rematch/runtime, timer/clock, arena mutation, HUD, economy/persistence, collection/entity/projectile, randomness, cap/budget, FOTON or formation authority. Any `EnemyType` or recipe/effect compatibility mapping remains a later separate prerequisite before live adoption.
 
 ## J10 — Expert Risk / Reward
 Status: **PLANNED / DEFERRED — NOT ACTIVE**
