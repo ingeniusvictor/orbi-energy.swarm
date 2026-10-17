@@ -1,0 +1,96 @@
+name: ES-13DOC54 full docs certification
+
+on:
+  push:
+    branches:
+      - docs/es-13-doc54-close-j8p-roadmap-hold
+    paths:
+      - .github/workflows/es-13doc54-certify.yml
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout DOC54 branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Exact docs-only scope guard
+        shell: bash
+        run: |
+          BASE=c29df45aebf4a0b3d58038a42b8c539234b42745
+          mapfile -t changed < <(git diff --name-only "$BASE"...HEAD | sort)
+          printf '%s\n' "${changed[@]}"
+          expected=(
+            .github/workflows/es-13doc54-certify.yml
+            docs/ES13_GAMEPLAY_ROADMAP.md
+            docs/IMPLEMENTATION_LEDGER.md
+            docs/PROJECT_CONTINUITY.md
+          )
+          if [ "${#changed[@]}" -ne "${#expected[@]}" ]; then
+            echo "Unexpected DOC54 certification scope count: ${#changed[@]}" >&2
+            exit 1
+          fi
+          for path in "${expected[@]}"; do
+            printf '%s\n' "${changed[@]}" | grep -Fx -- "$path" >/dev/null || {
+              echo "Missing expected DOC54 certification path: $path" >&2
+              exit 1
+            }
+          done
+          test ! -e .github/workflows/es-13doc54-apply.yml
+          test ! -e scripts/es-13doc54-apply.py
+          git diff --check "$BASE"...HEAD
+          test -z "$(git diff --name-only "$BASE"...HEAD -- src tests android package.json package-lock.json)"
+          grep -F 'Status: **DEPLOYED / FROZEN**' docs/ES13_GAMEPLAY_ROADMAP.md >/dev/null
+          grep -F 'Canonical: `c29df45aebf4a0b3d58038a42b8c539234b42745`' docs/ES13_GAMEPLAY_ROADMAP.md >/dev/null
+          grep -F 'Status: **PLANNED / DEFERRED — NOT ACTIVE**' docs/ES13_GAMEPLAY_ROADMAP.md >/dev/null
+          grep -F 'No gameplay target is active after DOC54' docs/IMPLEMENTATION_LEDGER.md >/dev/null
+          grep -F 'No gameplay phase is active after DOC54' docs/PROJECT_CONTINUITY.md >/dev/null
+
+      - name: Repository smoke regression
+        run: npm run test:repo
+
+      - name: Gameplay regression
+        run: npm run test:gameplay
+
+      - name: Platform regression
+        run: npm run test:platform
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Release contract
+        run: npm run release:verify
+
+      - name: Manual certification dossier
+        run: npm run release:evidence:verify
+
+      - name: Production build
+        run: npm run build
+
+      - name: RC readiness evidence
+        env:
+          ORBI_RELEASE_SHA: ${{ github.sha }}
+        run: npm run release:readiness -- --output release-readiness.json
+
+      - name: Upload RC readiness evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: es-13doc54-rc-readiness-${{ github.sha }}
+          path: release-readiness.json
+          if-no-files-found: error
+          retention-days: 30
