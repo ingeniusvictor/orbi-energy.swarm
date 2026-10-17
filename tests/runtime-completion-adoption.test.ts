@@ -36,7 +36,11 @@ test("wave transitions tick time only through the completion policy contract", (
   );
   assert.match(
     transitions,
-    /isRuntimeWaveComplete\([\s\S]*completionDescriptor,[\s\S]*remainingTimeMs:[\s\S]*spawnedEnemyCount:[\s\S]*livingEnemyCount,?[\s\S]*bossDefeated: false/,
+    /const completionSnapshot = \{[\s\S]*remainingTimeMs:[\s\S]*spawnedEnemyCount:[\s\S]*livingEnemyCount,?[\s\S]*bossDefeated: false[\s\S]*\}/,
+  );
+  assert.match(
+    transitions,
+    /isRuntimeWaveComplete\([\s\S]*completionDescriptor,[\s\S]*completionSnapshot,[\s\S]*\)/,
   );
   assert.doesNotMatch(
     transitions,
