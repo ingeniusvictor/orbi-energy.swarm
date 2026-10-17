@@ -1,0 +1,98 @@
+name: ES-13DOC55 full docs certification
+
+on:
+  push:
+    branches:
+      - docs/es-13-doc55-close-j9a-activate-j9b-structural-zone-topology
+    paths:
+      - .github/workflows/es-13doc55-certify.yml
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout DOC55 branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Exact docs-only scope guard
+        shell: bash
+        run: |
+          BASE=171a8104900be17de62d91a765aab59c626b9d21
+          mapfile -t changed < <(git diff --name-only "$BASE"...HEAD | sort)
+          printf '%s\n' "${changed[@]}"
+          expected=(
+            .github/workflows/es-13doc55-certify.yml
+            docs/ES13_GAMEPLAY_ROADMAP.md
+            docs/IMPLEMENTATION_LEDGER.md
+            docs/PROJECT_CONTINUITY.md
+          )
+          if [ "${#changed[@]}" -ne "${#expected[@]}" ]; then
+            echo "Unexpected DOC55 certification scope count: ${#changed[@]}" >&2
+            exit 1
+          fi
+          for path in "${expected[@]}"; do
+            printf '%s\n' "${changed[@]}" | grep -Fx -- "$path" >/dev/null || {
+              echo "Missing expected DOC55 certification path: $path" >&2
+              exit 1
+            }
+          done
+          test ! -e .github/workflows/es-13doc55-apply.yml
+          test ! -e scripts/es-13doc55-apply.py
+          git diff --check "$BASE"...HEAD
+          test -z "$(git diff --name-only "$BASE"...HEAD -- src tests android package.json package-lock.json)"
+          grep -F 'Status: **ACTIVE PROGRAM — J9A DEPLOYED / J9B NEXT**' docs/ES13_GAMEPLAY_ROADMAP.md >/dev/null
+          grep -F 'Canonical: `171a8104900be17de62d91a765aab59c626b9d21`' docs/ES13_GAMEPLAY_ROADMAP.md >/dev/null
+          grep -F 'Status: **NEXT CONTRACT TARGET AFTER DOC55 CLOSURE**' docs/ES13_GAMEPLAY_ROADMAP.md >/dev/null
+          grep -F '| ES-13J9A — Pure Blackout Architect Battlefield-Control Profile Contract | DEPLOYED / FROZEN | `171a8104900be17de62d91a765aab59c626b9d21` | #477 | #478 |' docs/IMPLEMENTATION_LEDGER.md >/dev/null
+          grep -F 'ES-13J9B — Pure Blackout Architect Structural-Zone Topology Contract' docs/IMPLEMENTATION_LEDGER.md >/dev/null
+          grep -F 'Phase: **ES-13J9A — Pure Blackout Architect Battlefield-Control Profile Contract**' docs/PROJECT_CONTINUITY.md >/dev/null
+          grep -F 'Status: **NEXT CONTRACT TARGET AFTER DOC55 CLOSURE**' docs/PROJECT_CONTINUITY.md >/dev/null
+
+      - name: Repository smoke regression
+        run: npm run test:repo
+
+      - name: Gameplay regression
+        run: npm run test:gameplay
+
+      - name: Platform regression
+        run: npm run test:platform
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Release contract
+        run: npm run release:verify
+
+      - name: Manual certification dossier
+        run: npm run release:evidence:verify
+
+      - name: Production build
+        run: npm run build
+
+      - name: RC readiness evidence
+        env:
+          ORBI_RELEASE_SHA: ${{ github.sha }}
+        run: npm run release:readiness -- --output release-readiness.json
+
+      - name: Upload RC readiness evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: es-13doc55-rc-readiness-${{ github.sha }}
+          path: release-readiness.json
+          if-no-files-found: error
+          retention-days: 30
