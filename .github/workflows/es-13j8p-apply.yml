@@ -36,7 +36,12 @@ jobs:
         shell: bash
         run: |
           git diff --check
-          mapfile -t changed < <(git diff --name-only HEAD)
+          mapfile -t changed < <(
+            {
+              git diff --name-only HEAD
+              git ls-files --others --exclude-standard
+            } | sort -u
+          )
           printf '%s\n' "${changed[@]}"
           expected=(
             src/components/GameHud.tsx
