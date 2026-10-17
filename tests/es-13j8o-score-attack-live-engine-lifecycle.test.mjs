@@ -26,13 +26,14 @@ test("J8O coordinates frozen J8L/J8M/J8N behind one engine-only seam", () => {
   );
 });
 
-test("EnergySwarmGame adopts only the J8O coordinator and preserves frozen direct-import boundaries", () => {
+test("EnergySwarmGame keeps J8O as the engine coordinator while J8P adds presentation-only adoption", () => {
   assert.match(gameSource, /from "\.\/scoreAttackLiveEngineLifecycle"/);
   assert.match(gameSource, /scoreAttackActivationRef/);
   assert.match(gameSource, /resolveScoreAttackLiveRuntimeProjection/);
   assert.match(gameSource, /resolveScoreAttackLiveTerminalApplication/);
   assert.match(gameSource, /startGameWithMode/);
   assert.match(gameSource, /startGameWithMode\("CAMPAIGN"\)/);
+  assert.match(gameSource, /startGameWithMode\("SCORE_ATTACK"\)/);
   assert.match(gameSource, /changedDedicatedRecord/);
   assert.match(gameSource, /updateStatsAndSave/);
 
@@ -42,15 +43,26 @@ test("EnergySwarmGame adopts only the J8O coordinator and preserves frozen direc
     "scoreAttackAttemptFinalizationPlan",
     "scoreAttackStatsCommitApplication",
   ]) {
-    assert.equal(
-      gameSource.includes(frozenDirectImport),
-      false,
-      `EnergySwarmGame must not directly import frozen ${frozenDirectImport}`,
-    );
+    for (const [label, liveSource] of [
+      ["EnergySwarmGame", gameSource],
+      ["StartScreen", startScreenSource],
+      ["ResultScreen", resultScreenSource],
+    ]) {
+      assert.equal(
+        liveSource.includes(frozenDirectImport),
+        false,
+        `${label} must not directly import frozen ${frozenDirectImport}`,
+      );
+    }
   }
 
-  assert.equal(startScreenSource.includes("SCORE_ATTACK"), false);
-  assert.equal(resultScreenSource.includes("SCORE_ATTACK"), false);
+  assert.match(startScreenSource, /onStartScoreAttack/);
+  assert.doesNotMatch(startScreenSource, /resolveScoreAttackLiveEngineActivation|startGameWithMode/);
+  assert.match(resultScreenSource, /presentationMode === "SCORE_ATTACK"/);
+  assert.doesNotMatch(
+    resultScreenSource,
+    /resolveScoreAttackLiveEngineActivation|resolveScoreAttackLiveRuntimeProjection|resolveScoreAttackLiveTerminalApplication/,
+  );
 });
 
 test("J8O has no new runtime discriminator, timer, cache, spawn or economy authority", () => {
