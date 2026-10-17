@@ -1067,14 +1067,42 @@ Exact deployment anchors:
 - Pages/Web Beta #166 `38997711279`, build `117293808563` + deploy `117293885541` GREEN;
 - Issue #473 CLOSED / completed.
 
-## Post-J8 roadmap hold
-
-J8 Additional Modes is administratively complete through J8P. DOC54 activates **no new gameplay phase**. J9–J15 remain roadmap-level planned/deferred work and require explicit scope plus fresh discovery before any issue/branch/product write. ES-14 remains a future program / not yet committed. J3C-C and J4D+ remain deferred, not cancelled.
-
 ## J9 — Boss & Miniboss Expansion
-Status: **PLANNED / DEFERRED — NOT ACTIVE**
+Status: **ACTIVE PROGRAM — J9A DEPLOYED / J9B NEXT**
 
-Blackout Architect, Helios Devourer, Null Choir, Quantum Leviathan, Dyson Breaker, Swarm Sovereign and Singularity Engine. Use phases, destructible zones, affinity/formation pressure, battlefield manipulation and telegraphed vulnerability windows.
+Blackout Architect, Helios Devourer, Null Choir, Quantum Leviathan, Dyson Breaker, Swarm Sovereign and Singularity Engine remain the long-range J9 vocabulary. New boss work must use phases, destructible zones, affinity/formation pressure, battlefield manipulation and telegraphed vulnerability windows without bypassing existing caps/budgets or certified boss authorities.
+
+### ES-13J9A — Pure Blackout Architect Battlefield-Control Profile Contract
+Status: **DEPLOYED / FROZEN**
+Canonical: `171a8104900be17de62d91a765aab59c626b9d21`
+Issue #477 / PR #478
+
+J9A freezes exactly one pure/fail-closed semantic boss profile:
+- `BLACKOUT_ARCHITECT` / `Blackout Architect`;
+- family `BATTLEFIELD_CONTROL`;
+- profile mode `PROFILE_ONLY`;
+- encounter role `SPATIAL_CONTROL_CAPITAL`;
+- compatibility vocabulary for multiphase structure, destructible structural zones, affinity pressure, formation pressure, arena-geometry manipulation and telegraphed exposure windows;
+- unsupported ids fail closed;
+- exactly one positive authority: profile definition.
+
+J9A deliberately leaves unresolved `EnemyType`, `BossChassisId`, health/scaling, phase count/thresholds, structural-zone count/health/geometry, vulnerability duration, attacks/weights/cooldowns, spawn cadence, milestone/rematch/live adoption and arena mutation implementation. It owns no timer/clock, damage, rewards/economy, persistence, HUD, entity/projectile collection, randomness, caps/budgets or FOTON/formation authority. Existing Devourer/Titan/Worm and Campaign/Infinite/Score Attack authorities remain unchanged.
+
+Exact deployment anchors:
+- final pre-PR certification SHA `472a18a517c04e2e82c93ef810448eaf34477581`, run `39043701649`, certify `117428112142` + Android `117428293682` GREEN with APK build/verify/upload;
+- clean PR #478 head `efb18fb0983e86034ca0e6a59e6b726a2d3b529a`, exact final diff 3 files;
+- PR CI #564 `39043937609` / `117428803297` GREEN; Android #127 `39043937582` / `117428803218` GREEN with APK build/verify/upload;
+- canonical `171a8104900be17de62d91a765aab59c626b9d21`, parent `abe1ce116f3b92620afa99377008eb38382e56d1`, tree `afb16253b9c88864246b8766b9b7daabe0e485e3`, exact final diff 3 files;
+- main CI #565 `39044053175` / `117429143893` GREEN; Android #128 `39044053230` / `117429144497` GREEN with APK build/verify/upload;
+- Pages/Web Beta #168 `39044123765`, build `117429345859` + deploy `117429422116` GREEN;
+- Issue #477 CLOSED / completed.
+
+### ES-13J9B — Pure Blackout Architect Structural-Zone Topology Contract
+Status: **NEXT CONTRACT TARGET AFTER DOC55 CLOSURE**
+
+J9B must consume frozen J9A identity and freeze only the bounded structural topology needed before a physical chassis or live encounter can be justified: exactly four immutable cardinal anchors (`NORTH`, `EAST`, `SOUTH`, `WEST`) and one fail-closed core-exposure eligibility projection. Core exposure is ineligible until all four canonical anchors are destroyed and eligible only when all four are destroyed. Duplicate, unknown, missing or padded anchor facts fail closed.
+
+J9B owns no coordinates/rendering, anchor health, damage application, phase count/thresholds, vulnerability duration, `EnemyType`, `BossChassisId`, attacks/cooldowns, spawn/milestone/rematch/runtime adoption, timer/clock, arena mutation, HUD, reward/economy/persistence, entity/projectile collection or scan, cap/budget, FOTON or formation authority. It does not make Blackout Architect live.
 
 ## J10 — Expert Risk / Reward
 Status: **PLANNED / DEFERRED — NOT ACTIVE**
