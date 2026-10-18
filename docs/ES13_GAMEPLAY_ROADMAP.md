@@ -1068,7 +1068,7 @@ Exact deployment anchors:
 - Issue #473 CLOSED / completed.
 
 ## J9 — Boss & Miniboss Expansion
-Status: **ACTIVE PROGRAM — J9H DEPLOYED / J9I DISCOVERY ONLY**
+Status: **ACTIVE PROGRAM — J9H DEPLOYED / J9I PURE PROPOSAL NEXT**
 
 Blackout Architect, Helios Devourer, Null Choir, Quantum Leviathan, Dyson Breaker, Swarm Sovereign and Singularity Engine remain the long-range J9 vocabulary. New boss work must use phases, destructible zones, affinity/formation pressure, battlefield manipulation and telegraphed vulnerability windows without bypassing existing caps/budgets or certified boss authorities.
 
@@ -1238,12 +1238,20 @@ Exact delivery evidence:
 - Canonical `b83333557e7e7fd78d8da330670c8a63c2a9a6ca`, sole parent `2516d9d02dabbec43ba497d022ee75a73fc22594` (DOC62), tree `f6aea60fb36be3b9a10192aa749860316dd26676`, equal clean PR head tree; exactly `src/game/blackoutArchitectStructuralDurabilitySnapshot.ts`, `tests/es-13j9h-blackout-architect-structural-durability-snapshot.test.mjs`, `tests/gameplay/blackout-architect-structural-durability-snapshot.test.ts`.
 - Post-main CI `39091310346` / `117568484924`, Android `39091309804` / `117568483659` with verified uploaded APK; Pages `39091354072` build `117568613578` + deploy `117568665530` SUCCESS; Issue #507 CLOSED.
 
-### ES-13J9I — Structural Hit Provenance and Durability Transition Boundary
-Status: **DISCOVERY ONLY — NO IMPLEMENTATION OR LIVE ADOPTION AUTHORIZED**
+### ES-13DOC63 — J9H closure and J9I discovery preservation
+Status: **DEPLOYED / FROZEN (DOCS ONLY)**
+Canonical: `0f4c7a1ed402c055efa2ad38dff3ffc620514a69`; Issue #509 CLOSED / PR #510 MERGED.
+- Parent `b83333557e7e7fd78d8da330670c8a63c2a9a6ca` (J9H gameplay), tree `000a4be2636441de46de1f0d1bbb63a56ff641f7` equals clean PR #510 head tree `54ad65448da0f12ab73bcaa1657ac7e45ea88761`; exactly three documents.
+- Pre-PR temporary SHA `5f45ff4f491e4ce92bcf42233bf619a546560d68`, run `39091561946` / `117569229693` GREEN; temporary workflow removed. PR CI `39091651242` / `117569496523` GREEN. Main CI `39091717563` / `117569695079` and Pages `39091759358` build `117569821801`, deploy `117569866485` GREEN; no Android for docs-only.
 
-J9G's `ADMIT/DENY` is an **abstract** target-intent filter, not proof of an actual collision or authorized hit. J9H's caller-supplied durability snapshots are **facts only**, not proof of their origin or permission to mutate runtime HP. Before authorizing a damage/health-state transition, discover existing hit provenance, damage source ownership, safe deterministic health decrement, anchor destruction transition and event attribution semantics without copying Titan/Devourer/Worm health, damage, weakpoint, 6000ms exposure, attack/raid/spawn or phase mechanics. No health constants, new `EnemyType`, mode or live runtime changes are justified by J9H.
+### ES-13J9I — Pure Blackout Architect Structural Durability Direct-Hit Proposal
+Status: **NEXT CONTRACT TARGET AFTER DOC64 — PURE / NO LIVE ADOPTION**
 
-J9I stays discovery-only until a separate narrow pure contract is justified and explicitly activated in a later documentation gate. Preserve J9A–J9H frozen authorities, Campaign/Infinite/Score Attack, `MAX_ENEMIES`, `MAX_PROJECTILES`, all caps/budgets, FOTON/formations, J3C-C/J4D+ deferrals, J10–J15/ES-14 deferrals and manual blockers #4/#5/#202/#248.
+Read-only J9I discovery confirmed the live projectile-collision loop directly mutates existing chassis node health (`EnergySwarmGame.tsx` around lines 5921–5998) and triggers destruction, reward and exposure behavior; live core projectile and splash paths are also mixed with many side effects (around 6002–6070 and 6185–6239). There is no isolated *trusted* hit proof to pass to Architect. Frozen J9G `ADMIT` is only an **abstract** intent decision, not evidence of physical contact; frozen J9H's per-anchor durability facts are caller-supplied, not evidence of mutation.
+
+A separate J9I module MAY compute one **non-authoritative, pure arithmetic proposal** from an explicitly **caller-asserted, unverified** direct player-projectile hit, a strictly validated deeply frozen J9G `HIT_INTENT_ONLY` `ADMIT` for a cardinal `ANCHOR`, four J9H-compatible caller durability health facts, and one caller-resolved finite positive damage amount. Verify exact own-data inputs, no extras/accessors/symbols, J9G cardinal intent and frozen structural metadata, and the target's current health strictly positive. Explicit source vocabulary `DIRECT_PLAYER_PROJECTILE_CLAIM` binds the caller claim, not the collision's authenticity; `CORE` or `DENY` cannot propose anchor damage. Return only a deeply frozen `PROPOSAL_ONLY` next-health scalar and immutable metadata for that one anchor, with `appliedDamage=min(resolvedDamage,currentHealth)`, nonnegative `remainingHealth`, `wouldDestroy` iff exactly zero, no HP constants/tuning and no live updates. No J9B core exposure, J9F eligibility, J9G hit provenance, J9H snapshot ownership or boss health is transferred. Malformed, inconsistent or non-finite arithmetic fails closed. Tests must cover overkill, destruction edge cases, stale/contradictory anchor state, all cardinal IDs, and non-admission.
+
+J9I **does not establish actual collision provenance**, physical target/geometry, freshness, deduplication or authorized live health mutation. These remain blocked pending an independently justified future runtime-owned adapter. Preserve Titan/Devourer/Worm HP/damage/exposure/attacks, Campaign/Infinite/Score Attack, caps/budgets, FOTON/formations, and manual #4/#5/#202/#248. No J9I Issue/branch/source before DOC64 closes with all docs gates GREEN.
 
 ## J10 — Expert Risk / Reward
 Status: **PLANNED / DEFERRED — NOT ACTIVE**
