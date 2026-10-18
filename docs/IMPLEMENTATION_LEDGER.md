@@ -84,6 +84,7 @@ Rules:
 | ES-13J9I — Pure Blackout Architect Structural Direct-Hit Durability Proposal | DEPLOYED / FROZEN | `d53aa9746ec784d7d5a6b1076fb1e87013b61a7c` | #513 | #514 |
 | ES-13J9J — Pure Blackout Architect External Geometric Hit-Candidate Projection | DEPLOYED / FROZEN | `99a22466093abbb4355355cda62c34b099b53462` | #519 | #520 |
 | ES-13J9K — Pure Blackout Architect Frame-Claim Consistency Preflight | DEPLOYED / FROZEN | `5a820a1dc373a63917fdfb4c5150981a6494670a` | #525 | #526 |
+| ES-13J9L-A — Engine-Owned Run/Physics-Frame/Player-Shot Trace Metadata | DEPLOYED / FROZEN | `61009948f55caf4260623de57a24c8cd211f0369` | #531 | #532 |
 
 ## Evidence anchors
 
@@ -965,19 +966,29 @@ Canonical `06b8faa1697b4c4de64cc0887c0ab45595b654d1`; Issue #527 CLOSED / PR #52
 - Sole parent `5a820a1dc373a63917fdfb4c5150981a6494670a` (J9K), tree `ce20afbe75227d7ea6c69be4af309143bde663d3` equals clean PR head `3ab1b713c635f9d487ded52c5a06361ef84588c1` tree, exact three documents.
 - Pre-PR temp SHA `e0fc0a9aec3297ce1745c75c3e0e3ccf3dde96f6`, run `39097137875` / `117585819320` full cert GREEN and helper removed. Exact-head PR CI `39097251425` / `117586154370` GREEN. Main CI `39097320217` / `117586345783` and Pages `39097381226` build `117586520517` / deploy `117586579214` GREEN. Docs-only, no Android.
 
+### ES-13DOC70 — DOC69 closure and J9L-A metadata activation
+Status: **DEPLOYED / FROZEN (DOCS ONLY)**
+Canonical `4966968163d176fdbac6a8ec7696b767dd540172`; Issue #529 CLOSED, PR #530 MERGED.
+- Parent `06b8faa1697b4c4de64cc0887c0ab45595b654d1` (DOC69), tree `af829e18ec3092c1ace0996433d472c0b3c8d910` identical clean PR head `f127b69b886c7c12f9dd247a3455ab5852863232` tree, exact three docs.
+- Pre-PR temporary SHA `ceac09106f14b18a6c2d5cffbfa91100ee05aea5`, run `39162508331` / `117778578612` full repo/gameplay/platform/typecheck/release/evidence/build/readiness GREEN; helper removed.
+- Exact-head PR CI `39162634082` / `117778955558` GREEN; main CI `39162746400` / `117779287258`, Pages `39162819139` build `117779504419` + deploy `117779598771` GREEN. Docs-only, no Android.
+
 ### ES-13J9L-A — Engine-Owned Run/Physics-Frame/Player-Shot Trace Metadata
-Status: **NEXT NARROW SOURCE PHASE AFTER DOC70 — METADATA ONLY**
+Status: **DEPLOYED / FROZEN**
+Canonical `61009948f55caf4260623de57a24c8cd211f0369`; Issue #531 CLOSED, PR #532 MERGED.
 
-Live discovery established a specific low-risk engine seam: `startGame` (~1382) resets run-local refs; RAF `gameLoop` skips simulation on pause/modal and hit-stop (~3987–4044); `updateEnginePhysics` returns before actual physics during boss-defeat cinematic (~4351–4378); real physics calls the collision sweep (~5521); player `makeProjectile` (~5632–5670) serves primary/QUANTUM echo/mitosis duplicate player shots and retains `Math.random().toString()` as the established projectile identifier. Existing `Projectile` metadata lacks per-run/active-physics-frame/player-shot ordinals. Current hit handling directly consumes `proj.life` and mutates boss shields/rewards/exposure (~5917–5999). A new *metadata-only* layer does not require or authorize importing any Blackout Architect health or geometry.
+Engine-owned *creation trace metadata only*, not hit proof. A tiny pure `nextBlackoutArchitectCollisionTraceOrdinal` accepts only nonnegative safe integer previous ordinal below `MAX_SAFE_INTEGER`, otherwise null. `EnergySwarmGame.tsx` owns three scalar refs: monotonically incremented run epoch across startGame calls (never reset), active physics frame incremented after boss-defeat cinematic early return (thus paused/modal/hit-stop paths skip) and player-shot ordinal incremented when `makeProjectile` constructs each primary, QUANTUM echo or mitosis duplicate shot. All three remain optional *flat numeric* fields on player projectiles only; invalid/exhausted counters omit metadata without suppressing gameplay. Original `Projectile.id: Math.random().toString()` and RNG draw/order, velocity/damage/lifetime, projectile caps, enemy shots, combat resolution, FOTON, all modes and legacy boss health/rewards/exposure unchanged. No extra scan, collection/Map/Set, timer, draw or event ledger.
 
-J9L-A may implement a tiny pure safe-positive-integer ordinal transition `nextBlackoutArchitectCollisionTraceOrdinal` and three scalar engine refs: run epoch, active physics frame and player-projectile ordinal, initialized 0. Advance run epoch on `startGame` without resetting the epoch between runs; reset the physics/shot sequence there. Advance physics frame **only after** the boss-cinematic early return inside `updateEnginePhysics`, so paused/modal/hit-stop RAF never increments. Stamp optional flat `collisionTraceRunEpoch`, `collisionTracePhysicsFrame`, `collisionTraceProjectileOrdinal` numbers on **player-generated** shots only, primary/echo/mitosis all unique per run. `Projectile.id` retains the original RNG draw/order; enemies are untouched. Overflow of a safe ordinal fails closed for **metadata only**, never stops a real projectile. No additional per-frame scans, Map, Set, arrays, collections, timers, RNG or VFX; tests must guard exactly these boundaries.
-
-These fields describe the engine's actual run/frame/shot creation sequence but are **not** authenticated collision events. No physical cardinal anchor bindings, hit tests, event issuance/consumption/replay prevention, `proj.life` mutation, boss HP, Titan 180/2400/6000ms reuse, core exposure/phase/attacks/rewards, spawn/raid/rematch, persistence/economy/UI, mode/caps/FOTON changes or J9J/J9K live adoption. J9L-A is an instrumentation prerequisite, not Blackout Architect combat activation.
+Evidence:
+- Temporary certification SHA `58944bb79454bf2f4845b128165a712252589114`, run `39163247283`, certify `117780795839` full focused/static/gameplay, repo/gameplay/platform/typecheck/release/evidence/build/readiness GREEN, Android `117780962331` GREEN APK build/verify/upload. Temporary workflow removed.
+- Clean head `4a90bfd0a4a26b5e796b1827a3cbc7d44ab5a078` and PR #532 exact-head CI `39163439415` / `117781373240`, Android `39163439431` / `117781373360` GREEN with uploaded APK.
+- Canonical parent `4966968163d176fdbac6a8ec7696b767dd540172` (DOC70), tree `0df4ea4b827d9c322b5224ebf59151f25b23c0a1` equal clean PR head tree, exactly five files `src/game/blackoutArchitectCollisionTraceOrdinal.ts`, `src/game/EnergySwarmGame.tsx`, `src/game/types.ts`, `tests/es-13j9la-blackout-architect-engine-trace-adoption.test.mjs`, `tests/gameplay/blackout-architect-collision-trace-ordinal.test.ts`.
+- Post-main CI `39163568406` / `117781760009`, Android `39163568403` / `117781759994` SUCCESS including uploaded verified APK, Pages `39163634896` build `117781945856` + deploy `117782021449` GREEN.
 
 ### ES-13J9L-B — Engine-Owned Exact-Once Cardinal Collision Transactions
-Status: **DISCOVERY ONLY — NO SOURCE OR LIVE ADOPTION AUTHORIZED**
+Status: **DISCOVERY ONLY — NO IMPLEMENTATION OR LIVE ADOPTION AUTHORIZED**
 
-A future **trusted** source must bind an engine-owned encounter entity, four authoritative NORTH/EAST/SOUTH/WEST physical anchor instances, projectile identity and active physics frame, actual collision ordering, explicit consume-once event state, pause/hit-stop semantics, stale/duplicate/replay guards, and a bounded damage adapter. J9L-A ordinals alone cannot attest a real collision or prevent replay; J9K caller agreement and J9J caller geometry remain non-authoritative. No `J9L-B` Issue, implementation, live HP mutation, boss activation or mode routing until a separate design with end-to-end evidence. Preserve Titan/Devourer/Worm, Campaign/Infinite/Score Attack, global caps/budgets, FOTON/formations and deferred manual #4/#5/#202/#248.
+J9L-A adds a true engine-owned creation-time run/active-physics-frame/player-shot trace. **Trace metadata does not authenticate any collision or prevent replay.** J9J geometrically validates untrusted caller circles, J9K checks caller claims; neither can authorize live health. Future independent discovery must specify encounter-scoped boss identity and true cardinal physical anchor mapping, engine-owned frame collision evidence, projectile identity lifecycle, once-only projectile consumption across competing collision routes, stale/replay guards and safe ordering before any live Architect health mutation. Do not reuse Titan HP180/core2400/6000ms, legacy weakpoint reward/attack/timers or import J9I untrusted damage into the engine. No J9L-B Issue/branch/source or Blackout Architect live adoption until separately justified. Campaign/Infinite/Score Attack, FOTON/formations, caps/budgets, manual #4/#5/#202/#248 remain unchanged.
 
 ## Program sequence
 `J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance → ES-14 Living Warfront`
