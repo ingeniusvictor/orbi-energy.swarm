@@ -18,15 +18,15 @@ Never infer deployment/certification from conversation text alone.
 
 ## Current certified gameplay canonical
 
-`61009948f55caf4260623de57a24c8cd211f0369`
+`515f61038d83868ebf403b5c3c8ecea691d1b009`
 
-Phase: **ES-13J9L-A — Engine-Owned Run/Physics-Frame/Player-Shot Trace Metadata**
+Phase: **ES-13J9L-B1 — Passive Legacy Projectile Consume Observation**
 Status: **DEPLOYED / FROZEN**
-Issue #531 CLOSED / PR #532 MERGED.
+Issue #537 CLOSED / PR #538 MERGED.
 
-Sole parent `4966968163d176fdbac6a8ec7696b767dd540172` (DOC70).
-Canonical tree `0df4ea4b827d9c322b5224ebf59151f25b23c0a1`.
-Five certified source/type/test files; main CI/Android/Pages GREEN.
+Sole parent `519d36b8bf6d302b537dfc49d2115416e9839cfe` (DOC72).
+Canonical tree `7e92a677ce9bb64a2f33d66a9867c81c5afdcc5b`.
+Exactly five source/type/static/gameplay files, main CI/Android/Pages GREEN.
 
 Version remains `0.2.0-beta.1`. Full RC/manual certification remains deferred while J9 gameplay expands.
 
@@ -1370,21 +1370,33 @@ Evidence:
 Status: **DEPLOYED / FROZEN (DOCS ONLY)**
 Canonical `4273a9e2e55bc8e62b7b840625a8a5b7dd3992a8`; Issue #533 CLOSED / PR #534 MERGED, sole parent `61009948f55caf4260623de57a24c8cd211f0369` (J9L-A), tree `684836b84f003a46abec1087856e3efb462219fd` equals clean PR head `4380b483468f402d5459802f54a70a1179766dcf`, exactly 3 documents. Pre-PR temp `e9631a6807f12aee13dea5a54dd29df5f17b55a9`, cert `39163917911` / `117782778493` GREEN and helper deleted; PR CI `39164053210` / `117783181571`, main CI `39164168481` / `117783518163`, Pages `39164232002` build `117783708080` + deploy `117783805312` GREEN. Docs-only, no Android.
 
+### ES-13DOC72 — DOC71 closure and J9L-B1 observation activation
+Status: **DEPLOYED / FROZEN (DOCS ONLY)**
+Canonical `519d36b8bf6d302b537dfc49d2115416e9839cfe`; Issue #535 CLOSED, PR #536 MERGED, sole parent `4273a9e2e55bc8e62b7b840625a8a5b7dd3992a8`, tree `cb378d0b28a0194f1917e4c6b3935b193f997d3e` identical PR #536 clean head `4c9b349ff6b4ef46b3f50d7bcbe970708debe7a0`. Exactly three documents.
+- Pre-cert helper SHA `9c84e27947d54048688950b40201d85ff046ce6c`, run `39173610477` / job `117811634678` GREEN (repo/gameplay/platform/typecheck/release/evidence/build/readiness), helper removed.
+- PR exact-head CI `39173742402` / `117812027479`, main CI `39173845207` / `117812336190`, Pages `39173903250` build `117812506826`, deploy `117812578614` GREEN. Docs-only no Android.
+
 ### ES-13J9L-B1 — Passive Legacy Projectile Consume Observation
-Status: **NEXT NARROW SOURCE PHASE AFTER DOC72 — NO ARCHITECT COMBAT**
+Status: **DEPLOYED / FROZEN**
+Canonical `515f61038d83868ebf403b5c3c8ecea691d1b009`; Issue #537 CLOSED, PR #538 MERGED.
 
-The existing player-projectile collision sweep in `EnergySwarmGame.tsx` has exactly two authoritative **legacy** consumption points: first shield-node collision assigns `proj.life = 0` before node health/rewards and returns (priority), otherwise first spatial enemy hit assigns `proj.life = 0` before damage/effects. J9L-A now supplies engine-created run epoch, active-physics-frame sequence and each player-shot ordinal without changing the original random `Projectile.id`. This directly supports optional passive observation in the existing two sites without inventing a Blackout Architect encounter/collision event.
+The existing engine now **passively observes** legacy player-projectile consumption after the two existing `proj.life=0` statements: shield-node collision has priority, or otherwise the spatial first enemy collision. A dedicated outer read-only bridge reads the actual engine J9L-A run epoch and active-physics-frame refs without violating the frozen J9L-A requirement that the `detectAndResolveCollisions` method itself never accesses those refs. A tiny helper `observeBlackoutArchitectLegacyPlayerHit` validates the actual player projectile is already consumed, its safe creation run/frame/player-shot fields match engine run/active physics frame, and neither observation field existed. On first valid observation, writes only `collisionTraceObservedLegacyHitFrame` and `collisionTraceObservedLegacyHitKind` (`LEGACY_SHIELD_NODE`/`LEGACY_ENEMY`). Invalid/foreign/stale/duplicate/exhausted states do nothing; no hit is suppressed. The **third** existing `proj.life=0` route, enemy projectile against player, remains untouched/unobserved.
 
-J9L-B1 may append **only** optional flat `collisionTraceObservedLegacyHitFrame?:number` and `collisionTraceObservedLegacyHitKind?:"LEGACY_SHIELD_NODE"|"LEGACY_ENEMY"` to player Projectile. A small synchronous engine-invoked helper may mark these fields exactly once **after** the two `proj.life = 0` statements, only for an actual existing player-projectile object that is already dead (`life<=0`), fromPlayer true, has safe positive J9L-A run epoch and player-shot ordinal, safe nonnegative creation frame, matches current engine run and has current safe active physics frame >= creation frame, and has no existing observation fields. Reject any inconsistent/nonfinite/foreign/duplicate values or invalid kind without mutation. Missing/exhausted metadata simply suppresses new observation, never suppresses the actual shot/hit. No separate ledger, scanning, extra RNG, allocations, attacker IDs, timers or changes to legacy damage, HP, reward, radius, priority or mode.
+The observation is **not** tamper-resistant collision proof, a trusted event ticket, an exact-once cross-encounter replay ledger, physical Blackout Architect cardinal anchor identity, new damage or health authority. It does not change any legacy hit test, shield priority, HP/score/rewards/VFX/exposure/timers, attack/spawn/rematch, mode/economy, FOTON or caps/RNG; no Titan HP or 6000ms exposure transfer, no Architect live activation.
 
-This **does not** authenticate a Blackout Architect collision, make caller-visible metadata tamper-proof, certify cardinal anchor geometry, enforce per-encounter replay prevention, authorize live boss health mutation, J9I damage or enable the boss. Existing Titan 180/2400 HP and 6000ms exposure remain exclusive to Titan. Full product scope exactly five source/type/static/gameplay files; full CI/Android and Pages gates before DEPLOYED/FROZEN.
+Certification evidence:
+- Two earlier RED pre-PR cert runs `39174247338` (new static test initially counted only the two player routes, omitting the enemy-projectile third) and `39174409585` (frozen J9L-A static test forbade direct counter refs inside collision resolver) were diagnosed from job logs and corrected **without changing older tests**. New static contract now guards all three routes and bridge placement.
+- Final pre-PR temp SHA `a6796d124cd7c9287b1ffbf1b4acda070f05da85`, run `39174589199` certify `117814548707` full focused/repo/gameplay/platform/typecheck/release/evidence/build/readiness GREEN; Android `117814755405` GREEN including APK build/verify/upload. Helper deleted.
+- Clean PR #538 head `c5a907feec2a629dd91ed81c2f9c18f7d31e4699`; PR CI `39174867512` / `117815352686`, Android `39174867388` / `117815352267` SUCCESS with verified uploaded APK.
+- Canonical parent `519d36b8bf6d302b537dfc49d2115416e9839cfe` (DOC72), tree `7e92a677ce9bb64a2f33d66a9867c81c5afdcc5b` equal PR head tree, exact 5 files `src/game/EnergySwarmGame.tsx`, `src/game/blackoutArchitectLegacyHitObservation.ts`, `src/game/types.ts`, `tests/es-13j9lb1-legacy-hit-observation.test.mjs`, `tests/gameplay/blackout-architect-legacy-hit-observation.test.ts`.
+- Main CI `39175004027` / `117815743703`, Android `39175004051` / `117815743784` SUCCESS with verified APK uploaded, Pages `39175055538` build `117815889155`, deploy `117815971131` SUCCESS. Issue #537 CLOSED.
 
 ## Next gameplay discovery boundary
 
 ### ES-13J9L-B2 — Trusted Cardinal Collision and Exact-Once Encounter Transactions
 Status: **DISCOVERY ONLY — NO SOURCE OR LIVE ADOPTION AUTHORIZED**
 
-A future dedicated contract must establish authenticated engine-owned Blackout Architect encounter lifetime, four real cardinal anchor world-space positions/radii and health ownership, binding to *live* shot object and collision-loop frame, uniqueness of consumption across competing routes, stale/duplicate/replay handling, capacity costs and correct damage ordering. J9L-B1 observes only legacy shield/enemy consumptions and is not an event ticket nor exact-once ledger for Architect. No B2 Issue/branch/code, Blackout Architect spawn, damage/reward/phase/core/mode changes permitted without new authorization. Preserve Campaign/Infinite/Score Attack, Titan/Devourer/Worm, FOTON/formations, budgets/caps, and manual #4/#5/#202/#248.
+J9L-B1 only observes existing **legacy** collisions after normal projectile consumption, on mutable local Projectile fields; this does not establish trusted Blackout Architect encounter identity, cardinal anchor geometry or an anti-replay ledger. A future separately justified engine-owned authority must map four physical NORTH/EAST/SOUTH/WEST anchor instances, verify engine-hit source and frame/encounter identity, consume each projectile once against competing routes, reject stale/replay attempts, and apply boss health/defeat with isolated balance only after full gameplay/Android validation. **No J9L-B2 Issue, branch, source, Blackout Architect spawn/health/exposure or mode routing authorized yet.** Preserve Titan/Devourer/Worm, Campaign/Infinite/Score Attack, caps/budgets, FOTON/formations, and manual #4/#5/#202/#248.
 
 ## Resolved diagnostics
 - #254 CLOSED / NOT PLANNED: historical platform failure was not an I5 pause regression; no product merge.
@@ -1421,7 +1433,7 @@ Post-J15 direction: **ES-14 — Living Warfront**.
 Read this file, `IMPLEMENTATION_LEDGER.md`, `ES13_GAMEPLAY_ROADMAP.md`, `TRACEABILITY_POLICY.md` and `ES13_PHASE_CHECKLIST.md`, then active Issues/PRs. Verify live `main` before any write.
 
 Suggested handoff:
-> Verify GitHub live first. J9L-A gameplay canonical `61009948f55caf4260623de57a24c8cd211f0369` Issue #531 PR #532 with pre-PR `39163247283`, PR CI/Android `39163439415`/`39163439431`, main CI/Android `39163568406`/`39163568403`, Pages `39163634896` GREEN with uploaded APK. DOC71 canonical `4273a9e2e55bc8e62b7b840625a8a5b7dd3992a8`, Issue #533 PR #534, pre-cert `39163917911`, PR CI `39164053210`, main CI `39164168481`, Pages `39164232002` GREEN. Complete DOC72 if active. J9L-B1 ONLY optional **passive legacy** player-projectile impact observation immediately after existing shield/enemy `proj.life=0`; no new collision, damage, health or replay claims. J9L-B2 actual Blackout Architect cardinal geometry/health/exact-once hit remains DISCOVERY ONLY. Never transfer Titan HP/6000ms or change modes/FOTON/caps. Preserve blockers #4/#5/#202/#248. Strict Issue→base branch→full cert/Android for source→PR exact-head CI/Android→guarded squash→main CI/Android/Pages→docs close.
+> Verify GitHub live first. J9L-B1 product canonical `515f61038d83868ebf403b5c3c8ecea691d1b009` DEPLOYED/FROZEN Issue #537 PR #538. Failed preliminary pre-cert `39174247338` and `39174409585` were fixed preserving J9L-A frozen static tests. Final pre-cert `39174589199` CI+Android incl APK GREEN, PR CI/Android `39174867512`/`39174867388`, main CI/Android `39175004027`/`39175004051` with verified APK and Pages `39175055538` GREEN. DOC72 canonical `519d36b8bf6d302b537dfc49d2115416e9839cfe`, Issue #535/PR #536, pre-cert `39173610477`, PR CI `39173742402`, main CI `39173845207`, Pages `39173903250` GREEN. Complete DOC73 if open. J9L-B1 is *passive legacy* observed player-hit metadata, not genuine Architect cardinal collision proof or replay prevention. J9L-B2 DISCOVERY ONLY; no new boss damage/health/spawn, Titan HP/exposure transfer or mode/FOTON/caps changes. Preserve blockers #4/#5/#202/#248. Strict source Issue→base branch→full CI+Android cert→clean PR CI/Android→guarded squash→main CI/Android/Pages→docs closure.
 
 ## Update obligation
 Every merged gameplay phase must record exact gameplay canonical, Issue/PR, final head, pre-PR certification, PR CI/Android, main CI/Android/Pages, implementation result, unresolved follow-ups and next roadmap phase. A gameplay phase is not administratively closed until these records are current.
