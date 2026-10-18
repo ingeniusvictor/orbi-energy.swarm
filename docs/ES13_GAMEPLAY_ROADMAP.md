@@ -1068,7 +1068,7 @@ Exact deployment anchors:
 - Issue #473 CLOSED / completed.
 
 ## J9 — Boss & Miniboss Expansion
-Status: **ACTIVE PROGRAM — J9J DEPLOYED / J9K DISCOVERY ONLY**
+Status: **ACTIVE PROGRAM — J9J DEPLOYED / J9K FRAME PREFLIGHT NEXT**
 
 Blackout Architect, Helios Devourer, Null Choir, Quantum Leviathan, Dyson Breaker, Swarm Sovereign and Singularity Engine remain the long-range J9 vocabulary. New boss work must use phases, destructible zones, affinity/formation pressure, battlefield manipulation and telegraphed vulnerability windows without bypassing existing caps/budgets or certified boss authorities.
 
@@ -1287,12 +1287,21 @@ Certification:
 - Canonical `99a22466093abbb4355355cda62c34b099b53462`, sole parent `a493b5cca15d0961335a550b8872491d154b6a8c` (DOC66), tree `6c59a066c6569b3232eea50c5c5cbd6c16b61a5e` equal clean PR head tree; exact diff only `src/game/blackoutArchitectStructuralGeometricCandidate.ts`, `tests/es-13j9j-blackout-architect-structural-geometric-candidate.test.mjs`, `tests/gameplay/blackout-architect-structural-geometric-candidate.test.ts`.
 - Post-main CI `39095141448` / `117579907291`, Android `39095141463` / `117579908142` with verified uploaded APK, Pages `39095195286` build `117580068335` + deploy `117580130943` GREEN. Issue #519 CLOSED.
 
-### ES-13J9K — Engine-Owned Collision Provenance and Frame-Scoped Anchor Binding
-Status: **DISCOVERY ONLY — NO IMPLEMENTATION OR LIVE ADOPTION AUTHORIZED**
+### ES-13DOC67 — J9J closure and J9K provenance discovery
+Status: **DEPLOYED / FROZEN (DOCS ONLY)**
+Canonical `26e699f43755b0c507d16a1d14bb44944ff294f2`; Issue #521 CLOSED / PR #522 MERGED.
+- Single parent `99a22466093abbb4355355cda62c34b099b53462` (J9J gameplay), tree `4f4447511f112c163e719894ef31a2b273cb1fbb` equals clean PR #522 head `1ccdbcada58c98d84cbd8d608b5b29acfd26d1ad` tree; exact three docs.
+- Pre-PR temporary SHA `51d748399f33bd9b95a278f7a3f1dc5ef839be9f`, run `39095377663`, cert job `117580606802` GREEN and helper removed. PR CI `39095469260` / `117580884447` GREEN.
+- Post-main CI `39095538680` / `117581095387`, Pages `39095577573` build `117581209087`, deploy `117581259302` GREEN. No Android (docs-only).
 
-J9J geometrically computes candidates from external caller-supplied four-anchor circles and an untrusted projectile probe. It does **not** authenticate the geometry source or projectile, link the result to a living boss instance/frame, attest that the authoritative collision loop observed a hit, or guarantee that an impact cannot be replayed. J9G merely admits abstract intent, J9H projects caller durability facts, and J9I proposes arithmetic from an unverified direct-hit claim. None owns actual live mutation.
+### ES-13J9K — Pure Blackout Architect Frame-Claim Consistency Preflight
+Status: **NEXT PURE CONTRACT AFTER DOC68 — NO LIVE ADOPTION**
 
-Before implementing any J9K contract or live Blackout Architect encounter, discover the authoritative engine-owned source for four cardinal anchor positions/radii, projectile ownership and lifecycle, per-frame collision event origin/consumption and deduplication, stale state and encounter identity guards, strict ordering relative to existing damage/defeat paths, and performance caps. Avoid moving existing Titan/Devourer/Worm shield-node health, exposure timer, reward or mode authority; retain explicit no-authentication flags on J9J and non-mutation on J9I. **No J9K implementation Issue, branch, health mutation, boss activation or mode routing authorized.** Preserve Campaign/Infinite/Score Attack, caps/budgets, FOTON/formations and manual blockers #4/#5/#202/#248.
+Read-only J9K discovery inspected the actual `Projectile` type and engine loops. Projectiles have `id:string`, `fromPlayer`, `life`, `x/y/size`, but player and shield-node IDs currently derive from `Math.random().toString()` without an encounter-scoped uniqueness lease; shield nodes do not carry cardinal `NORTH/EAST/SOUTH/WEST` identities. `gameLoop` uses RAF time and suspends simulation on pause/hit-stop, but no monotonic collision-frame identity is recorded. Live collision in `EnergySwarmGame.tsx` consumes projectile life and mutates existing boss weakpoint health/rewards/exposure together. Frozen J9J geometry, J9G admission, J9H caller health, J9I unverified impact proposals cannot authenticate collision, life cycle, uniqueness, frame freshness or non-replay.
+
+One independent **pure caller-claim consistency gate** is justified to define a narrow later adapter seam without pretending to prove a real hit. J9K MAY accept (a) exact own-data `{encounterId,frameSequence,projectileId,projectileAlive,projectileFromPlayer,projectileConsumed}` frame snapshot, (b) exact own-data `{encounterId,frameSequence,projectileId,anchorId}` claimed contact, and (c) an **exact, deeply frozen** J9J `GEOMETRIC_CANDIDATE_ONLY` projection with candidate matching cardinal anchor. IDs must be nonblank bounded strings, frameSequence a nonnegative safe integer; booleans strict and require projectileAlive/fromPlayer true, projectileConsumed false. Validate all exact own-data shapes/keys, no symbols/accessors/inherited/proxy-like malformed data; reject inconsistencies between frame/claim/candidate, malformed/mutable J9J flags, miss, different anchor, stale frame or projectile/encounter mismatch. Output only deeply frozen `{bossId:"BLACKOUT_ARCHITECT",frameClaimMode:"FRAME_CLAIM_CONSISTENCY_ONLY",encounterId,frameSequence,projectileId,anchorId,collisionProvenanceVerified:false,projectileLifecycleVerified:false,preventsReplay:false,authorizesDamage:false,mutatesHealth:false}`.
+
+**This validates agreement between three caller-supplied claims, not authenticity.** It must not generate frame tokens, certify real physical hit provenance, consume/replay-guard an actual projectile, mutate health, adopt J9I damage, assign geometry/balance, change core phase/exposure or touch any runtime/mode. A future engine-owned adapter must independently establish encounter identity, authoritative cardinal geometry/projectile source, monotonic active-physics frames, an exact-once consume ledger, and verified event ordering before enabling live Blackout Architect. Separate Issue/branch/full source+Android gates only after DOC68. Preserve existing modes/bosses/caps/budgets/FOTON/formations and blockers #4/#5/#202/#248.
 
 ## J10 — Expert Risk / Reward
 Status: **PLANNED / DEFERRED — NOT ACTIVE**
