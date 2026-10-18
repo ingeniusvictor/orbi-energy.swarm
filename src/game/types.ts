@@ -235,6 +235,10 @@ export interface Projectile {
   fromPlayer: boolean;
   life: number;
   maxLife: number;
+  // Engine-owned creation metadata, never a real collision/replay ticket.
+  collisionTraceRunEpoch?: number;
+  collisionTracePhysicsFrame?: number;
+  collisionTraceProjectileOrdinal?: number;
   affinity?: OrbiAffinity;
   energyId?: OrbiEnergyId;
   attackSignature?: OrbiAttackSignature;

@@ -21,6 +21,7 @@ import { FORMATIONS, calculateSwarmOffset } from "./formations";
 import { getBiomeConfig, BIOME_ROTATION } from "./biomes";
 import { getQualityConfig } from "./quality";
 import { compactArrayInPlace } from "./arrayCompaction";
+import { nextBlackoutArchitectCollisionTraceOrdinal } from "./blackoutArchitectCollisionTraceOrdinal";
 import {
   countActiveEvolvedEnemies,
   countLivingEnemies,
@@ -402,6 +403,10 @@ export const EnergySwarmGame: React.FC = () => {
   const swarmRef = useRef<OrbiMember[]>([]);
   const enemiesRef = useRef<Enemy[]>([]);
   const projectilesRef = useRef<Projectile[]>([]);
+  // Run/frame/shot metadata only; not authenticated collision evidence.
+  const collisionTraceRunEpochRef = useRef<number | null>(0);
+  const collisionTracePhysicsFrameRef = useRef<number | null>(0);
+  const collisionTracePlayerShotRef = useRef<number | null>(0);
   const resourcesRef = useRef<Resource[]>([]);
   const particlesRef = useRef<Particle[]>([]);
 
@@ -1394,6 +1399,11 @@ export const EnergySwarmGame: React.FC = () => {
     runStartTimeRef.current = Date.now();
     runEndTimeRef.current = 0;
     runCommitLedgerRef.current = createRunCommitLedger();
+    collisionTraceRunEpochRef.current = nextBlackoutArchitectCollisionTraceOrdinal(
+      collisionTraceRunEpochRef.current,
+    );
+    collisionTracePhysicsFrameRef.current = 0;
+    collisionTracePlayerShotRef.current = 0;
     frameHealthRef.current = createFrameHealthState();
     suspendedFrameRenderedRef.current = false;
     frameHealthRecommendationShownRef.current = null;
@@ -4377,6 +4387,11 @@ export const EnergySwarmGame: React.FC = () => {
       return;
     }
 
+    // Paused/modal/hit-stop and boss-cinematic frames must not advance physics trace.
+    collisionTracePhysicsFrameRef.current = nextBlackoutArchitectCollisionTraceOrdinal(
+      collisionTracePhysicsFrameRef.current,
+    );
+
     const runtimeFormation = activeFormationRef.current;
     formationUseCountsRef.current[runtimeFormation] =
       (formationUseCountsRef.current[runtimeFormation] ?? 0) +
@@ -5635,7 +5650,12 @@ export const EnergySwarmGame: React.FC = () => {
       speedMultiplier = 1,
       sizeMultiplier = 1,
       echo = false,
-    ): Projectile => ({
+    ): Projectile => {
+      const shotOrdinal = nextBlackoutArchitectCollisionTraceOrdinal(
+        collisionTracePlayerShotRef.current,
+      );
+      collisionTracePlayerShotRef.current = shotOrdinal;
+      const projectile: Projectile = {
       id: Math.random().toString(),
       x: member.x,
       y: member.y,
@@ -5660,7 +5680,20 @@ export const EnergySwarmGame: React.FC = () => {
       magneticPullStrength: profile.magneticPullStrength,
       supportShieldRestore,
       isCriticalShot: echo ? false : critical,
-    });
+      };
+      // Flat metadata on player shots only. Never suppress a shot on exhaustion.
+      if (
+        collisionTraceRunEpochRef.current !== null &&
+        collisionTraceRunEpochRef.current > 0 &&
+        collisionTracePhysicsFrameRef.current !== null &&
+        shotOrdinal !== null
+      ) {
+        projectile.collisionTraceRunEpoch = collisionTraceRunEpochRef.current;
+        projectile.collisionTracePhysicsFrame = collisionTracePhysicsFrameRef.current;
+        projectile.collisionTraceProjectileOrdinal = shotOrdinal;
+      }
+      return projectile;
+    };
 
     projectilesRef.current.push(makeProjectile(baseAngle));
 
