@@ -1,5 +1,5 @@
 import { getBossChassisProfile } from "./bossChassis";
-import { resolveBlackoutArchitectChassisSelection } from "./blackoutArchitectChassisSelection";
+import type { BlackoutArchitectChassisSelectionProjection } from "./blackoutArchitectChassisSelection";
 import { EnemyType } from "./types";
 
 export type BlackoutArchitectEnemyTypeCompatibilityMode = "COMPATIBILITY_ONLY";
@@ -65,9 +65,16 @@ export const BLACKOUT_ARCHITECT_ENEMY_TYPE_MAPPING_AUTHORITY_CONTRACT: Readonly<
 export const resolveBlackoutArchitectEnemyTypeMapping = (
   selectionInput: unknown,
 ): Readonly<BlackoutArchitectEnemyTypeMappingProjection> | null => {
-  const selection = resolveBlackoutArchitectChassisSelection(selectionInput);
+  if (selectionInput === null || typeof selectionInput !== "object" || Array.isArray(selectionInput)) {
+    return null;
+  }
+  const record = selectionInput as Record<string, unknown>;
+  const keys = Object.keys(record);
+  if (keys.length !== 4 || !["bossId", "selectionMode", "bindingMode", "chassisId"].every((key) => keys.includes(key))) {
+    return null;
+  }
+  const selection = record as unknown as BlackoutArchitectChassisSelectionProjection;
   if (
-    !selection ||
     selection.bossId !== "BLACKOUT_ARCHITECT" ||
     selection.selectionMode !== "SELECTION_ONLY" ||
     selection.bindingMode !== "BINDING_ONLY" ||
