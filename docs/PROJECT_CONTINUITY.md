@@ -18,18 +18,17 @@ Never infer deployment/certification from conversation text alone.
 
 ## Current certified gameplay canonical
 
-`4bc4d70b1d54217dcbfca1a4745042dbb8770fe6`
+`d89ffcad59eddc5eb4639a901590274e5ab25768`
 
-Phase: **ES-13J9D — Pure Blackout Architect Chassis Selection/Binding Contract**
+Phase: **ES-13J9E — Pure Blackout Architect EnemyType Compatibility Mapping Contract**
 Status: **DEPLOYED / FROZEN**
-Issue: #489 — CLOSED / completed
-Delivery: PR #490 — squash merged
+Issue #493 — CLOSED / completed
+PR #494 — squash merged
 
-Single parent: `e5c64daa4f3aa84868c5411cdd767e7d0b4ce1f4` — DOC57 documentation canonical.
+Single parent: `e08b4de612b7caf5f878b4a584fc834cb6453a3a` (DOC58).
+Canonical tree: `9f5c2d1c518a71d49ca41bf5ba81f21ac9b02b09`.
 
-Canonical tree: `56e1a19d3f1c5b632a23589b6442c70f372e80bc`.
-
-Version remains `0.2.0-beta.1`. Full RC/manual certification remains intentionally deferred while ES-13/J9 materially expands gameplay contracts.
+Version remains `0.2.0-beta.1`. Full RC/manual certification remains deferred while J9 gameplay expands.
 
 ## J4C-C result
 J4C-C adopted the already-certified `ARTILLERY_CARRIER / SIEGE_PRISM` family into bounded normal Infinite progression through the existing tactical replacement seam.
@@ -1173,14 +1172,32 @@ J9D froze only the selected Blackout Architect chassis identity after frozen J9C
 
 Issue #489 CLOSED / completed. J9D is **DEPLOYED / FROZEN**.
 
-## Next gameplay phase
+## J9E result and exact evidence
 
 ### ES-13J9E — Pure Blackout Architect EnemyType Compatibility Mapping Contract
-Status: **NEXT CONTRACT TARGET AFTER DOC58 CLOSURE**
+Status: **DEPLOYED / FROZEN**
+Canonical: `d89ffcad59eddc5eb4639a901590274e5ab25768`
+Issue #493 / PR #494
 
-J9E must consume the frozen J9D `SELECTION_ONLY / BINDING_ONLY` projection as its immediate selection authority and freeze only the descriptive executable-type compatibility mapping for the selected chassis. The exact mapping is `BLACKOUT_ARCHITECT / TITAN_CORE -> EnemyType.BOSS_TITAN`, validated against the existing pure `bossChassis.ts` descriptor fact. Existing `infiniteRaidEscalation.ts` independently confirms the same `TITAN_CORE / BOSS_TITAN` pair but contributes no cadence, multiplier, reward, spawn or runtime authority.
+J9E consumes only the exact frozen J9D selection projection and the existing `bossChassis.ts` descriptor; it emits immutable `BLACKOUT_ARCHITECT / COMPATIBILITY_ONLY / MAPPING_ONLY / TITAN_CORE / EnemyType.BOSS_TITAN` metadata. Null, malformed, padded and tampered selection inputs fail closed, as does a drifted chassis identity/type. Its only positive authority is EnemyType compatibility mapping. It neither live-adopts Blackout Architect nor borrows the Titan 6000 ms exposure timer, HP, weakpoint mechanics, attacks, raid cadence, rewards or runtime/spawn/HUD/economy/persistence/cap/budget/FOTON/formation authority.
 
-J9E must emit immutable `COMPATIBILITY_ONLY` / mapping-only metadata and fail closed on null, malformed, padded or tampered J9D selection facts or canonical descriptor drift. It owns only EnemyType compatibility/mapping authority. It must not spawn or live-adopt Blackout Architect, inherit Titan base/weakpoint health, geometry, damage multipliers, `6000 ms` exposure duration, intro timing, attacks/weights, rewards, raid cadence/multipliers, or acquire milestone/rematch/runtime, timer/clock, arena mutation, HUD, economy/persistence, collection/entity/projectile, randomness, cap/budget, FOTON or formation authority.
+Exact deployment anchors:
+- pre-PR SHA `a340e34d86d1995e6295fc1729418aea49840dae`, run `39081353252`, certify `117538752189` + Android `117538933446` GREEN with APK build/verify/upload;
+- clean PR #494 head `116965e19f08007e8c7ac78e0099093ca7d84574`, exact three-file final diff;
+- PR CI `39081527405` / `117539270541` + Android `39081527435` / `117539270757` GREEN with APK;
+- canonical `d89ffcad59eddc5eb4639a901590274e5ab25768`, single parent `e08b4de612b7caf5f878b4a584fc834cb6453a3a`, tree `9f5c2d1c518a71d49ca41bf5ba81f21ac9b02b09`, signed and exact three-file diff;
+- main CI `39081627653` / `117539576763`, Android `39081627698` / `117539577100`, Pages `39081689279` (build `117539767650` + deploy `117539833588`) GREEN;
+- Issue #493 CLOSED / completed.
+
+
+## Next gameplay phase
+
+### ES-13J9F — Pure Blackout Architect Structural Target Eligibility Contract
+Status: **NEXT CONTRACT TARGET AFTER DOC59 CLOSURE**
+
+J9F must consume frozen J9B exact four-anchor facts via the J9B topology resolver and frozen J9E mapping metadata; it projects **eligibility only**, never damage execution or physical target positions. Exactly `NORTH / EAST / SOUTH / WEST` must be present once as strict `{ anchorId, destroyed }` facts. Intact anchors are eligible structural targets; destroyed anchors are not. The core target stays `LOCKED` until all four anchors are destroyed, then becomes `ELIGIBLE`, as determined exclusively by frozen J9B. The input J9E projection must match exactly `BLACKOUT_ARCHITECT / COMPATIBILITY_ONLY / MAPPING_ONLY / TITAN_CORE / EnemyType.BOSS_TITAN`; missing/extra/malformed/tampered fields or inconsistent topology fail closed.
+
+J9F grants only pure structural-target eligibility projection authority. It must not select targets in the live game, invoke collision or damage, derive HP, coordinates/geometry, phases, timer/clock, 6000 ms exposure duration, attacks/projectiles, spawn/milestone/rematch/raid, runtime adoption, HUD, rewards/economy, persistence, collections/caps/budgets, randomness, FOTON or formations. Campaign, Infinite, Score Attack and existing Titan/Devourer/Worm behavior remain unchanged.
 
 ## Resolved diagnostics
 - #254 CLOSED / NOT PLANNED: historical platform failure was not an I5 pause regression; no product merge.
@@ -1217,7 +1234,7 @@ Post-J15 direction: **ES-14 — Living Warfront**.
 Read this file, `IMPLEMENTATION_LEDGER.md`, `ES13_GAMEPLAY_ROADMAP.md`, `TRACEABILITY_POLICY.md` and `ES13_PHASE_CHECKLIST.md`, then active Issues/PRs. Verify live `main` before any write.
 
 Suggested handoff:
-> Continue ORBI Energy Swarm autonomously. Repository `ingeniusvictor/orbi-energy.swarm`. J9D gameplay canonical is `4bc4d70b1d54217dcbfca1a4745042dbb8770fe6`, fully DEPLOYED / FROZEN via Issue #489 / PR #490 with exact pre-PR, PR-head and post-main CI/Android/Pages GREEN. Complete DOC58 if still open, then implement ES-13J9E as the pure Blackout Architect EnemyType compatibility mapping prerequisite: consume frozen J9D selection; validate only the existing `TITAN_CORE -> EnemyType.BOSS_TITAN` chassis descriptor fact; emit immutable `COMPATIBILITY_ONLY` mapping metadata; do not inherit Titan health/geometry/damage/6000 ms/attacks/rewards/raid cadence or adopt spawn/runtime/timer/HUD/persistence/cap-budget authority. Preserve existing Infinite Titan raid behavior, Campaign/Infinite/Score Attack authorities, J3C-C/J4D+ deferrals, manual blockers #4/#5/#202/#248, FOTON and formations. Follow Issue → exact-base branch → full gates → PR → exact-SHA post-merge evidence. Never touch main directly or weaken tests.
+> Continue ORBI Energy Swarm autonomously. Repository `ingeniusvictor/orbi-energy.swarm`. J9E gameplay canonical `d89ffcad59eddc5eb4639a901590274e5ab25768` is DEPLOYED / FROZEN: Issue #493 / PR #494, exact pre-PR + PR-head + main CI/Android/Pages GREEN. Complete DOC59 if open, then implement J9F as **pure** structural target eligibility using exact J9B `NORTH/EAST/SOUTH/WEST` facts + immutable J9E mapping. Intact anchors eligible, destroyed anchors ineligible; core locked until all four destroyed, after which only eligibility is projected. No live damage, health, geometry, phases, 6000 ms timer, attack, spawn/rematch/raid, runtime, HUD, economy, persistence, collections/caps/budgets, randomness, FOTON or formations. Preserve existing modes and #4/#5/#202/#248 deferred, J3C-C/J4D+ deferred. Follow issue → exact-base branch → full gates → exact-head PR CI/Android if source → protected squash → post-main CI/Android/Pages; never directly modify main or weaken tests.
 
 ## Update obligation
 Every merged gameplay phase must record exact gameplay canonical, Issue/PR, final head, pre-PR certification, PR CI/Android, main CI/Android/Pages, implementation result, unresolved follow-ups and next roadmap phase. A gameplay phase is not administratively closed until these records are current.
