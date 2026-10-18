@@ -1,0 +1,92 @@
+name: ES-13J9I full pre-PR certification
+
+on:
+  push:
+    branches:
+      - es-13j9i-blackout-architect-structural-direct-hit-proposal
+    paths:
+      - '.github/workflows/es-13j9i-certify.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Exact J9I product scope guard
+        shell: bash
+        run: |
+          BASE=65d7e0ad833d2b86bdbe9234eac70e31c0ea02e8
+          mapfile -t changed < <(git diff --name-only "$BASE"...HEAD | sort)
+          expected=(
+            .github/workflows/es-13j9i-certify.yml
+            src/game/blackoutArchitectStructuralDirectHitProposal.ts
+            tests/es-13j9i-blackout-architect-structural-direct-hit-proposal.test.mjs
+            tests/gameplay/blackout-architect-structural-direct-hit-proposal.test.ts
+          )
+          [ "${#changed[@]}" -eq "${#expected[@]}" ]
+          for path in "${expected[@]}"; do printf '%s\n' "${changed[@]}" | grep -Fx -- "$path" >/dev/null; done
+          git diff --check "$BASE"...HEAD
+          test -z "$(git diff --name-only "$BASE"...HEAD -- android docs package.json package-lock.json)"
+      - name: Focused static contract
+        run: node --test tests/es-13j9i-blackout-architect-structural-direct-hit-proposal.test.mjs
+      - name: Focused gameplay contract
+        run: npx --yes tsx --test tests/gameplay/blackout-architect-structural-direct-hit-proposal.test.ts
+      - run: npm run test:repo
+      - run: npm run test:gameplay
+      - run: npm run test:platform
+      - run: npm run typecheck
+      - run: npm run release:verify
+      - run: npm run release:evidence:verify
+      - run: npm run build
+      - name: RC readiness evidence
+        env:
+          ORBI_RELEASE_SHA: ${{ github.sha }}
+        run: npm run release:readiness -- --output release-readiness.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: es-13j9i-rc-readiness-${{ github.sha }}
+          path: release-readiness.json
+          if-no-files-found: error
+          retention-days: 30
+
+  android-debug:
+    needs: certify
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      ORBI_BUILD_SHA: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+      - run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0' >/dev/null
+      - run: npm ci
+      - run: npm run android:debug
+      - run: test -s android/app/build/outputs/apk/debug/app-debug.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: es-13j9i-debug-${{ github.sha }}
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14
