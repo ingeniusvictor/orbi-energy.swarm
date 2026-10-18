@@ -3,7 +3,7 @@
 > START HERE after any new chat/session, context loss or handoff.
 
 Repository: `ingeniusvictor/orbi-energy.swarm`  
-Last continuity update: 2026-10-17
+Last continuity update: 2026-10-18
 
 ## Authority order
 1. live GitHub `main` + merged history;
@@ -1339,12 +1339,27 @@ Evidence:
 
 ## Next gameplay discovery boundary
 
-### ES-13J9L — Engine-Owned Encounter/Frame Collision Source and Exact-Once Consumption
-Status: **DISCOVERY ONLY — NO IMPLEMENTATION OR LIVE ADOPTION AUTHORIZED**
+### ES-13DOC69 — J9K closure and J9L collision discovery preservation
+Status: **DEPLOYED / FROZEN (DOCS ONLY)**
+Canonical `06b8faa1697b4c4de64cc0887c0ab45595b654d1`; Issue #527 CLOSED / PR #528 MERGED.
+- Sole parent `5a820a1dc373a63917fdfb4c5150981a6494670a` (J9K), tree `ce20afbe75227d7ea6c69be4af309143bde663d3` equals clean PR head `3ab1b713c635f9d487ded52c5a06361ef84588c1` tree, exact three documents.
+- Pre-PR temp SHA `e0fc0a9aec3297ce1745c75c3e0e3ccf3dde96f6`, run `39097137875` / `117585819320` full cert GREEN and helper removed. Exact-head PR CI `39097251425` / `117586154370` GREEN. Main CI `39097320217` / `117586345783` and Pages `39097381226` build `117586520517` / deploy `117586579214` GREEN. Docs-only, no Android.
 
-J9J tests geometry from untrusted caller circles and projectile probe; J9K checks agreement of untrusted caller frame, projectile and contact claims. Neither owns actual projectile identity or a real collision. In live `EnergySwarmGame.tsx` projectile and shield-node IDs are generated from `Math.random().toString()`; shield nodes lack canonical NORTH/EAST/SOUTH/WEST mapping; physics runs in RAF but pause and hit-stop suspend it; collision code consumes `proj.life` and mutates existing boss node health, removal/rewards and chassis vulnerability timer in the same loop. A reusable **engine-owned** monotonic encounter frame, projectile spawn identity, four-cardinal geometry source, collision event and exact-once consumption ticket are not available today. In particular, caller `projectileConsumed:false` in J9K is not replay protection.
+### ES-13J9L-A — Engine-Owned Run/Physics-Frame/Player-Shot Trace Metadata
+Status: **NEXT NARROW SOURCE PHASE AFTER DOC70 — METADATA ONLY**
 
-Before any J9L implementation or Blackout Architect live integration, independently discover and justify a narrow engine-owned collision transaction boundary: per-encounter ID lifecycle/reset, monotonic active physics sequence, projectile identity/ownership and collision order, authoritative cardinal geometry/weakpoint state mapping, collision event emission/consume-once in one frame, stale boss and duplicate projectile guards, pause/hit-stop integration and bounded performance costs. Prevent double damage with legacy shield node/enemy paths; avoid adopting Titan/Devourer/Worm health/attack/HP/exposure/rewards and avoid declaring J9I/J9K authoritative. No J9L Issue/branch/source, live boss adoption, health mutation or mode routing is yet authorized. Preserve Campaign/Infinite/Score Attack, caps/budgets, FOTON/formations and manual blockers #4/#5/#202/#248.
+Live discovery established a specific low-risk engine seam: `startGame` (~1382) resets run-local refs; RAF `gameLoop` skips simulation on pause/modal and hit-stop (~3987–4044); `updateEnginePhysics` returns before actual physics during boss-defeat cinematic (~4351–4378); real physics calls the collision sweep (~5521); player `makeProjectile` (~5632–5670) serves primary/QUANTUM echo/mitosis duplicate player shots and retains `Math.random().toString()` as the established projectile identifier. Existing `Projectile` metadata lacks per-run/active-physics-frame/player-shot ordinals. Current hit handling directly consumes `proj.life` and mutates boss shields/rewards/exposure (~5917–5999). A new *metadata-only* layer does not require or authorize importing any Blackout Architect health or geometry.
+
+J9L-A may implement a tiny pure safe-positive-integer ordinal transition `nextBlackoutArchitectCollisionTraceOrdinal` and three scalar engine refs: run epoch, active physics frame and player-projectile ordinal, initialized 0. Advance run epoch on `startGame` without resetting the epoch between runs; reset the physics/shot sequence there. Advance physics frame **only after** the boss-cinematic early return inside `updateEnginePhysics`, so paused/modal/hit-stop RAF never increments. Stamp optional flat `collisionTraceRunEpoch`, `collisionTracePhysicsFrame`, `collisionTraceProjectileOrdinal` numbers on **player-generated** shots only, primary/echo/mitosis all unique per run. `Projectile.id` retains the original RNG draw/order; enemies are untouched. Overflow of a safe ordinal fails closed for **metadata only**, never stops a real projectile. No additional per-frame scans, Map, Set, arrays, collections, timers, RNG or VFX; tests must guard exactly these boundaries.
+
+These fields describe the engine's actual run/frame/shot creation sequence but are **not** authenticated collision events. No physical cardinal anchor bindings, hit tests, event issuance/consumption/replay prevention, `proj.life` mutation, boss HP, Titan 180/2400/6000ms reuse, core exposure/phase/attacks/rewards, spawn/raid/rematch, persistence/economy/UI, mode/caps/FOTON changes or J9J/J9K live adoption. J9L-A is an instrumentation prerequisite, not Blackout Architect combat activation.
+
+## Next gameplay discovery boundary
+
+### ES-13J9L-B — Engine-Owned Exact-Once Cardinal Collision Transactions
+Status: **DISCOVERY ONLY — NO SOURCE OR LIVE ADOPTION AUTHORIZED**
+
+A future **trusted** source must bind an engine-owned encounter entity, four authoritative NORTH/EAST/SOUTH/WEST physical anchor instances, projectile identity and active physics frame, actual collision ordering, explicit consume-once event state, pause/hit-stop semantics, stale/duplicate/replay guards, and a bounded damage adapter. J9L-A ordinals alone cannot attest a real collision or prevent replay; J9K caller agreement and J9J caller geometry remain non-authoritative. No `J9L-B` Issue, implementation, live HP mutation, boss activation or mode routing until a separate design with end-to-end evidence. Preserve Titan/Devourer/Worm, Campaign/Infinite/Score Attack, global caps/budgets, FOTON/formations and deferred manual #4/#5/#202/#248.
 
 ## Resolved diagnostics
 - #254 CLOSED / NOT PLANNED: historical platform failure was not an I5 pause regression; no product merge.
@@ -1381,7 +1396,7 @@ Post-J15 direction: **ES-14 — Living Warfront**.
 Read this file, `IMPLEMENTATION_LEDGER.md`, `ES13_GAMEPLAY_ROADMAP.md`, `TRACEABILITY_POLICY.md` and `ES13_PHASE_CHECKLIST.md`, then active Issues/PRs. Verify live `main` before any write.
 
 Suggested handoff:
-> Resume ORBI Energy Swarm from GitHub live. J9K gameplay canonical `5a820a1dc373a63917fdfb4c5150981a6494670a` DEPLOYED/FROZEN (Issue #525 / PR #526); pre-PR CI+Android `39096599698`, PR CI/Android `39096760296`/`39096760300`, main CI/Android `39096859519`/`39096859408`, Pages `39096911978` all GREEN incl. APK. DOC68 `8a769d9b6b96fe8dbb140b7c4afb8dec331fa0a0`, Issue #523/PR #524, main CI `39096302477`, Pages `39096355241` GREEN. Complete DOC69 if open. J9L remains DISCOVERY ONLY: engine-owned encounter+physics frame, projectile ID and exact-once collision consumption are absent and untrusted caller J9K output cannot authorize real damage or defeat. No Titan health/exposure reuse, no Blackout Architect live adoption, no modes/caps/FOTON changes. Preserve manual #4/#5/#202/#248 and strict exact-base Issue→branch→full pre-cert/Android for gameplay→clean PR exact-head CI/Android→SHA guarded squash→main CI/Android/Pages→docs closure.
+> Verify live GitHub first. J9K gameplay canonical `5a820a1dc373a63917fdfb4c5150981a6494670a` Issue #525 PR #526, CI/Android/Pages GREEN `39096859519`/`39096859408`/`39096911978`. DOC69 `06b8faa1697b4c4de64cc0887c0ab45595b654d1`, Issue #527 PR #528, pre-cert `39097137875`, PR CI `39097251425`, main CI `39097320217` and Pages `39097381226` GREEN. Finish DOC70 if active. Then J9L-A may add only engine-owned run/active-physics-frame/player-shot **metadata** via safe ordinals with `Projectile.id` and RNG/caps unchanged, no collision authentication or replay guard, no extra hot-loop scans. J9L-B exact-once physical collision/anchor binding remains DISCOVERY ONLY; no boss live damage or Titan HP/exposure transfer. Full source cert incl Android, PR exact-head CI/Android and post-main CI/Android/Pages. Preserve Campaign/Infinite/Score Attack, FOTON, caps and manual #4/#5/#202/#248.
 
 ## Update obligation
 Every merged gameplay phase must record exact gameplay canonical, Issue/PR, final head, pre-PR certification, PR CI/Android, main CI/Android/Pages, implementation result, unresolved follow-ups and next roadmap phase. A gameplay phase is not administratively closed until these records are current.
