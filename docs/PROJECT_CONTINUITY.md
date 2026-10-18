@@ -18,15 +18,15 @@ Never infer deployment/certification from conversation text alone.
 
 ## Current certified gameplay canonical
 
-`d53aa9746ec784d7d5a6b1076fb1e87013b61a7c`
+`99a22466093abbb4355355cda62c34b099b53462`
 
-Phase: **ES-13J9I — Pure Blackout Architect Structural Direct-Hit Durability Proposal**
+Phase: **ES-13J9J — Pure Blackout Architect External Geometric Hit-Candidate Projection**
 Status: **DEPLOYED / FROZEN**
-Issue #513 CLOSED / PR #514 MERGED.
+Issue #519 CLOSED / PR #520 MERGED.
 
-Sole parent: `65d7e0ad833d2b86bdbe9234eac70e31c0ea02e8` (DOC64).
-Canonical tree: `ca5ff8b2f1466fd1d5d377d18384814e251c181c`.
-Exactly three certified product files; main CI/Android/Pages GREEN.
+Sole parent: `a493b5cca15d0961335a550b8872491d154b6a8c` (DOC66).
+Canonical tree: `6c59a066c6569b3232eea50c5c5cbd6c16b61a5e`.
+Exactly three certified product files, main CI/Android/Pages GREEN.
 
 Version remains `0.2.0-beta.1`. Full RC/manual certification remains deferred while J9 gameplay expands.
 
@@ -1291,14 +1291,32 @@ Canonical `3bf5c2945fe174edff4d92adf38a8ab0052cf8fd`; Issue #515 CLOSED, PR #516
 - Pre-PR temporary SHA `cc437239d0200b9e3af9cef1bd1f2a20bf995832`, run `39093249684` / cert job `117574256109` GREEN; temporary helper removed.
 - Exact-head PR CI `39093343559` / job `117574541150` GREEN; post-main CI `39093406127` / job `117574726093` GREEN, Pages `39093447089` build `117574846926` + deploy `117574903526` GREEN. No Android for docs-only.
 
+### ES-13DOC66 — DOC65 closure and J9J pure geometry activation
+Status: **DEPLOYED / FROZEN (DOCS ONLY)**
+Canonical `a493b5cca15d0961335a550b8872491d154b6a8c`; Issue #517 CLOSED, PR #518 MERGED. Sole parent `3bf5c2945fe174edff4d92adf38a8ab0052cf8fd` (DOC65), tree `fa26d9762315eca11697c8d264aaf9349a96454b` equal clean PR head `0cb4330d0022e295e373f2df98e136e899ee3952` tree; exactly three docs.
+- Pre-PR temporary SHA `a4de5104801585dc7fe71695b09d133486efde43`, run `39094483806` job `117577961453` GREEN with readiness; helper removed.
+- Exact-head PR CI `39094576218` / `117578234681`, post-main CI `39094639359` / `117578424554`, Pages `39094697534` build `117578592805` + deploy `117578640175` GREEN. Docs-only, no Android.
+
 ### ES-13J9J — Pure Blackout Architect External Geometric Hit-Candidate Projection
-Status: **NEXT PURE CONTRACT AFTER DOC66 — NO LIVE ADOPTION**
+Status: **DEPLOYED / FROZEN**
+Canonical: `99a22466093abbb4355355cda62c34b099b53462`; Issue #519 CLOSED / PR #520 MERGED.
 
-Discovery confirmed the existing `EnergySwarmGame.tsx` shield-node collision resolves circle overlap then **immediately mutates health/projectiles and triggers node destruction, rewards and the chassis-specific core exposure timer**. Existing Titan cardinal-like weakpoint dimensions, 180 HP, 2400 core HP, and 6000ms exposure are *not* Blackout Architect authoritative geometry/combat data. Frozen J9G abstract admission, J9H external health snapshots, and J9I unverified caller-asserted damage proposal do not establish true hit provenance.
+J9J's **only** positive authority is a pure bounded external/caller-supplied four-cardinal anchor-circle and single projectile-probe **geometric candidate**. Accepts exactly four unique plain own-data `{anchorId,x,y,radius}` records, any order, with finite coordinates/strict positive finite radii, and one untrusted exact `{x,y,radius}` projectile probe with finite x/y and nonnegative finite radius. Rejects inherited/accessor/symbol/extra/sparse/padded/malformed data, invalid or duplicate anchor IDs, nonfinite derived coordinate deltas/distance/summed radii and multiple-anchor ambiguity. Uses strict `Math.hypot(dx,dy)<anchor.radius+probe.radius`: zero matches → frozen `candidateAnchorId:null`, one → frozen canonical `candidateAnchorId`, multiple → null fail-closed. Projection is immutable `GEOMETRIC_CANDIDATE_ONLY` with `geometryProvenanceVerified:false`, `projectileProvenanceVerified:false`, `authorizesDamage:false`, `mutatesHealth:false`. Caller geometry/probe do **not** attest engine collision, projectile lifecycle/ownership/freshness, trusted physical anchor binding or any live health change. No Titan 180/2400 HP, 6000ms, geometry/attack parameters, runtime changes, mode routing, defeat/rewards/economy/persistence, timers, caps/budgets or FOTON authority.
 
-An independent **pure, four-entry bounded geometric candidate** can be justified without inheriting any live logic. J9J may accept exactly four caller-provided unique `{anchorId,x,y,radius}` facts (`NORTH/EAST/SOUTH/WEST`, arbitrary input order) plus one explicitly untrusted caller `{x,y,radius}` projectile probe. All coordinates must be finite, each anchor radius finite and strictly positive, probe radius finite and nonnegative; require own plain data fields, exact keys/array indices and reject accessor/symbol/extra/duplicate/inherited/sparse input. For each anchor compute `distance=Math.hypot(anchor.x-probe.x,anchor.y-probe.y)` and `combinedRadius=anchor.radius+probe.radius`, fail closed if either computed value or coordinate delta is nonfinite; strict `distance<combinedRadius` matches current geometry. If exactly one anchor matches, output its canonical ID; if none, output `candidateAnchorId:null`; if multiple, reject the **ambiguous** geometric claim with a null result. Output must be deeply frozen `{bossId:"BLACKOUT_ARCHITECT",candidateMode:"GEOMETRIC_CANDIDATE_ONLY",candidateAnchorId,geometryProvenanceVerified:false,projectileProvenanceVerified:false,authorizesDamage:false,mutatesHealth:false}`. No default dimensions or cardinal placement assignment, no core geometry, collision authenticity, projectile ownership/freshness/deduplication, health/damage execution, timer/phase/attack/spawn/raid/rematch, runtime or mode authority. This is **candidate geometry only**, not permission to consume J9I as live damage.
+Certification:
+- Temporary pre-PR SHA `0896ab7ab83bc303073ac297a59ef70ddc5c0e7e`, run `39094902997` certifier `117579205141` GREEN focused+repo/gameplay/platform/typecheck/release/dossier/build/readiness; Android `117579371110` GREEN debug APK build/verify/upload. Temporary helper removed.
+- Clean PR #520 head `05f1dbd7439599982fada9714adc1f17bb276862`; exact-head CI `39095054636` / `117579658183` and Android `39095054642` / `117579657921` GREEN with verified uploaded APK.
+- Canonical `99a22466093abbb4355355cda62c34b099b53462`, sole parent `a493b5cca15d0961335a550b8872491d154b6a8c` (DOC66), tree `6c59a066c6569b3232eea50c5c5cbd6c16b61a5e` equal clean PR head tree; exact diff only `src/game/blackoutArchitectStructuralGeometricCandidate.ts`, `tests/es-13j9j-blackout-architect-structural-geometric-candidate.test.mjs`, `tests/gameplay/blackout-architect-structural-geometric-candidate.test.ts`.
+- Post-main CI `39095141448` / `117579907291`, Android `39095141463` / `117579908142` with verified uploaded APK, Pages `39095195286` build `117580068335` + deploy `117580130943` GREEN. Issue #519 CLOSED.
 
-Future J9K (discovery only) must resolve engine-owned geometry state, projectile lifecycle/collision source-of-truth, frame/time freshness, non-replay and controlled mutation authority. Do not authorize J9K code or any live boss adoption without separate evidence. Preserve all existing boss/mode/cap/budget/FOTON/formation contracts and manual blockers #4/#5/#202/#248.
+## Next gameplay discovery boundary
+
+### ES-13J9K — Engine-Owned Collision Provenance and Frame-Scoped Anchor Binding
+Status: **DISCOVERY ONLY — NO IMPLEMENTATION OR LIVE ADOPTION AUTHORIZED**
+
+J9J geometrically computes candidates from external caller-supplied four-anchor circles and an untrusted projectile probe. It does **not** authenticate the geometry source or projectile, link the result to a living boss instance/frame, attest that the authoritative collision loop observed a hit, or guarantee that an impact cannot be replayed. J9G merely admits abstract intent, J9H projects caller durability facts, and J9I proposes arithmetic from an unverified direct-hit claim. None owns actual live mutation.
+
+Before implementing any J9K contract or live Blackout Architect encounter, discover the authoritative engine-owned source for four cardinal anchor positions/radii, projectile ownership and lifecycle, per-frame collision event origin/consumption and deduplication, stale state and encounter identity guards, strict ordering relative to existing damage/defeat paths, and performance caps. Avoid moving existing Titan/Devourer/Worm shield-node health, exposure timer, reward or mode authority; retain explicit no-authentication flags on J9J and non-mutation on J9I. **No J9K implementation Issue, branch, health mutation, boss activation or mode routing authorized.** Preserve Campaign/Infinite/Score Attack, caps/budgets, FOTON/formations and manual blockers #4/#5/#202/#248.
 
 ## Resolved diagnostics
 - #254 CLOSED / NOT PLANNED: historical platform failure was not an I5 pause regression; no product merge.
@@ -1335,7 +1353,7 @@ Post-J15 direction: **ES-14 — Living Warfront**.
 Read this file, `IMPLEMENTATION_LEDGER.md`, `ES13_GAMEPLAY_ROADMAP.md`, `TRACEABILITY_POLICY.md` and `ES13_PHASE_CHECKLIST.md`, then active Issues/PRs. Verify live `main` before any write.
 
 Suggested handoff:
-> Continue ORBI Energy Swarm from live GitHub. J9I gameplay canonical `d53aa9746ec784d7d5a6b1076fb1e87013b61a7c` DEPLOYED/FROZEN (Issue #513, PR #514; full CI/Android/APK/Pages GREEN). DOC65 `3bf5c2945fe174edff4d92adf38a8ab0052cf8fd`, Issue #515/PR #516, pre-PR `39093249684`, PR CI `39093343559`, main CI `39093406127`, Pages `39093447089` all GREEN. Complete DOC66 if open, then J9J authorized only as pure four-cardinal caller geometry + one untrusted projectile circle → immutable non-authoritative GEOMETRIC_CANDIDATE_ONLY, never collision proof or health mutation. J9K source/freshness/live adapter remains discovery only. Preserve Titan/Devourer/Worm, Campaign/Infinite/Score Attack, caps/budgets, FOTON/formations, manual #4/#5/#202/#248. Exact Issue→branch→full pre-cert with Android source→clean PR exact-head CI/Android→SHA guarded squash→main CI/Android/Pages, docs closure immediately after.
+> Continue ORBI Energy Swarm from live GitHub. J9J canonical `99a22466093abbb4355355cda62c34b099b53462` DEPLOYED/FROZEN (Issue #519, PR #520), exact pre-PR `39094902997` CI+Android; PR CI/Android `39095054636`/`39095054642`; main CI/Android `39095141448`/`39095141463` with verified APK; Pages `39095195286` build/deploy GREEN. DOC66 `a493b5cca15d0961335a550b8872491d154b6a8c` (Issue #517/PR #518) full CI/Pages GREEN. Complete DOC67 if not closed. J9K is DISCOVERY ONLY for authoritative engine collision provenance, physical four-anchor binding, projectile identity/freshness and non-replay; J9J caller geometry/probe cannot certify real hits; J9I caller-asserted damage cannot mutate live state. No Titan health 180/core 2400/exposure 6000ms inheritance, runtime, boss spawn, modes, caps/FOTON changes. Preserve manual #4/#5/#202/#248; strict exact-base Issue→branch→certifier/Android for gameplay→clean PR exact-head→guarded squash→post-main CI/Android/Pages→docs closure.
 
 ## Update obligation
 Every merged gameplay phase must record exact gameplay canonical, Issue/PR, final head, pre-PR certification, PR CI/Android, main CI/Android/Pages, implementation result, unresolved follow-ups and next roadmap phase. A gameplay phase is not administratively closed until these records are current.
