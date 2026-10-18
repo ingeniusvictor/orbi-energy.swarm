@@ -18,15 +18,15 @@ Never infer deployment/certification from conversation text alone.
 
 ## Current certified gameplay canonical
 
-`99a22466093abbb4355355cda62c34b099b53462`
+`5a820a1dc373a63917fdfb4c5150981a6494670a`
 
-Phase: **ES-13J9J — Pure Blackout Architect External Geometric Hit-Candidate Projection**
+Phase: **ES-13J9K — Pure Blackout Architect Frame-Claim Consistency Preflight**
 Status: **DEPLOYED / FROZEN**
-Issue #519 CLOSED / PR #520 MERGED.
+Issue #525 CLOSED / PR #526 MERGED.
 
-Sole parent: `a493b5cca15d0961335a550b8872491d154b6a8c` (DOC66).
-Canonical tree: `6c59a066c6569b3232eea50c5c5cbd6c16b61a5e`.
-Exactly three certified product files, main CI/Android/Pages GREEN.
+Sole parent `8a769d9b6b96fe8dbb140b7c4afb8dec331fa0a0` (DOC68).
+Canonical tree `4ab1c9ff2831b0a040c0ce0b8727aa9b9102390a`.
+Exactly three certified source/test files; main CI/Android/Pages GREEN.
 
 Version remains `0.2.0-beta.1`. Full RC/manual certification remains deferred while J9 gameplay expands.
 
@@ -1318,14 +1318,33 @@ Canonical `26e699f43755b0c507d16a1d14bb44944ff294f2`; Issue #521 CLOSED / PR #52
 - Pre-PR temporary SHA `51d748399f33bd9b95a278f7a3f1dc5ef839be9f`, run `39095377663`, cert job `117580606802` GREEN and helper removed. PR CI `39095469260` / `117580884447` GREEN.
 - Post-main CI `39095538680` / `117581095387`, Pages `39095577573` build `117581209087`, deploy `117581259302` GREEN. No Android (docs-only).
 
+### ES-13DOC68 — DOC67 closure and J9K frame-claim preflight activation
+Status: **DEPLOYED / FROZEN (DOCS ONLY)**
+Canonical `8a769d9b6b96fe8dbb140b7c4afb8dec331fa0a0`; Issue #523 CLOSED, PR #524 MERGED.
+- Single parent `26e699f43755b0c507d16a1d14bb44944ff294f2` (DOC67), tree `eefba6e1a19e408dd4730ed384d7545e2115143e` matches clean PR #524 head `ac639b5ba26508277bc38efbd38c110fd9d91e74`, exact three docs.
+- Pre-PR temporary SHA `12dfe1f601be161792165de10c9beeb199a724b5`, run `39096117944` / `117582814433` GREEN with full repo/gameplay/platform/typecheck/release/evidence/build/readiness; helper removed.
+- PR exact-head CI `39096227596` / `117583134180`, post-main CI `39096302477` / `117583359337`, Pages `39096355241` build `117583524361` and deploy `117583595840` GREEN. Docs-only, no Android.
+
 ### ES-13J9K — Pure Blackout Architect Frame-Claim Consistency Preflight
-Status: **NEXT PURE CONTRACT AFTER DOC68 — NO LIVE ADOPTION**
+Status: **DEPLOYED / FROZEN**
+Canonical `5a820a1dc373a63917fdfb4c5150981a6494670a`; Issue #525 CLOSED, PR #526 MERGED.
 
-Read-only J9K discovery inspected the actual `Projectile` type and engine loops. Projectiles have `id:string`, `fromPlayer`, `life`, `x/y/size`, but player and shield-node IDs currently derive from `Math.random().toString()` without an encounter-scoped uniqueness lease; shield nodes do not carry cardinal `NORTH/EAST/SOUTH/WEST` identities. `gameLoop` uses RAF time and suspends simulation on pause/hit-stop, but no monotonic collision-frame identity is recorded. Live collision in `EnergySwarmGame.tsx` consumes projectile life and mutates existing boss weakpoint health/rewards/exposure together. Frozen J9J geometry, J9G admission, J9H caller health, J9I unverified impact proposals cannot authenticate collision, life cycle, uniqueness, frame freshness or non-replay.
+Single positive authority: **pure caller-supplied frame/contact/J9J geometric candidate consistency**, with no live execution. J9K validates exact own-data frame `{encounterId,frameSequence,projectileId,projectileAlive,projectileFromPlayer,projectileConsumed}`, exact claimed contact `{encounterId,frameSequence,projectileId,anchorId}` and an exact frozen J9J `GEOMETRIC_CANDIDATE_ONLY` result with same cardinal anchor and all false authority flags. IDs nonblank/bounded, frame safe nonnegative integer, alive and player projectile true, consumed false; rejects malformed accessor/symbol/inherited/extra shape, mismatched encounter/frame/projectile/anchor, dead/hostile/consumed and miss. Output frozen `FRAME_CLAIM_CONSISTENCY_ONLY` with `collisionProvenanceVerified:false`, `projectileLifecycleVerified:false`, `preventsReplay:false`, `authorizesDamage:false`, `mutatesHealth:false`. Repeating a caller claim yields the same output: **there is no replay prevention or real hit authentication**. No health, core exposure, legacy shield logic, geometry ownership, actual projectile consume, encounter issuance, timer, phase, attack, spawn/raid/rematch, HUD, economy, persistence, caps/budgets, mode or FOTON/formation changes; Titan 180/2400 HP and 6000ms exposure stay Titan-owned.
 
-One independent **pure caller-claim consistency gate** is justified to define a narrow later adapter seam without pretending to prove a real hit. J9K MAY accept (a) exact own-data `{encounterId,frameSequence,projectileId,projectileAlive,projectileFromPlayer,projectileConsumed}` frame snapshot, (b) exact own-data `{encounterId,frameSequence,projectileId,anchorId}` claimed contact, and (c) an **exact, deeply frozen** J9J `GEOMETRIC_CANDIDATE_ONLY` projection with candidate matching cardinal anchor. IDs must be nonblank bounded strings, frameSequence a nonnegative safe integer; booleans strict and require projectileAlive/fromPlayer true, projectileConsumed false. Validate all exact own-data shapes/keys, no symbols/accessors/inherited/proxy-like malformed data; reject inconsistencies between frame/claim/candidate, malformed/mutable J9J flags, miss, different anchor, stale frame or projectile/encounter mismatch. Output only deeply frozen `{bossId:"BLACKOUT_ARCHITECT",frameClaimMode:"FRAME_CLAIM_CONSISTENCY_ONLY",encounterId,frameSequence,projectileId,anchorId,collisionProvenanceVerified:false,projectileLifecycleVerified:false,preventsReplay:false,authorizesDamage:false,mutatesHealth:false}`.
+Evidence:
+- Temporary cert SHA `7963b2ff102cd429fd5dbe9f88b8905b5d8c18d7`, full run `39096599698` certifier `117584253978` and Android `117584398053` GREEN (focused/static/gameplay, repo/gameplay/platform/typecheck/release/evidence/build/readiness, APK build/verify/upload). Temporary helper removed.
+- Clean PR #526 head `60ec3cdd6e823f0939a444826baccd24ebd6bb3c`, exact 3-file diff. PR CI `39096760296` / `117584729711`, Android `39096760300` / `117584729692` GREEN including verified uploaded APK.
+- Canonical sole parent `8a769d9b6b96fe8dbb140b7c4afb8dec331fa0a0` (DOC68), tree `4ab1c9ff2831b0a040c0ce0b8727aa9b9102390a` matches clean PR head tree. Exactly `src/game/blackoutArchitectFrameClaimConsistency.ts`, `tests/es-13j9k-blackout-architect-frame-claim-consistency.test.mjs`, `tests/gameplay/blackout-architect-frame-claim-consistency.test.ts`.
+- Post-main CI `39096859519` / `117585011200`, Android `39096859408` / `117585010905` SUCCESS with verified uploaded APK, Pages `39096911978` build `117585163052`, deploy `117585217690` SUCCESS; Issue #525 CLOSED.
 
-**This validates agreement between three caller-supplied claims, not authenticity.** It must not generate frame tokens, certify real physical hit provenance, consume/replay-guard an actual projectile, mutate health, adopt J9I damage, assign geometry/balance, change core phase/exposure or touch any runtime/mode. A future engine-owned adapter must independently establish encounter identity, authoritative cardinal geometry/projectile source, monotonic active-physics frames, an exact-once consume ledger, and verified event ordering before enabling live Blackout Architect. Separate Issue/branch/full source+Android gates only after DOC68. Preserve existing modes/bosses/caps/budgets/FOTON/formations and blockers #4/#5/#202/#248.
+## Next gameplay discovery boundary
+
+### ES-13J9L — Engine-Owned Encounter/Frame Collision Source and Exact-Once Consumption
+Status: **DISCOVERY ONLY — NO IMPLEMENTATION OR LIVE ADOPTION AUTHORIZED**
+
+J9J tests geometry from untrusted caller circles and projectile probe; J9K checks agreement of untrusted caller frame, projectile and contact claims. Neither owns actual projectile identity or a real collision. In live `EnergySwarmGame.tsx` projectile and shield-node IDs are generated from `Math.random().toString()`; shield nodes lack canonical NORTH/EAST/SOUTH/WEST mapping; physics runs in RAF but pause and hit-stop suspend it; collision code consumes `proj.life` and mutates existing boss node health, removal/rewards and chassis vulnerability timer in the same loop. A reusable **engine-owned** monotonic encounter frame, projectile spawn identity, four-cardinal geometry source, collision event and exact-once consumption ticket are not available today. In particular, caller `projectileConsumed:false` in J9K is not replay protection.
+
+Before any J9L implementation or Blackout Architect live integration, independently discover and justify a narrow engine-owned collision transaction boundary: per-encounter ID lifecycle/reset, monotonic active physics sequence, projectile identity/ownership and collision order, authoritative cardinal geometry/weakpoint state mapping, collision event emission/consume-once in one frame, stale boss and duplicate projectile guards, pause/hit-stop integration and bounded performance costs. Prevent double damage with legacy shield node/enemy paths; avoid adopting Titan/Devourer/Worm health/attack/HP/exposure/rewards and avoid declaring J9I/J9K authoritative. No J9L Issue/branch/source, live boss adoption, health mutation or mode routing is yet authorized. Preserve Campaign/Infinite/Score Attack, caps/budgets, FOTON/formations and manual blockers #4/#5/#202/#248.
 
 ## Resolved diagnostics
 - #254 CLOSED / NOT PLANNED: historical platform failure was not an I5 pause regression; no product merge.
@@ -1362,7 +1381,7 @@ Post-J15 direction: **ES-14 — Living Warfront**.
 Read this file, `IMPLEMENTATION_LEDGER.md`, `ES13_GAMEPLAY_ROADMAP.md`, `TRACEABILITY_POLICY.md` and `ES13_PHASE_CHECKLIST.md`, then active Issues/PRs. Verify live `main` before any write.
 
 Suggested handoff:
-> Resume ORBI Energy Swarm from live GitHub. J9J gameplay canonical `99a22466093abbb4355355cda62c34b099b53462`, Issue #519 PR #520, pre-PR `39094902997`, PR CI/Android `39095054636`/`39095054642`, main CI/Android `39095141448`/`39095141463`, Pages `39095195286` GREEN/APK. DOC67 `26e699f43755b0c507d16a1d14bb44944ff294f2`, Issue #521 PR #522, pre-PR `39095377663`, PR CI `39095469260`, main CI `39095538680`, Pages `39095577573` GREEN. Finish DOC68 if open. J9K is only PURE FRAME_CLAIM_CONSISTENCY_ONLY based on caller frame/projectile/contact claims and frozen J9J candidate, **not actual collision proof/freshness/replay prevention**. No Blackout Architect live damage, spawn or Titan 180/2400/6000ms transfer. Continue exact-base Issue→branch→full cert+Android gameplay→clean exact-head CI/Android→guarded squash→main CI/Android/Pages→docs close. Preserve manual #4/#5/#202/#248 and all modes/caps/FOTON.
+> Resume ORBI Energy Swarm from GitHub live. J9K gameplay canonical `5a820a1dc373a63917fdfb4c5150981a6494670a` DEPLOYED/FROZEN (Issue #525 / PR #526); pre-PR CI+Android `39096599698`, PR CI/Android `39096760296`/`39096760300`, main CI/Android `39096859519`/`39096859408`, Pages `39096911978` all GREEN incl. APK. DOC68 `8a769d9b6b96fe8dbb140b7c4afb8dec331fa0a0`, Issue #523/PR #524, main CI `39096302477`, Pages `39096355241` GREEN. Complete DOC69 if open. J9L remains DISCOVERY ONLY: engine-owned encounter+physics frame, projectile ID and exact-once collision consumption are absent and untrusted caller J9K output cannot authorize real damage or defeat. No Titan health/exposure reuse, no Blackout Architect live adoption, no modes/caps/FOTON changes. Preserve manual #4/#5/#202/#248 and strict exact-base Issue→branch→full pre-cert/Android for gameplay→clean PR exact-head CI/Android→SHA guarded squash→main CI/Android/Pages→docs closure.
 
 ## Update obligation
 Every merged gameplay phase must record exact gameplay canonical, Issue/PR, final head, pre-PR certification, PR CI/Android, main CI/Android/Pages, implementation result, unresolved follow-ups and next roadmap phase. A gameplay phase is not administratively closed until these records are current.
