@@ -22,6 +22,7 @@ import { getBiomeConfig, BIOME_ROTATION } from "./biomes";
 import { getQualityConfig } from "./quality";
 import { compactArrayInPlace } from "./arrayCompaction";
 import { nextBlackoutArchitectCollisionTraceOrdinal } from "./blackoutArchitectCollisionTraceOrdinal";
+import { observeBlackoutArchitectLegacyPlayerHit } from "./blackoutArchitectLegacyHitObservation";
 import {
   countActiveEvolvedEnemies,
   countLivingEnemies,
@@ -5963,6 +5964,10 @@ export const EnergySwarmGame: React.FC = () => {
             shieldCollisionRadius * shieldCollisionRadius
           ) {
             proj.life = 0;
+            observeBlackoutArchitectLegacyPlayerHit(
+              proj, collisionTraceRunEpochRef.current,
+              collisionTracePhysicsFrameRef.current, "LEGACY_SHIELD_NODE",
+            );
             hitShieldNode = true;
             node.health -= proj.damage;
             node.flashTicks = 10;
@@ -6045,6 +6050,10 @@ export const EnergySwarmGame: React.FC = () => {
           const collisionOrder = collision.entry.order;
             // SINGLE IMPACT DETECTED! Kill projectile instantly
             proj.life = 0;
+            observeBlackoutArchitectLegacyPlayerHit(
+              proj, collisionTraceRunEpochRef.current,
+              collisionTracePhysicsFrameRef.current, "LEGACY_ENEMY",
+            );
 
             // Compute damage modifiers and status flags
             let damageToApply = proj.damage;

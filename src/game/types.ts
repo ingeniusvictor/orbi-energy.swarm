@@ -239,6 +239,9 @@ export interface Projectile {
   collisionTraceRunEpoch?: number;
   collisionTracePhysicsFrame?: number;
   collisionTraceProjectileOrdinal?: number;
+  // Passive, mutable in-memory metadata for already-resolved legacy player hits.
+  collisionTraceObservedLegacyHitFrame?: number;
+  collisionTraceObservedLegacyHitKind?: "LEGACY_SHIELD_NODE" | "LEGACY_ENEMY";
   affinity?: OrbiAffinity;
   energyId?: OrbiEnergyId;
   attackSignature?: OrbiAttackSignature;
