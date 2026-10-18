@@ -34,7 +34,11 @@ test("J9L-B1 observes strictly AFTER legacy consumption in two player-only branc
   assert.ok(loop.indexOf("node.health -= proj.damage;",shield)>shield);
   assert.ok(loop.indexOf("enemy.health -= damageToApply;",enemy)>enemy);
   assert.equal((loop.match(/observeBlackoutArchitectLegacyPlayerHit\(/g)||[]).length,2);
-  assert.equal((loop.match(/proj.life = 0;/g)||[]).length,2);
+  // Third consumption belongs to incoming enemy projectiles; it is never observed.
+  assert.equal((loop.match(/proj.life = 0;/g)||[]).length,3);
+  const incomingConsume = loop.indexOf("proj.life = 0; // Destroy projectile");
+  assert.ok(incomingConsume > enemy);
+  assert.doesNotMatch(loop.slice(incomingConsume), /observeBlackoutArchitectLegacyPlayerHit\(/);
   const create=game.slice(game.indexOf("const makeProjectile = ("),game.indexOf("projectilesRef.current.push(makeProjectile(baseAngle))"));
   assert.match(create,/id: Math\.random\(\)\.toString\(\)/);
   assert.doesNotMatch(create,/collisionTraceObservedLegacyHit/);
