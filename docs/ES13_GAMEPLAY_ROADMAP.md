@@ -1068,7 +1068,7 @@ Exact deployment anchors:
 - Issue #473 CLOSED / completed.
 
 ## J9 — Boss & Miniboss Expansion
-Status: **ACTIVE PROGRAM — J9G DEPLOYED / J9H DISCOVERY ONLY**
+Status: **ACTIVE PROGRAM — J9G DEPLOYED / J9H PURE SNAPSHOT NEXT**
 
 Blackout Architect, Helios Devourer, Null Choir, Quantum Leviathan, Dyson Breaker, Swarm Sovereign and Singularity Engine remain the long-range J9 vocabulary. New boss work must use phases, destructible zones, affinity/formation pressure, battlefield manipulation and telegraphed vulnerability windows without bypassing existing caps/budgets or certified boss authorities.
 
@@ -1210,12 +1210,20 @@ Exact certification and canonical anchors:
 - post-main CI `39089355902` / `117562567369`, Android `39089355909` / `117562566708` with verified uploaded APK, Pages `39089412757` build `117562739378` + deploy `117562800536` GREEN;
 - Issue #501 CLOSED / completed. DOC60 Issue #499 CLOSED, PR #500 MERGED, canonical `ce15851d8312e987520c5e33e75b46074e6af7ef` docs-only; pre `39088425556`, PR CI `39088522101`, main CI `39088688978`, Pages `39088734648` GREEN.
 
-### ES-13J9H — Independent Structural Durability Boundary
-Status: **DISCOVERY ONLY — NO IMPLEMENTATION OR LIVE ADOPTION AUTHORIZED**
+### ES-13DOC61 — J9G closure and J9H discovery preservation
+Status: **DEPLOYED / FROZEN (DOCS ONLY)**
+Canonical: `76b9a4ec5a33418ff071319c3ad1039ae75e7f6c`; Issue #503 CLOSED / PR #504 MERGED.
+- Parent `6fc04c0e841aacc07d43e8b629f7fe1723b65ae1` (J9G gameplay), tree `02820436883366fc248331f9ab1f944084a98e3b`, clean head `b99728aca4108e0bf3fc0f5dc6fcd77a6515b586`, equal tree, exact 3-document diff.
+- Pre-PR temporary SHA `2067068a09089a2b82a5a86f2c23ba23409eb446`, cert run `39089662608`, job `117563506634` SUCCESS. Helper removed.
+- PR CI `39089740360` / job `117563741354` SUCCESS; post-main CI `39089907076` / job `117564249426` SUCCESS; Pages `39089961006` build `117564417229`, deploy `117564490138` SUCCESS. No Android on docs-only.
+- J9G gameplay canonical remains `6fc04c0e841aacc07d43e8b629f7fe1723b65ae1`. DOC61 introduced no health, damage, runtime or Titan parameter authority.
 
-J9A–J9G define identity, four cardinal anchors, chassis compatibility/selection, EnemyType metadata, eligibility and a pure abstract hit-intent admission gate. They intentionally define **no Blackout Architect-specific anchor health, core health, damage resolution, phase thresholds, destruction state transitions, geometry or exposure windows**. A future J9H contract must be justified by independent design requirements and its own narrow authority before creating an implementation Issue or branch.
+### ES-13J9H — Pure Blackout Architect Structural Durability Snapshot Projection
+Status: **NEXT CONTRACT TARGET AFTER DOC62 CLOSURE — PURE / NO LIVE ADOPTION**
 
-The existing `bossChassis.ts` `TITAN_CORE` descriptor includes Titan weakpoint health `180`, base health `2400`, exposure `6000 ms`, damage multipliers and attack weights. J9C/J9D/J9E compatibility metadata do **not** delegate those values or behavior to Blackout Architect. Read-only discovery should establish what durability inputs a future structural-damage system truly needs, decide whether a pure independent contract is justified, and preserve existing Titan/Devourer/Worm, Campaign/Infinite/Score Attack, caps/budgets, FOTON/formations and manual blockers #4/#5/#202/#248. Until justified, J9H is unactivated and has no scope, Issue, branch, numbers or runtime adoption.
+Read-only J9H discovery established an isolated structural-fact seam that does **not** require assigning new HP or adopting the boss: J9B consumes exactly four cardinal `{anchorId,destroyed}` facts while J9F and J9G consume those facts' derived eligibility and abstract admission. J9H may accept exactly four unique caller-supplied `{anchorId,currentHealth,maxHealth}` records, where each health scalar is a finite number, `maxHealth>0` and `0<=currentHealth<=maxHealth`, with no hardcoded durability values. Validate exact record keys, own data properties, canonical IDs, missing/extra/symbol/accessor fields, duplicates, malformed arrays and invalid scalars fail closed. Input order may vary but the sole output must be deeply frozen and cardinally ordered: `{bossId:"BLACKOUT_ARCHITECT",durabilityMode:"SNAPSHOT_ONLY",anchorFacts:[{anchorId,destroyed}]}`, where `destroyed` means `currentHealth===0`. J9H owns only pure **external durability snapshot -> structural destroyed-fact projection**; J9B remains sole topology/core exposure authority, J9F owns target eligibility and J9G owns abstract admission.
+
+J9H MUST NOT assign a default/minimum/maximum HP profile, core/boss health, damage value/formula, detect/cause damage or collisions, validate positions/hitboxes, decide phase/window/6000ms exposure duration, attacks, spawn/raid/rematch, runtime routing or mode, HUD/rewards/economy/persistence, timers/clocks, collections/caps/budgets/randomness, FOTON/formations. Existing `TITAN_CORE` 180 weakpoint HP, 2400 core HP, 6000ms window and combat metadata remain Titan-owned and **never inherited**. Campaign/Infinite/Score Attack and #4/#5/#202/#248 remain unchanged. J9H implementation, tests and certification require a separate exact-base Issue and branch **only after DOC62 closes GREEN**.
 
 ## J10 — Expert Risk / Reward
 Status: **PLANNED / DEFERRED — NOT ACTIVE**
