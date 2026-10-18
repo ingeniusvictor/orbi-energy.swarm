@@ -1,5 +1,5 @@
 name: ES-13J9L-B1 full pre-PR certification
-# Retry after correctly guarding the legacy incoming-enemy projectile path
+# Third run: keep prior J9L-A collision no-trace-ref invariant
 on:
   push:
     branches:

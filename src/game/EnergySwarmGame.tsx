@@ -5905,6 +5905,19 @@ export const EnergySwarmGame: React.FC = () => {
     scoreRef.current += resolution.awardedScore;
   };
 
+  // Read J9L-A refs outside the frozen collision resolver; never alter combat.
+  const observeLegacyPlayerHit = (
+    projectile: Projectile,
+    kind: "LEGACY_SHIELD_NODE" | "LEGACY_ENEMY",
+  ): void => {
+    observeBlackoutArchitectLegacyPlayerHit(
+      projectile,
+      collisionTraceRunEpochRef.current,
+      collisionTracePhysicsFrameRef.current,
+      kind,
+    );
+  };
+
   // --- DETECT SINGLE-IMPACT COLLISION SWEEPS ---
   const detectAndResolveCollisions = () => {
     const quality = getQualityConfig(stats.qualityPreset);
@@ -5964,10 +5977,7 @@ export const EnergySwarmGame: React.FC = () => {
             shieldCollisionRadius * shieldCollisionRadius
           ) {
             proj.life = 0;
-            observeBlackoutArchitectLegacyPlayerHit(
-              proj, collisionTraceRunEpochRef.current,
-              collisionTracePhysicsFrameRef.current, "LEGACY_SHIELD_NODE",
-            );
+            observeLegacyPlayerHit(proj, "LEGACY_SHIELD_NODE");
             hitShieldNode = true;
             node.health -= proj.damage;
             node.flashTicks = 10;
@@ -6050,10 +6060,7 @@ export const EnergySwarmGame: React.FC = () => {
           const collisionOrder = collision.entry.order;
             // SINGLE IMPACT DETECTED! Kill projectile instantly
             proj.life = 0;
-            observeBlackoutArchitectLegacyPlayerHit(
-              proj, collisionTraceRunEpochRef.current,
-              collisionTracePhysicsFrameRef.current, "LEGACY_ENEMY",
-            );
+            observeLegacyPlayerHit(proj, "LEGACY_ENEMY");
 
             // Compute damage modifiers and status flags
             let damageToApply = proj.damage;
