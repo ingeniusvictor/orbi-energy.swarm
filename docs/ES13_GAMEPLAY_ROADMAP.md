@@ -1068,7 +1068,7 @@ Exact deployment anchors:
 - Issue #473 CLOSED / completed.
 
 ## J9 — Boss & Miniboss Expansion
-Status: **ACTIVE PROGRAM — J9E DEPLOYED / J9F NEXT**
+Status: **ACTIVE PROGRAM — J9F DEPLOYED / J9G NEXT**
 
 Blackout Architect, Helios Devourer, Null Choir, Quantum Leviathan, Dyson Breaker, Swarm Sovereign and Singularity Engine remain the long-range J9 vocabulary. New boss work must use phases, destructible zones, affinity/formation pressure, battlefield manipulation and telegraphed vulnerability windows without bypassing existing caps/budgets or certified boss authorities.
 
@@ -1181,11 +1181,26 @@ Exact deployment anchors:
 - Issue #493 CLOSED / completed.
 
 ### ES-13J9F — Pure Blackout Architect Structural Target Eligibility Contract
-Status: **NEXT CONTRACT TARGET AFTER DOC59 CLOSURE**
+Status: **DEPLOYED / FROZEN**
+Canonical: `da8db8ed9a5a5d74553b207fc1aa855ff4c16116`
+Issue #497 / PR #498
 
-J9F must consume frozen J9B exact four-anchor facts via the J9B topology resolver and frozen J9E mapping metadata; it projects **eligibility only**, never damage execution or physical target positions. Exactly `NORTH / EAST / SOUTH / WEST` must be present once as strict `{ anchorId, destroyed }` facts. Intact anchors are eligible structural targets; destroyed anchors are not. The core target stays `LOCKED` until all four anchors are destroyed, then becomes `ELIGIBLE`, as determined exclusively by frozen J9B. The input J9E projection must match exactly `BLACKOUT_ARCHITECT / COMPATIBILITY_ONLY / MAPPING_ONLY / TITAN_CORE / EnemyType.BOSS_TITAN`; missing/extra/malformed/tampered fields or inconsistent topology fail closed.
+J9F strictly consumes frozen J9B's exact four unique cardinal `{ anchorId, destroyed }` facts and exact J9E compatibility mapping; it returns deeply immutable `ELIGIBILITY_ONLY` metadata: intact anchor targets `ELIGIBLE`, destroyed anchor targets `INELIGIBLE`, core `LOCKED` until all four anchors are destroyed and then `ELIGIBLE` only as resolved by J9B. Unsupported/malformed/padded/duplicated facts and tampered J9E mapping fail closed. Exactly one positive authority is structural target eligibility projection: **no hit admission, collision/damage/HP, live target selection, geometry, phase, timer/6000 ms, attacks, spawn/raid/rematch, HUD, economy, persistence or other runtime adoption**.
 
-J9F grants only pure structural-target eligibility projection authority. It must not select targets in the live game, invoke collision or damage, derive HP, coordinates/geometry, phases, timer/clock, 6000 ms exposure duration, attacks/projectiles, spawn/milestone/rematch/raid, runtime adoption, HUD, rewards/economy, persistence, collections/caps/budgets, randomness, FOTON or formations. Campaign, Infinite, Score Attack and existing Titan/Devourer/Worm behavior remain unchanged.
+Exact deployment anchors verified from GitHub:
+- pre-PR SHA `3e80089055fd5d42f4c346066007282ad9be7b86`, run `39086661829`, certify `117554564635` + Android `117554675015` GREEN, including APK build/verify/upload;
+- clean PR #498 head `6af0adeadb0714af21b8842aba92a315b001a976`, exact three-file diff;
+- PR CI `39086815890` / `117555005257` and Android `39086815857` / `117555005138` GREEN including APK build/verify/upload;
+- canonical `da8db8ed9a5a5d74553b207fc1aa855ff4c16116`, single parent `136f63e7f42fde5eff758f3869f8054c47f2ce69` (DOC59), tree `e306709fba6c9c7bdfa6ffb9606f170c0e4fe28b`, exact three-file diff: `src/game/blackoutArchitectStructuralTargetEligibility.ts`, `tests/es-13j9f-blackout-architect-structural-target-eligibility.test.mjs`, `tests/gameplay/blackout-architect-structural-target-eligibility.test.ts`;
+- post-main CI `39086927493` / `117555328957`, Android `39086927473` / `117555328846` GREEN including APK build/verify/upload; Pages `39086974867` build `117555468651` + deploy `117555531033` GREEN;
+- Issue #497 CLOSED / completed. DOC59 Issue #495 CLOSED, PR #496 MERGED as docs-only canonical `136f63e7f42fde5eff758f3869f8054c47f2ce69`; pre `39086168540`, PR CI `39086252901`, main CI `39086335418` and Pages `39086392854` GREEN; no DOC59 Android.
+
+### ES-13J9G — Pure Blackout Architect Structural Hit-Intent Admission Gate
+Status: **NEXT CONTRACT TARGET AFTER DOC60 CLOSURE — NOT AUTHORIZED FOR LIVE ADOPTION**
+
+J9G is the minimum independent safety boundary between J9F eligibility metadata and any hypothetical future damage implementation. It receives one strictly shaped, already-projected J9F `ELIGIBILITY_ONLY` descriptor and one explicit abstract structural hit intent: exactly `ANCHOR` with one canonical `NORTH/EAST/SOUTH/WEST` anchor ID, or exactly `CORE` without anchor ID. The pure result is an immutable `ADMIT / DENY` disposition for that requested target only. Intact anchor intents admit; destroyed anchor intents deny; core intents deny while `LOCKED` and admit only when J9F says `ELIGIBLE`. Malformed, padded, missing, duplicate or contradictory projection/intent facts fail closed without guessing. J9F remains the only structural-eligibility authority; J9G grants one distinct positive authority, **abstract hit-intent admission**, never topology or damage execution.
+
+J9G MUST NOT detect collisions, apply damage, alter health/weakpoint state, select world targets, manufacture/validate coordinates or hitboxes, assign vulnerability duration (including Titan 6000 ms), phases, timers, attacks/projectiles, spawn, rematch, raid, milestone, runtime, HUD, rewards/economy, persistence, collections/caps/budgets, randomness, FOTON/formations or Campaign/Infinite/Score Attack routing. `TITAN_CORE` and `EnemyType.BOSS_TITAN` remain **compatibility metadata**, not inherited Titan/Devourer/Worm gameplay authority. Implementation requires a separate J9G Issue, exact-base branch, tests and full independent certification; DOC60 is docs-only.
 
 ## J10 — Expert Risk / Reward
 Status: **PLANNED / DEFERRED — NOT ACTIVE**
