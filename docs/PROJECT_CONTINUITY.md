@@ -18,15 +18,15 @@ Never infer deployment/certification from conversation text alone.
 
 ## Current certified gameplay canonical
 
-`da8db8ed9a5a5d74553b207fc1aa855ff4c16116`
+`6fc04c0e841aacc07d43e8b629f7fe1723b65ae1`
 
-Phase: **ES-13J9F — Pure Blackout Architect Structural Target Eligibility Contract**
+Phase: **ES-13J9G — Pure Blackout Architect Structural Hit-Intent Admission Gate**
 Status: **DEPLOYED / FROZEN**
-Issue #497 — CLOSED / completed
-PR #498 — squash merged
+Issue #501 — CLOSED / completed
+PR #502 — squash merged
 
-Single parent: `136f63e7f42fde5eff758f3869f8054c47f2ce69` (DOC59).
-Canonical tree: `e306709fba6c9c7bdfa6ffb9606f170c0e4fe28b`.
+Single parent: `ce15851d8312e987520c5e33e75b46074e6af7ef` (DOC60).
+Canonical tree: `6db2c44501532e39d6b8d349850c5ea13d079fe0`.
 Exactly three certified product files; main CI/Android/Pages GREEN.
 
 Version remains `0.2.0-beta.1`. Full RC/manual certification remains deferred while J9 gameplay expands.
@@ -1209,14 +1209,32 @@ Exact deployment anchors verified from GitHub:
 - Issue #497 CLOSED / completed. DOC59 Issue #495 CLOSED, PR #496 MERGED as docs-only canonical `136f63e7f42fde5eff758f3869f8054c47f2ce69`; pre `39086168540`, PR CI `39086252901`, main CI `39086335418` and Pages `39086392854` GREEN; no DOC59 Android.
 
 
-## Next gameplay phase
+## J9G result and exact evidence
 
 ### ES-13J9G — Pure Blackout Architect Structural Hit-Intent Admission Gate
-Status: **NEXT CONTRACT TARGET AFTER DOC60 CLOSURE — NOT AUTHORIZED FOR LIVE ADOPTION**
+Status: **DEPLOYED / FROZEN**
+Canonical: `6fc04c0e841aacc07d43e8b629f7fe1723b65ae1`
+Issue #501 / PR #502
 
-J9G is the minimum independent safety boundary between J9F eligibility metadata and any hypothetical future damage implementation. It receives one strictly shaped, already-projected J9F `ELIGIBILITY_ONLY` descriptor and one explicit abstract structural hit intent: exactly `ANCHOR` with one canonical `NORTH/EAST/SOUTH/WEST` anchor ID, or exactly `CORE` without anchor ID. The pure result is an immutable `ADMIT / DENY` disposition for that requested target only. Intact anchor intents admit; destroyed anchor intents deny; core intents deny while `LOCKED` and admit only when J9F says `ELIGIBLE`. Malformed, padded, missing, duplicate or contradictory projection/intent facts fail closed without guessing. J9F remains the only structural-eligibility authority; J9G grants one distinct positive authority, **abstract hit-intent admission**, never topology or damage execution.
+J9G consumes only a strictly shaped, **deeply frozen** J9F `ELIGIBILITY_ONLY` projection and exactly one caller-supplied abstract intent, `ANCHOR` with canonical cardinal anchor ID or `CORE`. It produces a frozen `HIT_INTENT_ONLY` `ADMIT/DENY` decision for that intent: intact anchor admits, destroyed anchor denies, and core admits only when frozen J9F exposes `ELIGIBLE`. Malformed, padded, forged mutable, duplicated, out-of-order or internally contradictory inputs fail closed. Its sole positive authority is abstract hit-intent admission, not hit detection, collision, damage, health, geometry, runtime, exposure windows/timers, phase, attacks, spawn, rematch/raid, HUD, rewards, persistence, collections, budgets, randomness, FOTON, formations or mode routing.
 
-J9G MUST NOT detect collisions, apply damage, alter health/weakpoint state, select world targets, manufacture/validate coordinates or hitboxes, assign vulnerability duration (including Titan 6000 ms), phases, timers, attacks/projectiles, spawn, rematch, raid, milestone, runtime, HUD, rewards/economy, persistence, collections/caps/budgets, randomness, FOTON/formations or Campaign/Infinite/Score Attack routing. `TITAN_CORE` and `EnemyType.BOSS_TITAN` remain **compatibility metadata**, not inherited Titan/Devourer/Worm gameplay authority. Implementation requires a separate J9G Issue, exact-base branch, tests and full independent certification; DOC60 is docs-only.
+Exact certification and canonical anchors:
+- first temporary attempt `39089007811` RED: focused gameplay revealed that a forged mutable anchor eligibility could appear internally consistent; kept negative test intact and strengthened product to require deep immutability of the frozen J9F projection;
+- corrected pre-PR SHA `06e9e31944e4a1767d7c711d5612c227fd6e2dae`, run `39089106206`, certify `117561803525` and Android `117561923150` GREEN with APK build/verify/upload and readiness artifact;
+- clean PR #502 head `7d3adb130ff1967769388ee0697a628ef93d772d`; exact 3-file diff; exact-head CI `39089263609` / job `117562276674` and Android `39089263622` / job `117562276886` GREEN with APK build/verify/upload;
+- canonical `6fc04c0e841aacc07d43e8b629f7fe1723b65ae1`, parent `ce15851d8312e987520c5e33e75b46074e6af7ef` (DOC60), tree `6db2c44501532e39d6b8d349850c5ea13d079fe0` equals clean PR head tree; exact diff only `src/game/blackoutArchitectStructuralHitIntentAdmission.ts`, `tests/es-13j9g-blackout-architect-structural-hit-intent-admission.test.mjs`, `tests/gameplay/blackout-architect-structural-hit-intent-admission.test.ts`;
+- post-main CI `39089355902` / `117562567369`, Android `39089355909` / `117562566708` with verified uploaded APK, Pages `39089412757` build `117562739378` + deploy `117562800536` GREEN;
+- Issue #501 CLOSED / completed. DOC60 Issue #499 CLOSED, PR #500 MERGED, canonical `ce15851d8312e987520c5e33e75b46074e6af7ef` docs-only; pre `39088425556`, PR CI `39088522101`, main CI `39088688978`, Pages `39088734648` GREEN.
+
+
+## Next gameplay discovery boundary
+
+### ES-13J9H — Independent Structural Durability Boundary
+Status: **DISCOVERY ONLY — NO IMPLEMENTATION OR LIVE ADOPTION AUTHORIZED**
+
+J9A–J9G define identity, four cardinal anchors, chassis compatibility/selection, EnemyType metadata, eligibility and a pure abstract hit-intent admission gate. They intentionally define **no Blackout Architect-specific anchor health, core health, damage resolution, phase thresholds, destruction state transitions, geometry or exposure windows**. A future J9H contract must be justified by independent design requirements and its own narrow authority before creating an implementation Issue or branch.
+
+The existing `bossChassis.ts` `TITAN_CORE` descriptor includes Titan weakpoint health `180`, base health `2400`, exposure `6000 ms`, damage multipliers and attack weights. J9C/J9D/J9E compatibility metadata do **not** delegate those values or behavior to Blackout Architect. Read-only discovery should establish what durability inputs a future structural-damage system truly needs, decide whether a pure independent contract is justified, and preserve existing Titan/Devourer/Worm, Campaign/Infinite/Score Attack, caps/budgets, FOTON/formations and manual blockers #4/#5/#202/#248. Until justified, J9H is unactivated and has no scope, Issue, branch, numbers or runtime adoption.
 
 ## Resolved diagnostics
 - #254 CLOSED / NOT PLANNED: historical platform failure was not an I5 pause regression; no product merge.
@@ -1253,7 +1271,7 @@ Post-J15 direction: **ES-14 — Living Warfront**.
 Read this file, `IMPLEMENTATION_LEDGER.md`, `ES13_GAMEPLAY_ROADMAP.md`, `TRACEABILITY_POLICY.md` and `ES13_PHASE_CHECKLIST.md`, then active Issues/PRs. Verify live `main` before any write.
 
 Suggested handoff:
-> Continue ORBI Energy Swarm from live GitHub. J9F canonical `da8db8ed9a5a5d74553b207fc1aa855ff4c16116` DEPLOYED / FROZEN (Issue #497 / PR #498; exact pre-PR, exact-head PR, main CI/Android/Pages all GREEN). DOC59 already merged; perform DOC60 docs-only certification/merge if still open before any separate J9G implementation. J9G is a strictly pure abstract structural hit-intent admission gate over frozen J9F exact projection; never detect hits, apply damage or borrow Titan 6000 ms / Devourer rematch / Infinite raid authority. Preserve existing modes, caps/budgets, FOTON/formations and manual blockers #4/#5/#202/#248. Follow Issue → exact-base branch → full gates → clean exact-head PR → lease-guarded squash → post-main CI/Android (source only)/Pages.
+> Continue ORBI Energy Swarm from live GitHub. J9G canonical `6fc04c0e841aacc07d43e8b629f7fe1723b65ae1` DEPLOYED / FROZEN (Issue #501, PR #502; exact pre-PR CI/Android, PR exact-head CI/Android, main CI/Android/Pages GREEN). Complete DOC61 docs-only closure if still open. J9H is DISCOVERY ONLY pending an independent Blackout Architect structural durability model; do not borrow TITAN_CORE weakpoint HP 180, boss HP 2400, exposure 6000ms, attack weights or other combat authority. No active J9H implementation/Issue/branch and no live integration. Preserve Campaign/Infinite/Score Attack, caps/budgets, FOTON/formations, and manual blockers #4/#5/#202/#248. Issue → exact-base branch → full certification → clean exact-head PR → SHA-guarded squash → post-main gates; no direct main writes or weakened tests.
 
 ## Update obligation
 Every merged gameplay phase must record exact gameplay canonical, Issue/PR, final head, pre-PR certification, PR CI/Android, main CI/Android/Pages, implementation result, unresolved follow-ups and next roadmap phase. A gameplay phase is not administratively closed until these records are current.
