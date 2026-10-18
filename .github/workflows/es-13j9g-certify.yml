@@ -1,4 +1,5 @@
 name: ES-13J9G full pre-PR certification
+# Re-certify deep immutability input guard without modifying test expectations.
 
 on:
   push:
