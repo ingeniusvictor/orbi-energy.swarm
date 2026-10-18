@@ -23,7 +23,7 @@ const mapping = () => {
   assert.ok(resolved);
   return resolved;
 };
-const facts = (destroyed = []) =>
+const facts = (destroyed: readonly string[] = []) =>
   ["NORTH", "EAST", "SOUTH", "WEST"].map((anchorId) => ({
     anchorId,
     destroyed: destroyed.includes(anchorId),
