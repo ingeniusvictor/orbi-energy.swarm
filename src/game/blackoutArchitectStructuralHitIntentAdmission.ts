@@ -99,11 +99,13 @@ const resolveExactEligibilityProjection = (
       "bossId", "eligibilityMode", "chassisId",
       "enemyType", "anchorTargets", "coreTargetEligibility",
     ]) ||
+    !Object.isFrozen(value) ||
     value.bossId !== "BLACKOUT_ARCHITECT" ||
     value.eligibilityMode !== "ELIGIBILITY_ONLY" ||
     value.chassisId !== "TITAN_CORE" ||
     value.enemyType !== EnemyType.BOSS_TITAN ||
     !Array.isArray(value.anchorTargets) ||
+    !Object.isFrozen(value.anchorTargets) ||
     value.anchorTargets.length !== BLACKOUT_ARCHITECT_STRUCTURAL_ANCHOR_IDS.length
   ) {
     return null;
@@ -115,6 +117,7 @@ const resolveExactEligibilityProjection = (
     const entry: unknown = anchorTargets[index];
     if (
       !hasExactOwnKeys(entry, ["anchorId", "targetEligibility"]) ||
+      !Object.isFrozen(entry) ||
       entry.anchorId !== BLACKOUT_ARCHITECT_STRUCTURAL_ANCHOR_IDS[index] ||
       (entry.targetEligibility !== "ELIGIBLE" && entry.targetEligibility !== "INELIGIBLE")
     ) {
