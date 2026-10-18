@@ -1068,7 +1068,7 @@ Exact deployment anchors:
 - Issue #473 CLOSED / completed.
 
 ## J9 — Boss & Miniboss Expansion
-Status: **ACTIVE PROGRAM — J9I DEPLOYED / J9J DISCOVERY ONLY**
+Status: **ACTIVE PROGRAM — J9I DEPLOYED / J9J PURE GEOMETRY NEXT**
 
 Blackout Architect, Helios Devourer, Null Choir, Quantum Leviathan, Dyson Breaker, Swarm Sovereign and Singularity Engine remain the long-range J9 vocabulary. New boss work must use phases, destructible zones, affinity/formation pressure, battlefield manipulation and telegraphed vulnerability windows without bypassing existing caps/budgets or certified boss authorities.
 
@@ -1263,10 +1263,20 @@ Exact evidence:
 - Canonical parent `65d7e0ad833d2b86bdbe9234eac70e31c0ea02e8` (DOC64), tree `ca5ff8b2f1466fd1d5d377d18384814e251c181c` exactly equals clean PR head tree, exact three files: `src/game/blackoutArchitectStructuralDirectHitProposal.ts`, `tests/es-13j9i-blackout-architect-structural-direct-hit-proposal.test.mjs`, `tests/gameplay/blackout-architect-structural-direct-hit-proposal.test.ts`.
 - Post-main CI `39093011835` / `117573542002`, Android `39093011723` / `117573541547` including APK build/verify/upload, Pages `39093070955` build `117573721312` + deploy `117573781762` all GREEN; Issue #513 CLOSED.
 
-### ES-13J9J — Structural Hit Provenance and Physical Anchor Binding
-Status: **DISCOVERY ONLY — NO IMPLEMENTATION OR LIVE ADOPTION AUTHORIZED**
+### ES-13DOC65 — J9I closure and J9J geometry discovery
+Status: **DEPLOYED / FROZEN (DOCS ONLY)**
+Canonical `3bf5c2945fe174edff4d92adf38a8ab0052cf8fd`; Issue #515 CLOSED, PR #516 MERGED; single parent `d53aa9746ec784d7d5a6b1076fb1e87013b61a7c` (J9I), tree `36856d5c625c42b15f9bf9cc2237650d8a55fab8` matches clean PR head `946a35ffbfa282f35535d76befb3b6a007202883`. Diff exactly three docs.
+- Pre-PR temporary SHA `cc437239d0200b9e3af9cef1bd1f2a20bf995832`, run `39093249684` / cert job `117574256109` GREEN; temporary helper removed.
+- Exact-head PR CI `39093343559` / job `117574541150` GREEN; post-main CI `39093406127` / job `117574726093` GREEN, Pages `39093447089` build `117574846926` + deploy `117574903526` GREEN. No Android for docs-only.
 
-J9G's `ADMIT` is an abstract structural intent, J9H's health snapshots are caller facts and J9I's direct projectile claim is explicitly unverified. None proves an actual collision, player-projectile provenance, world-space cardinal-anchor mapping, hit freshness or non-replay. Live `EnergySwarmGame.tsx` weakpoint handling is tightly coupled: distance checks, `node.health -= proj.damage`, node removal, reward assignment, and the chassis-owned exposure timer. J9J must discover a safe, bounded source-of-truth collision event/anchor binding and exact health-state ownership before justifying an isolated contract or any live integration. Do not copy Titan 180 HP weakpoints, 2400 HP core, 6000ms vulnerability, attack weights, geometry or rewards; do not claim a caller-provided J9I projection is trusted. **No J9J implementation Issue/branch, health mutation or boss spawn is authorized.** Preserve J9A–J9I frozen contracts, Campaign/Infinite/Score Attack, FOTON/formations, caps/budgets, J10–J15/ES-14 deferrals and manual #4/#5/#202/#248.
+### ES-13J9J — Pure Blackout Architect External Geometric Hit-Candidate Projection
+Status: **NEXT PURE CONTRACT AFTER DOC66 — NO LIVE ADOPTION**
+
+Discovery confirmed the existing `EnergySwarmGame.tsx` shield-node collision resolves circle overlap then **immediately mutates health/projectiles and triggers node destruction, rewards and the chassis-specific core exposure timer**. Existing Titan cardinal-like weakpoint dimensions, 180 HP, 2400 core HP, and 6000ms exposure are *not* Blackout Architect authoritative geometry/combat data. Frozen J9G abstract admission, J9H external health snapshots, and J9I unverified caller-asserted damage proposal do not establish true hit provenance.
+
+An independent **pure, four-entry bounded geometric candidate** can be justified without inheriting any live logic. J9J may accept exactly four caller-provided unique `{anchorId,x,y,radius}` facts (`NORTH/EAST/SOUTH/WEST`, arbitrary input order) plus one explicitly untrusted caller `{x,y,radius}` projectile probe. All coordinates must be finite, each anchor radius finite and strictly positive, probe radius finite and nonnegative; require own plain data fields, exact keys/array indices and reject accessor/symbol/extra/duplicate/inherited/sparse input. For each anchor compute `distance=Math.hypot(anchor.x-probe.x,anchor.y-probe.y)` and `combinedRadius=anchor.radius+probe.radius`, fail closed if either computed value or coordinate delta is nonfinite; strict `distance<combinedRadius` matches current geometry. If exactly one anchor matches, output its canonical ID; if none, output `candidateAnchorId:null`; if multiple, reject the **ambiguous** geometric claim with a null result. Output must be deeply frozen `{bossId:"BLACKOUT_ARCHITECT",candidateMode:"GEOMETRIC_CANDIDATE_ONLY",candidateAnchorId,geometryProvenanceVerified:false,projectileProvenanceVerified:false,authorizesDamage:false,mutatesHealth:false}`. No default dimensions or cardinal placement assignment, no core geometry, collision authenticity, projectile ownership/freshness/deduplication, health/damage execution, timer/phase/attack/spawn/raid/rematch, runtime or mode authority. This is **candidate geometry only**, not permission to consume J9I as live damage.
+
+Future J9K (discovery only) must resolve engine-owned geometry state, projectile lifecycle/collision source-of-truth, frame/time freshness, non-replay and controlled mutation authority. Do not authorize J9K code or any live boss adoption without separate evidence. Preserve all existing boss/mode/cap/budget/FOTON/formation contracts and manual blockers #4/#5/#202/#248.
 
 ## J10 — Expert Risk / Reward
 Status: **PLANNED / DEFERRED — NOT ACTIVE**
