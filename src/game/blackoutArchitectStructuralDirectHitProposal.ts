@@ -6,7 +6,6 @@ import {
   resolveBlackoutArchitectStructuralDurabilitySnapshot,
   type BlackoutArchitectStructuralDurabilityFact,
 } from "./blackoutArchitectStructuralDurabilitySnapshot";
-import type { BlackoutArchitectStructuralHitIntentAdmissionProjection } from "./blackoutArchitectStructuralHitIntentAdmission";
 import { EnemyType } from "./types";
 
 export type BlackoutArchitectDirectHitProposalMode = "PROPOSAL_ONLY";
