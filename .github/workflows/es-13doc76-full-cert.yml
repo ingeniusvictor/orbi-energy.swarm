@@ -1,0 +1,38 @@
+name: ES-13DOC76 full docs certification
+on:
+  push:
+    branches:
+      - docs/es-13-doc76-cardinal-collision-discovery
+permissions:
+  contents: read
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Repository, gameplay and platform suites
+        run: npm run test:repo && npm run test:gameplay && npm run test:platform
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Release contract
+        run: npm run release:verify
+      - name: Evidence dossier
+        run: npm run release:evidence:verify
+      - name: Build
+        run: npm run build
+      - name: Readiness
+        env:
+          ORBI_RELEASE_SHA: ${{ github.sha }}
+        run: npm run release:readiness -- --output release-readiness.json
+      - name: Upload readiness evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: es-13doc76-pre-pr-readiness-${{ github.sha }}
+          path: release-readiness.json
+          if-no-files-found: error
