@@ -1,0 +1,65 @@
+name: ES-13J9L-B2B2B2A full pre-PR CI Android
+on:
+  push:
+    branches:
+      - es-13j9lb2b2b2a-offline-reference-rehearsal
+permissions:
+  contents: read
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Focused static and gameplay
+        run: node --test tests/es-13j9lb2b2b2a-offline-attachment.test.mjs && npx tsx --test tests/gameplay/blackout-architect-offline-attachment.test.ts
+      - name: Full repository gameplay platform
+        run: npm run test:repo && npm run test:gameplay && npm run test:platform
+      - run: npm run typecheck
+      - run: npm run release:verify
+      - run: npm run release:evidence:verify
+      - run: npm run build
+      - name: Release readiness
+        env:
+          ORBI_RELEASE_SHA: ${{ github.sha }}
+        run: npm run release:readiness -- --output release-readiness.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: es-13j9lb2b2b2a-readiness-${{ github.sha }}
+          path: release-readiness.json
+          if-no-files-found: error
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      ORBI_BUILD_SHA: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+      - run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0' >/dev/null
+      - run: npm ci
+      - name: Build debug APK
+        run: npm run android:debug
+      - name: Verify APK exists
+        run: test -s android/app/build/outputs/apk/debug/app-debug.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: es-13j9lb2b2b2a-debug-${{ github.sha }}
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
