@@ -18,15 +18,11 @@ Never infer deployment/certification from conversation text alone.
 
 ## Current certified gameplay canonical
 
-`43d7bafff03d201d1fd142e5e3fe50adbc2147c1`
+`8bab0f3656d84ef65d24eecba4a72f96707c2341`
 
-Phase: **ES-13J9L-B2B1 — Pure Architect Encounter Identity/Lifecycle Claim Preflight**
-Status: **DEPLOYED / FROZEN**
-Issue #549 CLOSED / PR #550 MERGED. B2B1 canonical `43d7bafff03d201d1fd142e5e3fe50adbc2147c1`, parent DOC76 `11c2c9cf9dafa87d70ac2a9f803be77554b3978f`, tree `ee7a3c7cf10cc25556674251520ec7997e5b62f0` identical PR clean head `792eb0091413851f8b2851852fba30d0ef901e3c`. Exactly `src/game/blackoutArchitectEncounterClaimPreflight.ts`, `tests/es-13j9lb2b1-encounter-claim-preflight.test.mjs`, `tests/gameplay/blackout-architect-encounter-claim-preflight.test.ts`. Pre-PR initial `39372336365` RED from invalid TypeScript test-only Array subclass constructor; corrected without weakening the adversarial case. Final pre-PR `39372454468` SUCCESS all focused/repository/gameplay/platform/typecheck/release/evidence/build/readiness + verified uploaded Android APK, temporary workflow removed. Exact-head PR CI `39372616613` and Android `39372616607` SUCCESS, post-main CI `39372807337` / Android `39372807320` / Pages build+deploy `39372898326` SUCCESS. DOC76: Issue #547 CLOSED, PR #548 MERGED canonical `11c2c9cf9dafa87d70ac2a9f803be77554b3978f`, pre-cert `39371608323`, PR CI `39371746902`, post-main CI `39371860116`, Pages `39371922399` SUCCESS (docs-only).
-
-**Scope:** B2B1 checks only exact untrusted caller-data `BLACKOUT_ARCHITECT`, `TITAN_CORE` compatibility, positive safe run/encounter ordinals, safe nonnegative physics frame, exactly one each NORTH/EAST/SOUTH/WEST. Rejects malformed/inherited/accessor/symbol/sparse/duplicate/throwing proxy cases and returns frozen `PREFLIGHT_ONLY` projection with engine issuance, trusted identity, lifecycle freshness, geometry, collision, consumption, replay prevention, HP/damage, boss spawn and mode routing all false. Neither engine collision nor live gameplay adoption. No import in `EnergySwarmGame.tsx`; no changes to legacy collisions, spawn, health, timing, RNG, FOTON, entity caps, modes or bosses.
-Version remains `0.2.0-beta.1`. Manual/physical RC certification remains deferred.
-
+Phase: **ES-13J9L-B2B2A — Engine Dormant Architect Encounter Revocation**
+Status: **DEPLOYED / FROZEN**, Issue #556 CLOSED / PR #557 MERGED.
+No real Architect encounter, projectile hit, HP or physical cardinal geometry. Version remains `0.2.0-beta.1`. Human/device certification deferred while ES-13 changes gameplay.
 
 ## J4C-C result
 J4C-C adopted the already-certified `ARTILLERY_CARRIER / SIEGE_PRISM` family into bounded normal Infinite progression through the existing tactical replacement seam.
@@ -1461,6 +1457,18 @@ Status: **DOCUMENT AUTHORIZATION ONLY (until own gates pass)**. Issue #554, rese
 
 **After B2B2A (still DISCOVERY ONLY):** dedicated Architect spawn identity with nonreused run+encounter ordinal and physical boss object reference, four engine-owned cardinal circles/health, explicit priority arbitration and exactly-once consumption transaction, balance, spawn/routing/UI, certifications. Preserve Devourer/Titan/Worm, Campaign/Infinite/Score Attack, FOTON/formations, budgets and manual blockers #4/#5/#202/#248. B2B2A requires independent Issue/branch, tests, full pre-PR CI+Android APK, exact-head PR CI+Android, guarded squash and exact-SHA main CI+Android+Pages. No gameplay write in DOC78.
 
+### ES-13J9L-B2B2A — Engine Dormant Architect Encounter Revocation
+Status: **DEPLOYED / FROZEN (NULL-ONLY — NO ARCHITECT ENCOUNTER)**.
+Issue #556 CLOSED; PR #557 SHA-guarded squash MERGED. Gameplay canonical `8bab0f3656d84ef65d24eecba4a72f96707c2341`, sole parent DOC78 `e05c2699ce32c10dad9e03ec48306ad5d559480e`, canonical tree `117e9e55d65333d4309974bb9983e4ff1621f6f7` identical clean PR head `eea2903c0ebb678a8133e2af92d65342e7e13f6f`. Four-file diff: `src/game/EnergySwarmGame.tsx` (+14 lines), `src/game/blackoutArchitectDormantEncounterRevocation.ts` (+26), `tests/es-13j9lb2b2a-dormant-revocation.test.mjs` (+68), `tests/gameplay/blackout-architect-dormant-revocation.test.ts` (+19).
+
+Pre-PR complete run `39413745183` SUCCESS at temporary `a8d430725d7362765fa821c9a88bb178b3b8d366` with focused/static/gameplay/repo/platform/typecheck/release/evidence/build/readiness and Android APK build/verify/upload; temporary workflow removed. PR CI `39413969899` and Android `39413969768` SUCCESS on clean head. Post-main CI `39414170433`, Android `39414170280` (APK uploaded), Pages build+deploy `39414293297` SUCCESS on exact canonical.
+
+Engine now holds `useRef<BlackoutArchitectDormantEncounterSlot>(null)` where the type permits **only null**. Exactly seven bounded cold-path `revokeBlackoutArchitectDormantEncounter()` assignments: run start, game over, existing legacy boss spawn/replacement, Campaign→Infinite handoff, both normal/splash boss defeat initiation branches and cinematic completion. No revocation on pause/modal/hit-stop (freeze only), no hot-loop allocation or extra scan, no new RNG or TypeScript Enemy/Projectile extension. Revoker cannot issue a token, create an Architect enemy, authorize hit/physical anchor/collision/consumption/replay/health/damage/spawn/routing or import Titan HP/radii/exposure. All existing Titan/Devourer/Worm, Campaign/Infinite/Score Attack, FOTON, entity caps and rewards remain frozen.
+
+Prior DOC78 (Issue #554 CLOSED, PR #555 MERGED) canonical `e05c2699ce32c10dad9e03ec48306ad5d559480e`, docs tree `2c5826547915843e3880e7c55160f96081cb6046`, pre-cert `39412558008`, PR CI `39412750383`, main CI `39412918774`, Pages `39413041725` SUCCESS. Research #553 CLOSED. DOC79 Issue #558 is docs-only closure; its own merge/CI/Pages evidence must be recorded after gates, not assumed.
+
+**Next J9L-B2B2B: DISCOVERY ONLY — NOT CODE-AUTHORIZED.** Genuine Architect identity requires dedicated actual engine-owned boss spawn (not a Titan alias), run epoch plus safely increasing unique encounter ordinal bound to the actual `bossRef` object, lifecycle invalidation across boss replacement/defeat/restart and independent physical cardinal geometry/durability and shot-consumption design. Do not reuse predictable legacy `Enemy.id` or B2B1 caller `PREFLIGHT_ONLY` as proof; no Architect spawn/HP/phase/attack/geometry/consume/mode/HUD/rewards authorized. Any implementation demands a new documentary authorization, distinct Issue, adversarial tests and all exact-SHA gates. Manual blockers #4/#5/#202/#248 remain OPEN.
+
 ## Resolved diagnostics
 - #254 CLOSED / NOT PLANNED: historical platform failure was not an I5 pause regression; no product merge.
 - #283 CLOSED / NOT PLANNED: stale-chat false start; no branch/product work.
@@ -1496,7 +1504,7 @@ Post-J15 direction: **ES-14 — Living Warfront**.
 Read this file, `IMPLEMENTATION_LEDGER.md`, `ES13_GAMEPLAY_ROADMAP.md`, `TRACEABILITY_POLICY.md` and `ES13_PHASE_CHECKLIST.md`, then active Issues/PRs. Verify live `main` before any write.
 
 Suggested handoff:
-> Verify GitHub LIVE first. Latest certified gameplay B2B1 `43d7bafff03d201d1fd142e5e3fe50adbc2147c1` (Issue #549/PR #550) pure caller claim preflight, no real hit or runtime integration; CI/Android/Pages GREEN, DOC77 closes the evidence. Next B2B2 DISCOVERY ONLY. Preserve Titan/Devourer/Worm, Campaign/Infinite/Score Attack, FOTON/caps and manual #4/#5/#202/#248; maintain Issue→exact-SHA branch→cert→PR CI/Android→squash→main CI/Android/Pages→docs closure.
+> Verify GitHub live first. Latest gameplay canonical `8bab0f3656d84ef65d24eecba4a72f96707c2341` B2B2A (Issue #556 / PR #557), null-only engine revocation slot and seven cold hooks, CI/Android/Pages GREEN, no Architect boss/geometry/hit/damage. DOC79 closes evidence; J9L-B2B2B real engine-issued identity DISCOVERY ONLY. Preserve Devourer/Titan/Worm, Campaign/Infinite/Score Attack, FOTON, caps and manual #4/#5/#202/#248. Use exact Issue→branch→cert+Android gameplay→PR CI/Android→SHA-guarded squash→main CI/Android/Pages→docs closure.
 
 ## Update obligation
 Every merged gameplay phase must record exact gameplay canonical, Issue/PR, final head, pre-PR certification, PR CI/Android, main CI/Android/Pages, implementation result, unresolved follow-ups and next roadmap phase. A gameplay phase is not administratively closed until these records are current.
