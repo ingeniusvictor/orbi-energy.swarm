@@ -87,6 +87,7 @@ Rules:
 | ES-13J9L-A — Engine-Owned Run/Physics-Frame/Player-Shot Trace Metadata | DEPLOYED / FROZEN | `61009948f55caf4260623de57a24c8cd211f0369` | #531 | #532 |
 | ES-13J9L-B1 — Passive Legacy Projectile Consume Observation | DEPLOYED / FROZEN | `515f61038d83868ebf403b5c3c8ecea691d1b009` | #537 | #538 |
 | ES-13J9L-B2A — Isolated Encounter-Scoped Player-Projectile Reservation | DEPLOYED / FROZEN | `58ae6efcedb0a5a51af5e74d92221cd918e7d30c` | #543 | #544 |
+| ES-13J9L-B2B1 — Pure Architect Encounter Claim Preflight | DEPLOYED / FROZEN | `43d7bafff03d201d1fd142e5e3fe50adbc2147c1` | #549 | #550 |
 
 ## Evidence anchors
 
@@ -1046,6 +1047,15 @@ Verified real-engine seams in `src/game/EnergySwarmGame.tsx`: `startGame` ~1388-
 **B2B1 next:** isolated pure **encounter identity/lifecycle claim preflight**, exact caller-supplied own-data fields only, canonical four anchor IDs and safe ordinals, frozen `PREFLIGHT_ONLY`; all engine issuance/geometry/collision/consume/replay/health/attack/spawn/route/economy capabilities false. No runtime adoption, API to live boss, new collection, RNG, timer, collision ordering decision, HP/damage or balance authorized. Treat all caller data as untrusted until a future engine-owned issuance mechanism exists. Distinct implementation Issue, focused/adversarial tests, full CI and Android required.
 
 Further B2B physical encounter issuance, anchor geometry, collision routing, exclusive consume, lifecycle stale guards and explicit balance are DISCOVERY ONLY. Preserve Campaign/Infinite/Score Attack, Devourer/Titan/Worm, FOTON/formations, entity budgets; blockers #4/#5/#202/#248 OPEN.
+
+### ES-13DOC77 — Close B2B1; B2B2 physical engine discovery only
+Status: **DOCS-ONLY CLOSURE IN PROGRESS**, Issue #551; last gameplay canonical `43d7bafff03d201d1fd142e5e3fe50adbc2147c1`. DOC77 certification and squash evidence will be recorded after its own exact-SHA gates.
+
+Issue #549 CLOSED / PR #550 MERGED. B2B1 canonical `43d7bafff03d201d1fd142e5e3fe50adbc2147c1`, parent DOC76 `11c2c9cf9dafa87d70ac2a9f803be77554b3978f`, tree `ee7a3c7cf10cc25556674251520ec7997e5b62f0` identical PR clean head `792eb0091413851f8b2851852fba30d0ef901e3c`. Exactly `src/game/blackoutArchitectEncounterClaimPreflight.ts`, `tests/es-13j9lb2b1-encounter-claim-preflight.test.mjs`, `tests/gameplay/blackout-architect-encounter-claim-preflight.test.ts`. Pre-PR initial `39372336365` RED from invalid TypeScript test-only Array subclass constructor; corrected without weakening the adversarial case. Final pre-PR `39372454468` SUCCESS all focused/repository/gameplay/platform/typecheck/release/evidence/build/readiness + verified uploaded Android APK, temporary workflow removed. Exact-head PR CI `39372616613` and Android `39372616607` SUCCESS, post-main CI `39372807337` / Android `39372807320` / Pages build+deploy `39372898326` SUCCESS. DOC76: Issue #547 CLOSED, PR #548 MERGED canonical `11c2c9cf9dafa87d70ac2a9f803be77554b3978f`, pre-cert `39371608323`, PR CI `39371746902`, post-main CI `39371860116`, Pages `39371922399` SUCCESS (docs-only).
+
+B2B1 checks only exact untrusted caller-data `BLACKOUT_ARCHITECT`, `TITAN_CORE` compatibility, positive safe run/encounter ordinals, safe nonnegative physics frame, exactly one each NORTH/EAST/SOUTH/WEST. Rejects malformed/inherited/accessor/symbol/sparse/duplicate/throwing proxy cases and returns frozen `PREFLIGHT_ONLY` projection with engine issuance, trusted identity, lifecycle freshness, geometry, collision, consumption, replay prevention, HP/damage, boss spawn and mode routing all false. Neither engine collision nor live gameplay adoption. No import in `EnergySwarmGame.tsx`; no changes to legacy collisions, spawn, health, timing, RNG, FOTON, entity caps, modes or bosses.
+
+Next ES-13J9L-B2B2 is **DISCOVERY ONLY, NOT CODE-AUTHORIZED**. First define a truly engine-owned Architect encounter identity and lifecycle (spawn, restart, defeat/cleanup, paused/hit-stop/cinematic stale states), actual engine-owned cardinal anchor geometry/health independent of Titan HP/radii/exposure, collision precedence vs shield nodes and spatial enemy first-hit, and exactly one consuming shot transaction without additional full entity scans. Pure B2B1 caller fields provide no authenticated physics ticket. No real Architect boss, damage, rewards, stages or mode routing until separate documentation authorization + Issue + exact-SHA cert. Preserve Devourer/Titan/Worm, Campaign/Infinite/Score Attack, FOTON, caps and manual blockers #4/#5/#202/#248.
 
 ## Program sequence
 `J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance → ES-14 Living Warfront`
