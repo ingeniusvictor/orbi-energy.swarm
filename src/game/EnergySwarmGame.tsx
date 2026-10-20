@@ -24,6 +24,10 @@ import { compactArrayInPlace } from "./arrayCompaction";
 import { nextBlackoutArchitectCollisionTraceOrdinal } from "./blackoutArchitectCollisionTraceOrdinal";
 import { observeBlackoutArchitectLegacyPlayerHit } from "./blackoutArchitectLegacyHitObservation";
 import {
+  revokeBlackoutArchitectDormantEncounter,
+  type BlackoutArchitectDormantEncounterSlot,
+} from "./blackoutArchitectDormantEncounterRevocation";
+import {
   countActiveEvolvedEnemies,
   countLivingEnemies,
   countLivingStandardEnemies,
@@ -434,6 +438,8 @@ export const EnergySwarmGame: React.FC = () => {
   // Boss Refs
   const bossActiveRef = useRef(false);
   const bossRef = useRef<Enemy | null>(null);
+  // Inert, null-only Architect slot: never minted or hit-tested in B2B2A.
+  const architectEncounterSlotRef = useRef<BlackoutArchitectDormantEncounterSlot>(null);
   const activeBossRematchProfileRef = useRef<InfiniteBossRematchProfile | null>(null);
 
   // High-frequency boss states
@@ -1400,6 +1406,7 @@ export const EnergySwarmGame: React.FC = () => {
     runStartTimeRef.current = Date.now();
     runEndTimeRef.current = 0;
     runCommitLedgerRef.current = createRunCommitLedger();
+    architectEncounterSlotRef.current = revokeBlackoutArchitectDormantEncounter();
     collisionTraceRunEpochRef.current = nextBlackoutArchitectCollisionTraceOrdinal(
       collisionTraceRunEpochRef.current,
     );
@@ -2075,6 +2082,7 @@ export const EnergySwarmGame: React.FC = () => {
 
   // --- CORE GAME OVER TRIGGER ---
   const triggerGameOver = (won: boolean) => {
+    architectEncounterSlotRef.current = revokeBlackoutArchitectDormantEncounter();
     const scoreAttackAttemptActive =
       scoreAttackActivationRef.current !== null;
     loopActiveRef.current = false;
@@ -2107,6 +2115,7 @@ export const EnergySwarmGame: React.FC = () => {
   };
 
   const enterInfiniteAfterCampaignVictory = () => {
+    architectEncounterSlotRef.current = revokeBlackoutArchitectDormantEncounter();
     const fresh = loadGameStats();
     const handoff = beginInfiniteAfterCampaignVictory(
       fresh,
@@ -3040,6 +3049,8 @@ export const EnergySwarmGame: React.FC = () => {
     rematchProfile: InfiniteBossRematchProfile | null = null,
     stage: BossEncounterStage = "PRIMARY",
   ) => {
+    // Legacy boss entry/replacement revokes; never issues an Architect ticket.
+    architectEncounterSlotRef.current = revokeBlackoutArchitectDormantEncounter();
     enemiesRef.current = [];
     enemyFormationDirectorRef.current =
       createLiveEnemyFormationDirectorState();
@@ -4277,6 +4288,7 @@ export const EnergySwarmGame: React.FC = () => {
     // After 5 seconds, either resolve an isolated infinite rematch or
     // checkpoint the original campaign victory.
     if (bossDefeatedSequenceTimerRef.current <= 0) {
+      architectEncounterSlotRef.current = revokeBlackoutArchitectDormantEncounter();
       bossDefeatedSequenceActiveRef.current = false;
 
       if (boss?.milestoneKind === "BOSS_REMATCH") {
@@ -6317,6 +6329,7 @@ export const EnergySwarmGame: React.FC = () => {
                       if (!rematch) {
                         bossSessionEndTimeRef.current = Date.now();
                       }
+                      architectEncounterSlotRef.current = revokeBlackoutArchitectDormantEncounter();
                       bossDefeatedSequenceActiveRef.current = true;
                       bossDefeatedSequenceTimerRef.current = 5000;
                       postDialogue(
@@ -6386,6 +6399,7 @@ export const EnergySwarmGame: React.FC = () => {
                 if (!rematch) {
                   bossSessionEndTimeRef.current = Date.now();
                 }
+                architectEncounterSlotRef.current = revokeBlackoutArchitectDormantEncounter();
                 bossDefeatedSequenceActiveRef.current = true;
                 bossDefeatedSequenceTimerRef.current = 5000;
                 postDialogue(
