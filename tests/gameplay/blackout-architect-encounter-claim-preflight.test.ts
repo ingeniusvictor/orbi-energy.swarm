@@ -106,7 +106,9 @@ test("J9L-B2B1 refuses inherited/accessor/symbol/proxy/sparse claims", () => {
   const throwingRoster = new Proxy(["NORTH", "EAST", "SOUTH", "WEST"], { getPrototypeOf() { throw new Error("trap"); } });
   assert.equal(resolveBlackoutArchitectEncounterClaimPreflight({ ...valid(), anchorIds: throwingRoster }), null);
   const arraySubclass = class extends Array {};
-  assert.equal(resolveBlackoutArchitectEncounterClaimPreflight({ ...valid(), anchorIds: new arraySubclass("NORTH", "EAST", "SOUTH", "WEST") }), null);
+  const subclassRoster = new arraySubclass();
+  subclassRoster.push("NORTH", "EAST", "SOUTH", "WEST");
+  assert.equal(resolveBlackoutArchitectEncounterClaimPreflight({ ...valid(), anchorIds: subclassRoster }), null);
 });
 
 test("J9L-B2B1 never consumes or reserves a projectile or creates trusted freshness", () => {
