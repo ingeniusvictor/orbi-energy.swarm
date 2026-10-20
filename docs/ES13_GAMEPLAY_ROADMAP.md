@@ -1068,7 +1068,7 @@ Exact deployment anchors:
 - Issue #473 CLOSED / completed.
 
 ## J9 — Boss & Miniboss Expansion
-Status: **ACTIVE PROGRAM — J9L-B2A DEPLOYED / J9L-B2B DISCOVERY ONLY**
+Status: **ACTIVE PROGRAM — J9L-B2B1 DEPLOYED / J9L-B2B2 DISCOVERY ONLY**
 
 Blackout Architect, Helios Devourer, Null Choir, Quantum Leviathan, Dyson Breaker, Swarm Sovereign and Singularity Engine remain the long-range J9 vocabulary. New boss work must use phases, destructible zones, affinity/formation pressure, battlefield manipulation and telegraphed vulnerability windows without bypassing existing caps/budgets or certified boss authorities.
 
@@ -1397,6 +1397,15 @@ Code findings: start/reset, hit-stop and cinematic frame progression in `EnergyS
 Authorized only as **isolated non-live** J9L-B2B1: pure exact-shape architect encounter/lifecycle *claim* preflight. Require own-data `bossId: BLACKOUT_ARCHITECT`, safe positive run and encounter ordinals, nonnegative safe physics frame, `chassisId: TITAN_CORE` compatibility and exactly four unique NORTH/EAST/SOUTH/WEST IDs. Return frozen `PREFLIGHT_ONLY` with every trusted provenance/live damage/consumption/replay authority false; reject accessor/symbol/inherited/duplicates/nonfinite/invalid epochs. No engine integration, geometry/radius/health defaults, timing, RNG, new boss instance, direct damage, economy or mode route. New B2B1 Issue+branch, adversarial tests, full repo/gameplay/platform/typecheck/release/dossier/build/readiness and Android gates before merge.
 
 **Not yet authorized:** actual engine-issued Architect encounter identity, physical cardinal objects, location/radius/HP, arbitration between legacy shields/cardinals/enemies, projectile consumption and replay transaction, Architect spawn/phase/reward and any gameplay activation. Each requires independently scoped authorization/certification. Do not reuse Titan tuning or affect Devourer/Worm/FOTON, caps, Campaign/Infinite/Score Attack, manual #4/#5/#202/#248.
+
+### ES-13DOC77 — Pure B2B1 close and real engine B2B2 hold
+Status: **J9L-B2B1 DEPLOYED / FROZEN; J9L-B2B2 DISCOVERY ONLY**. Issue #551.
+
+Issue #549 CLOSED / PR #550 MERGED. B2B1 canonical `43d7bafff03d201d1fd142e5e3fe50adbc2147c1`, parent DOC76 `11c2c9cf9dafa87d70ac2a9f803be77554b3978f`, tree `ee7a3c7cf10cc25556674251520ec7997e5b62f0` identical PR clean head `792eb0091413851f8b2851852fba30d0ef901e3c`. Exactly `src/game/blackoutArchitectEncounterClaimPreflight.ts`, `tests/es-13j9lb2b1-encounter-claim-preflight.test.mjs`, `tests/gameplay/blackout-architect-encounter-claim-preflight.test.ts`. Pre-PR initial `39372336365` RED from invalid TypeScript test-only Array subclass constructor; corrected without weakening the adversarial case. Final pre-PR `39372454468` SUCCESS all focused/repository/gameplay/platform/typecheck/release/evidence/build/readiness + verified uploaded Android APK, temporary workflow removed. Exact-head PR CI `39372616613` and Android `39372616607` SUCCESS, post-main CI `39372807337` / Android `39372807320` / Pages build+deploy `39372898326` SUCCESS. DOC76: Issue #547 CLOSED, PR #548 MERGED canonical `11c2c9cf9dafa87d70ac2a9f803be77554b3978f`, pre-cert `39371608323`, PR CI `39371746902`, post-main CI `39371860116`, Pages `39371922399` SUCCESS (docs-only).
+
+B2B1 checks only exact untrusted caller-data `BLACKOUT_ARCHITECT`, `TITAN_CORE` compatibility, positive safe run/encounter ordinals, safe nonnegative physics frame, exactly one each NORTH/EAST/SOUTH/WEST. Rejects malformed/inherited/accessor/symbol/sparse/duplicate/throwing proxy cases and returns frozen `PREFLIGHT_ONLY` projection with engine issuance, trusted identity, lifecycle freshness, geometry, collision, consumption, replay prevention, HP/damage, boss spawn and mode routing all false. Neither engine collision nor live gameplay adoption. No import in `EnergySwarmGame.tsx`; no changes to legacy collisions, spawn, health, timing, RNG, FOTON, entity caps, modes or bosses.
+
+Next ES-13J9L-B2B2 is **DISCOVERY ONLY, NOT CODE-AUTHORIZED**. First define a truly engine-owned Architect encounter identity and lifecycle (spawn, restart, defeat/cleanup, paused/hit-stop/cinematic stale states), actual engine-owned cardinal anchor geometry/health independent of Titan HP/radii/exposure, collision precedence vs shield nodes and spatial enemy first-hit, and exactly one consuming shot transaction without additional full entity scans. Pure B2B1 caller fields provide no authenticated physics ticket. No real Architect boss, damage, rewards, stages or mode routing until separate documentation authorization + Issue + exact-SHA cert. Preserve Devourer/Titan/Worm, Campaign/Infinite/Score Attack, FOTON, caps and manual blockers #4/#5/#202/#248.
 
 ## J10 — Expert Risk / Reward
 Status: **PLANNED / DEFERRED — NOT ACTIVE**

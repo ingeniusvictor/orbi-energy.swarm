@@ -3,7 +3,7 @@
 > START HERE after any new chat/session, context loss or handoff.
 
 Repository: `ingeniusvictor/orbi-energy.swarm`  
-Last continuity update: 2026-10-18
+Last continuity update: 2026-10-20
 
 ## Authority order
 1. live GitHub `main` + merged history;
@@ -18,17 +18,15 @@ Never infer deployment/certification from conversation text alone.
 
 ## Current certified gameplay canonical
 
-`58ae6efcedb0a5a51af5e74d92221cd918e7d30c`
+`43d7bafff03d201d1fd142e5e3fe50adbc2147c1`
 
-Phase: **ES-13J9L-B2A — Isolated Encounter-Scoped Player-Projectile Reservation**
+Phase: **ES-13J9L-B2B1 — Pure Architect Encounter Identity/Lifecycle Claim Preflight**
 Status: **DEPLOYED / FROZEN**
-Issue #543 CLOSED / PR #544 MERGED.
+Issue #549 CLOSED / PR #550 MERGED. B2B1 canonical `43d7bafff03d201d1fd142e5e3fe50adbc2147c1`, parent DOC76 `11c2c9cf9dafa87d70ac2a9f803be77554b3978f`, tree `ee7a3c7cf10cc25556674251520ec7997e5b62f0` identical PR clean head `792eb0091413851f8b2851852fba30d0ef901e3c`. Exactly `src/game/blackoutArchitectEncounterClaimPreflight.ts`, `tests/es-13j9lb2b1-encounter-claim-preflight.test.mjs`, `tests/gameplay/blackout-architect-encounter-claim-preflight.test.ts`. Pre-PR initial `39372336365` RED from invalid TypeScript test-only Array subclass constructor; corrected without weakening the adversarial case. Final pre-PR `39372454468` SUCCESS all focused/repository/gameplay/platform/typecheck/release/evidence/build/readiness + verified uploaded Android APK, temporary workflow removed. Exact-head PR CI `39372616613` and Android `39372616607` SUCCESS, post-main CI `39372807337` / Android `39372807320` / Pages build+deploy `39372898326` SUCCESS. DOC76: Issue #547 CLOSED, PR #548 MERGED canonical `11c2c9cf9dafa87d70ac2a9f803be77554b3978f`, pre-cert `39371608323`, PR CI `39371746902`, post-main CI `39371860116`, Pages `39371922399` SUCCESS (docs-only).
 
-Sole parent `48afb9caa73ff258cc2d7ec46acd4d0a422c41ad` (DOC74).
-Canonical tree `2b949daf3b4bd74665980ba32b5a89037193f2dd`.
-Three certified module/static/gameplay tests; main CI/Android/Pages GREEN. Does NOT authorize a real hit or live boss.
+**Scope:** B2B1 checks only exact untrusted caller-data `BLACKOUT_ARCHITECT`, `TITAN_CORE` compatibility, positive safe run/encounter ordinals, safe nonnegative physics frame, exactly one each NORTH/EAST/SOUTH/WEST. Rejects malformed/inherited/accessor/symbol/sparse/duplicate/throwing proxy cases and returns frozen `PREFLIGHT_ONLY` projection with engine issuance, trusted identity, lifecycle freshness, geometry, collision, consumption, replay prevention, HP/damage, boss spawn and mode routing all false. Neither engine collision nor live gameplay adoption. No import in `EnergySwarmGame.tsx`; no changes to legacy collisions, spawn, health, timing, RNG, FOTON, entity caps, modes or bosses.
+Version remains `0.2.0-beta.1`. Manual/physical RC certification remains deferred.
 
-Version remains `0.2.0-beta.1`. Full RC/manual certification remains deferred while J9 gameplay expands.
 
 ## J4C-C result
 J4C-C adopted the already-certified `ARTILLERY_CARRIER / SIEGE_PRISM` family into bounded normal Infinite progression through the existing tactical replacement seam.
@@ -1430,6 +1428,15 @@ Engine facts: `startGame` advances the engine-owned run epoch and clears physics
 
 Next required authorities (separate future phases): dedicated engine-issued Architect instance and teardown; four real cardinal coordinates/radii/health and per-frame ownership; explicit legacy-shield/cardinal/enemy arbitration in the **existing** projectile sweep without extra enemy scans; one physical consume transaction with stale/restart/hit-stop/replay safeguards; independently justified tuning, phases and modes. Manual blockers #4/#5/#202/#248 stay OPEN.
 
+### ES-13DOC77 — Closure of B2B1 and B2B2 discovery freeze
+Status: **DOCS-ONLY CLOSURE IN PROGRESS**, Issue #551, baseline gameplay `43d7bafff03d201d1fd142e5e3fe50adbc2147c1`. DOC77's own merge evidence must be audited after gates.
+
+Issue #549 CLOSED / PR #550 MERGED. B2B1 canonical `43d7bafff03d201d1fd142e5e3fe50adbc2147c1`, parent DOC76 `11c2c9cf9dafa87d70ac2a9f803be77554b3978f`, tree `ee7a3c7cf10cc25556674251520ec7997e5b62f0` identical PR clean head `792eb0091413851f8b2851852fba30d0ef901e3c`. Exactly `src/game/blackoutArchitectEncounterClaimPreflight.ts`, `tests/es-13j9lb2b1-encounter-claim-preflight.test.mjs`, `tests/gameplay/blackout-architect-encounter-claim-preflight.test.ts`. Pre-PR initial `39372336365` RED from invalid TypeScript test-only Array subclass constructor; corrected without weakening the adversarial case. Final pre-PR `39372454468` SUCCESS all focused/repository/gameplay/platform/typecheck/release/evidence/build/readiness + verified uploaded Android APK, temporary workflow removed. Exact-head PR CI `39372616613` and Android `39372616607` SUCCESS, post-main CI `39372807337` / Android `39372807320` / Pages build+deploy `39372898326` SUCCESS. DOC76: Issue #547 CLOSED, PR #548 MERGED canonical `11c2c9cf9dafa87d70ac2a9f803be77554b3978f`, pre-cert `39371608323`, PR CI `39371746902`, post-main CI `39371860116`, Pages `39371922399` SUCCESS (docs-only).
+
+B2B1 checks only exact untrusted caller-data `BLACKOUT_ARCHITECT`, `TITAN_CORE` compatibility, positive safe run/encounter ordinals, safe nonnegative physics frame, exactly one each NORTH/EAST/SOUTH/WEST. Rejects malformed/inherited/accessor/symbol/sparse/duplicate/throwing proxy cases and returns frozen `PREFLIGHT_ONLY` projection with engine issuance, trusted identity, lifecycle freshness, geometry, collision, consumption, replay prevention, HP/damage, boss spawn and mode routing all false. Neither engine collision nor live gameplay adoption. No import in `EnergySwarmGame.tsx`; no changes to legacy collisions, spawn, health, timing, RNG, FOTON, entity caps, modes or bosses.
+
+Next ES-13J9L-B2B2 is **DISCOVERY ONLY, NOT CODE-AUTHORIZED**. First define a truly engine-owned Architect encounter identity and lifecycle (spawn, restart, defeat/cleanup, paused/hit-stop/cinematic stale states), actual engine-owned cardinal anchor geometry/health independent of Titan HP/radii/exposure, collision precedence vs shield nodes and spatial enemy first-hit, and exactly one consuming shot transaction without additional full entity scans. Pure B2B1 caller fields provide no authenticated physics ticket. No real Architect boss, damage, rewards, stages or mode routing until separate documentation authorization + Issue + exact-SHA cert. Preserve Devourer/Titan/Worm, Campaign/Infinite/Score Attack, FOTON, caps and manual blockers #4/#5/#202/#248.
+
 ## Resolved diagnostics
 - #254 CLOSED / NOT PLANNED: historical platform failure was not an I5 pause regression; no product merge.
 - #283 CLOSED / NOT PLANNED: stale-chat false start; no branch/product work.
@@ -1465,7 +1472,7 @@ Post-J15 direction: **ES-14 — Living Warfront**.
 Read this file, `IMPLEMENTATION_LEDGER.md`, `ES13_GAMEPLAY_ROADMAP.md`, `TRACEABILITY_POLICY.md` and `ES13_PHASE_CHECKLIST.md`, then active Issues/PRs. Verify live `main` before any write.
 
 Suggested handoff:
-> Verify live GitHub first. J9L-B2A gameplay canonical `58ae6efcedb0a5a51af5e74d92221cd918e7d30c` DEPLOYED/FROZEN, Issue #543 PR #544, pre-cert `39179919614` CI+Android GREEN with APK; clean PR CI/Android `39180167351`/`39180167464`, main CI/Android `39180320171`/`39180320210` with APK and Pages `39180394526` GREEN. DOC74 `48afb9caa73ff258cc2d7ec46acd4d0a422c41ad`, Issue #541 PR #542, pre-cert `39179265828`, PR CI `39179400796`, main CI `39179516769`, Pages `39179577197` GREEN. Complete DOC75 if active. J9L-B2B still DISCOVERY ONLY: no authenticated four cardinal physical anchor state, real collision, one-use live projectile consume or Blackout Architect health. Isolated B2A WeakSet accepts clones/independent ledgers and does not prove replay safety or any hit. Preserve Titan/Devourer/Worm, Campaign/Infinite/Score Attack, FOTON/caps and manual #4/#5/#202/#248. Follow exact-base Issue→branch→full cert+Android gameplay→PR exact-head CI/Android→SHA guarded squash→main CI/Android/Pages→docs closure.
+> Verify GitHub LIVE first. Latest certified gameplay B2B1 `43d7bafff03d201d1fd142e5e3fe50adbc2147c1` (Issue #549/PR #550) pure caller claim preflight, no real hit or runtime integration; CI/Android/Pages GREEN, DOC77 closes the evidence. Next B2B2 DISCOVERY ONLY. Preserve Titan/Devourer/Worm, Campaign/Infinite/Score Attack, FOTON/caps and manual #4/#5/#202/#248; maintain Issue→exact-SHA branch→cert→PR CI/Android→squash→main CI/Android/Pages→docs closure.
 
 ## Update obligation
 Every merged gameplay phase must record exact gameplay canonical, Issue/PR, final head, pre-PR certification, PR CI/Android, main CI/Android/Pages, implementation result, unresolved follow-ups and next roadmap phase. A gameplay phase is not administratively closed until these records are current.
