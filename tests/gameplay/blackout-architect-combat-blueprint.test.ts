@@ -14,7 +14,7 @@ test("Architect blueprint has unique original design, deep immutability and boun
   assert.equal(B.core.proposedVisualSize, 58);
   assert.equal(B.core.proposedExposureDurationMs, 3700);
   assert.ok(![2400,1500].includes(B.core.proposedMaxHealth));
-  assert.ok(B.core.proposedExposureDurationMs !== 6000);
+  assert.notEqual(Number(B.core.proposedExposureDurationMs), 6000);
   assert.equal(B.anchors.length, 4);
   assert.deepEqual(B.anchors.map(x=>x.id),["NORTH","EAST","SOUTH","WEST"]);
   assert.equal(new Set(B.anchors.map(x=>x.id)).size,4);
