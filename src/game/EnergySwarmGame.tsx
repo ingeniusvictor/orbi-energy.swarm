@@ -27,7 +27,11 @@ import {
   revokeBlackoutArchitectDormantEncounter,
   type BlackoutArchitectDormantEncounterSlot,
 } from "./blackoutArchitectDormantEncounterRevocation";
-import { createBlackoutArchitectEngineIdentityLifecycleOwner } from "./blackoutArchitectEngineIdentityLifecycle";
+import {
+  createBlackoutArchitectEngineIdentityLifecycleOwner,
+  type BlackoutArchitectEngineIdentityGuard,
+} from "./blackoutArchitectEngineIdentityLifecycle";
+import { createBlackoutArchitectDevQaBoss } from "./blackoutArchitectDevQaBossFactory";
 import {
   countActiveEvolvedEnemies,
   countLivingEnemies,
@@ -301,6 +305,8 @@ export const EnergySwarmGame: React.FC = () => {
   const [performanceEvidenceSamples, setPerformanceEvidenceSamples] =
     useState(0);
   const [isGameOver, setIsGameOver] = useState(false);
+  // Diagnostic visibility exists only in development; not a public boss mode.
+  const [architectQaVisible, setArchitectQaVisible] = useState(false);
   const [victory, setVictory] = useState(false);
   const [presentationMode, setPresentationMode] =
     useState<ScoreAttackLiveEngineStartMode>("CAMPAIGN");
@@ -448,6 +454,8 @@ export const EnergySwarmGame: React.FC = () => {
   if (architectEngineIdentityOwnerRef.current === null) {
     architectEngineIdentityOwnerRef.current = createBlackoutArchitectEngineIdentityLifecycleOwner();
   }
+  const architectQaBossRef = useRef<Enemy | null>(null);
+  const architectQaGuardRef = useRef<Readonly<BlackoutArchitectEngineIdentityGuard> | null>(null);
   const activeBossRematchProfileRef = useRef<InfiniteBossRematchProfile | null>(null);
 
   // High-frequency boss states
@@ -1080,6 +1088,62 @@ export const EnergySwarmGame: React.FC = () => {
     return true;
   };
 
+  /**
+   * DEV-only controlled QA: a real game-owned entity/ref and identity guard,
+   * but the entire simulation is frozen and no combat is authorized.
+   */
+  const clearArchitectQaDiagnostic = () => {
+    const qaBoss = architectQaBossRef.current;
+    if (qaBoss === null) return;
+    architectEngineIdentityOwnerRef.current?.revoke();
+    if (bossRef.current === qaBoss) bossRef.current = null;
+    if (enemiesRef.current[enemiesRef.current.length - 1] === qaBoss) {
+      enemiesRef.current.pop();
+    }
+    architectQaBossRef.current = null;
+    architectQaGuardRef.current = null;
+    setArchitectQaVisible(false);
+  };
+
+  const toggleArchitectQaDiagnostic = () => {
+    if (!import.meta.env.DEV) return;
+    if (architectQaBossRef.current !== null) {
+      clearArchitectQaDiagnostic();
+      return;
+    }
+    // Positive manual consent and isolated break-only engine ownership.
+    if (!isPlaying || isGameOver || isPhotoMode || isPausedRef.current ||
+        isUpgradeSelectionOpenRef.current || scoreAttackActivationRef.current !== null ||
+        runtimeProgressionRef.current.mode !== "CAMPAIGN" ||
+        waveActiveRef.current || bossActiveRef.current ||
+        bossRef.current !== null || enemiesRef.current.length !== 0 ||
+        bossDefeatedSequenceActiveRef.current) return;
+
+    const candidate = createBlackoutArchitectDevQaBoss(true);
+    if (candidate === null || enemiesRef.current.length >= MAX_ENEMIES) return;
+    // Genuine refs are installed BEFORE attempting owner admission.
+    enemiesRef.current.push(candidate);
+    bossRef.current = candidate;
+    const guard = architectEngineIdentityOwnerRef.current?.admitInstalledBoss(
+      candidate, bossRef.current, enemiesRef.current,
+    ) ?? null;
+    const valid = guard !== null &&
+      architectEngineIdentityOwnerRef.current?.isCurrent(
+        guard, candidate, bossRef.current, enemiesRef.current,
+      ) === true;
+    if (!valid) {
+      architectEngineIdentityOwnerRef.current?.revoke();
+      if (bossRef.current === candidate) bossRef.current = null;
+      if (enemiesRef.current[enemiesRef.current.length - 1] === candidate) {
+        enemiesRef.current.pop();
+      }
+      return;
+    }
+    architectQaBossRef.current = candidate;
+    architectQaGuardRef.current = guard;
+    setArchitectQaVisible(true);
+  };
+
   // --- KEY LISTENER LISTENERS ---
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -1087,6 +1151,13 @@ export const EnergySwarmGame: React.FC = () => {
         if (e.key === "Enter") {
           startCampaignGame();
         }
+        return;
+      }
+
+      // Manual triple-modifier diagnostic ONLY in the unbundled Vite dev app.
+      if (import.meta.env.DEV && e.ctrlKey && e.altKey && e.shiftKey && e.code === "F9") {
+        e.preventDefault();
+        toggleArchitectQaDiagnostic();
         return;
       }
 
@@ -1415,6 +1486,7 @@ export const EnergySwarmGame: React.FC = () => {
     runEndTimeRef.current = 0;
     runCommitLedgerRef.current = createRunCommitLedger();
     architectEncounterSlotRef.current = revokeBlackoutArchitectDormantEncounter();
+    clearArchitectQaDiagnostic();
     architectEngineIdentityOwnerRef.current?.beginRun();
     collisionTraceRunEpochRef.current = nextBlackoutArchitectCollisionTraceOrdinal(
       collisionTraceRunEpochRef.current,
@@ -2092,6 +2164,7 @@ export const EnergySwarmGame: React.FC = () => {
   // --- CORE GAME OVER TRIGGER ---
   const triggerGameOver = (won: boolean) => {
     architectEncounterSlotRef.current = revokeBlackoutArchitectDormantEncounter();
+    clearArchitectQaDiagnostic();
     architectEngineIdentityOwnerRef.current?.invalidateRun();
     const scoreAttackAttemptActive =
       scoreAttackActivationRef.current !== null;
@@ -2126,6 +2199,7 @@ export const EnergySwarmGame: React.FC = () => {
 
   const enterInfiniteAfterCampaignVictory = () => {
     architectEncounterSlotRef.current = revokeBlackoutArchitectDormantEncounter();
+    clearArchitectQaDiagnostic();
     architectEngineIdentityOwnerRef.current?.revoke();
     const fresh = loadGameStats();
     const handoff = beginInfiniteAfterCampaignVictory(
@@ -3062,6 +3136,7 @@ export const EnergySwarmGame: React.FC = () => {
   ) => {
     // Legacy boss entry/replacement revokes; never issues an Architect ticket.
     architectEncounterSlotRef.current = revokeBlackoutArchitectDormantEncounter();
+    clearArchitectQaDiagnostic();
     architectEngineIdentityOwnerRef.current?.revoke();
     enemiesRef.current = [];
     enemyFormationDirectorRef.current =
@@ -4037,6 +4112,14 @@ export const EnergySwarmGame: React.FC = () => {
     }
 
     suspendedFrameRenderedRef.current = false;
+    // A real DEV QA boss is installed in engine refs, but NO physics, waves,
+    // enemy collisions, attacks, HP mutation, scoring or rewards are stepped.
+    if (architectQaBossRef.current !== null) {
+      lastTimeRef.current = timestamp;
+      renderCanvasScene();
+      requestAnimationFrame(gameLoop);
+      return;
+    }
     let delta = timestamp - lastTimeRef.current;
     lastTimeRef.current = timestamp;
 
@@ -4301,6 +4384,7 @@ export const EnergySwarmGame: React.FC = () => {
     // checkpoint the original campaign victory.
     if (bossDefeatedSequenceTimerRef.current <= 0) {
       architectEncounterSlotRef.current = revokeBlackoutArchitectDormantEncounter();
+    clearArchitectQaDiagnostic();
       architectEngineIdentityOwnerRef.current?.revoke();
       bossDefeatedSequenceActiveRef.current = false;
 
@@ -6343,6 +6427,7 @@ export const EnergySwarmGame: React.FC = () => {
                         bossSessionEndTimeRef.current = Date.now();
                       }
                       architectEncounterSlotRef.current = revokeBlackoutArchitectDormantEncounter();
+    clearArchitectQaDiagnostic();
                       architectEngineIdentityOwnerRef.current?.revoke();
                       bossDefeatedSequenceActiveRef.current = true;
                       bossDefeatedSequenceTimerRef.current = 5000;
@@ -6414,6 +6499,7 @@ export const EnergySwarmGame: React.FC = () => {
                   bossSessionEndTimeRef.current = Date.now();
                 }
                 architectEncounterSlotRef.current = revokeBlackoutArchitectDormantEncounter();
+    clearArchitectQaDiagnostic();
                 architectEngineIdentityOwnerRef.current?.revoke();
                 bossDefeatedSequenceActiveRef.current = true;
                 bossDefeatedSequenceTimerRef.current = 5000;
@@ -7854,6 +7940,16 @@ export const EnergySwarmGame: React.FC = () => {
                   onPointerUp={handlePointerUp}
                   time={timeElapsedRef.current}
                 />
+
+                {import.meta.env.DEV && architectQaVisible && (
+                  <div
+                    role="status"
+                    aria-live="polite"
+                    className="absolute top-2 left-2 z-30 pointer-events-none rounded-md border border-cyan-500/60 bg-slate-950/90 px-3 py-2 text-[10px] font-bold tracking-wide text-cyan-200"
+                  >
+                    DEV QA — ARCHITECT IDENTITY ONLY · PHYSICS FROZEN · Ctrl+Alt+Shift+F9 exits
+                  </div>
+                )}
 
                 {performanceDiagnosticsEnabled && (
                   <PerformanceDiagnosticsOverlay

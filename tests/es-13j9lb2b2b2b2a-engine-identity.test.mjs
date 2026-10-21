@@ -27,8 +27,19 @@ test("Private owner is lifecycle-only in the game and no new boss is admitted or
   assert.equal((game.match(/architectEncounterSlotRef\.current = revokeBlackoutArchitectDormantEncounter\(\);/g) ?? []).length, 7);
   assert.equal((game.match(/architectEngineIdentityOwnerRef\.current\?\.beginRun\(\);/g) ?? []).length, 1);
   assert.equal((game.match(/architectEngineIdentityOwnerRef\.current\?\.invalidateRun\(\);/g) ?? []).length, 1);
-  assert.equal((game.match(/architectEngineIdentityOwnerRef\.current\?\.revoke\(\);/g) ?? []).length, 5);
-  assert.doesNotMatch(game, /architectEngineIdentityOwnerRef\.current\??\.admitInstalledBoss/);
+  // Five original cold revocations plus DEV-only teardown and failed-admission rollback.
+  assert.equal((game.match(/architectEngineIdentityOwnerRef\.current\?\.revoke\(\);/g) ?? []).length, 7);
+  // B2B2B2B2B supersedes the blanket ban with a stricter DEV-only one-site rule.
+  assert.equal((game.match(/architectEngineIdentityOwnerRef\.current\?\.admitInstalledBoss\(/g) ?? []).length, 1);
+  const start = game.indexOf("const toggleArchitectQaDiagnostic = () => {");
+  const end = game.indexOf("// --- KEY LISTENER LISTENERS ---", start);
+  assert.ok(start >= 0 && end > start);
+  const devQaOnly = game.slice(start, end);
+  assert.match(devQaOnly, /if \(!import\.meta\.env\.DEV\) return;/);
+  assert.match(devQaOnly, /runtimeProgressionRef\.current\.mode !== "CAMPAIGN"/);
+  assert.match(devQaOnly, /enemiesRef\.current\.push\(candidate\);\s*bossRef\.current = candidate;/);
+  assert.match(devQaOnly, /\.admitInstalledBoss\(/);
+  assert.match(game, /import\.meta\.env\.DEV && e\.ctrlKey && e\.altKey && e\.shiftKey && e\.code === "F9"/);
   assert.doesNotMatch(game, /blackoutArchitectStandaloneCombatBlueprint/);
   assert.doesNotMatch(game, /blackoutArchitectOfflineReferenceAttachment/);
   assert.match(read("src/game/blackoutArchitectDormantEncounterRevocation.ts"), /BlackoutArchitectDormantEncounterSlot = null/);
