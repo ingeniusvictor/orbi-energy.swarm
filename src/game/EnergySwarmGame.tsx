@@ -27,6 +27,7 @@ import {
   revokeBlackoutArchitectDormantEncounter,
   type BlackoutArchitectDormantEncounterSlot,
 } from "./blackoutArchitectDormantEncounterRevocation";
+import { createBlackoutArchitectEngineIdentityLifecycleOwner } from "./blackoutArchitectEngineIdentityLifecycle";
 import {
   countActiveEvolvedEnemies,
   countLivingEnemies,
@@ -440,6 +441,13 @@ export const EnergySwarmGame: React.FC = () => {
   const bossRef = useRef<Enemy | null>(null);
   // Inert, null-only Architect slot: never minted or hit-tested in B2B2A.
   const architectEncounterSlotRef = useRef<BlackoutArchitectDormantEncounterSlot>(null);
+  // B2B2B2B2A: engine-private run epoch and ref guard, cold-only.
+  // No genuine Architect admission is invoked until a future QA-only spawn.
+  const architectEngineIdentityOwnerRef =
+    useRef<ReturnType<typeof createBlackoutArchitectEngineIdentityLifecycleOwner> | null>(null);
+  if (architectEngineIdentityOwnerRef.current === null) {
+    architectEngineIdentityOwnerRef.current = createBlackoutArchitectEngineIdentityLifecycleOwner();
+  }
   const activeBossRematchProfileRef = useRef<InfiniteBossRematchProfile | null>(null);
 
   // High-frequency boss states
@@ -1407,6 +1415,7 @@ export const EnergySwarmGame: React.FC = () => {
     runEndTimeRef.current = 0;
     runCommitLedgerRef.current = createRunCommitLedger();
     architectEncounterSlotRef.current = revokeBlackoutArchitectDormantEncounter();
+    architectEngineIdentityOwnerRef.current?.beginRun();
     collisionTraceRunEpochRef.current = nextBlackoutArchitectCollisionTraceOrdinal(
       collisionTraceRunEpochRef.current,
     );
@@ -2083,6 +2092,7 @@ export const EnergySwarmGame: React.FC = () => {
   // --- CORE GAME OVER TRIGGER ---
   const triggerGameOver = (won: boolean) => {
     architectEncounterSlotRef.current = revokeBlackoutArchitectDormantEncounter();
+    architectEngineIdentityOwnerRef.current?.invalidateRun();
     const scoreAttackAttemptActive =
       scoreAttackActivationRef.current !== null;
     loopActiveRef.current = false;
@@ -2116,6 +2126,7 @@ export const EnergySwarmGame: React.FC = () => {
 
   const enterInfiniteAfterCampaignVictory = () => {
     architectEncounterSlotRef.current = revokeBlackoutArchitectDormantEncounter();
+    architectEngineIdentityOwnerRef.current?.revoke();
     const fresh = loadGameStats();
     const handoff = beginInfiniteAfterCampaignVictory(
       fresh,
@@ -3051,6 +3062,7 @@ export const EnergySwarmGame: React.FC = () => {
   ) => {
     // Legacy boss entry/replacement revokes; never issues an Architect ticket.
     architectEncounterSlotRef.current = revokeBlackoutArchitectDormantEncounter();
+    architectEngineIdentityOwnerRef.current?.revoke();
     enemiesRef.current = [];
     enemyFormationDirectorRef.current =
       createLiveEnemyFormationDirectorState();
@@ -4289,6 +4301,7 @@ export const EnergySwarmGame: React.FC = () => {
     // checkpoint the original campaign victory.
     if (bossDefeatedSequenceTimerRef.current <= 0) {
       architectEncounterSlotRef.current = revokeBlackoutArchitectDormantEncounter();
+      architectEngineIdentityOwnerRef.current?.revoke();
       bossDefeatedSequenceActiveRef.current = false;
 
       if (boss?.milestoneKind === "BOSS_REMATCH") {
@@ -6330,6 +6343,7 @@ export const EnergySwarmGame: React.FC = () => {
                         bossSessionEndTimeRef.current = Date.now();
                       }
                       architectEncounterSlotRef.current = revokeBlackoutArchitectDormantEncounter();
+                      architectEngineIdentityOwnerRef.current?.revoke();
                       bossDefeatedSequenceActiveRef.current = true;
                       bossDefeatedSequenceTimerRef.current = 5000;
                       postDialogue(
@@ -6400,6 +6414,7 @@ export const EnergySwarmGame: React.FC = () => {
                   bossSessionEndTimeRef.current = Date.now();
                 }
                 architectEncounterSlotRef.current = revokeBlackoutArchitectDormantEncounter();
+                architectEngineIdentityOwnerRef.current?.revoke();
                 bossDefeatedSequenceActiveRef.current = true;
                 bossDefeatedSequenceTimerRef.current = 5000;
                 postDialogue(
