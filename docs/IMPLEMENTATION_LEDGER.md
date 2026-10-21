@@ -1158,5 +1158,10 @@ First test run `39677936788` RED on frozen J9A literal ban; corrected without ch
 
 **Not an actual Architect game encounter:** no Engine admission call, spawn, physical cardinal array, hit, projectile consumption, boss AI, damage, GUI, modes, rewards or persistence. Next B2B2B2B2B QA-only boss installation/discriminator adoption remains RESEARCH until DOC88; do not confuse unrelated `NULL_ARCHITECT` or Titan. Preserve Campaign/Infinite/Score Attack, FOTON/RNG/caps and human/device #4/#5/#202/#248 OPEN.
 
+### ES-13DOC88 — DEV-only Architect entity/admission proof path
+Issue #588, docs-only gate, exact baseline `8359d7a600fbddc472e3860b110dad60efc0be84` DOC87 #586/PR #587 pre-PR `39679489055`, PR CI `39679725097`, main CI `39679929755`, Pages `39680054470` GREEN. Gameplay B2B2B2B2A `f601a6bf1fc84c865b8b677917b169770d8f5828` private BOSS_ARCHITECT type/owner exists, no runtime admission.
+
+Conditional B2B2B2B2B: dedicated blueprint-backed QA Enemy factory, dev-only triple-modifier F9 manual toggle during inactive Campaign wave break, install exact object as sole enemy and `bossRef.current` before guarded owner admission, freeze physics while held, display only QA diagnostic title. Revoke+remove atomically on exit and cold lifecycle; restore waves without stats/persistence. Exclude production build/Score Attack/Infinite and old Titan/Devourer/Worm. One prior B2B2B2B2A **phase-specific** test forbids game admission; evolve it to assert exactly one DEV-only gated call and unchanged negative production/non-QA guarantees, no weakening J9A/B2B2A or blueprint frozen tests. Full repo/gameplay/platform/typecheck/release/build/readiness+Android pre-cert and exact-head/main gates required. This certifies a real *QA-only installed entity/reference*, NOT combat geometry/hit/health mutation/attacks or fully playable boss. Manual issues #4/#5/#202/#248 OPEN.
+
 ## Program sequence
 `J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance → ES-14 Living Warfront`

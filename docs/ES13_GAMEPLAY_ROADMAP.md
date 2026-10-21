@@ -1501,6 +1501,9 @@ Gameplay B2B2B2B2A Issue #584 CLOSED PR #585 SHA-guarded MERGED `f601a6bf1fc84c8
 
 The engine now has a private *capability* to issue a reference guard after a future genuinely installed Architect, plus monotonic run epoch. The current runtime never calls `admitInstalledBoss` and no entity is installed; there is no Architect physical world geometry, collider/HP mutation, AI, attack, HUD or playable mode. B2B2B2B2B **DISCOVERY ONLY**, first QA-only explicit opt-in actual boss installation then validated admission, requires independent DOC88. Keep public Campaign/Infinite/Score Attack, `NULL_ARCHITECT`, Devourer/Titan/Worm, FOTON, global enemy/projectile caps and manual #4/#5/#202/#248 unchanged/open.
 
+### ES-13DOC88 — First guarded engine-installed Architect QA milestone
+Authorization pending Issue #588 and full docs CI/Pages; baseline DOC87 `8359d7a600fbddc472e3860b110dad60efc0be84`, #586 PR #587 CI/Pages GREEN (`39679929755`/`39680054470`). NEXT B2B2B2B2B if certified: dedicated BOSS_ARCHITECT prototype factory using proposal HP1920/size58 (still untuned), DEV-only CTRL+ALT+SHIFT+F9 at an empty Campaign wave break, engine installs boss/enemies refs then calls owner admission, frozen diagnostic state, explicit exit revocation and cold tear-down. Test invalid phase/duplicate/restart/foreign reference/production gating. It is not a shipped encounter: **physics frozen**, four cardinal structures and collision/HP/AI/HUD still unimplemented. Update superseded B2B2B2B2A no-game-admission test only with stronger DEV-only and exact-one admission coverage; preserve J9A shared types barrier, seven dormant null slots, legacy bosses, FOTON, modes and caps. Future DOC89+ required for combat mechanics and QA→user release. Manual blockers #4/#5/#202/#248 OPEN.
+
 ## J10 — Expert Risk / Reward
 Status: **PLANNED / DEFERRED — NOT ACTIVE**
 
