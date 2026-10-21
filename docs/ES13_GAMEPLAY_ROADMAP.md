@@ -1068,7 +1068,7 @@ Exact deployment anchors:
 - Issue #473 CLOSED / completed.
 
 ## J9 — Boss & Miniboss Expansion
-Status: **ACTIVE PROGRAM — J9L-B2B2B2B1 DEPLOYED / B2B2B2B2A COLD ENGINE IDENTITY AUTHORIZATION PENDING DOC86 / LIVE SPAWN DISCOVERY ONLY**
+Status: **ACTIVE PROGRAM — J9L-B2B2B2B2A COLD ENGINE GUARD DEPLOYED / B2B2B2B2B QA-ONLY ACTUAL BOSS SPAWN DISCOVERY ONLY**
 
 Blackout Architect, Helios Devourer, Null Choir, Quantum Leviathan, Dyson Breaker, Swarm Sovereign and Singularity Engine remain the long-range J9 vocabulary. New boss work must use phases, destructible zones, affinity/formation pressure, battlefield manipulation and telegraphed vulnerability windows without bypassing existing caps/budgets or certified boss authorities.
 
@@ -1495,6 +1495,11 @@ Status: **DOCS AUTHORIZATION PENDING CI/PAGES**, Issue #575 / source audit #574,
 Conditional B2B2B2B2A authorization: implement *unique* BOSS_ARCHITECT type and optional dedicated identity marker; create private engine-controlled monotonic run epoch/encounter ordinal ledger that authenticates only when a future Architect object occupies the exact engine boss ref and last enemy slot. Hook ledger begin/revoke only on cold lifecycle in EnergySwarmGame, preserve null-only B2B2A slot, freeze during pause/hitstop. **No dedicated spawn is called, no playable boss/hit/collision/AI/UI/mode activation in B2B2B2B2A**; tests simulate admission but do not prove actual live spawn. Never alias `NULL_ARCHITECT` or `TITAN_CORE` and do not copy old HP/anchors/attacks.
 
 After separate DOC87, B2B2B2B2B may wire a genuinely installed QA-only boss and guarded identity, initially inactive in normal modes. Physical 4 anchors, hit arbitration, HP, AI, attacks and HUD need further scoped certification with Android. Preserve Campaign/Infinite/Score Attack, FOTON, MAX_ENEMIES80/MAX_PROJECTILES120 and manual #4/#5/#202/#248 OPEN.
+
+### ES-13DOC87 — Cold engine-owned identity guard certified, no actual boss
+Gameplay B2B2B2B2A Issue #584 CLOSED PR #585 SHA-guarded MERGED `f601a6bf1fc84c865b8b677917b169770d8f5828`, parent DOC86 `3fced4f29285fe2006c14ec20a8f35550b8dcb6e`, tree `a08a7a6f4114ac0e4aab4eac47ca9daea1997e5e` matches clean head `9e2c869a441bd57e421589289b2e2476cdc4b34b`. Five files only: BOSS_ARCHITECT exclusive Enemy enum, type-only dedicated identity tag, cold engine-owner lifecycle, owner module plus two adversarial tests. Original J9A prohibition preserved without weakening. Temporary pre-PR runs `39677936788` / `39678283901` RED (J9A literal and new regex respectively), both corrected; final pre-PR `39678413254` SUCCESS full suites/Android APK; clean PR CI `39678658133` + Android `39678658106` SUCCESS; post-main CI `39678889519`, Android `39678889754`, Pages `39679026821` SUCCESS. DOC86 #582 PR #583 canonical `3fced4f29285fe2006c14ec20a8f35550b8dcb6e`, pre-cert `39676260750`, PR CI `39676541420`, main CI `39676769814`, Pages `39676917499` GREEN.
+
+The engine now has a private *capability* to issue a reference guard after a future genuinely installed Architect, plus monotonic run epoch. The current runtime never calls `admitInstalledBoss` and no entity is installed; there is no Architect physical world geometry, collider/HP mutation, AI, attack, HUD or playable mode. B2B2B2B2B **DISCOVERY ONLY**, first QA-only explicit opt-in actual boss installation then validated admission, requires independent DOC88. Keep public Campaign/Infinite/Score Attack, `NULL_ARCHITECT`, Devourer/Titan/Worm, FOTON, global enemy/projectile caps and manual #4/#5/#202/#248 unchanged/open.
 
 ## J10 — Expert Risk / Reward
 Status: **PLANNED / DEFERRED — NOT ACTIVE**
