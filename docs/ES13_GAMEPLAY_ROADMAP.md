@@ -1068,7 +1068,7 @@ Exact deployment anchors:
 - Issue #473 CLOSED / completed.
 
 ## J9 — Boss & Miniboss Expansion
-Status: **ACTIVE PROGRAM — J9L-B2B2B2A DEPLOYED / B2B2B2B AUTHENTIC LIVE ARCHITECT DISCOVERY ONLY**
+Status: **ACTIVE PROGRAM — J9L-B2B2B2A DEPLOYED / B2B2B2B1 BLUEPRINT AUTHORIZATION PENDING DOC84 / ACTUAL LIVE ARCHITECT DISCOVERY ONLY**
 
 Blackout Architect, Helios Devourer, Null Choir, Quantum Leviathan, Dyson Breaker, Swarm Sovereign and Singularity Engine remain the long-range J9 vocabulary. New boss work must use phases, destructible zones, affinity/formation pressure, battlefield manipulation and telegraphed vulnerability windows without bypassing existing caps/budgets or certified boss authorities.
 
@@ -1476,6 +1476,11 @@ Status: **DOCUMENT AUTHORIZATION ONLY — NO B2B2B2 ENGINE CODE**. Issue #568; s
 **DEPLOYED / FROZEN offline prototype; not gameplay boss admission.** Issue #570 CLOSED PR #571 MERGED, gameplay canonical `4b82f41d2344cbe98a88c95d46adca660aad930e`, parent DOC82 `1889ec8a4abf2fb9b1d96db4ffdbd65788ea98ca`, tree `9dfdcf9b6e96f7c198e70eaddabf28294316e638` equals clean PR head `61f6a50c994be86f3cb961081f6add5bce3b1d69`. Three added files (offline owner and focused static/gameplay tests), no engine/import/collision/type modifications. Pre-PR `39459524694` full test/Android APK GREEN, exact-head PR CI `39459814047` and Android `39459814187` GREEN; post-main CI `39460042782`, Android `39460042700`, Pages `39460167294` GREEN. DOC82 Issue #568 PR #569 certified docs `1889ec8a4abf2fb9b1d96db4ffdbd65788ea98ca`, pre-PR `39458376909`, PR CI `39458598896`, main CI `39458794428`, Pages `39458920658` GREEN.
 
 Offline attachment requires B2B2B1 factory's latest identity, caller claimed valid epoch and caller supplied object reference; spoofed clone/cross-owner/invalid/replaced references cannot remain current. Successful `ATTACHMENT_REHEARSAL_ONLY` is *never* engine-issued: authentic boss identity, four physical cardinal anchors, collision/consumption, damage, health, attacks, phases, rendering, modes and rewards all false. No `BLACKOUT_ARCHITECT` live spawn. **Next B2B2B2B: DISCOVERY ONLY** of a true dedicated spawn with engine-owned epoch/ordinal bound to genuinely installed boss, independent balancing and lifecycle; any real engine code requires separate DOC84 certification. Preserve `NULL_ARCHITECT` rematch, Titan/Devourer/Worm, Campaign/Infinite/Score Attack, FOTON, RNG/caps. Human/device blockers #4/#5/#202/#248 remain OPEN.
+
+### ES-13DOC84 — Dedicated Architect combat blueprint before live spawn
+Status: **DOCS AUTHORIZATION PENDING CI/PAGES**, Issue #575 / source audit #574, baseline `609b91cf2b13ff9480d120a677868fd30ed5c3ad` DOC83 #572 PR #573 certified pre-PR `39655068469`, PR CI `39655314483`, main CI `39655530010`, Pages `39655686518` SUCCESS.
+
+**Design proposal, not existing facts or approved balance:** B2B2B2B1 only, separate pure frozen `BLACKOUT_ARCHITECT` blueprint (no reuse of existing Titan identity or attack tables): core proposed HP1920/size58, 4 cardinal anchor HP135/radius13 and offsets N(0,-106), E(116,0), S(0,106), W(-116,0), phase gates 0.68/0.32, proposed exposed window 3700ms, independent telegraphed attack design IDs GRID_LOCK, VECTOR_TIDE, SECTOR_WALL, bounded <=8 shots. Validate world dimensions 1600x960 and preserve MAX_ENEMIES80/MAX_PROJECTILES120. Numbers are editable in future phases, never silently copied from Titan HP2400/anchors180/exposure6000. Authorizes only isolated source + static/gameplay tests; no runtime import, issuance, boss spawn, cardinal world arrays, damage or projectile consumption, collision/provenance, attack/hud/route/rewards. All live authority flags false. **Dedicated live boss B2B2B2B2** must receive separate DOC85 plus full code tests and Android/Pages gates. Manual blockers #4/#5/#202/#248 remain OPEN.
 
 ## J10 — Expert Risk / Reward
 Status: **PLANNED / DEFERRED — NOT ACTIVE**
