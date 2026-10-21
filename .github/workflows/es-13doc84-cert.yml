@@ -1,0 +1,33 @@
+name: ES-13DOC84 full docs certification
+on:
+  push:
+    branches:
+      - docs/es-13-doc84-architect-blueprint
+permissions:
+  contents: read
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Full repository gameplay platform
+        run: npm run test:repo && npm run test:gameplay && npm run test:platform
+      - run: npm run typecheck
+      - run: npm run release:verify
+      - run: npm run release:evidence:verify
+      - run: npm run build
+      - name: Release readiness
+        env:
+          ORBI_RELEASE_SHA: ${{ github.sha }}
+        run: npm run release:readiness -- --output release-readiness.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: es-13doc84-readiness-${{ github.sha }}
+          path: release-readiness.json
+          if-no-files-found: error
