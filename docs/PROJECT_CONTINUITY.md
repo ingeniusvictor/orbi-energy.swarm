@@ -18,10 +18,10 @@ Never infer deployment/certification from conversation text alone.
 
 ## Current certified gameplay canonical
 
-`eb170a87cb7dbb35cba5d278d6f92c8fc70a901a`
+`4b82f41d2344cbe98a88c95d46adca660aad930e`
 
-Phase: **ES-13J9L-B2B2B1 — Isolated Offline Architect Candidate Owner**
-Status: **DEPLOYED / FROZEN**, Issue #563 CLOSED / PR #564 MERGED.
+Phase: **ES-13J9L-B2B2B2A — Isolated Offline Architect Reference Attachment Rehearsal**
+Status: **DEPLOYED / FROZEN**, Issue #570 CLOSED / PR #571 MERGED.
 No live boss, genuine engine issuance, physical anchors, projectile impacts, HP or damage. Version remains `0.2.0-beta.1`; manual physical RC evidence deferred while ES-13 evolves.
 
 ## J4C-C result
@@ -1498,6 +1498,15 @@ Status: **DOCUMENT AUTHORIZATION ONLY — NO B2B2B2 ENGINE CODE**. Issue #568; s
 
 **Later B2B2B2B genuine engine admission:** DISCOVERY ONLY / NOT AUTHORIZED. Requires independently selected Architect-specific boss entity discriminator and dedicated successful spawn path (not `NULL_ARCHITECT` or Titan), safe engine-issued encounter ordinal and actual `bossRef` ownership plus reliable rollback/revocation; separate physical 4-cardinal HP/geometry, collision ordering and exclusive projectile-consumption, boss balance/attack/phase/UI/modes/reward authorization. No TSX edits in DOC82 or B2B2B2A. Manual blockers #4/#5/#202/#248 OPEN. DOC82 itself requires isolated 3-doc branch, full pre-PR certification, clean PR CI, SHA-guarded squash and exact canonical main CI+Pages before authorizing B2B2B2A.
 
+### ES-13DOC83 — Close certified offline reference rehearsal
+**Docs-only closure, Issue #572.** Gameplay B2B2B2A Issue #570 CLOSED, PR #571 SHA-guarded squash MERGED: canonical `4b82f41d2344cbe98a88c95d46adca660aad930e`, parent DOC82 `1889ec8a4abf2fb9b1d96db4ffdbd65788ea98ca`; exact gameplay tree `9dfdcf9b6e96f7c198e70eaddabf28294316e638` equals clean PR head `61f6a50c994be86f3cb961081f6add5bce3b1d69`. Exactly three additions: isolated `src/game/blackoutArchitectOfflineReferenceAttachment.ts`, static and gameplay tests; no changes to engine, boss, collision, types or modes. Pre-PR full cert `39459524694` SUCCESS incl Android APK, clean PR CI `39459814047` and Android `39459814187` SUCCESS, post-main CI `39460042782`, Android `39460042700` (uploaded verified APK), Pages `39460167294` SUCCESS.
+
+The closure-private attachment requires a factory-current frozen `FACTORY_ONLY` candidate, caller-provided positive safe claimed epoch, and exact opaque object reference; stale/clone/cross-factory/mismatched candidates and duplicate attachments are rejected. It emits frozen `ATTACHMENT_REHEARSAL_ONLY` with all engine-issuance, actual boss identity, physics provenance, cardinal geometry, collision, consumption, health/damage, attacks/mode and rewards/persistence authorities **false**. Caller-owned objects and epochs remain untrusted. **BLACKOUT_ARCHITECT is not spawned or live**. Legacy `NULL_ARCHITECT`, `TITAN_CORE`, Campaign, Infinite, Score Attack, Devourer/Titan/Worm, FOTON, RNG and caps unchanged.
+
+DOC82 Issue #568 / PR #569 docs canonical `1889ec8a4abf2fb9b1d96db4ffdbd65788ea98ca`, pre-PR `39458376909`, PR CI `39458598896`, main CI `39458794428`, Pages `39458920658` GREEN. Research #567 CLOSED.
+
+**Next B2B2B2B: source-led DISCOVERY ONLY** — dedicated authentic `BLACKOUT_ARCHITECT` boss route; independently specified entity identity, balance and real engine-owned epoch/ordinal attached only after successful actual `bossRef` installation; safe revocation; separately authorized physical cardinal anchors, single-shot collision/HP/damage, phases/attacks/UI. Requires independent DOC84 before any implementation. Manual blockers #4/#5/#202/#248 OPEN.
+
 ## Resolved diagnostics
 - #254 CLOSED / NOT PLANNED: historical platform failure was not an I5 pause regression; no product merge.
 - #283 CLOSED / NOT PLANNED: stale-chat false start; no branch/product work.
@@ -1533,7 +1542,7 @@ Post-J15 direction: **ES-14 — Living Warfront**.
 Read this file, `IMPLEMENTATION_LEDGER.md`, `ES13_GAMEPLAY_ROADMAP.md`, `TRACEABILITY_POLICY.md` and `ES13_PHASE_CHECKLIST.md`, then active Issues/PRs. Verify live `main` before any write.
 
 Suggested handoff:
-> Verify GitHub LIVE main before changing. Gameplay canonical `eb170a87cb7dbb35cba5d278d6f92c8fc70a901a` B2B2B1 (Issue #563 / PR #564), offline `FACTORY_ONLY` candidate owner, CI/Android/Pages GREEN; DOC81 closes evidence. B2B2B2 real engine-owned Architect spawn/identity DISCOVERY ONLY — no live boss, geometry, hit or damage. Preserve legacy NULL_ARCHITECT, Titan/Devourer/Worm, Campaign/Infinite/Score Attack, FOTON/caps and manual #4/#5/#202/#248; follow Issue→exact branch→full cert+Android→PR exact-head CI/Android→guarded squash→main CI/Android/Pages→DOC closure.
+> Verify GitHub live first. Gameplay B2B2B2A canonical `4b82f41d2344cbe98a88c95d46adca660aad930e`, Issue #570/PR #571 certified CI+Android+Pages. Offline `ATTACHMENT_REHEARSAL_ONLY` never engine-trusted; DOC83 #572 docs-only closure. B2B2B2B authentic Architect spawn DISCOVERY ONLY; no boss/anchors/hit/HP. Protect legacy `NULL_ARCHITECT` and Titan/Devourer/Worm, Campaign/Infinite/Score Attack, FOTON, caps; keep manual #4/#5/#202/#248 OPEN. Follow exact SHA-gated certification each stage.
 
 ## Update obligation
 Every merged gameplay phase must record exact gameplay canonical, Issue/PR, final head, pre-PR certification, PR CI/Android, main CI/Android/Pages, implementation result, unresolved follow-ups and next roadmap phase. A gameplay phase is not administratively closed until these records are current.
