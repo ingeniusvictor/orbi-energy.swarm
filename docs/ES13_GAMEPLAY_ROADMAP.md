@@ -1068,7 +1068,7 @@ Exact deployment anchors:
 - Issue #473 CLOSED / completed.
 
 ## J9 — Boss & Miniboss Expansion
-Status: **ACTIVE PROGRAM — J9L-B2B2B2A DEPLOYED / B2B2B2B1 BLUEPRINT AUTHORIZATION PENDING DOC84 / ACTUAL LIVE ARCHITECT DISCOVERY ONLY**
+Status: **ACTIVE PROGRAM — J9L-B2B2B2B1 DEPLOYED / B2B2B2B2 AUTHENTIC ENGINE ARCHITECT DISCOVERY ONLY**
 
 Blackout Architect, Helios Devourer, Null Choir, Quantum Leviathan, Dyson Breaker, Swarm Sovereign and Singularity Engine remain the long-range J9 vocabulary. New boss work must use phases, destructible zones, affinity/formation pressure, battlefield manipulation and telegraphed vulnerability windows without bypassing existing caps/budgets or certified boss authorities.
 
@@ -1481,6 +1481,13 @@ Offline attachment requires B2B2B1 factory's latest identity, caller claimed val
 Status: **DOCS AUTHORIZATION PENDING CI/PAGES**, Issue #575 / source audit #574, baseline `609b91cf2b13ff9480d120a677868fd30ed5c3ad` DOC83 #572 PR #573 certified pre-PR `39655068469`, PR CI `39655314483`, main CI `39655530010`, Pages `39655686518` SUCCESS.
 
 **Design proposal, not existing facts or approved balance:** B2B2B2B1 only, separate pure frozen `BLACKOUT_ARCHITECT` blueprint (no reuse of existing Titan identity or attack tables): core proposed HP1920/size58, 4 cardinal anchor HP135/radius13 and offsets N(0,-106), E(116,0), S(0,106), W(-116,0), phase gates 0.68/0.32, proposed exposed window 3700ms, independent telegraphed attack design IDs GRID_LOCK, VECTOR_TIDE, SECTOR_WALL, bounded <=8 shots. Validate world dimensions 1600x960 and preserve MAX_ENEMIES80/MAX_PROJECTILES120. Numbers are editable in future phases, never silently copied from Titan HP2400/anchors180/exposure6000. Authorizes only isolated source + static/gameplay tests; no runtime import, issuance, boss spawn, cardinal world arrays, damage or projectile consumption, collision/provenance, attack/hud/route/rewards. All live authority flags false. **Dedicated live boss B2B2B2B2** must receive separate DOC85 plus full code tests and Android/Pages gates. Manual blockers #4/#5/#202/#248 remain OPEN.
+
+### ES-13DOC85 — Independent Architect blueprint delivered; next engine integration gated
+**J9L-B2B2B2B1 DEPLOYED / FROZEN, DESIGN ONLY**. Issue #577 CLOSED PR #578 MERGED canonical `9d8bb2f9abef208e3ad76a8cf97e2218a5d5dbd7`, sole parent DOC84 `d6f4f2e5eaa4e7bb3ea5f7d5a468fc071e5f7061`, tree `f9f45aeac9783098c01b1b5f8e871f7949e7eba9` matches clean PR head `b41f79d72262c6b955e80763b2de8d333904417b`. New profile+two tests only. Pre-cert initial RED `39657984436` TS2367 test assertion, fixed without weakening; final pre-PR `39658223056` full CI/Android APK GREEN, PR CI `39658522225` and Android `39658522265` GREEN; main CI `39658756297`, Android `39658755604`, Pages `39658867703` GREEN.
+
+**Proposed independently tunable design**, not actual gameplay balance: core HP1920 size58, four hypothetical NORTH/EAST/SOUTH/WEST HP135/radius13/offsets N(0,-106)/E(116,0)/S(0,106)/W(-116,0), phase gates 0.68/0.32, suggested exposure 3700ms, attack idea IDs GRID_LOCK/VECTOR_TIDE/SECTOR_WALL. All numbers newly proposed. Deep freeze and coordinates bounded by 1600×960; max suggested burst8 <= global MAX_PROJECTILES120. Design blueprint has all engine issuance, physical anchor geometry, hit, consume, HP/damage, AI, HUD, mode and reward authority false; never imported into runtime. DOC84 #575 PR #576 canonical `d6f4f2e5eaa4e7bb3ea5f7d5a468fc071e5f7061`, pre-PR `39656743445`, PR CI `39657005167`, main CI `39657237739`, Pages `39657364201` SUCCESS.
+
+**Next B2B2B2B2: SOURCE DISCOVERY ONLY**: genuine independent boss type, factory, run epoch/encounter ordinal only after success installing actual `bossRef`, separate attacks/AI/render/HUD and safely bounded physical cardinals, collisions/consumption, HP and modes. Requires DOC86 authorization, new code Issue, exact CI+Android+Pages; do not inherit Titan HP2400/anchor180/exposure6000. Preserve legacy `NULL_ARCHITECT`, Campaign/Infinite/Score Attack, Devourer/Titan/Worm, FOTON/caps and blockers #4/#5/#202/#248.
 
 ## J10 — Expert Risk / Reward
 Status: **PLANNED / DEFERRED — NOT ACTIVE**

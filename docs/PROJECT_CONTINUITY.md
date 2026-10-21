@@ -18,10 +18,10 @@ Never infer deployment/certification from conversation text alone.
 
 ## Current certified gameplay canonical
 
-`4b82f41d2344cbe98a88c95d46adca660aad930e`
+`9d8bb2f9abef208e3ad76a8cf97e2218a5d5dbd7`
 
-Phase: **ES-13J9L-B2B2B2A — Isolated Offline Architect Reference Attachment Rehearsal**
-Status: **DEPLOYED / FROZEN**, Issue #570 CLOSED / PR #571 MERGED.
+Phase: **ES-13J9L-B2B2B2B1 — Standalone Original Architect Combat Blueprint**
+Status: **DEPLOYED / FROZEN, BLUEPRINT_ONLY**, Issue #577 CLOSED / PR #578 MERGED.
 No live boss, genuine engine issuance, physical anchors, projectile impacts, HP or damage. Version remains `0.2.0-beta.1`; manual physical RC evidence deferred while ES-13 evolves.
 
 ## J4C-C result
@@ -1516,6 +1516,13 @@ Audit: `types.ts:139-180` lacks a BOSS_ARCHITECT type, `NULL_ARCHITECT` is a dis
 
 Real B2B2B2B2 boss admission, physics/cardinal collision and UI remain **DISCOVERY ONLY** until separate DOC85 and independent exact-SHA gameplay tests/Android/Pages. Preserve legacy `NULL_ARCHITECT`, Devourer/Titan/Worm, Campaign/Infinite/Score Attack, FOTON, caps and human/device #4/#5/#202/#248 OPEN.
 
+### ES-13DOC85 — B2B2B2B1 original Architect design blueprint closure
+**DOCS-ONLY certification**, Issue #579. Gameplay B2B2B2B1 Issue #577 CLOSED, PR #578 SHA-guarded squash MERGED canonical `9d8bb2f9abef208e3ad76a8cf97e2218a5d5dbd7` sole parent DOC84 `d6f4f2e5eaa4e7bb3ea5f7d5a468fc071e5f7061`; tree `f9f45aeac9783098c01b1b5f8e871f7949e7eba9` equals clean head `b41f79d72262c6b955e80763b2de8d333904417b`. Exactly three new files: `src/game/blackoutArchitectStandaloneCombatBlueprint.ts`, static isolation test and gameplay adversarial tests; existing live engine unchanged. First pre-cert `39657984436` RED only TS2367 literal comparison in test; corrected without removing non-Titan exposure regression. Final full pre-cert `39658223056` GREEN incl verified/uploaded Android APK; clean PR CI `39658522225` and Android `39658522265` GREEN; post-main CI `39658756297`, Android `39658755604` (uploaded APK), Pages `39658867703` GREEN.
+
+**Provisional design, not live mechanics:** `BLACKOUT_ARCHITECT / BATTLEFIELD_CONTROL / BLUEPRINT_ONLY / PROVISIONAL_UNTUNED` core HP1920, visual size58, four hypothetical NORTH/EAST/SOUTH/WEST anchor centers with HP135/radius13 at signed offsets (0,-106),(116,0),(0,106),(-116,0), phase thresholds 0.68/0.32, suggested exposed duration3700ms, independent GRID_LOCK/VECTOR_TIDE/SECTOR_WALL design IDs with telegraphs >=1200ms and <=8 suggested projectiles. Values are **new design proposals**, not verified existing balance. Nested profile and candidate coordinate projections are frozen, bounded by world size 1600x960, fail closed for invalid inputs; **actual engine issuance, physical anchors, collisions, consumption, HP mutation, damage, attacks, HUD, modes and rewards remain false/unauthorized**. No import into `EnergySwarmGame.tsx`, `types.ts` or `bossChassis.ts`.
+
+DOC84 Issue #575 CLOSED PR #576 docs main `d6f4f2e5eaa4e7bb3ea5f7d5a468fc071e5f7061`, pre-cert `39656743445`, PR CI `39657005167`, main CI `39657237739`, Pages `39657364201` GREEN; source research #574 CLOSED. **Next B2B2B2B2 real engine-owned Architect spawn: DISCOVERY ONLY** until separate DOC86 source audit/auth, successful dedicated boss object installation and guarded epoch/ordinal, independent AI, physical cardinals, collision and UI. Preserve unrelated `NULL_ARCHITECT`, Titan/Devourer/Worm, Campaign/Infinite/Score Attack, FOTON/caps, human/device #4/#5/#202/#248 OPEN.
+
 ## Resolved diagnostics
 - #254 CLOSED / NOT PLANNED: historical platform failure was not an I5 pause regression; no product merge.
 - #283 CLOSED / NOT PLANNED: stale-chat false start; no branch/product work.
@@ -1551,7 +1558,7 @@ Post-J15 direction: **ES-14 — Living Warfront**.
 Read this file, `IMPLEMENTATION_LEDGER.md`, `ES13_GAMEPLAY_ROADMAP.md`, `TRACEABILITY_POLICY.md` and `ES13_PHASE_CHECKLIST.md`, then active Issues/PRs. Verify live `main` before any write.
 
 Suggested handoff:
-> Verify GitHub live first. Gameplay B2B2B2A canonical `4b82f41d2344cbe98a88c95d46adca660aad930e`, Issue #570/PR #571 certified CI+Android+Pages. Offline `ATTACHMENT_REHEARSAL_ONLY` never engine-trusted; DOC83 #572 docs-only closure. B2B2B2B authentic Architect spawn DISCOVERY ONLY; no boss/anchors/hit/HP. Protect legacy `NULL_ARCHITECT` and Titan/Devourer/Worm, Campaign/Infinite/Score Attack, FOTON, caps; keep manual #4/#5/#202/#248 OPEN. Follow exact SHA-gated certification each stage.
+> Verify GitHub LIVE before work. Latest gameplay canonical `9d8bb2f9abef208e3ad76a8cf97e2218a5d5dbd7` B2B2B2B1 #577/PR #578, isolated `BLUEPRINT_ONLY` proposed Architect HP/4 cardinal ideas/phases/attacks; CI+Android+Pages exact SHA GREEN; DOC85 #579 closure. No real Architect encounter, geometry/hit/HP. Actual dedicated engine spawn B2B2B2B2 DISCOVERY ONLY until separate DOC86, preserve legacy NULL_ARCHITECT, Titan/Devourer/Worm, FOTON/modes, #4/#5/#202/#248 OPEN.
 
 ## Update obligation
 Every merged gameplay phase must record exact gameplay canonical, Issue/PR, final head, pre-PR certification, PR CI/Android, main CI/Android/Pages, implementation result, unresolved follow-ups and next roadmap phase. A gameplay phase is not administratively closed until these records are current.

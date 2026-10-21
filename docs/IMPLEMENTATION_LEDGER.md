@@ -91,6 +91,7 @@ Rules:
 | ES-13J9L-B2B2A — Engine Dormant Encounter Revocation | DEPLOYED / FROZEN | `8bab0f3656d84ef65d24eecba4a72f96707c2341` | #556 | #557 |
 | ES-13J9L-B2B2B1 — Isolated Offline Architect Candidate Owner | DEPLOYED / FROZEN | `eb170a87cb7dbb35cba5d278d6f92c8fc70a901a` | #563 | #564 |
 | ES-13J9L-B2B2B2A — Isolated Offline Reference Attachment | DEPLOYED / FROZEN | `4b82f41d2344cbe98a88c95d46adca660aad930e` | #570 | #571 |
+| ES-13J9L-B2B2B2B1 — Standalone Architect Combat Blueprint | DEPLOYED / FROZEN | `9d8bb2f9abef208e3ad76a8cf97e2218a5d5dbd7` | #577 | #578 |
 
 ## Evidence anchors
 
@@ -1136,6 +1137,11 @@ DOC84 Issue #575 is **docs-only, pending exact-SHA gates**, based on `609b91cf2b
 If DOC84 passes, permit only **B2B2B2B1** an isolated, pure deeply frozen original `BLACKOUT_ARCHITECT` combat blueprint and two new focused tests. Proposed mutable-for-design (not runtime) numbers: core HP1920 size58, 4 cardinal NORTH/EAST/SOUTH/WEST anchor HP135 radius13 with unique offsets (+/-106 Y,+/-116 X), health phase fractions 0.68/0.32, 3700ms exposure, attack idea GRID_LOCK/VECTOR_TIDE/SECTOR_WALL and >=1200ms telegraph, <=8 proposed projectiles. Not derived from source and **not certified gameplay balance**; future editing requires independent gameplay authorization. Explicitly no engine boss/admission/AI/hits/collision/consumption/HP write/mode/reward/HUD, no imports in `EnergySwarmGame.tsx`, `types.ts`, `bossChassis.ts`; all live authorities false. Keep MAX_ENEMIES=80/MAX_PROJECTILES=120 and FOTON/legacy modes unchanged.
 
 Subsequent genuine dedicated B2B2B2B2 spawn/identity and physical cardinals remain DISCOVERY ONLY pending separate DOC85. Manual #4/#5/#202/#248 OPEN.
+
+### ES-13DOC85 — Architect independent combat design certified, not live
+Gameplay B2B2B2B1 Issue #577 CLOSED / PR #578 SHA-guarded squash MERGED canonical `9d8bb2f9abef208e3ad76a8cf97e2218a5d5dbd7`, parent DOC84 `d6f4f2e5eaa4e7bb3ea5f7d5a468fc071e5f7061`, tree `f9f45aeac9783098c01b1b5f8e871f7949e7eba9` equals clean head `b41f79d72262c6b955e80763b2de8d333904417b`. Exactly 3 new isolated source/static/gameplay files. Initial pre-cert `39657984436` RED only test-only TS2367 comparing literal 3700 and 6000; corrected preserving test. Final full pre-cert `39658223056` SUCCESS focused/full + Android APK verify/upload; clean PR CI `39658522225`, Android `39658522265` SUCCESS, post-main CI `39658756297`, Android `39658755604`, Pages `39658867703` SUCCESS on exact canonical.
+
+`BLACKOUT_ARCHITECT/BLUEPRINT_ONLY/PROVISIONAL_UNTUNED` includes *design proposals* core HP1920, size58, four hypothetical cardinal HP135 radius13 at N/E/S/W offsets 106Y/116X, phases 0.68/0.32, exposure 3700ms and GRID_LOCK/VECTOR_TIDE/SECTOR_WALL attack idea budgets <=8. Deeply frozen proposals and bounded hypothetical positional projections only. No authentication, real physical anchors, boss installation, collision, damage, HP writes, attack execution, rendering, modes, rewards or persistence; live game never imports blueprint. Existing Titan/Devourer/Worm and `NULL_ARCHITECT` family unchanged. DOC84 Issue #575 PR #576 docs canonical `d6f4f2e5eaa4e7bb3ea5f7d5a468fc071e5f7061`, pre-cert `39656743445`, PR CI `39657005167`, main CI `39657237739`, Pages `39657364201` GREEN. Next B2B2B2B2 genuine spawn/engine issuance is **DISCOVERY ONLY** and needs DOC86. Manual #4/#5/#202/#248 still OPEN.
 
 ## Program sequence
 `J7 Bonus Rounds → J8 Additional Modes → J9 Boss Expansion → J10 Expert Risk/Reward → J11 Build/Synergy → J12 Rare/Secret Encounters → J13 Score/Rank/Mastery → J14 Procedural Matrix → J15 Integration/Balance → ES-14 Living Warfront`
