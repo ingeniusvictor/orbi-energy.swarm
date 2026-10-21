@@ -18,10 +18,10 @@ Never infer deployment/certification from conversation text alone.
 
 ## Current certified gameplay canonical
 
-`f601a6bf1fc84c865b8b677917b169770d8f5828`
+`8468311ddb3ec77f0d7bae490347ef6c5b61a706`
 
-Phase: **ES-13J9L-B2B2B2B2A — Architect Unique Enemy Type and Cold Engine Identity Guard**
-Status: **DEPLOYED / FROZEN (COLD IDENTITY ONLY)**, Issue #584 CLOSED / PR #585 MERGED.
+Phase: **ES-13J9L-B2B2B2B2B — DEV-only Architect QA Installed Reference**
+Status: **DEPLOYED / FROZEN (QA ONLY, PHYSICS FROZEN)**, Issue #590 CLOSED / PR #591 MERGED.
 No live boss, genuine engine issuance, physical anchors, projectile impacts, HP or damage. Version remains `0.2.0-beta.1`; manual physical RC evidence deferred while ES-13 evolves.
 
 ## J4C-C result
@@ -1546,6 +1546,15 @@ Conditional next code B2B2B2B2B: Vite `import.meta.env.DEV` **only**, CTRL+ALT+S
 
 Earlier phase-specific test `tests/es-13j9lb2b2b2b2a-engine-identity.test.mjs` disallowed *any* `admitInstalledBoss` in Game: separately authorize a narrow update replacing that prohibition by a **positive static DEV-only gate assertion** and an exact-one-admission bound; do not weaken historical J9A no-profile-literal, B2B2A null-only seven revocations, independent blueprint and offline assertions. Add QA static and gameplay regression tests. Future physical four anchors, genuine collision/HP, AI/attacks, HUD and playable release demand separate DOC89+. Keep #4/#5/#202/#248 OPEN, Campaign/Infinite/Score Attack and FOTON untouched.
 
+### ES-13DOC89 — Close real DEV-only Architect reference-admission diagnostic
+Status: **DOCS-ONLY CLOSURE UNDER CERTIFICATION**, Issue #592. Gameplay B2B2B2B2B Issue #590 CLOSED, PR #591 guarded squash MERGED `8468311ddb3ec77f0d7bae490347ef6c5b61a706`, sole parent DOC88 `af04f25584cb8763a63a57db228eb46c177b0bd0`, tree `d73b23662de6244fe98faf762ae514d3b58feeaa` identical clean head `08c533bdddfe7427b78f101fb564474b6e256979`. Exactly 5 files: `EnergySwarmGame.tsx` guarded QA, new `blackoutArchitectDevQaBossFactory.ts`, prior static phase assertion intentionally upgraded from no-admission to one DEV-only admission, new static and gameplay tests. No weakening J9A literal barrier, B2B2A null-only 7 revocations or B2B2B2B1 profile isolation.
+
+First pre-cert `39691227253` failed outdated test expecting only 5 owner revokes; corrected it to require 7 (five original cold + 2 QA exit/rollback). Final full pre-PR cert `39691335146` GREEN focused/repo/gameplay/platform/typecheck/release/evidence/build/readiness plus verified uploaded APK (temp helper removed). PR CI `39691602229`, Android `39691602243`, post-main CI `39691842436`, Android `39691842359` uploaded APK, Pages build/deploy `39691961919` all SUCCESS exact SHAs. DOC88 Issue #588 CLOSED PR #589 docs canonical `af04f25584cb8763a63a57db228eb46c177b0bd0`, pre-PR `39690041017`, PR CI `39690196770`, main CI `39690359122`, Pages `39690474184` SUCCESS.
+
+**First game-engine installed object, DEV QA only, not a playable Architect:** explicit CTRL+ALT+SHIFT+F9 in running empty between-wave Campaign session under Vite `import.meta.env.DEV` creates a unique `BOSS_ARCHITECT` Enemy based on *provisional* core HP1920/size58 design, installs same object into `enemiesRef.current` and `bossRef.current`, only THEN admits via private owner identity guard, reverses atomically on failed admission, freezes all physics/waves/projectiles/AI while QA held, displays DEV-only label; same chord or cold lifecycle revokes/removes it. `bossActiveRef` is not enabled, public build has no enabled QA hotkey, Infinite/Score Attack do not route to it. No browser/manual keyboard interaction or real-device graphics demonstration is claimed, only CI/static/gameplay tests and Android APK build. **Physical four cardinals, hits, collision arbitration, HP/damage, AI/attacks, gameplay HUD/rewards and normal player activation are still unimplemented**.
+
+Next B2B2B2B2C requires a separate source-audited DOC90 plan to incrementally implement DEV QA dedicated presentation and cardinal *physical geometry* with verified safety; collision single-consume and boss damage/attacks must remain independently gated. Manual/device #4/#5/#202/#248 OPEN; preserve legacy NULL_ARCHITECT/Devourer/Titan/Worm, Campaign/Infinite/Score Attack, FOTON, RNG and caps.
+
 ## Resolved diagnostics
 - #254 CLOSED / NOT PLANNED: historical platform failure was not an I5 pause regression; no product merge.
 - #283 CLOSED / NOT PLANNED: stale-chat false start; no branch/product work.
@@ -1581,7 +1590,7 @@ Post-J15 direction: **ES-14 — Living Warfront**.
 Read this file, `IMPLEMENTATION_LEDGER.md`, `ES13_GAMEPLAY_ROADMAP.md`, `TRACEABILITY_POLICY.md` and `ES13_PHASE_CHECKLIST.md`, then active Issues/PRs. Verify live `main` before any write.
 
 Suggested handoff:
-> Verify live GitHub main before write. Last gameplay `f601a6bf1fc84c865b8b677917b169770d8f5828` B2B2B2B2A Issue #584/PR #585, CI/Android/Pages exact-SHA GREEN: unique BOSS_ARCHITECT and cold run/identity guard, **NO ACTUAL BOSS SPAWN OR HIT**. DOC87 Issue #586 closure is next; DOC88 must separately authorize QA-only genuine Architect installation and admission. Maintain NULL_ARCHITECT/Titan/Devourer/Worm, Campaign/Infinite/Score Attack, FOTON/caps and manual #4/#5/#202/#248. Preserve SHA-gated Issue/branch/tests/PR/merge/main/Pages discipline.
+> Verify GitHub LIVE. Gameplay canonical `8468311ddb3ec77f0d7bae490347ef6c5b61a706` #590 PR #591, QA-only DEV manual F9 triple modifier installed boss object and private guarded identity; full CI/Android/Pages exact SHA GREEN, **not playable combat**. DOC89 #592 closure next; physical cardinals, collision arbitration, damage, AI/HUD/release need DOC90+. Keep seven dormant null-only hooks, legacy NULL_ARCHITECT/Titan/Devourer/Worm, Campaign/Infinite/Score Attack, FOTON/caps, manual #4/#5/#202/#248 OPEN.
 
 ## Update obligation
 Every merged gameplay phase must record exact gameplay canonical, Issue/PR, final head, pre-PR certification, PR CI/Android, main CI/Android/Pages, implementation result, unresolved follow-ups and next roadmap phase. A gameplay phase is not administratively closed until these records are current.

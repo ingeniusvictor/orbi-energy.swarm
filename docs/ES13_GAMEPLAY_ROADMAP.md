@@ -1068,7 +1068,7 @@ Exact deployment anchors:
 - Issue #473 CLOSED / completed.
 
 ## J9 — Boss & Miniboss Expansion
-Status: **ACTIVE PROGRAM — J9L-B2B2B2B2A COLD ENGINE GUARD DEPLOYED / B2B2B2B2B QA-ONLY ACTUAL BOSS SPAWN DISCOVERY ONLY**
+Status: **ACTIVE PROGRAM — J9L-B2B2B2B2B DEV QA FROZEN ENGINE BOSS INSTALLED / B2B2B2B2C CARDINAL/PRESENTATION DISCOVERY ONLY**
 
 Blackout Architect, Helios Devourer, Null Choir, Quantum Leviathan, Dyson Breaker, Swarm Sovereign and Singularity Engine remain the long-range J9 vocabulary. New boss work must use phases, destructible zones, affinity/formation pressure, battlefield manipulation and telegraphed vulnerability windows without bypassing existing caps/budgets or certified boss authorities.
 
@@ -1503,6 +1503,15 @@ The engine now has a private *capability* to issue a reference guard after a fut
 
 ### ES-13DOC88 — First guarded engine-installed Architect QA milestone
 Authorization pending Issue #588 and full docs CI/Pages; baseline DOC87 `8359d7a600fbddc472e3860b110dad60efc0be84`, #586 PR #587 CI/Pages GREEN (`39679929755`/`39680054470`). NEXT B2B2B2B2B if certified: dedicated BOSS_ARCHITECT prototype factory using proposal HP1920/size58 (still untuned), DEV-only CTRL+ALT+SHIFT+F9 at an empty Campaign wave break, engine installs boss/enemies refs then calls owner admission, frozen diagnostic state, explicit exit revocation and cold tear-down. Test invalid phase/duplicate/restart/foreign reference/production gating. It is not a shipped encounter: **physics frozen**, four cardinal structures and collision/HP/AI/HUD still unimplemented. Update superseded B2B2B2B2A no-game-admission test only with stronger DEV-only and exact-one admission coverage; preserve J9A shared types barrier, seven dormant null slots, legacy bosses, FOTON, modes and caps. Future DOC89+ required for combat mechanics and QA→user release. Manual blockers #4/#5/#202/#248 OPEN.
+
+### ES-13DOC89 — Close real DEV-only Architect reference-admission diagnostic
+Status: **DOCS-ONLY CLOSURE UNDER CERTIFICATION**, Issue #592. Gameplay B2B2B2B2B Issue #590 CLOSED, PR #591 guarded squash MERGED `8468311ddb3ec77f0d7bae490347ef6c5b61a706`, sole parent DOC88 `af04f25584cb8763a63a57db228eb46c177b0bd0`, tree `d73b23662de6244fe98faf762ae514d3b58feeaa` identical clean head `08c533bdddfe7427b78f101fb564474b6e256979`. Exactly 5 files: `EnergySwarmGame.tsx` guarded QA, new `blackoutArchitectDevQaBossFactory.ts`, prior static phase assertion intentionally upgraded from no-admission to one DEV-only admission, new static and gameplay tests. No weakening J9A literal barrier, B2B2A null-only 7 revocations or B2B2B2B1 profile isolation.
+
+First pre-cert `39691227253` failed outdated test expecting only 5 owner revokes; corrected it to require 7 (five original cold + 2 QA exit/rollback). Final full pre-PR cert `39691335146` GREEN focused/repo/gameplay/platform/typecheck/release/evidence/build/readiness plus verified uploaded APK (temp helper removed). PR CI `39691602229`, Android `39691602243`, post-main CI `39691842436`, Android `39691842359` uploaded APK, Pages build/deploy `39691961919` all SUCCESS exact SHAs. DOC88 Issue #588 CLOSED PR #589 docs canonical `af04f25584cb8763a63a57db228eb46c177b0bd0`, pre-PR `39690041017`, PR CI `39690196770`, main CI `39690359122`, Pages `39690474184` SUCCESS.
+
+**First game-engine installed object, DEV QA only, not a playable Architect:** explicit CTRL+ALT+SHIFT+F9 in running empty between-wave Campaign session under Vite `import.meta.env.DEV` creates a unique `BOSS_ARCHITECT` Enemy based on *provisional* core HP1920/size58 design, installs same object into `enemiesRef.current` and `bossRef.current`, only THEN admits via private owner identity guard, reverses atomically on failed admission, freezes all physics/waves/projectiles/AI while QA held, displays DEV-only label; same chord or cold lifecycle revokes/removes it. `bossActiveRef` is not enabled, public build has no enabled QA hotkey, Infinite/Score Attack do not route to it. No browser/manual keyboard interaction or real-device graphics demonstration is claimed, only CI/static/gameplay tests and Android APK build. **Physical four cardinals, hits, collision arbitration, HP/damage, AI/attacks, gameplay HUD/rewards and normal player activation are still unimplemented**.
+
+Next B2B2B2B2C requires a separate source-audited DOC90 plan to incrementally implement DEV QA dedicated presentation and cardinal *physical geometry* with verified safety; collision single-consume and boss damage/attacks must remain independently gated. Manual/device #4/#5/#202/#248 OPEN; preserve legacy NULL_ARCHITECT/Devourer/Titan/Worm, Campaign/Infinite/Score Attack, FOTON, RNG and caps.
 
 ## J10 — Expert Risk / Reward
 Status: **PLANNED / DEFERRED — NOT ACTIVE**
