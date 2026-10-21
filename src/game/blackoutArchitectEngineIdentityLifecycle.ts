@@ -1,5 +1,8 @@
 import { EnemyType, type Enemy } from "./types";
 
+/** Dedicated Architect marker type without widening legacy Infinite identities. */
+export type BlackoutArchitectEngineIdentityTag = "BLACKOUT_ARCHITECT";
+
 /**
  * B2B2B2B2A — cold engine-private identity guard.
  * Constructed only in the mounted game engine (and independently in tests).
