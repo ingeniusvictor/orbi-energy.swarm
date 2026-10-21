@@ -1,5 +1,6 @@
 import type { LiveEnemyFormationAssignment } from "./liveEnemyFormationDirector";
 import type { SiegeVolleyTelegraphState } from "./siegeVolleyTelegraph";
+import type { BlackoutArchitectEngineIdentityTag } from "./blackoutArchitectEngineIdentityLifecycle";
 
 export enum BiomeType {
   SOLAR_PLAINS = "SOLAR_PLAINS",
@@ -151,7 +152,8 @@ export enum EnemyType {
   MIRROR_WARDEN = "MIRROR_WARDEN",
   BOSS_DEVOURER = "BOSS_DEVOURER",
   BOSS_TITAN = "BOSS_TITAN",
-  BOSS_WORM = "BOSS_WORM"
+  BOSS_WORM = "BOSS_WORM",
+  BOSS_ARCHITECT = "BOSS_ARCHITECT"
 }
 
 export type EvolvedEnemyVariantId =
@@ -204,6 +206,8 @@ export interface Enemy {
   milestoneKind?: "MINIBOSS" | "BOSS_REMATCH";
   milestoneId?: string;
   infiniteBossIdentity?: InfiniteBossIdentity;
+  /** Unique Architect-only marker, not the legacy Infinite NULL_ARCHITECT identity. */
+  architectBossIdentity?: BlackoutArchitectEngineIdentityTag;
   bossChassis?: BossChassisId;
   bossEncounterStage?: BossEncounterStage;
   milestoneSector?: number;
