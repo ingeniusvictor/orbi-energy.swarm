@@ -1507,6 +1507,15 @@ DOC82 Issue #568 / PR #569 docs canonical `1889ec8a4abf2fb9b1d96db4ffdbd65788ea9
 
 **Next B2B2B2B: source-led DISCOVERY ONLY** — dedicated authentic `BLACKOUT_ARCHITECT` boss route; independently specified entity identity, balance and real engine-owned epoch/ordinal attached only after successful actual `bossRef` installation; safe revocation; separately authorized physical cardinal anchors, single-shot collision/HP/damage, phases/attacks/UI. Requires independent DOC84 before any implementation. Manual blockers #4/#5/#202/#248 OPEN.
 
+### ES-13DOC84 — Architect-independent combat blueprint authorization (conditional)
+Status: **DOCS-ONLY AUTHORIZATION IN CERTIFICATION**, Issue #575, source-research #574. Baseline main `609b91cf2b13ff9480d120a677868fd30ed5c3ad` DOC83 #572 / PR #573 CI `39655530010` and Pages `39655686518` GREEN. This is a new **proposal**, not a currently running boss.
+
+Audit: `types.ts:139-180` lacks a BOSS_ARCHITECT type, `NULL_ARCHITECT` is a distinct Infinite rematch. `EnergySwarmGame.tsx:3048-3140` legacy `spawnBoss` installs a chassis-coupled Enemy and may abort, `:3310-3334,3640-3715` use old intro/Devourer attack set, `:5075-5082,6082-6096,6471-6484` gate movement/HP/contact by legacy types, `:6733-6753,6941-6955,7854-7869` rendering/HUD assume existing bosses. Titan `bossChassis.ts:70-99` HP2400/weakpoint180/radii78x46/exposure6000ms are **not** Architect balance. `MAX_ENEMIES=80`, `MAX_PROJECTILES=120`.
+
+**Only following isolated code scope after DOC84 exact-main GREEN:** J9L-B2B2B2B1 one new standalone canonical blueprint source and two focused tests; newly proposed/editable *design* core HP1920 size58, four distinct NORTH/EAST/SOUTH/WEST structures HP135 radius13 at offsets (0,-106),(116,0),(0,106),(-116,0), phase thresholds 0.68 and 0.32, core exposure 3700ms, attack-design IDs GRID_LOCK/VECTOR_TIDE/SECTOR_WALL with telegraphs >=1200ms and proposed burst <=8. All new numbers are **provisional game design decisions** (not verified earlier or live). Pure deeply frozen data and bounded candidate position projection; no actual engine-owned geometry, spawn, collisions/consumption, damage, HP mutation, AI, attack execution, modes, UI or rewards. No imports in live game/type/chassis/slot, no RNG/timers, no added entity scans. Adversarial/static tests required.
+
+Real B2B2B2B2 boss admission, physics/cardinal collision and UI remain **DISCOVERY ONLY** until separate DOC85 and independent exact-SHA gameplay tests/Android/Pages. Preserve legacy `NULL_ARCHITECT`, Devourer/Titan/Worm, Campaign/Infinite/Score Attack, FOTON, caps and human/device #4/#5/#202/#248 OPEN.
+
 ## Resolved diagnostics
 - #254 CLOSED / NOT PLANNED: historical platform failure was not an I5 pause regression; no product merge.
 - #283 CLOSED / NOT PLANNED: stale-chat false start; no branch/product work.
