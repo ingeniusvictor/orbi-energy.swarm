@@ -9,8 +9,8 @@ const owner = read("src/game/blackoutArchitectEngineIdentityLifecycle.ts");
 
 test("B2B2B2B2A introduces a unique Architect type, never a Titan or NULL_ARCHITECT alias", () => {
   assert.match(types, /BOSS_ARCHITECT = "BOSS_ARCHITECT"/);
-  assert.match(types, /architectBossIdentity\\?: BlackoutArchitectEngineIdentityTag/);
-  assert.match(types, /import type \\{ BlackoutArchitectEngineIdentityTag \\}/);
+  assert.ok(types.includes("architectBossIdentity?: BlackoutArchitectEngineIdentityTag;"));
+  assert.ok(types.includes('import type { BlackoutArchitectEngineIdentityTag } from "./blackoutArchitectEngineIdentityLifecycle";'));
   assert.match(owner, /export type BlackoutArchitectEngineIdentityTag = "BLACKOUT_ARCHITECT"/);
   assert.doesNotMatch(types, /BLACKOUT_ARCHITECT/, "J9A shared types stay independent");
   assert.match(types, /"NULL_ARCHITECT"/);
