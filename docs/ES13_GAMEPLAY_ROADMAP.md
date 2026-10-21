@@ -1068,7 +1068,7 @@ Exact deployment anchors:
 - Issue #473 CLOSED / completed.
 
 ## J9 — Boss & Miniboss Expansion
-Status: **ACTIVE PROGRAM — J9L-B2B2B2B1 DEPLOYED / B2B2B2B2 AUTHENTIC ENGINE ARCHITECT DISCOVERY ONLY**
+Status: **ACTIVE PROGRAM — J9L-B2B2B2B1 DEPLOYED / B2B2B2B2A COLD ENGINE IDENTITY AUTHORIZATION PENDING DOC86 / LIVE SPAWN DISCOVERY ONLY**
 
 Blackout Architect, Helios Devourer, Null Choir, Quantum Leviathan, Dyson Breaker, Swarm Sovereign and Singularity Engine remain the long-range J9 vocabulary. New boss work must use phases, destructible zones, affinity/formation pressure, battlefield manipulation and telegraphed vulnerability windows without bypassing existing caps/budgets or certified boss authorities.
 
@@ -1488,6 +1488,13 @@ Status: **DOCS AUTHORIZATION PENDING CI/PAGES**, Issue #575 / source audit #574,
 **Proposed independently tunable design**, not actual gameplay balance: core HP1920 size58, four hypothetical NORTH/EAST/SOUTH/WEST HP135/radius13/offsets N(0,-106)/E(116,0)/S(0,106)/W(-116,0), phase gates 0.68/0.32, suggested exposure 3700ms, attack idea IDs GRID_LOCK/VECTOR_TIDE/SECTOR_WALL. All numbers newly proposed. Deep freeze and coordinates bounded by 1600×960; max suggested burst8 <= global MAX_PROJECTILES120. Design blueprint has all engine issuance, physical anchor geometry, hit, consume, HP/damage, AI, HUD, mode and reward authority false; never imported into runtime. DOC84 #575 PR #576 canonical `d6f4f2e5eaa4e7bb3ea5f7d5a468fc071e5f7061`, pre-PR `39656743445`, PR CI `39657005167`, main CI `39657237739`, Pages `39657364201` SUCCESS.
 
 **Next B2B2B2B2: SOURCE DISCOVERY ONLY**: genuine independent boss type, factory, run epoch/encounter ordinal only after success installing actual `bossRef`, separate attacks/AI/render/HUD and safely bounded physical cardinals, collisions/consumption, HP and modes. Requires DOC86 authorization, new code Issue, exact CI+Android+Pages; do not inherit Titan HP2400/anchor180/exposure6000. Preserve legacy `NULL_ARCHITECT`, Campaign/Infinite/Score Attack, Devourer/Titan/Worm, FOTON/caps and blockers #4/#5/#202/#248.
+
+### ES-13DOC86 — Cold authentic-identity architecture before any playable boss
+**Issue #582 DOCS ONLY, pending exact-main gates**, baseline `377faf8f72cfb802528cf31de952d8307ec8b6d2` DOC85 Issue #579 PR #580 pre-cert `39659455214`, PR CI `39659671830`, post-main CI `39659895506`, Pages `39660059637` GREEN. Source research #581 identifies old boss spawn, AI/damage, graphics and HUD hard-coded to existing three enemy boss types.
+
+Conditional B2B2B2B2A authorization: implement *unique* BOSS_ARCHITECT type and optional dedicated identity marker; create private engine-controlled monotonic run epoch/encounter ordinal ledger that authenticates only when a future Architect object occupies the exact engine boss ref and last enemy slot. Hook ledger begin/revoke only on cold lifecycle in EnergySwarmGame, preserve null-only B2B2A slot, freeze during pause/hitstop. **No dedicated spawn is called, no playable boss/hit/collision/AI/UI/mode activation in B2B2B2B2A**; tests simulate admission but do not prove actual live spawn. Never alias `NULL_ARCHITECT` or `TITAN_CORE` and do not copy old HP/anchors/attacks.
+
+After separate DOC87, B2B2B2B2B may wire a genuinely installed QA-only boss and guarded identity, initially inactive in normal modes. Physical 4 anchors, hit arbitration, HP, AI, attacks and HUD need further scoped certification with Android. Preserve Campaign/Infinite/Score Attack, FOTON, MAX_ENEMIES80/MAX_PROJECTILES120 and manual #4/#5/#202/#248 OPEN.
 
 ## J10 — Expert Risk / Reward
 Status: **PLANNED / DEFERRED — NOT ACTIVE**
