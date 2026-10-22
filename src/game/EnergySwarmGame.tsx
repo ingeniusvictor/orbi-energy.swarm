@@ -38,6 +38,7 @@ import {
 } from "./blackoutArchitectDevQaCardinalGeometry";
 import { resolveBlackoutArchitectDevQaCardinalImpact } from "./blackoutArchitectDevQaCardinalImpact";
 import { resolveBlackoutArchitectDevQaCoreImpact } from "./blackoutArchitectDevQaCoreImpact";
+import { stepBlackoutArchitectDevQaFotonMovement } from "./blackoutArchitectDevQaFotonMovement";
 import {
   countActiveEvolvedEnemies,
   countLivingEnemies,
@@ -467,6 +468,8 @@ export const EnergySwarmGame: React.FC = () => {
   const architectQaCardinalsRef = useRef<Readonly<BlackoutArchitectDevQaCardinalGeometry> | null>(null);
   // Exactly one developer QA projectile, held in the existing projectilesRef array.
   const architectQaShotRef = useRef<Projectile | null>(null);
+  // Only DEV QA owns this snapshot; restore camera upon every QA teardown.
+  const architectQaCameraRestoreRef = useRef<{cameraX:number;cameraY:number} | null>(null);
   const activeBossRematchProfileRef = useRef<InfiniteBossRematchProfile | null>(null);
 
   // High-frequency boss states
@@ -1115,6 +1118,12 @@ export const EnergySwarmGame: React.FC = () => {
    */
   const clearArchitectQaDiagnostic = () => {
     setArchitectQaDefeatVisible(false);
+    const cameraRestore = architectQaCameraRestoreRef.current;
+    architectQaCameraRestoreRef.current = null;
+    if (cameraRestore !== null) {
+      cameraStateRef.current.cameraX = cameraRestore.cameraX;
+      cameraStateRef.current.cameraY = cameraRestore.cameraY;
+    }
     // Keep J2 Overdrive handler contract isolated from projectile collection work.
     clearArchitectQaShot();
     // Release cardinal geometry even after any partial QA installation.
@@ -1182,6 +1191,10 @@ export const EnergySwarmGame: React.FC = () => {
       return;
     }
     architectQaCardinalsRef.current = cardinalGeometry;
+    architectQaCameraRestoreRef.current = {
+      cameraX: cameraStateRef.current.cameraX,
+      cameraY: cameraStateRef.current.cameraY,
+    };
     setArchitectQaVisible(true);
   };
 
@@ -4166,6 +4179,35 @@ export const EnergySwarmGame: React.FC = () => {
           architectEngineIdentityOwnerRef.current?.isCurrent(
             qaGuard, qaBoss, bossRef.current, enemiesRef.current,
           ) === true) {
+        // C4: move the existing real FOTON, NEVER the normal engine, swarm or AI.
+        const qaFotonStep = stepBlackoutArchitectDevQaFotonMovement(
+          playerPosRef.current,
+          keysPressedRef.current,
+          touchDirectionsRef.current,
+          qaDelta,
+          FORMATIONS[activeFormationRef.current].speedMod,
+        );
+        if (qaFotonStep !== null) {
+          playerPosRef.current.x = qaFotonStep.x;
+          playerPosRef.current.y = qaFotonStep.y;
+          // QA-only camera follow, bounded by the same world viewport geometry.
+          // Original camera coordinates are restored on every QA exit.
+          const qaCamera = cameraStateRef.current;
+          if (Number.isFinite(qaCamera.zoom) && qaCamera.zoom > 0 &&
+              Number.isFinite(qaCamera.viewportWidth) &&
+              Number.isFinite(qaCamera.viewportHeight)) {
+            const maxQaCamX = Math.max(0, WORLD_WIDTH - qaCamera.viewportWidth / qaCamera.zoom);
+            const maxQaCamY = Math.max(0, WORLD_HEIGHT - qaCamera.viewportHeight / qaCamera.zoom);
+            const targetQaCamX = Math.max(0, Math.min(maxQaCamX,
+              qaFotonStep.x - qaCamera.viewportWidth / (2 * qaCamera.zoom)));
+            const targetQaCamY = Math.max(0, Math.min(maxQaCamY,
+              qaFotonStep.y - qaCamera.viewportHeight / (2 * qaCamera.zoom)));
+            qaCamera.cameraX = Math.max(0, Math.min(maxQaCamX,
+              qaCamera.cameraX + (targetQaCamX - qaCamera.cameraX) * 0.18));
+            qaCamera.cameraY = Math.max(0, Math.min(maxQaCamY,
+              qaCamera.cameraY + (targetQaCamY - qaCamera.cameraY) * 0.18));
+          }
+        }
         const qaShot = architectQaShotRef.current;
         if (qaShot !== null) {
           qaShot.x += qaShot.vx * (qaDelta / 16.6);
@@ -8147,6 +8189,7 @@ export const EnergySwarmGame: React.FC = () => {
                     className="absolute top-2 left-2 z-30 pointer-events-none rounded-md border border-cyan-500/60 bg-slate-950/90 px-3 py-2 text-[10px] font-bold tracking-wide text-cyan-200"
                   >
                     DEV QA — ARCHITECT ANCHOR HITS · WAVES/AI FROZEN · CLICK TO FIRE · Ctrl+Alt+Shift+F9 exits
+                    <div className="mt-1 text-cyan-100/80">WASD / ARROWS / TOUCH — MOVE FOTON · Single-shot QA targeting</div>
                   </div>
                 )}
 
