@@ -52,6 +52,12 @@ import {
   type BlackoutArchitectDevQaVectorTideState,
 } from "./blackoutArchitectDevQaVectorTideAttack";
 import {
+  createBlackoutArchitectDevQaSectorWallState,
+  stepBlackoutArchitectDevQaSectorWall,
+  BLACKOUT_ARCHITECT_DEV_QA_SECTOR_WALL_CONFIG,
+  type BlackoutArchitectDevQaSectorWallState,
+} from "./blackoutArchitectDevQaSectorWallAttack";
+import {
   countActiveEvolvedEnemies,
   countLivingEnemies,
   countLivingStandardEnemies,
@@ -485,6 +491,7 @@ export const EnergySwarmGame: React.FC = () => {
   const architectQaCameraRestoreRef = useRef<{cameraX:number;cameraY:number} | null>(null);
   const architectQaGridLockRef = useRef<BlackoutArchitectDevQaGridLockState | null>(null);
   const architectQaVectorTideRef = useRef<BlackoutArchitectDevQaVectorTideState | null>(null);
+  const architectQaSectorWallRef = useRef<BlackoutArchitectDevQaSectorWallState | null>(null);
   const activeBossRematchProfileRef = useRef<InfiniteBossRematchProfile | null>(null);
 
   // High-frequency boss states
@@ -1136,6 +1143,7 @@ export const EnergySwarmGame: React.FC = () => {
     setArchitectQaLossVisible(false);
     architectQaGridLockRef.current = null;
     architectQaVectorTideRef.current = null;
+    architectQaSectorWallRef.current = null;
     const cameraRestore = architectQaCameraRestoreRef.current;
     architectQaCameraRestoreRef.current = null;
     if (cameraRestore !== null) {
@@ -1250,11 +1258,18 @@ export const EnergySwarmGame: React.FC = () => {
       architectQaGridLockRef.current = null;
       architectQaVectorTideRef.current = tide;
     } else if (architectQaVectorTideRef.current !== null) {
+      const wall = createBlackoutArchitectDevQaSectorWallState(
+        owner,guard,boss,bossRef.current,enemiesRef.current,true,
+      );
+      if (wall === null) return;
+      architectQaVectorTideRef.current = null;
+      architectQaSectorWallRef.current = wall;
+    } else if (architectQaSectorWallRef.current !== null) {
       const grid = createBlackoutArchitectDevQaGridLockState(
         owner,guard,boss,bossRef.current,enemiesRef.current,true,
       );
       if (grid === null) return;
-      architectQaVectorTideRef.current = null;
+      architectQaSectorWallRef.current = null;
       architectQaGridLockRef.current = grid;
     }
   };
@@ -4298,22 +4313,30 @@ export const EnergySwarmGame: React.FC = () => {
             requestAnimationFrame(gameLoop);
             return;
           }
-        } else {
+        } else if (architectQaVectorTideRef.current !== null) {
           const qaTide = architectQaVectorTideRef.current;
           const qaTideEvent = stepBlackoutArchitectDevQaVectorTide(
             architectEngineIdentityOwnerRef.current,
-            qaGuard,
-            qaTide,
-            architectQaVectorTideRef.current,
-            qaBoss,
-            bossRef.current,
-            enemiesRef.current,
-            playerPosRef.current,
-            qaDelta,
+            qaGuard,qaTide,architectQaVectorTideRef.current,qaBoss,
+            bossRef.current,enemiesRef.current,playerPosRef.current,qaDelta,
           );
           if (qaTideEvent === null || qaTideEvent.qaHullDepleted) {
             clearArchitectQaDiagnostic();
             if (qaTideEvent?.qaHullDepleted) setArchitectQaLossVisible(true);
+            renderCanvasScene();
+            requestAnimationFrame(gameLoop);
+            return;
+          }
+        } else {
+          const qaWall = architectQaSectorWallRef.current;
+          const qaWallEvent = stepBlackoutArchitectDevQaSectorWall(
+            architectEngineIdentityOwnerRef.current,
+            qaGuard,qaWall,architectQaSectorWallRef.current,qaBoss,
+            bossRef.current,enemiesRef.current,playerPosRef.current,qaDelta,
+          );
+          if (qaWallEvent === null || qaWallEvent.qaHullDepleted) {
+            clearArchitectQaDiagnostic();
+            if (qaWallEvent?.qaHullDepleted) setArchitectQaLossVisible(true);
             renderCanvasScene();
             requestAnimationFrame(gameLoop);
             return;
@@ -7382,6 +7405,30 @@ export const EnergySwarmGame: React.FC = () => {
       }
       ctx.restore();
     }
+    // C7: eight moving tangent wall segments drawn in authenticated world-space.
+    const qaWallDraw = architectQaSectorWallRef.current;
+    if (import.meta.env.DEV && qaWallDraw !== null &&
+        qaWallDraw.boss === architectQaBossRef.current &&
+        qaWallDraw.boss === bossRef.current &&
+        qaWallDraw.guard === architectQaGuardRef.current &&
+        (qaWallDraw.phase === "TELEGRAPH" || qaWallDraw.phase === "ACTIVE")) {
+      const w = BLACKOUT_ARCHITECT_DEV_QA_SECTOR_WALL_CONFIG;
+      ctx.save();
+      ctx.lineWidth = w.segmentHalfWidth * 2;
+      ctx.strokeStyle = qaWallDraw.phase === "ACTIVE" ? "#fb7185" : "#fbbf24";
+      ctx.globalAlpha = qaWallDraw.phase === "ACTIVE" ? 0.78 : 0.38;
+      if (qaWallDraw.phase === "TELEGRAPH") ctx.setLineDash([8,6]);
+      for (const wall of qaWallDraw.segments) {
+        const tangentX = -wall.directionY * w.segmentHalfLength;
+        const tangentY = wall.directionX * w.segmentHalfLength;
+        ctx.beginPath();
+        ctx.moveTo(wall.x - tangentX,wall.y - tangentY);
+        ctx.lineTo(wall.x + tangentX,wall.y + tangentY);
+        ctx.stroke();
+      }
+      ctx.setLineDash([]);
+      ctx.restore();
+    }
     if (bossRef.current?.bossChassis === "WORM_SEGMENTS") {
       drawWormSegmentChain(
         ctx,
@@ -7680,6 +7727,24 @@ export const EnergySwarmGame: React.FC = () => {
       ctx.fillText("VECTOR_TIDE " + tideStatus.phase + " — " +
         Math.ceil(tideStatus.remainingMs) + "ms",16,CANVAS_HEIGHT-71);
       ctx.fillText("QA FOTON HULL: " + tideStatus.qaHullHealth + "/100",
+        16,CANVAS_HEIGHT-57);
+      ctx.restore();
+    }
+
+    // C7 QA-only wall phase/hull status independent of other attack HUDs.
+    const wallStatus = architectQaSectorWallRef.current;
+    if (import.meta.env.DEV && wallStatus !== null &&
+        wallStatus.boss === architectQaBossRef.current &&
+        wallStatus.boss === bossRef.current) {
+      ctx.save();
+      ctx.fillStyle = "rgba(2, 6, 23, 0.90)";
+      ctx.fillRect(8,CANVAS_HEIGHT-85,288,34);
+      ctx.font = "bold 10px monospace";
+      ctx.textAlign = "left";
+      ctx.fillStyle = wallStatus.phase === "ACTIVE" ? "#fda4af" : "#fcd34d";
+      ctx.fillText("SECTOR_WALL " + wallStatus.phase + " — " +
+        Math.ceil(wallStatus.remainingMs) + "ms",16,CANVAS_HEIGHT-71);
+      ctx.fillText("QA FOTON HULL: " + wallStatus.qaHullHealth + "/100",
         16,CANVAS_HEIGHT-57);
       ctx.restore();
     }

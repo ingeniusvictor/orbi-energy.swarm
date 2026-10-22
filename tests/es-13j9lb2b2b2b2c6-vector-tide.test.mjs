@@ -12,7 +12,7 @@ test("C6 exclusive F8 QA attack selection cannot activate normal modes or run bo
  assert.match(selection,/owner\?\.isCurrent\(guard,boss,bossRef\.current,enemiesRef\.current\)/);
  assert.match(selection,/if \(architectQaGridLockRef\.current !== null\)/);
  assert.match(selection,/architectQaGridLockRef\.current = null;\s*architectQaVectorTideRef\.current = tide/);
- assert.match(selection,/architectQaVectorTideRef\.current = null;\s*architectQaGridLockRef\.current = grid/);
+ assert.match(selection,/architectQaVectorTideRef\.current = null;\s*architectQaSectorWallRef\.current = wall/);
 });
 test("C6 actual QA FOTON motion and exclusive six-hazard step preserve one player-shot path",()=>{
  const loop=game.slice(game.indexOf("const gameLoop = (timestamp: number) => {"));
