@@ -40,6 +40,12 @@ import { resolveBlackoutArchitectDevQaCardinalImpact } from "./blackoutArchitect
 import { resolveBlackoutArchitectDevQaCoreImpact } from "./blackoutArchitectDevQaCoreImpact";
 import { stepBlackoutArchitectDevQaFotonMovement } from "./blackoutArchitectDevQaFotonMovement";
 import {
+  createBlackoutArchitectDevQaGridLockState,
+  stepBlackoutArchitectDevQaGridLock,
+  BLACKOUT_ARCHITECT_DEV_QA_GRID_LOCK_CONFIG,
+  type BlackoutArchitectDevQaGridLockState,
+} from "./blackoutArchitectDevQaGridLockAttack";
+import {
   countActiveEvolvedEnemies,
   countLivingEnemies,
   countLivingStandardEnemies,
@@ -315,6 +321,7 @@ export const EnergySwarmGame: React.FC = () => {
   // Diagnostic visibility exists only in development; not a public boss mode.
   const [architectQaVisible, setArchitectQaVisible] = useState(false);
   const [architectQaDefeatVisible, setArchitectQaDefeatVisible] = useState(false);
+  const [architectQaLossVisible, setArchitectQaLossVisible] = useState(false);
   const [victory, setVictory] = useState(false);
   const [presentationMode, setPresentationMode] =
     useState<ScoreAttackLiveEngineStartMode>("CAMPAIGN");
@@ -470,6 +477,7 @@ export const EnergySwarmGame: React.FC = () => {
   const architectQaShotRef = useRef<Projectile | null>(null);
   // Only DEV QA owns this snapshot; restore camera upon every QA teardown.
   const architectQaCameraRestoreRef = useRef<{cameraX:number;cameraY:number} | null>(null);
+  const architectQaGridLockRef = useRef<BlackoutArchitectDevQaGridLockState | null>(null);
   const activeBossRematchProfileRef = useRef<InfiniteBossRematchProfile | null>(null);
 
   // High-frequency boss states
@@ -1118,6 +1126,8 @@ export const EnergySwarmGame: React.FC = () => {
    */
   const clearArchitectQaDiagnostic = () => {
     setArchitectQaDefeatVisible(false);
+    setArchitectQaLossVisible(false);
+    architectQaGridLockRef.current = null;
     const cameraRestore = architectQaCameraRestoreRef.current;
     architectQaCameraRestoreRef.current = null;
     if (cameraRestore !== null) {
@@ -1191,6 +1201,20 @@ export const EnergySwarmGame: React.FC = () => {
       return;
     }
     architectQaCardinalsRef.current = cardinalGeometry;
+    // C5 owns a genuine DEV-only attack against real FOTON, not global shield.
+    const initialGridLock = createBlackoutArchitectDevQaGridLockState(
+      architectEngineIdentityOwnerRef.current,
+      guard,
+      candidate,
+      bossRef.current,
+      enemiesRef.current,
+      true,
+    );
+    if (initialGridLock === null) {
+      clearArchitectQaDiagnostic();
+      return;
+    }
+    architectQaGridLockRef.current = initialGridLock;
     architectQaCameraRestoreRef.current = {
       cameraX: cameraStateRef.current.cameraX,
       cameraY: cameraStateRef.current.cameraY,
@@ -4208,6 +4232,27 @@ export const EnergySwarmGame: React.FC = () => {
               qaCamera.cameraY + (targetQaCamY - qaCamera.cameraY) * 0.18));
           }
         }
+        // C5: real physical GRID_LOCK telegraph/hazard applied only to separate
+        // QA hull; never mutate global FOTON shield, scores or legacy entities.
+        const qaGrid = architectQaGridLockRef.current;
+        const qaGridEvent = stepBlackoutArchitectDevQaGridLock(
+          architectEngineIdentityOwnerRef.current,
+          qaGuard,
+          qaGrid,
+          architectQaGridLockRef.current,
+          qaBoss,
+          bossRef.current,
+          enemiesRef.current,
+          playerPosRef.current,
+          qaDelta,
+        );
+        if (qaGridEvent === null || qaGridEvent.qaHullDepleted) {
+          clearArchitectQaDiagnostic();
+          if (qaGridEvent?.qaHullDepleted) setArchitectQaLossVisible(true);
+          renderCanvasScene();
+          requestAnimationFrame(gameLoop);
+          return;
+        }
         const qaShot = architectQaShotRef.current;
         if (qaShot !== null) {
           qaShot.x += qaShot.vx * (qaDelta / 16.6);
@@ -7212,6 +7257,31 @@ export const EnergySwarmGame: React.FC = () => {
       }
       ctx.restore();
     }
+    // C5 GRID_LOCK: draw two physical world-space lanes in the same camera
+    // context as FOTON and the C1 cardinal circles, only in authenticated QA.
+    const liveQaGrid = architectQaGridLockRef.current;
+    if (import.meta.env.DEV && liveQaGrid !== null &&
+        liveQaGrid.boss === architectQaBossRef.current &&
+        liveQaGrid.boss === bossRef.current &&
+        liveQaGrid.guard === architectQaGuardRef.current &&
+        (liveQaGrid.phase === "TELEGRAPH" || liveQaGrid.phase === "ACTIVE")) {
+      const gridCfg = BLACKOUT_ARCHITECT_DEV_QA_GRID_LOCK_CONFIG;
+      const gridBoss = liveQaGrid.boss;
+      ctx.save();
+      ctx.fillStyle = liveQaGrid.phase === "ACTIVE"
+        ? "rgba(248, 113, 113, 0.28)" : "rgba(250, 204, 21, 0.14)";
+      ctx.strokeStyle = liveQaGrid.phase === "ACTIVE" ? "#f87171" : "#facc15";
+      ctx.lineWidth = 1.4;
+      ctx.fillRect(gridBoss.x - gridCfg.halfWidth, gridBoss.y - gridCfg.extent,
+        gridCfg.halfWidth * 2, gridCfg.extent * 2);
+      ctx.strokeRect(gridBoss.x - gridCfg.halfWidth, gridBoss.y - gridCfg.extent,
+        gridCfg.halfWidth * 2, gridCfg.extent * 2);
+      ctx.fillRect(gridBoss.x - gridCfg.extent, gridBoss.y - gridCfg.halfWidth,
+        gridCfg.extent * 2, gridCfg.halfWidth * 2);
+      ctx.strokeRect(gridBoss.x - gridCfg.extent, gridBoss.y - gridCfg.halfWidth,
+        gridCfg.extent * 2, gridCfg.halfWidth * 2);
+      ctx.restore();
+    }
     if (bossRef.current?.bossChassis === "WORM_SEGMENTS") {
       drawWormSegmentChain(
         ctx,
@@ -7475,6 +7545,24 @@ export const EnergySwarmGame: React.FC = () => {
           ? "CARDINAL ANCHORS LEFT: " + livingCardinals + "/4"
           : "ALL ANCHORS DOWN — CORE VULNERABLE",
         16, CANVAS_HEIGHT - 17);
+      ctx.restore();
+    }
+
+    // C5 GRID_LOCK QA presentation: isolated player hull and actual hazard stage.
+    const qaGridStatus = architectQaGridLockRef.current;
+    if (import.meta.env.DEV && qaGridStatus !== null &&
+        qaGridStatus.boss === architectQaBossRef.current &&
+        qaGridStatus.boss === bossRef.current) {
+      ctx.save();
+      ctx.fillStyle = "rgba(2, 6, 23, 0.90)";
+      ctx.fillRect(8, CANVAS_HEIGHT - 85, 288, 34);
+      ctx.font = "bold 10px monospace";
+      ctx.textAlign = "left";
+      ctx.fillStyle = qaGridStatus.phase === "ACTIVE" ? "#fca5a5" : "#fde68a";
+      ctx.fillText("GRID_LOCK " + qaGridStatus.phase + " — " +
+        Math.ceil(qaGridStatus.remainingMs) + "ms", 16, CANVAS_HEIGHT - 71);
+      ctx.fillStyle = "#a5f3fc";
+      ctx.fillText("QA FOTON HULL: " + qaGridStatus.qaHullHealth + "/100", 16, CANVAS_HEIGHT - 57);
       ctx.restore();
     }
 
@@ -8171,6 +8259,16 @@ export const EnergySwarmGame: React.FC = () => {
                   onPointerUp={handlePointerUp}
                   time={timeElapsedRef.current}
                 />
+
+                {import.meta.env.DEV && architectQaLossVisible && !architectQaVisible && (
+                  <div
+                    role="status"
+                    aria-live="polite"
+                    className="absolute top-2 left-2 z-30 pointer-events-none rounded-md border border-rose-500/60 bg-slate-950/90 px-3 py-2 text-[10px] font-bold tracking-wide text-rose-200"
+                  >
+                    DEV QA FAILED — GRID_LOCK HULL 0 HP · NO GLOBAL GAME OVER · Ctrl+Alt+Shift+F9 to retry
+                  </div>
+                )}
 
                 {import.meta.env.DEV && architectQaDefeatVisible && !architectQaVisible && (
                   <div
