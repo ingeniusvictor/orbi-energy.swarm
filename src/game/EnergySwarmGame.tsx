@@ -46,6 +46,12 @@ import {
   type BlackoutArchitectDevQaGridLockState,
 } from "./blackoutArchitectDevQaGridLockAttack";
 import {
+  createBlackoutArchitectDevQaVectorTideState,
+  stepBlackoutArchitectDevQaVectorTide,
+  BLACKOUT_ARCHITECT_DEV_QA_VECTOR_TIDE_CONFIG,
+  type BlackoutArchitectDevQaVectorTideState,
+} from "./blackoutArchitectDevQaVectorTideAttack";
+import {
   countActiveEvolvedEnemies,
   countLivingEnemies,
   countLivingStandardEnemies,
@@ -478,6 +484,7 @@ export const EnergySwarmGame: React.FC = () => {
   // Only DEV QA owns this snapshot; restore camera upon every QA teardown.
   const architectQaCameraRestoreRef = useRef<{cameraX:number;cameraY:number} | null>(null);
   const architectQaGridLockRef = useRef<BlackoutArchitectDevQaGridLockState | null>(null);
+  const architectQaVectorTideRef = useRef<BlackoutArchitectDevQaVectorTideState | null>(null);
   const activeBossRematchProfileRef = useRef<InfiniteBossRematchProfile | null>(null);
 
   // High-frequency boss states
@@ -1128,6 +1135,7 @@ export const EnergySwarmGame: React.FC = () => {
     setArchitectQaDefeatVisible(false);
     setArchitectQaLossVisible(false);
     architectQaGridLockRef.current = null;
+    architectQaVectorTideRef.current = null;
     const cameraRestore = architectQaCameraRestoreRef.current;
     architectQaCameraRestoreRef.current = null;
     if (cameraRestore !== null) {
@@ -1222,6 +1230,35 @@ export const EnergySwarmGame: React.FC = () => {
     setArchitectQaVisible(true);
   };
 
+  // C6: explicit DEV-only mutually exclusive QA attack selection.
+  // F8 never affects normal game modes and creates no global projectiles.
+  const toggleArchitectQaAttackSelection = () => {
+    if (!import.meta.env.DEV || architectQaBossRef.current === null ||
+        architectQaGuardRef.current === null || architectQaCardinalsRef.current === null) return;
+    const boss = architectQaBossRef.current;
+    const guard = architectQaGuardRef.current;
+    const owner = architectEngineIdentityOwnerRef.current;
+    if (owner?.isCurrent(guard,boss,bossRef.current,enemiesRef.current) !== true) {
+      clearArchitectQaDiagnostic();
+      return;
+    }
+    if (architectQaGridLockRef.current !== null) {
+      const tide = createBlackoutArchitectDevQaVectorTideState(
+        owner,guard,boss,bossRef.current,enemiesRef.current,true,
+      );
+      if (tide === null) return;
+      architectQaGridLockRef.current = null;
+      architectQaVectorTideRef.current = tide;
+    } else if (architectQaVectorTideRef.current !== null) {
+      const grid = createBlackoutArchitectDevQaGridLockState(
+        owner,guard,boss,bossRef.current,enemiesRef.current,true,
+      );
+      if (grid === null) return;
+      architectQaVectorTideRef.current = null;
+      architectQaGridLockRef.current = grid;
+    }
+  };
+
   // --- KEY LISTENER LISTENERS ---
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -1252,6 +1289,13 @@ export const EnergySwarmGame: React.FC = () => {
       }
 
       const key = e.key.toUpperCase();
+
+      if (import.meta.env.DEV && e.ctrlKey && e.altKey && e.shiftKey &&
+          e.code === "F8") {
+        e.preventDefault();
+        toggleArchitectQaAttackSelection();
+        return;
+      }
 
       if (key === "F3") {
         e.preventDefault();
@@ -4235,23 +4279,45 @@ export const EnergySwarmGame: React.FC = () => {
         // C5: real physical GRID_LOCK telegraph/hazard applied only to separate
         // QA hull; never mutate global FOTON shield, scores or legacy entities.
         const qaGrid = architectQaGridLockRef.current;
-        const qaGridEvent = stepBlackoutArchitectDevQaGridLock(
-          architectEngineIdentityOwnerRef.current,
-          qaGuard,
-          qaGrid,
-          architectQaGridLockRef.current,
-          qaBoss,
-          bossRef.current,
-          enemiesRef.current,
-          playerPosRef.current,
-          qaDelta,
-        );
-        if (qaGridEvent === null || qaGridEvent.qaHullDepleted) {
-          clearArchitectQaDiagnostic();
-          if (qaGridEvent?.qaHullDepleted) setArchitectQaLossVisible(true);
-          renderCanvasScene();
-          requestAnimationFrame(gameLoop);
-          return;
+        if (qaGrid !== null) {
+          const qaGridEvent = stepBlackoutArchitectDevQaGridLock(
+            architectEngineIdentityOwnerRef.current,
+            qaGuard,
+            qaGrid,
+            architectQaGridLockRef.current,
+            qaBoss,
+            bossRef.current,
+            enemiesRef.current,
+            playerPosRef.current,
+            qaDelta,
+          );
+          if (qaGridEvent === null || qaGridEvent.qaHullDepleted) {
+            clearArchitectQaDiagnostic();
+            if (qaGridEvent?.qaHullDepleted) setArchitectQaLossVisible(true);
+            renderCanvasScene();
+            requestAnimationFrame(gameLoop);
+            return;
+          }
+        } else {
+          const qaTide = architectQaVectorTideRef.current;
+          const qaTideEvent = stepBlackoutArchitectDevQaVectorTide(
+            architectEngineIdentityOwnerRef.current,
+            qaGuard,
+            qaTide,
+            architectQaVectorTideRef.current,
+            qaBoss,
+            bossRef.current,
+            enemiesRef.current,
+            playerPosRef.current,
+            qaDelta,
+          );
+          if (qaTideEvent === null || qaTideEvent.qaHullDepleted) {
+            clearArchitectQaDiagnostic();
+            if (qaTideEvent?.qaHullDepleted) setArchitectQaLossVisible(true);
+            renderCanvasScene();
+            requestAnimationFrame(gameLoop);
+            return;
+          }
         }
         const qaShot = architectQaShotRef.current;
         if (qaShot !== null) {
@@ -7282,6 +7348,40 @@ export const EnergySwarmGame: React.FC = () => {
         gridCfg.extent * 2, gridCfg.halfWidth * 2);
       ctx.restore();
     }
+    // C6: six real deterministic world-space hazards, exclusive of GRID_LOCK.
+    const qaTideDraw = architectQaVectorTideRef.current;
+    if (import.meta.env.DEV && qaTideDraw !== null &&
+        qaTideDraw.boss === architectQaBossRef.current &&
+        qaTideDraw.boss === bossRef.current &&
+        qaTideDraw.guard === architectQaGuardRef.current) {
+      const c = BLACKOUT_ARCHITECT_DEV_QA_VECTOR_TIDE_CONFIG;
+      ctx.save();
+      if (qaTideDraw.phase === "TELEGRAPH") {
+        ctx.strokeStyle = "#22d3ee";
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([5,4]);
+        for (const bolt of qaTideDraw.bolts) {
+          ctx.beginPath();
+          ctx.moveTo(qaTideDraw.boss.x,qaTideDraw.boss.y);
+          ctx.lineTo(qaTideDraw.boss.x + bolt.vx * c.activeMs,
+            qaTideDraw.boss.y + bolt.vy * c.activeMs);
+          ctx.stroke();
+        }
+        ctx.setLineDash([]);
+      } else if (qaTideDraw.phase === "ACTIVE") {
+        ctx.fillStyle = "#a78bfa";
+        ctx.strokeStyle = "#e9d5ff";
+        ctx.lineWidth = 2;
+        for (const bolt of qaTideDraw.bolts) {
+          if (bolt.spent) continue;
+          ctx.beginPath();
+          ctx.arc(bolt.x,bolt.y,c.projectileRadius,0,Math.PI*2);
+          ctx.fill();
+          ctx.stroke();
+        }
+      }
+      ctx.restore();
+    }
     if (bossRef.current?.bossChassis === "WORM_SEGMENTS") {
       drawWormSegmentChain(
         ctx,
@@ -7563,6 +7663,24 @@ export const EnergySwarmGame: React.FC = () => {
         Math.ceil(qaGridStatus.remainingMs) + "ms", 16, CANVAS_HEIGHT - 71);
       ctx.fillStyle = "#a5f3fc";
       ctx.fillText("QA FOTON HULL: " + qaGridStatus.qaHullHealth + "/100", 16, CANVAS_HEIGHT - 57);
+      ctx.restore();
+    }
+
+    // C6 separate DEV QA VECTOR_TIDE hull/status: grid and tide never run together.
+    const tideStatus = architectQaVectorTideRef.current;
+    if (import.meta.env.DEV && tideStatus !== null &&
+        tideStatus.boss === architectQaBossRef.current &&
+        tideStatus.boss === bossRef.current) {
+      ctx.save();
+      ctx.fillStyle = "rgba(2, 6, 23, 0.90)";
+      ctx.fillRect(8,CANVAS_HEIGHT-85,288,34);
+      ctx.font = "bold 10px monospace";
+      ctx.textAlign = "left";
+      ctx.fillStyle = tideStatus.phase === "ACTIVE" ? "#c4b5fd" : "#67e8f9";
+      ctx.fillText("VECTOR_TIDE " + tideStatus.phase + " — " +
+        Math.ceil(tideStatus.remainingMs) + "ms",16,CANVAS_HEIGHT-71);
+      ctx.fillText("QA FOTON HULL: " + tideStatus.qaHullHealth + "/100",
+        16,CANVAS_HEIGHT-57);
       ctx.restore();
     }
 
@@ -8266,7 +8384,7 @@ export const EnergySwarmGame: React.FC = () => {
                     aria-live="polite"
                     className="absolute top-2 left-2 z-30 pointer-events-none rounded-md border border-rose-500/60 bg-slate-950/90 px-3 py-2 text-[10px] font-bold tracking-wide text-rose-200"
                   >
-                    DEV QA FAILED — GRID_LOCK HULL 0 HP · NO GLOBAL GAME OVER · Ctrl+Alt+Shift+F9 to retry
+                    DEV QA FAILED — ARCHITECT ATTACK HULL 0 HP · NO GLOBAL GAME OVER · Ctrl+Alt+Shift+F9 to retry
                   </div>
                 )}
 
