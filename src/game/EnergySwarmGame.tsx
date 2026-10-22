@@ -1035,6 +1035,16 @@ export const EnergySwarmGame: React.FC = () => {
     setHighScore(finalCommit.stats.highScore);
   };
 
+  // C2 cold-path QA-only cleanup, kept OUTSIDE the certified J2 activation seam.
+  const clearArchitectQaShot = () => {
+    const qaShot = architectQaShotRef.current;
+    architectQaShotRef.current = null;
+    if (qaShot !== null) {
+      const qaShotIndex = projectilesRef.current.indexOf(qaShot);
+      if (qaShotIndex >= 0) projectilesRef.current.splice(qaShotIndex, 1);
+    }
+  };
+
   const handleOverdriveActivation = () => {
     if (
       !isPlaying ||
@@ -1102,13 +1112,8 @@ export const EnergySwarmGame: React.FC = () => {
    * but the entire simulation is frozen and no combat is authorized.
    */
   const clearArchitectQaDiagnostic = () => {
-    // Remove only our exact QA shot, leaving all legacy projectiles untouched.
-    const qaShot = architectQaShotRef.current;
-    architectQaShotRef.current = null;
-    if (qaShot) {
-      const qaShotIndex = projectilesRef.current.indexOf(qaShot);
-      if (qaShotIndex >= 0) projectilesRef.current.splice(qaShotIndex, 1);
-    }
+    // Keep J2 Overdrive handler contract isolated from projectile collection work.
+    clearArchitectQaShot();
     // Release cardinal geometry even after any partial QA installation.
     architectQaCardinalsRef.current = null;
     const qaBoss = architectQaBossRef.current;
