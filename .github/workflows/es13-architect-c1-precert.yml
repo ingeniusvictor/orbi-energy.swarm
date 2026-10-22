@@ -1,0 +1,68 @@
+name: ES-13 Architect C1 temporary full pre-cert
+on:
+  push:
+    branches: ['feat/es13-architect-qa-cardinal-geometry-c1']
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+      - name: Install Android 16 SDK
+        run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0' >/dev/null
+      - name: Exact product-file scope
+        shell: bash
+        run: |
+          git diff --name-only b2f9d3dc205a50cddaef466ed6ec295eba531bdc HEAD | sort > /tmp/orbi-actual-scope
+          printf '%s\n' \
+            'src/game/EnergySwarmGame.tsx' \
+            'src/game/blackoutArchitectDevQaCardinalGeometry.ts' \
+            'tests/es-13j9lb2b2b2b-dev-qa.test.mjs' \
+            'tests/es-13j9lb2b2b2b2c1-cardinal-geometry.test.mjs' \
+            'tests/gameplay/blackout-architect-dev-cardinal-geometry.test.ts' \
+            '.github/workflows/es13-architect-c1-precert.yml' | sort > /tmp/orbi-expected-scope
+          diff -u /tmp/orbi-expected-scope /tmp/orbi-actual-scope
+      - name: Install
+        run: npm ci
+      - name: Focused QA/static tests
+        run: |
+          node --test tests/es-13j9lb2b2b2b-dev-qa.test.mjs tests/es-13j9lb2b2b2b2c1-cardinal-geometry.test.mjs
+          npx tsx --test tests/gameplay/blackout-architect-dev-cardinal-geometry.test.ts
+      - name: Full repository/gameplay/platform tests
+        run: npm test
+      - name: TypeScript
+        run: npm run typecheck
+      - name: Release and dossier
+        run: |
+          npm run release:verify
+          npm run release:evidence:verify
+      - name: Web build and readiness
+        run: |
+          npm run build
+          npm run release:readiness -- --output release-readiness.json
+      - name: Android APK
+        run: npm run android:debug
+      - name: Verify Android APK
+        run: test -s android/app/build/outputs/apk/debug/app-debug.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: es13-c1-precert-apk-${{ github.sha }}
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 7
