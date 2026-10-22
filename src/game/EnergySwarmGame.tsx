@@ -58,6 +58,13 @@ import {
   type BlackoutArchitectDevQaSectorWallState,
 } from "./blackoutArchitectDevQaSectorWallAttack";
 import {
+  createBlackoutArchitectDevQaPatternDirector,
+  stepBlackoutArchitectDevQaPatternDirector,
+  type ArchitectQaDirectorPattern,
+  type ArchitectQaDirectorAttackObservation,
+  type BlackoutArchitectDevQaPatternDirectorState,
+} from "./blackoutArchitectDevQaPatternDirector";
+import {
   countActiveEvolvedEnemies,
   countLivingEnemies,
   countLivingStandardEnemies,
@@ -492,6 +499,7 @@ export const EnergySwarmGame: React.FC = () => {
   const architectQaGridLockRef = useRef<BlackoutArchitectDevQaGridLockState | null>(null);
   const architectQaVectorTideRef = useRef<BlackoutArchitectDevQaVectorTideState | null>(null);
   const architectQaSectorWallRef = useRef<BlackoutArchitectDevQaSectorWallState | null>(null);
+  const architectQaDirectorRef = useRef<BlackoutArchitectDevQaPatternDirectorState | null>(null);
   const activeBossRematchProfileRef = useRef<InfiniteBossRematchProfile | null>(null);
 
   // High-frequency boss states
@@ -1144,6 +1152,7 @@ export const EnergySwarmGame: React.FC = () => {
     architectQaGridLockRef.current = null;
     architectQaVectorTideRef.current = null;
     architectQaSectorWallRef.current = null;
+    architectQaDirectorRef.current = null;
     const cameraRestore = architectQaCameraRestoreRef.current;
     architectQaCameraRestoreRef.current = null;
     if (cameraRestore !== null) {
@@ -1231,6 +1240,7 @@ export const EnergySwarmGame: React.FC = () => {
       return;
     }
     architectQaGridLockRef.current = initialGridLock;
+    architectQaDirectorRef.current = null;
     architectQaCameraRestoreRef.current = {
       cameraX: cameraStateRef.current.cameraX,
       cameraY: cameraStateRef.current.cameraY,
@@ -1241,6 +1251,7 @@ export const EnergySwarmGame: React.FC = () => {
   // C6: explicit DEV-only mutually exclusive QA attack selection.
   // F8 never affects normal game modes and creates no global projectiles.
   const toggleArchitectQaAttackSelection = () => {
+    if (architectQaDirectorRef.current !== null) return; // C8 forbids F8 hull reset while auto-directing.
     if (!import.meta.env.DEV || architectQaBossRef.current === null ||
         architectQaGuardRef.current === null || architectQaCardinalsRef.current === null) return;
     const boss = architectQaBossRef.current;
@@ -1274,6 +1285,35 @@ export const EnergySwarmGame: React.FC = () => {
     }
   };
 
+
+  // C8: independent real physical attack director; F7 is a DEV-only opt-in.
+  // Turning it on inherits the genuine current attack hull; F8 cannot reset it.
+  const toggleArchitectQaPatternDirector = () => {
+    if (!import.meta.env.DEV || !architectQaBossRef.current ||
+        !architectQaGuardRef.current || !architectQaCardinalsRef.current) return;
+    if (architectQaDirectorRef.current !== null) {
+      architectQaDirectorRef.current = null;
+      return;
+    }
+    const grid = architectQaGridLockRef.current;
+    const tide = architectQaVectorTideRef.current;
+    const wall = architectQaSectorWallRef.current;
+    if (Number(grid !== null)+Number(tide !== null)+Number(wall !== null)!==1) {
+      clearArchitectQaDiagnostic();return;
+    }
+    const selected:ArchitectQaDirectorPattern=grid?"GRID_LOCK":tide?"VECTOR_TIDE":"SECTOR_WALL";
+    const current=grid??tide??wall;
+    if (!current) return;
+    const director=createBlackoutArchitectDevQaPatternDirector(
+      architectEngineIdentityOwnerRef.current,
+      architectQaGuardRef.current,architectQaCardinalsRef.current,
+      architectQaBossRef.current,bossRef.current,enemiesRef.current,
+      selected,current.cycle,current.qaHullHealth,true,
+    );
+    if (director===null) return;
+    architectQaDirectorRef.current=director;
+  };
+
   // --- KEY LISTENER LISTENERS ---
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -1304,6 +1344,13 @@ export const EnergySwarmGame: React.FC = () => {
       }
 
       const key = e.key.toUpperCase();
+
+      if (import.meta.env.DEV && e.ctrlKey && e.altKey && e.shiftKey &&
+          e.code === "F7") {
+        e.preventDefault();
+        toggleArchitectQaPatternDirector();
+        return;
+      }
 
       if (import.meta.env.DEV && e.ctrlKey && e.altKey && e.shiftKey &&
           e.code === "F8") {
@@ -4293,6 +4340,8 @@ export const EnergySwarmGame: React.FC = () => {
         }
         // C5: real physical GRID_LOCK telegraph/hazard applied only to separate
         // QA hull; never mutate global FOTON shield, scores or legacy entities.
+        let qaAttackObservation:ArchitectQaDirectorAttackObservation|null=null;
+        let qaAttackPattern:ArchitectQaDirectorPattern="GRID_LOCK";
         const qaGrid = architectQaGridLockRef.current;
         if (qaGrid !== null) {
           const qaGridEvent = stepBlackoutArchitectDevQaGridLock(
@@ -4313,6 +4362,8 @@ export const EnergySwarmGame: React.FC = () => {
             requestAnimationFrame(gameLoop);
             return;
           }
+          qaAttackObservation=qaGridEvent;
+          qaAttackPattern="GRID_LOCK";
         } else if (architectQaVectorTideRef.current !== null) {
           const qaTide = architectQaVectorTideRef.current;
           const qaTideEvent = stepBlackoutArchitectDevQaVectorTide(
@@ -4327,6 +4378,8 @@ export const EnergySwarmGame: React.FC = () => {
             requestAnimationFrame(gameLoop);
             return;
           }
+          qaAttackObservation=qaTideEvent;
+          qaAttackPattern="VECTOR_TIDE";
         } else {
           const qaWall = architectQaSectorWallRef.current;
           const qaWallEvent = stepBlackoutArchitectDevQaSectorWall(
@@ -4340,6 +4393,52 @@ export const EnergySwarmGame: React.FC = () => {
             renderCanvasScene();
             requestAnimationFrame(gameLoop);
             return;
+          }
+          qaAttackObservation=qaWallEvent;
+          qaAttackPattern="SECTOR_WALL";
+        }
+        // C8 consumes real physical attack step results, and hands off only
+        // after the full RECOVERY boundary. Never changes normal combat.
+        const qaDirector=architectQaDirectorRef.current;
+        if (qaDirector!==null) {
+          const plan=stepBlackoutArchitectDevQaPatternDirector(
+            architectEngineIdentityOwnerRef.current,qaGuard,qaGeometry,
+            qaDirector,architectQaDirectorRef.current,qaBoss,
+            bossRef.current,enemiesRef.current,qaAttackPattern,qaAttackObservation,
+          );
+          if (plan===null) {
+            clearArchitectQaDiagnostic();
+            renderCanvasScene();
+            requestAnimationFrame(gameLoop);
+            return;
+          }
+          if (plan.nextPattern!==null) {
+            const next=plan.nextPattern==="GRID_LOCK"
+              ? createBlackoutArchitectDevQaGridLockState(
+                  architectEngineIdentityOwnerRef.current,qaGuard,qaBoss,
+                  bossRef.current,enemiesRef.current,true)
+              : plan.nextPattern==="VECTOR_TIDE"
+              ? createBlackoutArchitectDevQaVectorTideState(
+                  architectEngineIdentityOwnerRef.current,qaGuard,qaBoss,
+                  bossRef.current,enemiesRef.current,true)
+              : createBlackoutArchitectDevQaSectorWallState(
+                  architectEngineIdentityOwnerRef.current,qaGuard,qaBoss,
+                  bossRef.current,enemiesRef.current,true);
+            if(next===null) {
+              clearArchitectQaDiagnostic();
+              renderCanvasScene();
+              requestAnimationFrame(gameLoop);
+              return;
+            }
+            next.qaHullHealth=plan.qaHullHealth;
+            architectQaGridLockRef.current=null;
+            architectQaVectorTideRef.current=null;
+            architectQaSectorWallRef.current=null;
+            if(plan.nextPattern==="GRID_LOCK")
+              architectQaGridLockRef.current=next as BlackoutArchitectDevQaGridLockState;
+            else if(plan.nextPattern==="VECTOR_TIDE")
+              architectQaVectorTideRef.current=next as BlackoutArchitectDevQaVectorTideState;
+            else architectQaSectorWallRef.current=next as BlackoutArchitectDevQaSectorWallState;
           }
         }
         const qaShot = architectQaShotRef.current;
@@ -7746,6 +7845,23 @@ export const EnergySwarmGame: React.FC = () => {
         Math.ceil(wallStatus.remainingMs) + "ms",16,CANVAS_HEIGHT-71);
       ctx.fillText("QA FOTON HULL: " + wallStatus.qaHullHealth + "/100",
         16,CANVAS_HEIGHT-57);
+      ctx.restore();
+    }
+
+    const qaDirectorDraw=architectQaDirectorRef.current;
+    if(import.meta.env.DEV && qaDirectorDraw!==null &&
+       qaDirectorDraw.boss===architectQaBossRef.current &&
+       qaDirectorDraw.guard===architectQaGuardRef.current) {
+      ctx.save();
+      ctx.fillStyle="rgba(2, 6, 23, 0.91)";
+      ctx.fillRect(8,CANVAS_HEIGHT-129,288,35);
+      ctx.font="bold 10px monospace";
+      ctx.textAlign="left";
+      ctx.fillStyle="#67e8f9";
+      ctx.fillText("QA DIRECTOR PHASE "+qaDirectorDraw.phase+
+        " / "+qaDirectorDraw.pattern,16,CANVAS_HEIGHT-115);
+      ctx.fillText("SHARED QA HULL: "+qaDirectorDraw.qaHullHealth+"/100",
+        16,CANVAS_HEIGHT-100);
       ctx.restore();
     }
 
