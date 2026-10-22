@@ -37,6 +37,7 @@ import {
   type BlackoutArchitectDevQaCardinalGeometry,
 } from "./blackoutArchitectDevQaCardinalGeometry";
 import { resolveBlackoutArchitectDevQaCardinalImpact } from "./blackoutArchitectDevQaCardinalImpact";
+import { resolveBlackoutArchitectDevQaCoreImpact } from "./blackoutArchitectDevQaCoreImpact";
 import {
   countActiveEvolvedEnemies,
   countLivingEnemies,
@@ -312,6 +313,7 @@ export const EnergySwarmGame: React.FC = () => {
   const [isGameOver, setIsGameOver] = useState(false);
   // Diagnostic visibility exists only in development; not a public boss mode.
   const [architectQaVisible, setArchitectQaVisible] = useState(false);
+  const [architectQaDefeatVisible, setArchitectQaDefeatVisible] = useState(false);
   const [victory, setVictory] = useState(false);
   const [presentationMode, setPresentationMode] =
     useState<ScoreAttackLiveEngineStartMode>("CAMPAIGN");
@@ -1112,6 +1114,7 @@ export const EnergySwarmGame: React.FC = () => {
    * but the entire simulation is frozen and no combat is authorized.
    */
   const clearArchitectQaDiagnostic = () => {
+    setArchitectQaDefeatVisible(false);
     // Keep J2 Overdrive handler contract isolated from projectile collection work.
     clearArchitectQaShot();
     // Release cardinal geometry even after any partial QA installation.
@@ -4176,7 +4179,26 @@ export const EnergySwarmGame: React.FC = () => {
             qaShot,
             architectQaShotRef.current,
           );
-          if (!qaHit && qaShot.life > 0) {
+          // C3: first priority remains C2 physical cardinal collisions.
+          // Core can be hurt only after all four anchors reached zero HP.
+          const qaCoreHit = !qaHit && qaShot.life > 0
+            ? resolveBlackoutArchitectDevQaCoreImpact(
+                architectEngineIdentityOwnerRef.current,
+                qaGuard,
+                qaGeometry,
+                bossRef.current,
+                enemiesRef.current,
+                qaShot,
+                architectQaShotRef.current,
+              )
+            : null;
+          if (qaCoreHit?.coreDisabled) {
+            // Owner requires health>0. Revoke immediately on zero, no legacy
+            // boss cinematic, score, rewards or Campaign/Infinite transition.
+            clearArchitectQaDiagnostic();
+            setArchitectQaDefeatVisible(true);
+          }
+          if (!qaHit && !qaCoreHit && qaShot.life > 0) {
             qaShot.life = Math.max(0, qaShot.life - qaDelta);
           }
           const shotExpired = qaShot.life <= 0 ||
@@ -7389,6 +7411,31 @@ export const EnergySwarmGame: React.FC = () => {
       ctx.restore();
     }
 
+    // DEV C3: independent Architect core and four-anchor QA status, in canvas
+    // screen coordinates, never the legacy BossHudOverlay or production HUD.
+    const liveQaCore = architectQaBossRef.current;
+    const liveQaGeometry = architectQaCardinalsRef.current;
+    if (import.meta.env.DEV && liveQaCore !== null && liveQaGeometry !== null &&
+        bossRef.current === liveQaCore &&
+        liveQaGeometry.boss === liveQaCore) {
+      const livingCardinals = liveQaGeometry.anchors.filter(a => a.health > 0).length;
+      ctx.save();
+      ctx.fillStyle = "rgba(2, 6, 23, 0.88)";
+      ctx.fillRect(8, CANVAS_HEIGHT - 46, 278, 36);
+      ctx.fillStyle = livingCardinals > 0 ? "#67e8f9" : "#fbbf24";
+      ctx.textAlign = "left";
+      ctx.font = "bold 10px monospace";
+      ctx.fillText("ARCHITECT QA CORE  " +
+        Math.ceil(liveQaCore.health) + "/" + liveQaCore.maxHealth,
+        16, CANVAS_HEIGHT - 30);
+      ctx.font = "bold 9px monospace";
+      ctx.fillText(livingCardinals > 0
+          ? "CARDINAL ANCHORS LEFT: " + livingCardinals + "/4"
+          : "ALL ANCHORS DOWN — CORE VULNERABLE",
+        16, CANVAS_HEIGHT - 17);
+      ctx.restore();
+    }
+
     // 12. Draw a tactical minimap (radar overlay) in the top-right corner if mode is not OFF
     const minimapMode = statsRef.current?.minimapMode || stats.minimapMode || "COMPACT";
     if (minimapMode !== "OFF") {
@@ -8082,6 +8129,16 @@ export const EnergySwarmGame: React.FC = () => {
                   onPointerUp={handlePointerUp}
                   time={timeElapsedRef.current}
                 />
+
+                {import.meta.env.DEV && architectQaDefeatVisible && !architectQaVisible && (
+                  <div
+                    role="status"
+                    aria-live="polite"
+                    className="absolute top-2 left-2 z-30 pointer-events-none rounded-md border border-amber-500/60 bg-slate-950/90 px-3 py-2 text-[10px] font-bold tracking-wide text-amber-200"
+                  >
+                    DEV QA COMPLETE — ARCHITECT CORE 0 HP · NO REWARDS · Ctrl+Alt+Shift+F9 restarts QA
+                  </div>
+                )}
 
                 {import.meta.env.DEV && architectQaVisible && (
                   <div
