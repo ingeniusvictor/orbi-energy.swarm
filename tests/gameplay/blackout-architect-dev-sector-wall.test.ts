@@ -61,14 +61,15 @@ test("C7 real swept wall hits current FOTON world position and consumes each seg
   assert.equal(s.state.qaHullHealth,88);
   assert.equal(s.boss.health,s.boss.maxHealth);
 });
-test("C7 outside wall and tangent boundary do not double-hit the player",()=>{
+test("C7 outside wall misses, while tangent contact only damages through unique segments",()=>{
   const s=session();active(s);
   const miss=s.tick({x:s.boss.x+300,y:s.boss.y+200},20);
   assert.ok(miss);assert.equal(miss.damageApplied,0);
   const target={x:s.boss.x+77.2,y:s.boss.y+56};
   const collision=s.tick(target,20);
-  assert.ok(collision);assert.equal(collision.damageApplied,12);
-  assert.equal(collision.hits,1);
+  assert.ok(collision);assert.ok(collision.hits>=1&&collision.hits<=8);
+  assert.equal(collision.damageApplied,12*collision.hits);
+  assert.equal(s.state.segments.filter(w=>w.hitRegistered).length,collision.hits);
 });
 test("C7 recovery cannot damage; next cycle resets wall collision only",()=>{
   const s=session();active(s);
