@@ -1,0 +1,60 @@
+name: ES-13 Architect C4 temporary full pre-cert
+on:
+  push:
+    branches: ['feat/es13-architect-qa-foton-movement-c4']
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - uses: actions/setup-java@v5
+        with: { distribution: temurin, java-version: '21', cache: gradle }
+      - uses: android-actions/setup-android@v3
+        with: { packages: platform-tools }
+      - name: Install Android SDK
+        run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0' >/dev/null
+      - name: Strict scope
+        shell: bash
+        run: |
+          git diff --name-only fe88781d6129333f6cdfa8ea8c60dcff50c64b3a HEAD | sort > /tmp/actual
+          printf '%s\n' \
+            '.github/workflows/es13-architect-c4-precert.yml' \
+            'src/game/EnergySwarmGame.tsx' \
+            'src/game/blackoutArchitectDevQaFotonMovement.ts' \
+            'tests/es-13j9lb2b2b2b2c4-foton-movement.test.mjs' \
+            'tests/gameplay/blackout-architect-dev-foton-movement.test.ts' | sort > /tmp/expected
+          diff -u /tmp/expected /tmp/actual
+      - name: Dependencies
+        run: npm ci
+      - name: Focused C4+C3+J2
+        run: |
+          node --test tests/es-13j9lb2b2b2b2c4-foton-movement.test.mjs tests/es-13j9lb2b2b2b2c3-core-impact.test.mjs tests/es-13j2b-live-overdrive-adoption.test.mjs tests/es-13j2e-overdrive-integration-adoption.test.mjs
+          npx tsx --test tests/gameplay/blackout-architect-dev-foton-movement.test.ts tests/gameplay/blackout-architect-dev-core-impact.test.ts
+      - name: Full repository/gameplay/platform
+        run: npm test
+      - name: TypeScript
+        run: npm run typecheck
+      - name: Release and evidence
+        run: |
+          npm run release:verify
+          npm run release:evidence:verify
+      - name: Web build and readiness
+        run: |
+          npm run build
+          npm run release:readiness -- --output release-readiness.json
+      - name: Android APK
+        run: npm run android:debug
+      - name: Verify Android APK
+        run: test -s android/app/build/outputs/apk/debug/app-debug.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: es13-c4-precert-apk-${{ github.sha }}
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 7
