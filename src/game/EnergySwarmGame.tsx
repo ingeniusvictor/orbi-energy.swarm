@@ -33,6 +33,10 @@ import {
 } from "./blackoutArchitectEngineIdentityLifecycle";
 import { createBlackoutArchitectDevQaBoss } from "./blackoutArchitectDevQaBossFactory";
 import {
+  createBlackoutArchitectDevQaCardinalGeometry,
+  type BlackoutArchitectDevQaCardinalGeometry,
+} from "./blackoutArchitectDevQaCardinalGeometry";
+import {
   countActiveEvolvedEnemies,
   countLivingEnemies,
   countLivingStandardEnemies,
@@ -456,6 +460,8 @@ export const EnergySwarmGame: React.FC = () => {
   }
   const architectQaBossRef = useRef<Enemy | null>(null);
   const architectQaGuardRef = useRef<Readonly<BlackoutArchitectEngineIdentityGuard> | null>(null);
+  // Independent four-cardinal QA objects: never aliases of shieldNodesRef.
+  const architectQaCardinalsRef = useRef<Readonly<BlackoutArchitectDevQaCardinalGeometry> | null>(null);
   const activeBossRematchProfileRef = useRef<InfiniteBossRematchProfile | null>(null);
 
   // High-frequency boss states
@@ -1093,6 +1099,8 @@ export const EnergySwarmGame: React.FC = () => {
    * but the entire simulation is frozen and no combat is authorized.
    */
   const clearArchitectQaDiagnostic = () => {
+    // Release cardinal geometry even after any partial QA installation.
+    architectQaCardinalsRef.current = null;
     const qaBoss = architectQaBossRef.current;
     if (qaBoss === null) return;
     architectEngineIdentityOwnerRef.current?.revoke();
@@ -1141,6 +1149,21 @@ export const EnergySwarmGame: React.FC = () => {
     }
     architectQaBossRef.current = candidate;
     architectQaGuardRef.current = guard;
+    // Only the actual boss reference and current private guard can own circles.
+    // Any invalid/out-of-bounds placement rolls back the entire QA installation.
+    const cardinalGeometry = createBlackoutArchitectDevQaCardinalGeometry(
+      architectEngineIdentityOwnerRef.current,
+      guard,
+      candidate,
+      bossRef.current,
+      enemiesRef.current,
+      true,
+    );
+    if (cardinalGeometry === null) {
+      clearArchitectQaDiagnostic();
+      return;
+    }
+    architectQaCardinalsRef.current = cardinalGeometry;
     setArchitectQaVisible(true);
   };
 
@@ -7047,6 +7070,31 @@ export const EnergySwarmGame: React.FC = () => {
       playerPosRef.current,
       flashProfile,
     );
+    // C1: DEV-only camera-space presentation of four engine-owned QA circles.
+    // NO collision, HP mutation, global actor scan, attack or projectile consume.
+    const qaCardinals = architectQaCardinalsRef.current;
+    if (import.meta.env.DEV && qaCardinals !== null &&
+        qaCardinals.boss === architectQaBossRef.current &&
+        qaCardinals.boss === bossRef.current &&
+        qaCardinals.guard === architectQaGuardRef.current &&
+        !qaCardinals.boss.isDead) {
+      ctx.save();
+      ctx.textAlign = "center";
+      ctx.font = "bold 9px monospace";
+      ctx.lineWidth = 2;
+      for (const anchor of qaCardinals.anchors) {
+        ctx.beginPath();
+        ctx.arc(anchor.x, anchor.y, anchor.radius, 0, Math.PI * 2);
+        ctx.fillStyle = "#082f49";
+        ctx.strokeStyle = "#67e8f9";
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = "#e0f2fe";
+        ctx.fillText(anchor.id + " " + Math.round(anchor.health) + "/" + anchor.maxHealth,
+          anchor.x, anchor.y + anchor.radius + 12);
+      }
+      ctx.restore();
+    }
     if (bossRef.current?.bossChassis === "WORM_SEGMENTS") {
       drawWormSegmentChain(
         ctx,
@@ -7947,7 +7995,7 @@ export const EnergySwarmGame: React.FC = () => {
                     aria-live="polite"
                     className="absolute top-2 left-2 z-30 pointer-events-none rounded-md border border-cyan-500/60 bg-slate-950/90 px-3 py-2 text-[10px] font-bold tracking-wide text-cyan-200"
                   >
-                    DEV QA — ARCHITECT IDENTITY ONLY · PHYSICS FROZEN · Ctrl+Alt+Shift+F9 exits
+                    DEV QA — ARCHITECT CARDINAL GEOMETRY · PHYSICS FROZEN · NO HITS · Ctrl+Alt+Shift+F9 exits
                   </div>
                 )}
 
