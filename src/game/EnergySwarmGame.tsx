@@ -36,6 +36,7 @@ import {
   createBlackoutArchitectDevQaCardinalGeometry,
   type BlackoutArchitectDevQaCardinalGeometry,
 } from "./blackoutArchitectDevQaCardinalGeometry";
+import { resolveBlackoutArchitectDevQaCardinalImpact } from "./blackoutArchitectDevQaCardinalImpact";
 import {
   countActiveEvolvedEnemies,
   countLivingEnemies,
@@ -462,6 +463,8 @@ export const EnergySwarmGame: React.FC = () => {
   const architectQaGuardRef = useRef<Readonly<BlackoutArchitectEngineIdentityGuard> | null>(null);
   // Independent four-cardinal QA objects: never aliases of shieldNodesRef.
   const architectQaCardinalsRef = useRef<Readonly<BlackoutArchitectDevQaCardinalGeometry> | null>(null);
+  // Exactly one developer QA projectile, held in the existing projectilesRef array.
+  const architectQaShotRef = useRef<Projectile | null>(null);
   const activeBossRematchProfileRef = useRef<InfiniteBossRematchProfile | null>(null);
 
   // High-frequency boss states
@@ -1099,6 +1102,13 @@ export const EnergySwarmGame: React.FC = () => {
    * but the entire simulation is frozen and no combat is authorized.
    */
   const clearArchitectQaDiagnostic = () => {
+    // Remove only our exact QA shot, leaving all legacy projectiles untouched.
+    const qaShot = architectQaShotRef.current;
+    architectQaShotRef.current = null;
+    if (qaShot) {
+      const qaShotIndex = projectilesRef.current.indexOf(qaShot);
+      if (qaShotIndex >= 0) projectilesRef.current.splice(qaShotIndex, 1);
+    }
     // Release cardinal geometry even after any partial QA installation.
     architectQaCardinalsRef.current = null;
     const qaBoss = architectQaBossRef.current;
@@ -4135,10 +4145,48 @@ export const EnergySwarmGame: React.FC = () => {
     }
 
     suspendedFrameRenderedRef.current = false;
-    // A real DEV QA boss is installed in engine refs, but NO physics, waves,
-    // enemy collisions, attacks, HP mutation, scoring or rewards are stepped.
+    // C2: only ONE genuine DEV-only projectile moves against four actual
+    // Architect QA circles. Entire normal wave/enemy/FOTON/world engine remains
+    // frozen. Never invoke legacy collision, boss AI, scoring or rewards.
     if (architectQaBossRef.current !== null) {
+      const qaDelta = Math.max(0, Math.min(33.2, timestamp - lastTimeRef.current));
       lastTimeRef.current = timestamp;
+      const qaBoss = architectQaBossRef.current;
+      const qaGuard = architectQaGuardRef.current;
+      const qaGeometry = architectQaCardinalsRef.current;
+      if (import.meta.env.DEV && qaGuard && qaGeometry &&
+          architectEngineIdentityOwnerRef.current?.isCurrent(
+            qaGuard, qaBoss, bossRef.current, enemiesRef.current,
+          ) === true) {
+        const qaShot = architectQaShotRef.current;
+        if (qaShot !== null) {
+          qaShot.x += qaShot.vx * (qaDelta / 16.6);
+          qaShot.y += qaShot.vy * (qaDelta / 16.6);
+          const qaHit = resolveBlackoutArchitectDevQaCardinalImpact(
+            architectEngineIdentityOwnerRef.current,
+            qaGuard,
+            qaGeometry,
+            bossRef.current,
+            enemiesRef.current,
+            qaShot,
+            architectQaShotRef.current,
+          );
+          if (!qaHit && qaShot.life > 0) {
+            qaShot.life = Math.max(0, qaShot.life - qaDelta);
+          }
+          const shotExpired = qaShot.life <= 0 ||
+            !Number.isFinite(qaShot.x) || !Number.isFinite(qaShot.y) ||
+            qaShot.x < 0 || qaShot.x > WORLD_WIDTH ||
+            qaShot.y < 0 || qaShot.y > WORLD_HEIGHT;
+          if (shotExpired) {
+            const index = projectilesRef.current.indexOf(qaShot);
+            if (index >= 0) projectilesRef.current.splice(index, 1);
+            if (architectQaShotRef.current === qaShot) architectQaShotRef.current = null;
+          }
+        }
+      } else {
+        clearArchitectQaDiagnostic();
+      }
       renderCanvasScene();
       requestAnimationFrame(gameLoop);
       return;
@@ -7369,6 +7417,47 @@ export const EnergySwarmGame: React.FC = () => {
     const worldX = cam.cameraX + logicalX / cam.zoom;
     const worldY = cam.cameraY + logicalY / cam.zoom;
 
+    // C2: explicit developer-only QA single shot, real projectile motion and
+    // cardinal hit resolution. The legacy pointer/movement behavior is bypassed.
+    if (import.meta.env.DEV && architectQaBossRef.current !== null) {
+      const qaBoss = architectQaBossRef.current;
+      const qaGuard = architectQaGuardRef.current;
+      const qaGeometry = architectQaCardinalsRef.current;
+      const origin = playerPosRef.current;
+      const dx = worldX - origin.x;
+      const dy = worldY - origin.y;
+      const distance = Math.hypot(dx, dy);
+      if (!qaGuard || !qaGeometry || qaGeometry.boss !== qaBoss ||
+          !Number.isFinite(distance) || distance <= 0 ||
+          architectQaShotRef.current !== null ||
+          projectilesRef.current.length >= MAX_PROJECTILES ||
+          architectEngineIdentityOwnerRef.current?.isCurrent(
+            qaGuard, qaBoss, bossRef.current, enemiesRef.current,
+          ) !== true) return;
+      const ordinal = nextBlackoutArchitectCollisionTraceOrdinal(
+        collisionTracePlayerShotRef.current,
+      );
+      if (ordinal === null) return;
+      collisionTracePlayerShotRef.current = ordinal;
+      const speed = 6;
+      const shot: Projectile = {
+        id: "architect_qa_" + ordinal,
+        x: origin.x,
+        y: origin.y,
+        vx: (dx / distance) * speed,
+        vy: (dy / distance) * speed,
+        size: 4,
+        damage: 20,
+        color: "#67e8f9",
+        fromPlayer: true,
+        life: 1600,
+        maxLife: 1600,
+      };
+      projectilesRef.current.push(shot);
+      architectQaShotRef.current = shot;
+      return;
+    }
+
     isMouseDownRef.current = true;
     mouseDownPosRef.current = { x: e.clientX, y: e.clientY, time: Date.now() };
 
@@ -7995,7 +8084,7 @@ export const EnergySwarmGame: React.FC = () => {
                     aria-live="polite"
                     className="absolute top-2 left-2 z-30 pointer-events-none rounded-md border border-cyan-500/60 bg-slate-950/90 px-3 py-2 text-[10px] font-bold tracking-wide text-cyan-200"
                   >
-                    DEV QA — ARCHITECT CARDINAL GEOMETRY · PHYSICS FROZEN · NO HITS · Ctrl+Alt+Shift+F9 exits
+                    DEV QA — ARCHITECT ANCHOR HITS · WAVES/AI FROZEN · CLICK TO FIRE · Ctrl+Alt+Shift+F9 exits
                   </div>
                 )}
 
