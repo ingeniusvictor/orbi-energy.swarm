@@ -41,7 +41,7 @@ test("C5 physically renders telegraphed and active intersecting lanes in camera 
   assert.match(render,/GRID_LOCK /);
   assert.match(render,/QA FOTON HULL:/);
   assert.ok(render.indexOf("const liveQaGrid =") > render.indexOf("ctx.scale(cameraStateRef.current.zoom"));
-  assert.match(game,/DEV QA FAILED — GRID_LOCK HULL 0 HP · NO GLOBAL GAME OVER/);
+  assert.match(game,/DEV QA FAILED — ARCHITECT ATTACK HULL 0 HP · NO GLOBAL GAME OVER/);
 });
 test("C5 private reference and bounded single-strike module has no global state mutation",()=>{
   assert.match(grid,/owner\.isCurrent\(guard,boss,installedBoss,enemies\)/);
