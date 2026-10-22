@@ -41,7 +41,7 @@ test("C1 renderer shows actual independent circles and HP, while the diagnostic 
   const loop = game.slice(game.indexOf("const gameLoop = (timestamp: number) => {"));
   assert.ok(loop.indexOf("if (architectQaBossRef.current !== null) {") <
     loop.indexOf("timeElapsedRef.current += delta;"));
-  assert.match(game,/DEV QA — ARCHITECT ANCHOR HITS · WAVES/AI FROZEN · CLICK TO FIRE/);
+  assert.ok(game.includes("DEV QA — ARCHITECT ANCHOR HITS · WAVES/AI FROZEN · CLICK TO FIRE"));
 });
 
 test("C1 has no collision, damage, attack, mode, shield-node or cap authority", () => {
