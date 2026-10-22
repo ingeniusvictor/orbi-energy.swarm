@@ -26,10 +26,6 @@ const active=(s:ReturnType<typeof session>)=>{
   for(let i=0;i<95;i++)assert.ok(s.tick(safe,20));
   assert.equal(s.state.phase,"ACTIVE");
 };
-const recovery=(s:ReturnType<typeof session>)=>{
-  for(let i=0;i<75;i++)assert.ok(s.tick(safe,20));
-  assert.equal(s.state.phase,"RECOVERY");
-};
 test("C7 original design envelope instantiates eight exclusive physical wall objects",()=>{
   const s=session();
   assert.equal(s.state.mode,"DEV_QA_SECTOR_WALL_PHYSICAL");
