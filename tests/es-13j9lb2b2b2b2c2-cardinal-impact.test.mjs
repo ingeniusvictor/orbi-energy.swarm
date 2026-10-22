@@ -49,9 +49,12 @@ test("C2 finite single impact is strictly owner-guarded and only applies to card
 test("C2 tears down only the QA shot on all existing paths without touching historical bosses",()=>{
   const clear=game.slice(game.indexOf("const clearArchitectQaDiagnostic = () => {"),
     game.indexOf("const toggleArchitectQaDiagnostic",game.indexOf("const clearArchitectQaDiagnostic")));
-  assert.match(clear,/architectQaShotRef\.current = null/);
-  assert.match(clear,/const qaShotIndex = projectilesRef\.current\.indexOf\(qaShot\)/);
-  assert.match(clear,/projectilesRef\.current\.splice\(qaShotIndex, 1\)/);
+  const cleanup=game.slice(game.indexOf("const clearArchitectQaShot = () => {"),
+    game.indexOf("const handleOverdriveActivation =",game.indexOf("const clearArchitectQaShot = () => {")));
+  assert.match(clear,/clearArchitectQaShot\(\);/);
+  assert.match(cleanup,/architectQaShotRef\.current = null/);
+  assert.match(cleanup,/const qaShotIndex = projectilesRef\.current\.indexOf\(qaShot\)/);
+  assert.match(cleanup,/projectilesRef\.current\.splice\(qaShotIndex, 1\)/);
   assert.match(clear,/architectQaCardinalsRef\.current = null/);
   assert.match(clear,/architectEngineIdentityOwnerRef\.current\?\.revoke\(\)/);
   assert.equal((game.match(/architectEncounterSlotRef\.current = revokeBlackoutArchitectDormantEncounter\(\);/g)??[]).length,7);
