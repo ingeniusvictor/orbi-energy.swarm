@@ -44,7 +44,7 @@ test("QA installation freezes physics before simulation, and cold paths clean up
   assert.ok(game.includes("if (bossRef.current === qaBoss) bossRef.current = null;"));
   assert.ok(game.includes("architectQaBossRef.current = null;"));
   assert.ok(game.includes("setArchitectQaVisible(false);"));
-  assert.ok(game.includes("DEV QA — ARCHITECT IDENTITY ONLY · PHYSICS FROZEN"));
+  assert.ok(game.includes("DEV QA — ARCHITECT CARDINAL GEOMETRY · PHYSICS FROZEN · NO HITS"));
   assert.ok(game.includes("{import.meta.env.DEV && architectQaVisible && ("));
   assert.ok(!game.includes('"blackoutArchitectStandaloneCombatBlueprint"'));
 });
