@@ -151,15 +151,20 @@ export const stepBlackoutArchitectDevQaSectorWall=(
          typeof wall.hitRegistered!=="boolean"||
          // Restricted deterministic sweep envelope, including out-of-world
          // edges that the Canvas clips harmlessly.
-         Math.hypot(wall.x-boss.x,wall.y-boss.y)>c.startDistance+c.activeMs*c.radialSpeed+0.001) return null;
+         Math.hypot(wall.x-boss.x,wall.y-boss.y)>c.startDistance+c.activeMs*c.radialSpeed+0.001 ||
+         Math.abs((wall.x-boss.x)*wall.directionY-(wall.y-boss.y)*wall.directionX)>0.001 ||
+         (wall.x-boss.x)*wall.directionX+(wall.y-boss.y)*wall.directionY<c.startDistance-0.001) return null;
       ids.add(wall.id);
     }
     if(ids.size!==c.segmentBudget) return null;
     let hits=0,damageApplied=0;
     if(state.phase==="ACTIVE"&&deltaMs>0){
       for(const wall of state.segments){
-        wall.x+=wall.directionX*c.radialSpeed*deltaMs;
-        wall.y+=wall.directionY*c.radialSpeed*deltaMs;
+        // The final active tick may cross a phase boundary; never move past
+        // the fixed, physically attested wall-sweep envelope.
+        const activeStepMs=Math.min(deltaMs,state.remainingMs);
+        wall.x+=wall.directionX*c.radialSpeed*activeStepMs;
+        wall.y+=wall.directionY*c.radialSpeed*activeStepMs;
         if(wall.hitRegistered||state.qaHullHealth===0)continue;
         // Oriented finite tangent-segment rectangle plus FOTON collision radius.
         const relX=foton.x-wall.x,relY=foton.y-wall.y;
