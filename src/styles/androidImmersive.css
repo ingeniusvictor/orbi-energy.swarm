@@ -484,3 +484,79 @@
     min-height: 200px !important;
   }
 }
+
+/* UX04: compact Android tactical alerts; desktop retains cinematic layout.
+   Overlay remains pointer-events:none and never pauses or changes wave logic. */
+@media (orientation: landscape) and (max-height: 600px) and (pointer: coarse) {
+  .orbi-wave-intro {
+    align-items:flex-start!important;justify-content:center!important;
+    padding-top:max(51px,calc(env(safe-area-inset-top) + 45px));
+  }
+  .orbi-wave-intro-card {
+    width:min(68vw,680px)!important;max-width:calc(100vw - 24px)!important;
+    padding:8px 12px!important;max-height:min(36dvh,145px)!important;
+    overflow:hidden;border-color:rgba(251,191,36,.32)!important;
+    border-radius:11px!important;box-shadow:0 7px 30px rgba(0,0,0,.45)!important;
+    display:flex;flex-direction:column;gap:3px!important;
+    background:rgba(2,8,22,.83)!important;
+  }
+  .orbi-wave-intro-card > span {font-size:8px!important;letter-spacing:.12em!important;}
+  .orbi-wave-intro-card h2 {
+    font-size:clamp(12px,2.3vw,19px)!important;line-height:1.1!important;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .orbi-wave-intro-card p {margin:0;}
+  .orbi-wave-intro-card h2 + p {display:none;}
+  .orbi-wave-intro-card > div:nth-child(3) {gap:6px!important;padding:0!important;}
+  .orbi-wave-intro-card > div:nth-child(3) span {font-size:8px!important;}
+  .orbi-wave-intro-advice {
+    padding:3px 6px!important;display:flex;align-items:center;
+    justify-content:center;gap:6px!important;min-height:18px;
+    font-size:9px!important;border-color:rgba(251,191,36,.12)!important;
+  }
+  .orbi-wave-intro-advice > span:first-child,
+  .orbi-wave-intro-advice > p {display:none!important;}
+  .orbi-wave-intro-advice > div {padding:0!important;}
+  .orbi-wave-intro-advice > div span {font-size:9px!important;}
+
+  /* Upgrades remain modal because selection is required, but cards no longer
+     cover the entire viewport. Horizontal swipe reveals every original option. */
+  .orbi-upgrade-selector {
+    padding:max(5px,env(safe-area-inset-top)) max(8px,env(safe-area-inset-right))
+            max(5px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left))!important;
+    background:rgba(2,6,23,.76)!important;
+    overflow:hidden;justify-content:center;
+  }
+  .orbi-upgrade-shell {
+    width:min(96vw,850px)!important;max-width:100%!important;
+    max-height:calc(100dvh - 12px)!important;
+    display:flex;flex-direction:column;gap:6px!important;
+    padding:7px 8px;border:1px solid rgba(103,232,249,.19);border-radius:13px;
+    background:rgba(2,8,22,.92);
+  }
+  .orbi-upgrade-heading {flex:0 0 auto;display:grid;gap:2px!important;}
+  .orbi-upgrade-heading > span {font-size:9px!important;letter-spacing:.14em!important;}
+  .orbi-upgrade-heading h2 {font-size:clamp(14px,2.4vw,20px)!important;}
+  .orbi-upgrade-heading p {display:none;}
+  .orbi-upgrade-choices {
+    min-height:0;flex:1 1 auto;display:flex!important;flex-wrap:nowrap;
+    gap:9px!important;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;
+    scroll-padding-inline:8px;overscroll-behavior-x:contain;touch-action:pan-x;
+    padding:3px 8px 8px!important;
+    scrollbar-width:thin;scrollbar-color:rgba(103,232,249,.5) transparent;
+  }
+  .orbi-upgrade-choice {
+    flex:0 0 clamp(172px,46vw,290px);
+    min-height:0;max-height:100%;padding:7px 10px!important;
+    scroll-snap-align:center;gap:3px!important;overflow-y:auto;
+    transform:none!important;
+  }
+  .orbi-upgrade-choice > span:first-child {margin:0!important;font-size:8px!important;}
+  .orbi-upgrade-choice > span:nth-child(2) {font-size:clamp(20px,4vw,28px)!important;margin:0!important;}
+  .orbi-upgrade-choice h3 {font-size:12px!important;line-height:1.16;}
+  .orbi-upgrade-choice p {font-size:10px!important;line-height:1.2;min-height:0!important;}
+  .orbi-upgrade-choice > div:last-child {margin-top:5px!important;padding-top:5px!important;font-size:9px!important;}
+  .orbi-upgrade-reroll {flex:0 0 auto;padding:0!important;gap:0!important;}
+  .orbi-upgrade-reroll > button {min-height:36px;padding:5px 10px!important;font-size:10px!important;}
+  .orbi-upgrade-reroll > span {display:none;}
+}
