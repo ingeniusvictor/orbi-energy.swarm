@@ -42,5 +42,5 @@ test("C11 read-only authentic DEV pattern attributes come from current real atta
   assert.match(game,/refreshArchitectQaTouchControls\(v => v \+ 1\)/);
   assert.match(src,/getAttribute\("data-qa-pattern"\)/);
   assert.match(src,/getAttribute\("data-qa-director"\)/);
-  assert.match(src,/=== "GRID_LOCK"/);
+  assert.match(src,/==="GRID_LOCK"/);
 });
