@@ -16,7 +16,7 @@ const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 let server, browser;
 
 async function startServer() {
-  server = spawn(process.execPath, ["node_modules/vite/bin/vite.js", "--host",
+  server = spawn(process.execPath, ["node_modules/vite/bin/vite.js", "--preview", "--host",
     "127.0.0.1", "--port", String(port), "--strictPort"],
     { stdio: ["ignore", "pipe", "pipe"] });
   let logs = "";
@@ -45,6 +45,9 @@ async function run(name,width,height,coarse,immersive,webImmersive) {
     await start.waitFor({state:"visible",timeout:30000});
     await page.clock.pauseAt(new Date("2026-10-22T12:00:05Z"));
     await start.click();
+    // The evidence runs against the production Vite bundle (not DEV QA).
+    check((await page.locator('[data-testid="architect-qa-touch-dock"]').count())===0,
+      name+": developer QA controls leaked into production");
     const root=page.locator(".orbi-game-root");
     check((await root.getAttribute("data-immersive-landscape"))===String(immersive),
       name+": unexpected immersive mode");
