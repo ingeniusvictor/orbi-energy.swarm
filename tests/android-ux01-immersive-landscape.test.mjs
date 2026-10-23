@@ -11,10 +11,13 @@ const manifest=read("../android/app/src/main/AndroidManifest.xml");
 const entry=read("../src/main.tsx");
 const html=read("../index.html");
 
-test("ANDROID UX01 is opt-in for live touch landscape, never portrait or desktop",()=>{
-  assert.match(game,/viewportProfile\.orientation === "LANDSCAPE" &&\s*viewportProfile\.touchControlsRecommended/);
-  assert.match(game,/data-immersive-landscape=\{isPlaying && immersiveTouchLandscape/);
-  assert.match(game,/data-mobile-panel=\{isPlaying && immersiveTouchLandscape \? mobilePanel : "closed"\}/);
+test("ANDROID UX01 remains touch-scoped while WEB UX01 adds isolated fine-pointer landscape",()=>{
+  const policy=read("../src/game/immersiveBattlefieldPolicy.ts");
+  assert.match(policy,/profile\.orientation === "LANDSCAPE" &&\s*profile\.touchControlsRecommended/);
+  assert.match(policy,/!profile\.coarsePointer && profile\.width >= 800/);
+  assert.match(game,/projectImmersiveBattlefieldMode\(viewportProfile\)/);
+  assert.match(game,/data-immersive-landscape=\{isPlaying && immersiveLandscapeMode/);
+  assert.match(game,/data-mobile-panel=\{isPlaying && immersiveLandscapeMode \? mobilePanel : "closed"\}/);
   assert.match(styles,/\[data-immersive-landscape="true"\]/);
   assert.match(styles,/\.orbi-game-root:not\(\[data-immersive-landscape="true"\]\) \.orbi-hud-detail-grid/);
   assert.match(entry,/import '\.\/styles\/androidImmersive\.css'/);
