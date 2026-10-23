@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Play, Cpu, Volume2, VolumeX, Globe } from "lucide-react";
 import { GameStats, QualityPreset } from "../game/types";
 import { playClickSound } from "../game/audio";
@@ -8,6 +8,7 @@ import { useGameTranslation, formatNumber } from "../i18n";
 import PremiumBackdrop from "./presentation/PremiumBackdrop";
 import CampaignArc from "./CampaignArc";
 import RecentRunArchivePanel from "./RecentRunArchivePanel";
+import { MobileLaunchNavigation, type MobileLaunchLayer, type MobileLaunchSection, type MobileLaunchTab } from "./MobileLaunchNavigation";
 
 const LazyFoton3DHero = React.lazy(
   () => import("./presentation/Foton3DHero"),
@@ -33,19 +34,48 @@ export const StartScreen: React.FC<StartScreenProps> = ({
   onToggleBossLabelsMode
 }) => {
   const { language, setLanguage, t } = useGameTranslation();
-  const [activeTab, setActiveTab] = useState<"MAIN" | "HOW_TO" | "CONTROLS" | "SETTINGS" | "ABOUT" | "CODEX">("MAIN");
+  const [activeTab, setActiveTab] = useState<MobileLaunchTab>("MAIN");
+  const [mobileLayer, setMobileLayer] = useState<MobileLaunchLayer>("WELCOME");
+  const [mobileSection, setMobileSection] = useState<MobileLaunchSection>("PLAY");
   const hasInfiniteRecord = stats.bestInfiniteSector >= 11;
   const scoreAttackProfile = getAdditionalGameModeProfile("SCORE_ATTACK");
   const scoreAttackDurationSeconds = SCORE_ATTACK_DURATION_MS / 1000;
 
-  const clickTab = (tab: "MAIN" | "HOW_TO" | "CONTROLS" | "SETTINGS" | "ABOUT" | "CODEX") => {
+  const clickTab = (tab: MobileLaunchTab) => {
     playClickSound();
     setActiveTab(tab);
   };
 
+  const openMobileMenu = (tab: MobileLaunchTab, section: MobileLaunchSection = "PLAY") => {
+    clickTab(tab); setMobileSection(section); setMobileLayer("DETAIL");
+  };
+  const backMobileMenu = () => {
+    playClickSound();
+    setMobileLayer(layer => layer === "DETAIL" ? "HUB" : "WELCOME");
+  };
+  useEffect(() => {
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape" ||
+        !window.matchMedia("(pointer: coarse) and (orientation: landscape) and (max-height: 600px)").matches ||
+        mobileLayer === "WELCOME") return;
+      event.preventDefault();
+      setMobileLayer(layer => layer === "DETAIL" ? "HUB" : "WELCOME");
+    };
+    window.addEventListener("keydown", onEscape);
+    return () => window.removeEventListener("keydown", onEscape);
+  }, [mobileLayer]);
+
   return (
-    <div className="orbi-premium-entry absolute inset-0 z-50 flex flex-col items-center justify-start xl:justify-center p-4 md:p-6 text-white select-none overflow-y-auto">
+    <div className="orbi-premium-entry absolute inset-0 z-50 flex flex-col items-center justify-start xl:justify-center p-4 md:p-6 text-white select-none overflow-y-auto"
+      data-mobile-layer={mobileLayer} data-mobile-tab={activeTab} data-mobile-section={mobileSection}>
       <PremiumBackdrop />
+      <MobileLaunchNavigation layer={mobileLayer} section={mobileSection} tab={activeTab}
+        language={language} onLanguage={setLanguage}
+        onEnter={() => { playClickSound(); setMobileLayer("HUB"); }}
+        onBack={backMobileMenu} onOpen={openMobileMenu}
+        onPlay={() => { playClickSound(); onStartGame(); }}
+        onScoreAttack={() => { playClickSound(); onStartScoreAttack(); }}
+        hasInfiniteRecord={hasInfiniteRecord} />
       {/* GLOWING HEADER */}
       <div className="orbi-start-header relative z-10 text-center mb-5">
         <div className="flex justify-center items-center gap-2 mb-1">
