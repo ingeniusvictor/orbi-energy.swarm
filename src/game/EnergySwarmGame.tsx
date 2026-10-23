@@ -65,6 +65,7 @@ import {
   type BlackoutArchitectDevQaPatternDirectorState,
 } from "./blackoutArchitectDevQaPatternDirector";
 import { projectBlackoutArchitectDevQaBattleHud } from "./blackoutArchitectDevQaBattleHud";
+import { projectBlackoutArchitectDevQaTouchAccess } from "./blackoutArchitectDevQaTouchAccess";
 import {
   countActiveEvolvedEnemies,
   countLivingEnemies,
@@ -340,6 +341,7 @@ export const EnergySwarmGame: React.FC = () => {
   const [isGameOver, setIsGameOver] = useState(false);
   // Diagnostic visibility exists only in development; not a public boss mode.
   const [architectQaVisible, setArchitectQaVisible] = useState(false);
+  const [, refreshArchitectQaTouchControls] = useState(0);
   const [architectQaDefeatVisible, setArchitectQaDefeatVisible] = useState(false);
   const [architectQaLossVisible, setArchitectQaLossVisible] = useState(false);
   const [victory, setVictory] = useState(false);
@@ -1294,6 +1296,7 @@ export const EnergySwarmGame: React.FC = () => {
         !architectQaGuardRef.current || !architectQaCardinalsRef.current) return;
     if (architectQaDirectorRef.current !== null) {
       architectQaDirectorRef.current = null;
+      refreshArchitectQaTouchControls(v => v + 1);
       return;
     }
     const grid = architectQaGridLockRef.current;
@@ -1313,6 +1316,7 @@ export const EnergySwarmGame: React.FC = () => {
     );
     if (director===null) return;
     architectQaDirectorRef.current=director;
+    refreshArchitectQaTouchControls(v => v + 1);
   };
 
   // --- KEY LISTENER LISTENERS ---
@@ -8126,6 +8130,32 @@ export const EnergySwarmGame: React.FC = () => {
   const currentThreatDescriptor =
     getCurrentRuntimeDescriptor();
 
+  // C10 only PROJECTS touch eligibility; the same old guarded callbacks do all actions.
+  const qaTouchBoss = architectQaBossRef.current;
+  const qaTouchGuard = architectQaGuardRef.current;
+  const qaTouchAccess = import.meta.env.DEV
+    ? projectBlackoutArchitectDevQaTouchAccess({
+        explicitDev: true,
+        isPlaying,
+        inCampaign: runtimeProgressionRef.current.mode === "CAMPAIGN",
+        isWaveBreak,
+        isPaused,
+        isGameOver,
+        isPhotoMode,
+        isUpgradeSelectionOpen,
+        normalEncounterBusy: waveActiveRef.current || bossActiveRef.current ||
+          bossDefeatedSequenceActiveRef.current ||
+          (!architectQaVisible &&
+            (bossRef.current !== null || enemiesRef.current.length !== 0)),
+        qaActive: architectQaVisible,
+        guardCurrent: qaTouchBoss !== null && qaTouchGuard !== null &&
+          architectEngineIdentityOwnerRef.current?.isCurrent(
+            qaTouchGuard, qaTouchBoss, bossRef.current, enemiesRef.current,
+          ) === true,
+        directorActive: architectQaDirectorRef.current !== null,
+      })
+    : null;
+
   return (
     <div
       className="orbi-game-root w-full min-h-screen bg-slate-950 flex flex-col items-center justify-center overflow-x-hidden relative select-none"
@@ -8579,6 +8609,56 @@ export const EnergySwarmGame: React.FC = () => {
                 onTogglePause={togglePause}
                 onToggleMute={toggleMute}
               />
+
+              {/* C10: deliberate touch/keyboard buttons OUTSIDE the Canvas firing surface. */}
+              {qaTouchAccess !== null && (
+                <div
+                  role="group"
+                  aria-label="Blackout Architect developer QA touch controls"
+                  data-testid="architect-qa-touch-dock"
+                  className="w-full flex flex-wrap items-center justify-center gap-2 rounded-md border border-cyan-500/30 bg-slate-950/95 px-2 py-1.5 text-[10px] font-mono text-cyan-100"
+                >
+                  <span className="font-bold text-cyan-300">DEV ARCHITECT QA</span>
+                  <button
+                    type="button"
+                    aria-label={qaTouchAccess.qaToggleLabel + " Blackout Architect QA"}
+                    aria-pressed={architectQaVisible}
+                    disabled={!qaTouchAccess.qaToggleEnabled}
+                    className="min-h-[40px] rounded border border-cyan-500/60 px-3 py-2 font-bold touch-manipulation disabled:opacity-35"
+                    onPointerDown={e => e.stopPropagation()}
+                    onPointerUp={e => e.stopPropagation()}
+                    onClick={e => {
+                      e.preventDefault(); e.stopPropagation();
+                      toggleArchitectQaDiagnostic();
+                    }}
+                  >{qaTouchAccess.qaToggleLabel}</button>
+                  <button
+                    type="button"
+                    aria-label={qaTouchAccess.directorToggleLabel + " QA pattern director"}
+                    aria-pressed={qaTouchAccess.directorToggleLabel === "DISABLE AUTO"}
+                    disabled={!qaTouchAccess.directorToggleEnabled}
+                    className="min-h-[40px] rounded border border-cyan-500/60 px-3 py-2 font-bold touch-manipulation disabled:opacity-35"
+                    onPointerDown={e => e.stopPropagation()}
+                    onPointerUp={e => e.stopPropagation()}
+                    onClick={e => {
+                      e.preventDefault(); e.stopPropagation();
+                      toggleArchitectQaPatternDirector();
+                    }}
+                  >{qaTouchAccess.directorToggleLabel}</button>
+                  <button
+                    type="button"
+                    aria-label="Select next QA attack pattern"
+                    disabled={!qaTouchAccess.patternNextEnabled}
+                    className="min-h-[40px] rounded border border-cyan-500/60 px-3 py-2 font-bold touch-manipulation disabled:opacity-35"
+                    onPointerDown={e => e.stopPropagation()}
+                    onPointerUp={e => e.stopPropagation()}
+                    onClick={e => {
+                      e.preventDefault(); e.stopPropagation();
+                      toggleArchitectQaAttackSelection();
+                    }}
+                  >{qaTouchAccess.patternNextLabel}</button>
+                </div>
+              )}
 
               {/* CANVAS INTERACTIVE PORT */}
               <div className="w-full flex flex-col items-center justify-center relative bg-slate-950 border border-slate-900 rounded-lg overflow-hidden p-1">
