@@ -33,7 +33,7 @@ async function run(width,height,mobile,deviceScaleFactor=1){
  try {
   await page.goto(origin,{waitUntil:"domcontentloaded",timeout:30000});
   const enter=page.getByTestId("orbi-mobile-enter");
-  if(mobile && await enter.isVisible()){
+  if(await enter.isVisible()){
    await enter.tap();
    await page.getByTestId("orbi-mobile-menu-main-play").tap();
    await page.getByTestId("orbi-mobile-campaign").tap();
