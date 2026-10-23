@@ -1,0 +1,83 @@
+name: ANDROID UX02 temporary immersive landscape pre-cert
+on:
+  push:
+    branches: ['feat/android-ux02-immersive-landscape']
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+      - name: Install Android SDK
+        run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0' >/dev/null
+      - name: Authorized ANDROID UX02 touch landscape scope
+        shell: bash
+        run: |
+          git diff --name-only c1af30342c82a77e3e2e87369b3dabae82525a51 HEAD | sort > /tmp/actual
+          printf '%s\n' \
+            '.github/workflows/android-ux02-precert.yml' \
+            'scripts/android-ux02-panorama-browser.mjs' \
+            'src/game/EnergySwarmCanvas.tsx' \
+            'src/game/EnergySwarmGame.tsx' \
+            'src/game/panoramicCanvasViewport.ts' \
+            'tests/gameplay/android-panoramic-playfield.test.ts' | sort > /tmp/expected
+          diff -u /tmp/expected /tmp/actual
+      - run: npm ci
+      - name: ANDROID UX02 focused and historical regression
+        run: |
+          npx tsx --test tests/gameplay/android-panoramic-playfield.test.ts
+          node --test tests/es-13j9lb2b2b2b2c11-browser-evidence.test.mjs tests/es-13j9lb2b2b2b2c12-mobile-qa-status.test.mjs tests/es-13j9lb2b2b2b2c13-real-projectile-browser.test.mjs tests/es-13j9lb2b2b2b2c14-real-mobile-touch.test.mjs
+      - name: Complete repository gameplay and platform tests
+        run: npm test
+      - name: TypeScript
+        run: npm run typecheck
+      - name: Release and evidence
+        run: |
+          npm run release:verify
+          npm run release:evidence:verify
+      - name: Web build and readiness
+        run: |
+          npm run build
+          npm run release:readiness -- --output release-readiness.json
+      - name: Android debug APK
+        run: npm run android:debug
+      - name: Verify APK
+        run: test -s android/app/build/outputs/apk/debug/app-debug.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-ux02-precert-apk-${{ github.sha }}
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 7
+      - name: Install isolated pinned Playwright (do not edit package lock)
+        run: |
+          npm install --no-save --package-lock=false playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Real landscape mobile + desktop/portrait Chromium viewport validation
+        env:
+          ORBI_ANDROID_UX_OUTPUT: artifacts/android-ux02-browser
+        run: node scripts/android-ux02-panorama-browser.mjs
+      - name: Upload ACTUAL Chromium screenshots and results even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-ux02-real-browser-evidence-${{ github.sha }}
+          path: artifacts/android-ux02-browser/
+          if-no-files-found: warn
+          retention-days: 14
