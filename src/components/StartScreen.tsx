@@ -301,7 +301,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({
                 <span className="h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_16px_rgba(52,211,153,0.9)]" />
               </div>
 
-              <div className="mt-4 rounded-xl border border-slate-800/70 bg-slate-950/60 p-3">
+              <div className="orbi-start-launch-summary mt-4 rounded-xl border border-slate-800/70 bg-slate-950/60 p-3">
                 <div className="grid grid-cols-2 gap-2 text-[9px] font-mono">
                   <div>
                     <div className="uppercase text-slate-600">{language === "es" ? "MODO" : "MODE"}</div>
@@ -335,6 +335,10 @@ export const StartScreen: React.FC<StartScreenProps> = ({
                   {t("startScreen.activateSync")}
                 </span>
               </button>
+
+              <p className="orbi-start-scroll-cue hidden py-1 text-center font-mono text-[10px] tracking-[0.08em] text-cyan-200/75" aria-hidden="true">
+                {language === "es" ? "DESLIZA ↓ PARA MÁS MODOS Y OPCIONES" : "SWIPE ↓ FOR MORE MODES AND OPTIONS"}
+              </p>
 
               <div
                 data-score-attack-panel="true"
