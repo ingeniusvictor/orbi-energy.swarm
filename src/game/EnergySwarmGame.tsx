@@ -319,6 +319,8 @@ type InfiniteBossRematchProfile = Extract<
 
 export const EnergySwarmGame: React.FC = () => {
   const viewportProfile = useViewportComposition();
+  const immersiveTouchLandscape = viewportProfile.orientation === "LANDSCAPE" &&
+    viewportProfile.touchControlsRecommended;
 
   // --- REACT VIEWPORT GAME STATES (Low-frequency updates) ---
   const [isPlaying, setIsPlaying] = useState(false);
@@ -388,6 +390,7 @@ export const EnergySwarmGame: React.FC = () => {
   // Laptop Cockpit & Threat Intel states
   const [isLeftPanelCollapsed, setIsLeftPanelCollapsed] = useState(false);
   const [isRightPanelCollapsed, setIsRightPanelCollapsed] = useState(false);
+  const [mobilePanel, setMobilePanel] = useState<"closed" | "estado" | "tactica" | "equipo">("closed");
   const [activeThreatIntel, setActiveThreatIntel] = useState<EnemyType | null>(null);
 
   // Mid-run upgrades states
@@ -8220,6 +8223,8 @@ export const EnergySwarmGame: React.FC = () => {
           : "false"
       }
       data-photo-mode={isPhotoMode ? "true" : "false"}
+      data-immersive-landscape={isPlaying && immersiveTouchLandscape ? "true" : "false"}
+      data-mobile-panel={isPlaying && immersiveTouchLandscape ? mobilePanel : "closed"}
       data-photo-filter={photoFilterId}
     >
       
@@ -8654,6 +8659,13 @@ export const EnergySwarmGame: React.FC = () => {
                 onActivateOverdrive={handleOverdriveActivation}
                 onTogglePause={togglePause}
                 onToggleMute={toggleMute}
+                immersive={immersiveTouchLandscape}
+                mobilePanel={mobilePanel}
+                onMobilePanelChange={(panel) => {
+                  setMobilePanel(panel);
+                  if (panel === "tactica") setIsLeftPanelCollapsed(false);
+                  if (panel === "equipo") setIsRightPanelCollapsed(false);
+                }}
               />
 
               {/* C10: deliberate touch/keyboard buttons OUTSIDE the Canvas firing surface. */}
