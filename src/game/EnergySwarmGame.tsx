@@ -7,6 +7,7 @@ import {
   type OrbiAffinity, type OrbiCombatRole, type OrbiEnergyId, type BossEncounterStage
 } from "./types";
 
+import { projectPanoramicCanvasViewport } from "./panoramicCanvasViewport";
 import { 
   CANVAS_WIDTH, CANVAS_HEIGHT, WORLD_WIDTH, WORLD_HEIGHT, MAX_ENEMIES, 
   MAX_PROJECTILES, MAX_RESOURCES, PLAYER_BASE_SPEED, 
@@ -321,6 +322,13 @@ export const EnergySwarmGame: React.FC = () => {
   const viewportProfile = useViewportComposition();
   const immersiveTouchLandscape = viewportProfile.orientation === "LANDSCAPE" &&
     viewportProfile.touchControlsRecommended;
+  // UX02: same visual viewport and reserved compact HUD as the actual
+  // fullscreen stage, so camera, backing store and native pointer agree.
+  const panoramicViewport = projectPanoramicCanvasViewport({
+    width: viewportProfile.width,
+    height: viewportProfile.height,
+    immersive: immersiveTouchLandscape,
+  });
 
   // --- REACT VIEWPORT GAME STATES (Low-frequency updates) ---
   const [isPlaying, setIsPlaying] = useState(false);
@@ -4927,9 +4935,10 @@ export const EnergySwarmGame: React.FC = () => {
     // 2. CAMERA AND SCREEN SHAKE UPDATES
     const cam = cameraStateRef.current;
     
-    // Viewport dimensions are strictly defined by the logical backing store (800x480)
-    cam.viewportWidth = CANVAS_WIDTH;
-    cam.viewportHeight = CANVAS_HEIGHT;
+    // UX02: landscape mobile expands visible WORLD width without zooming,
+    // distorting hazards or changing original WORLD bounds and physics.
+    cam.viewportWidth = panoramicViewport.width;
+    cam.viewportHeight = panoramicViewport.height;
 
     // Dynamic Zoom Interpolation
     const swarmCount = swarmRef.current.length + 1; // Foton + followers
@@ -7403,10 +7412,10 @@ export const EnergySwarmGame: React.FC = () => {
       delete canvas.dataset.architectQaReadout;
     }
 
-    // Keep the simulation/render API in logical 800×480 coordinates while
-    // allowing the DOM canvas backing store to scale for HiDPI displays.
-    const backingScaleX = canvas.width / CANVAS_WIDTH;
-    const backingScaleY = canvas.height / CANVAS_HEIGHT;
+    // UX02: actual backing store and camera share one logical viewport.
+    // Equal world-units-per-pixel on both axes prevents stretched geometry.
+    const backingScaleX = canvas.width / panoramicViewport.width;
+    const backingScaleY = canvas.height / panoramicViewport.height;
     ctx.setTransform(backingScaleX, 0, 0, backingScaleY, 0, 0);
 
     // 1. Draw Space Background and layered grids
@@ -8767,6 +8776,8 @@ export const EnergySwarmGame: React.FC = () => {
               <div className="w-full flex flex-col items-center justify-center relative bg-slate-950 border border-slate-900 rounded-lg overflow-hidden p-1">
                 <EnergySwarmCanvas
                   canvasRef={canvasRef}
+                  logicalWidth={panoramicViewport.width}
+                  logicalHeight={panoramicViewport.height}
                   isPaused={isPaused && !isPhotoMode}
                   activeBiome={activeBiome}
                   activeFormation={activeFormation}
