@@ -161,15 +161,6 @@ export const GameHud: React.FC<GameHudProps> = ({
     return waveName; // fallback
   };
 
-  React.useEffect(() => {
-    if (!immersive || mobilePanel === "closed") return;
-    const escape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onMobilePanelChange?.("closed");
-    };
-    window.addEventListener("keydown", escape);
-    return () => window.removeEventListener("keydown", escape);
-  }, [immersive, mobilePanel, onMobilePanelChange]);
-
   return (
     <div className="orbi-game-hud w-full bg-slate-950/85 border border-slate-900 rounded-lg py-1 px-3.5 shadow-md backdrop-blur-md select-none text-white font-mono text-[11px] shrink-0" data-mobile-status-open={mobilePanel !== "closed"}>
       {immersive && (
