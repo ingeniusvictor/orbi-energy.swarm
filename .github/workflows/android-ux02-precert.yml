@@ -1,7 +1,7 @@
 name: ANDROID UX02 temporary immersive landscape pre-cert
 on:
   push:
-    branches: ['feat/android-ux02-immersive-landscape']
+    branches: ['feat/android-ux02-panoramic-playfield']
 permissions:
   contents: read
 jobs:
@@ -71,7 +71,7 @@ jobs:
           npx playwright install --with-deps chromium
       - name: Real landscape mobile + desktop/portrait Chromium viewport validation
         env:
-          ORBI_ANDROID_UX_OUTPUT: artifacts/android-ux02-browser
+          ORBI_ANDROID_UX02_OUTPUT: artifacts/android-ux02-browser
         run: node scripts/android-ux02-panorama-browser.mjs
       - name: Upload ACTUAL Chromium screenshots and results even on failure
         if: always()
