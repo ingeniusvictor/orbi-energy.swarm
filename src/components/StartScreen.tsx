@@ -55,9 +55,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({
   };
   useEffect(() => {
     const onEscape = (event: KeyboardEvent) => {
-      if (event.key !== "Escape" ||
-        !window.matchMedia("(pointer: coarse) and (orientation: landscape) and (max-height: 600px)").matches ||
-        mobileLayer === "WELCOME") return;
+      if (event.key !== "Escape" || mobileLayer === "WELCOME") return;
       event.preventDefault();
       setMobileLayer(layer => layer === "DETAIL" ? "HUB" : "WELCOME");
     };
@@ -75,7 +73,8 @@ export const StartScreen: React.FC<StartScreenProps> = ({
         onBack={backMobileMenu} onOpen={openMobileMenu}
         onPlay={() => { playClickSound(); onStartGame(); }}
         onScoreAttack={() => { playClickSound(); onStartScoreAttack(); }}
-        hasInfiniteRecord={hasInfiniteRecord} />
+        hasInfiniteRecord={hasInfiniteRecord}
+        nanoCredits={stats.totalNanoCredits} purifiedEnergy={stats.totalPurifiedEnergy} />
       {/* GLOWING HEADER */}
       <div className="orbi-start-header relative z-10 text-center mb-5">
         <div className="flex justify-center items-center gap-2 mb-1">
