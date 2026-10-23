@@ -9,19 +9,19 @@ test("mobile movement controls live in a dedicated overlay component", () => {
   const overlay = read("src/components/MobileTouchOverlay.tsx");
 
   assert.match(game, /MobileTouchOverlay/);
-  assert.match(game, /onDirectionChange=\{setMobileTouchDirection\}/);
+  assert.match(game, /onVectorChange=\{setMobileAnalogVector\}/);
   assert.doesNotMatch(game, /moveMobileDPad/);
   assert.doesNotMatch(game, /MOBILE NAVIGATION BUTTONPAD ASSIST/);
 
-  for (const direction of ["UP", "DOWN", "LEFT", "RIGHT"]) {
-    assert.match(overlay, new RegExp(direction));
+  for (const exit of ["onPointerCancel={finish}", "onLostPointerCapture={finish}", "setPointerCapture(event.pointerId)"]) {
+    assert.ok(overlay.includes(exit), exit);
   }
 });
 
 test("touch controls meet thumb-zone and safe-area layout requirements", () => {
-  const css = read("src/styles/index.css");
+  const css = read("src/styles/index.css") + read("src/styles/analogJoystick.css");
   assert.match(css, /orbi-touch-overlay/);
-  assert.match(css, /orbi-touch-pad/);
+  assert.match(css, /orbi-analog-joystick/);
   assert.match(css, /env\(safe-area-inset-left\)/);
   assert.match(css, /env\(safe-area-inset-bottom\)/);
   assert.match(css, /width:\s*48px/);
