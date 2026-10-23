@@ -26,10 +26,16 @@ jobs:
           which google-chrome || which google-chrome-stable || true
       - name: Inspect real public Chrome Vercel gameplay at 1 5 9 seconds
         run: node scripts/web-ux01b-live-diagnostics.mjs
+      - name: Build production bundle for device failure simulation
+        run: npm run typecheck && npm run build
+      - name: Real production Chrome with WebGL normal and unavailable
+        run: node scripts/web-ux01b-recovery-browser.mjs
       - if: always()
         uses: actions/upload-artifact@v4
         with:
           name: web-ux01b-live-${{ github.sha }}
-          path: artifacts/web-ux01b/
+          path: |
+            artifacts/web-ux01b/
+            artifacts/web-ux01b-production/
           retention-days: 14
           if-no-files-found: warn
