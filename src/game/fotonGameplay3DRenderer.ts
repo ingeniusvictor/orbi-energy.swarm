@@ -554,6 +554,7 @@ const stepDysonHalo = (
 };
 
 let runtime: GameplayRuntime | null = null;
+let webglUnavailable = false;
 
 const createRuntime = (
   preset: QualityPreset,
@@ -733,10 +734,16 @@ const createRuntime = (
       );
       next.status = "READY";
       next.lastMotionAt = 0;
-      next.renderer.render(
-        next.scene,
-        next.camera,
-      );
+      try {
+        next.renderer.render(
+          next.scene,
+          next.camera,
+        );
+      } catch (error) {
+        // Some browsers lose WebGL after the GLB finishes loading.
+        // Do not strand the HTML5 game loop with a blank backdrop.
+        disableFoton3D(error);
+      }
     },
     undefined,
     () => {
@@ -768,9 +775,27 @@ const destroyRuntime = (
   active.renderer.forceContextLoss?.();
 };
 
+const disableFoton3D = (error: unknown) => {
+  if (!webglUnavailable) {
+    console.warn(
+      "ORBI FOTON 3D unavailable; keeping gameplay on certified 2D avatar.",
+      error instanceof Error ? error.message : String(error),
+    );
+  }
+  webglUnavailable = true;
+  const previous = runtime;
+  runtime = null;
+  try { destroyRuntime(previous); } catch { /* GPU already unavailable */ }
+};
+
+export const reportFotonGameplay3DCompositionFailure = (error: unknown) => {
+  disableFoton3D(error);
+};
+
 const ensureRuntime = (
   preset: QualityPreset,
 ) => {
+  if (webglUnavailable) return null;
   if (
     runtime &&
     !runtime.disposed &&
@@ -779,9 +804,17 @@ const ensureRuntime = (
     return runtime;
   }
 
-  destroyRuntime(runtime);
-  runtime = createRuntime(preset);
-  return runtime;
+  try {
+    destroyRuntime(runtime);
+    runtime = null;
+    runtime = createRuntime(preset);
+    return runtime;
+  } catch (error) {
+    // A WebGL context may be blocked by GPU drivers/browser policy.
+    // Never propagate renderer initialization into React effects or RAF.
+    disableFoton3D(error);
+    return null;
+  }
 };
 
 const stepRuntimeMotion = (
@@ -888,10 +921,15 @@ export const getFotonGameplay3DFrame = (
       );
       active.lastFrameAt =
         request.nowMs;
-      active.renderer.render(
-        active.scene,
-        active.camera,
-      );
+      try {
+        active.renderer.render(
+          active.scene,
+          active.camera,
+        );
+      } catch (error) {
+        disableFoton3D(error);
+        return null;
+      }
     }
   }
 
@@ -899,7 +937,7 @@ export const getFotonGameplay3DFrame = (
 };
 
 export const getFotonGameplay3DStatus = () =>
-  runtime?.status ?? "LOADING";
+  webglUnavailable ? "FAILED" : runtime?.status ?? "LOADING";
 
 export const disposeFotonGameplay3D = () => {
   destroyRuntime(runtime);
