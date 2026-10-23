@@ -232,7 +232,7 @@ import {
   type PerformanceDiagnosticsState,
 } from "./performanceDiagnostics";
 import PerformanceDiagnosticsOverlay from "../components/PerformanceDiagnosticsOverlay";
-import { createTouchDirectionState, getTouchMovementVector, hasActiveTouchDirection, type TouchDirection } from "./touchControls";
+import { createTouchDirectionState, getTouchMovementVector } from "./touchControls";
 import { projectAnalogMotion, type AnalogVector } from "./analogJoystick";
 import {
   FOTON_THREAT_REFRESH_MS,
@@ -8187,26 +8187,6 @@ export const EnergySwarmGame: React.FC = () => {
       return;
     }
     analogJoystickRef.current = projectAnalogMotion(vector);
-  };
-
-  const setMobileTouchDirection = (dir: TouchDirection, pressed: boolean) => {
-    if (pressed && (!isPlaying || isPausedRef.current || isGameOver || isUpgradeSelectionOpenRef.current)) {
-      return;
-    }
-
-    if (pressed) initAudio();
-
-    touchDirectionsRef.current = {
-      ...touchDirectionsRef.current,
-      [dir]: pressed,
-    };
-
-    if (pressed) {
-      lastInputTypeRef.current = "TOUCH_PAD";
-      clickToMoveTargetRef.current = null;
-    } else if (!hasActiveTouchDirection(touchDirectionsRef.current) && lastInputTypeRef.current === "TOUCH_PAD") {
-      lastInputTypeRef.current = "NONE";
-    }
   };
 
   const getFormationMostUsed = (): RunArchiveEntry["mostUsedFormation"] => {
