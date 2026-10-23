@@ -32,6 +32,9 @@ interface GameHudProps {
   onActivateOverdrive: () => void;
   onTogglePause: () => void;
   onToggleMute: () => void;
+  immersive?: boolean;
+  mobilePanel?: "closed" | "estado" | "tactica" | "equipo";
+  onMobilePanelChange?: (panel: "closed" | "estado" | "tactica" | "equipo") => void;
 }
 
 export const GameHud: React.FC<GameHudProps> = ({
@@ -59,7 +62,10 @@ export const GameHud: React.FC<GameHudProps> = ({
   combatOverdriveReentryRemainingMs,
   onActivateOverdrive,
   onTogglePause,
-  onToggleMute
+  onToggleMute,
+  immersive = false,
+  mobilePanel = "closed",
+  onMobilePanelChange
 }) => {
   const { language, t } = useGameTranslation();
   const scoreAttackActive = presentationMode === "SCORE_ATTACK";
@@ -155,8 +161,74 @@ export const GameHud: React.FC<GameHudProps> = ({
     return waveName; // fallback
   };
 
+  React.useEffect(() => {
+    if (!immersive || mobilePanel === "closed") return;
+    const escape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onMobilePanelChange?.("closed");
+    };
+    window.addEventListener("keydown", escape);
+    return () => window.removeEventListener("keydown", escape);
+  }, [immersive, mobilePanel, onMobilePanelChange]);
+
   return (
-    <div className="orbi-game-hud w-full bg-slate-950/85 border border-slate-900 rounded-lg py-1 px-3.5 shadow-md backdrop-blur-md select-none text-white font-mono text-[11px] shrink-0">
+    <div className="orbi-game-hud w-full bg-slate-950/85 border border-slate-900 rounded-lg py-1 px-3.5 shadow-md backdrop-blur-md select-none text-white font-mono text-[11px] shrink-0" data-mobile-status-open={mobilePanel !== "closed"}>
+      {immersive && (
+        <div className="orbi-immersive-essential" data-testid="orbi-immersive-essential">
+          <div className="orbi-immersive-vitals" aria-label={language === "es" ? "Estado básico de combate" : "Combat essentials"}>
+            <Shield size={13} aria-hidden="true" />
+            <div className="orbi-immersive-shield-bar" role="progressbar"
+              aria-label={language === "es" ? "Escudo" : "Shield"}
+              aria-valuemin={0} aria-valuemax={100}
+              aria-valuenow={Math.round(Math.max(0, Math.min(100, shieldPercent)))}>
+              <span style={{ width: `${Math.max(0, Math.min(100, shieldPercent))}%` }} />
+            </div>
+            <span>{Math.round(shieldPercent)}%</span>
+            <strong>{isWaveBreak ? `PREP ${waveBreakTimeLeft}s` : `W${currentWave}`}</strong>
+          </div>
+          <div className="orbi-immersive-actions">
+            <button type="button" className="orbi-immersive-action"
+              onClick={onActivateOverdrive} disabled={!combatOverdriveActionEnabled}
+              aria-label={overdriveAriaLabel} title={overdriveAriaLabel}>
+              <Zap size={16} aria-hidden="true" />
+            </button>
+            <button type="button" className="orbi-immersive-action"
+              aria-label={isPaused ? "Reanudar" : "Pausar"}
+              aria-pressed={isPaused} onClick={onTogglePause}>
+              {isPaused ? <Play size={16} /> : <Pause size={16} />}
+            </button>
+            <button type="button" data-testid="orbi-estado-button"
+              className="orbi-immersive-action orbi-immersive-estado"
+              aria-expanded={mobilePanel !== "closed"}
+              aria-controls="orbi-mobile-status-panel"
+              onClick={() => onMobilePanelChange?.(mobilePanel === "closed" ? "estado" : "closed")}>
+              {language === "es" ? "Estado" : "Status"}
+            </button>
+          </div>
+        </div>
+      )}
+      {immersive && mobilePanel !== "closed" && (
+        <>
+          <button type="button" className="orbi-immersive-backdrop"
+            aria-label={language === "es" ? "Cerrar Estado" : "Close status"}
+            onClick={() => onMobilePanelChange?.("closed")} />
+          <div className="orbi-immersive-panel-heading" id="orbi-mobile-status-panel"
+            role="dialog" aria-label={language === "es" ? "Panel de Estado" : "Status panel"}>
+            <div className="orbi-immersive-panel-tabs" role="group" aria-label="Paneles">
+              {(["estado", "tactica", "equipo"] as const).map(panel => (
+                <button key={panel} type="button" aria-pressed={mobilePanel === panel}
+                  onClick={() => onMobilePanelChange?.(panel)}>
+                  {panel === "estado" ? (language === "es" ? "Estado" : "Status")
+                    : panel === "tactica" ? (language === "es" ? "Táctica" : "Tactics")
+                    : (language === "es" ? "Equipo" : "Team")}
+                </button>
+              ))}
+              <button type="button" aria-label={language === "es" ? "Cerrar panel" : "Close panel"}
+                onClick={() => onMobilePanelChange?.("closed")}>×</button>
+            </div>
+          </div>
+        </>
+      )}
+      <div className="orbi-hud-detail-grid" data-mobile-panel={mobilePanel}>
       {/* 1. HEALTH SHIELD BAR */}
       <div className="orbi-hud-shield flex items-center gap-2 max-w-[220px]">
         <span className="flex items-center gap-1 text-slate-400 font-bold shrink-0 uppercase">
@@ -297,6 +369,7 @@ export const GameHud: React.FC<GameHudProps> = ({
         >
           {audioMuted ? <VolumeX size={10} /> : <Volume2 size={10} />}
         </button>
+      </div>
       </div>
     </div>
   );
