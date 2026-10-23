@@ -35,41 +35,29 @@ async function run(name,width,height,mobile,compact){
   const cta=page.locator('[data-primary-start-cta="true"]');
   await cta.waitFor({state:"attached",timeout:15000});
   if(compact){
-   const metrics=await page.evaluate(()=>{
-     const one=s=>document.querySelector(s)?.getBoundingClientRect();
-     const deck=document.querySelector(".orbi-start-deck");
-     const tabs=document.querySelector(".orbi-start-tabs");
-     const root=document.querySelector(".orbi-premium-entry");
-     return {viewport:{width:innerWidth,height:innerHeight},
-       root:one(".orbi-premium-entry")?.toJSON(),
-       deck:one(".orbi-start-deck")?.toJSON(),
-       tabs:one(".orbi-start-tabs")?.toJSON(),
-       button:one('[data-primary-start-cta="true"]')?.toJSON(),
-       deckScrollHeight:deck?.scrollHeight,deckClientHeight:deck?.clientHeight,
-       deckOverflow:getComputedStyle(deck).overflowY,
-       tabsOverflow:getComputedStyle(tabs).overflowX,
-       rootOverflow:getComputedStyle(root).overflowY,
-       pointerCoarse:matchMedia("(pointer: coarse)").matches};
-   });
-   data.metrics=metrics;
-   check(metrics.pointerCoarse,name+": browser did not emulate touch pointer");
-   check(metrics.button&&metrics.button.height>=44,name+": play hit target too small "+JSON.stringify(metrics));
-   check(metrics.button.y>=-1&&metrics.button.bottom<=height-2,name+": Play hidden below visible viewport "+JSON.stringify(metrics));
-   check(metrics.deck?.height>=height*.44,name+": old 11.5rem deck cap still active "+JSON.stringify(metrics));
-   check(metrics.deckOverflow==="auto"&&metrics.tabsOverflow==="auto",name+": nested deck/tabs not swipeable "+JSON.stringify(metrics));
-   check(metrics.root?.height<=height+2,name+": menu exceeds Android viewport");
-   await shot(page,name+"-launch-first-frame");
-   // Entire navigation remains touch-operable without losing scroll to body.
-   await page.locator(".orbi-start-tabs button").nth(4).tap();
-   await shot(page,name+"-settings");
-   await page.locator(".orbi-start-tabs button").nth(0).tap();
-   const score=page.locator('[data-score-attack-start-cta="true"]');
-   await score.scrollIntoViewIfNeeded({timeout:7000});
-   check(await score.isVisible(),name+": Score Attack not reachable with native swipe");
-   await shot(page,name+"-score-attack-reachable");
-   // Return to the TOP of deck before the true mobile tap on Play.
-   await page.locator(".orbi-start-deck").evaluate(el=>{el.scrollTop=0});
-   await cta.tap();
+   const entry=page.getByTestId("orbi-mobile-enter");
+   await entry.waitFor({state:"visible",timeout:10000});
+   const entryBox=await entry.boundingBox();
+   check(entryBox && entryBox.height>=44 && entryBox.y>=0 && entryBox.y+entryBox.height<=height,
+     name+": landing CTA outside Android viewport");
+   await shot(page,name+"-landing");
+   await entry.tap();
+   await page.getByTestId("orbi-mobile-menu-main-play").waitFor({state:"visible"});
+   await shot(page,name+"-command-hub");
+   await page.getByTestId("orbi-mobile-menu-settings-info").tap();
+   check(await page.locator(".orbi-start-deck").isVisible(),name+": settings submenu inaccessible");
+   await shot(page,name+"-settings-submenu");
+   await page.getByTestId("orbi-mobile-menu-back").tap();
+   await page.getByTestId("orbi-mobile-menu-main-play").tap();
+   const campaign=page.getByTestId("orbi-mobile-campaign");
+   const score=page.getByTestId("orbi-mobile-score-attack");
+   check(await campaign.isVisible() && await score.isVisible(),name+": mode choices hidden");
+   const bounds=await campaign.boundingBox();
+   check(bounds && bounds.height>=44 && bounds.y>=0 && bounds.y+bounds.height<=height,
+     name+": campaign CTA outside Android viewport");
+   data.metrics={button:bounds,viewport:{width,height},layer:"DETAIL"};
+   await shot(page,name+"-game-modes");
+   await campaign.tap();
   }else{
    await shot(page,name+"-desktop-or-portrait");
    await cta.click();
