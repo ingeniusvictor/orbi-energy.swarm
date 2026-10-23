@@ -32,6 +32,8 @@ export const MobileLaunchNavigation: React.FC<Props> = ({
   nanoCredits = 0, purifiedEnergy = 0,
 }) => {
   const es = language === "es";
+  // Vite BASE_URL keeps the same visual assets working on Pages subpaths.
+  const worldImage = `url("${import.meta.env.BASE_URL}ux09/orbi-command-world.svg")`;
   const [selectedMode, setSelectedMode] = useState<"CAMPAIGN" | "SCORE_ATTACK" | "INFINITE">("CAMPAIGN");
   const choices = [
     { icon: Gamepad2, label: es ? "Modos de juego" : "Game modes", description: es ? "Campaña, desafío infinito y más" : "Campaign, survival and more", tab: "MAIN" as const, section: "PLAY" as const, art: "modes" },
@@ -60,7 +62,7 @@ export const MobileLaunchNavigation: React.FC<Props> = ({
     },
   ];
   return (
-    <section className="orbi-mobile-launch orbi-ux09" data-testid="orbi-mobile-launch" data-layer={layer}
+    <section className="orbi-mobile-launch orbi-ux09" style={{ "--orbi-ux09-world": worldImage } as React.CSSProperties} data-testid="orbi-mobile-launch" data-layer={layer}
       aria-label={es ? "Centro de mando ORBI" : "ORBI command deck"}>
       <div className="orbi-ux09-scene" aria-hidden="true" />
       {layer === "WELCOME" && (
