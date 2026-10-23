@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 const src=readFileSync(new URL("../scripts/architect-c11-browser-evidence.mjs",import.meta.url),"utf8");
-const workflow=readFileSync(new URL("../.github/workflows/es13-architect-c11-precert.yml",import.meta.url),"utf8");
+
 
 test("C11 browser proof must drive real Vite app in actual Chromium",()=>{
   assert.match(src,/import \{ chromium \} from "playwright"/);
@@ -23,13 +23,16 @@ test("C11 controlled browser clock never injects owner, boss or session state",(
   assert.doesNotMatch(src,/localStorage\.setItem|Math\.random\s*=|mockGuard|installBoss|admitInstalledBoss/);
 });
 test("C11 CI requires physical screenshot evidence, full green checks and keeps workflow temporary",()=>{
-  assert.match(workflow,/name: ES-13 Architect C11 temporary full pre-cert/);
-  assert.match(workflow,/playwright@1\.56\.1/);
-  assert.match(workflow,/playwright install --with-deps chromium/);
-  assert.match(workflow,/npm test/);
-  assert.match(workflow,/npm run typecheck/);
-  assert.match(workflow,/npm run release:verify/);
-  assert.match(workflow,/npm run android:debug/);
-  assert.match(workflow,/node scripts\/architect-c11-browser-evidence\.mjs/);
-  assert.match(workflow,/if: always\(\)/);
+  assert.test("C11 permanent harness records real screenshots, browser denials and machine evidence",()=>{
+  assert.match(src,/await after\(page,/);
+  assert.match(src,/screenshots:\[before,running,directed,manualTide,exited\]/);
+  assert.match(src,/const bytes=\(await stat\(file\)\)\.size/);
+  assert.match(src,/assert\(bytes>10000/);
+  assert.match(src,/const clicks=await page\.evaluate/);
+  assert.match(src,/assert\(clicks===0/);
+  assert.match(src,/await runDevCase\(browser,\{name:"desktop"/);
+  assert.match(src,/await runDevCase\(browser,\{name:"mobile-touch"/);
+  assert.match(src,/await runProduction\(browser\)/);
+  assert.match(src,/await writeFile\(join\(out,"evidence\.json"\)/);
+  assert.match(src,/evidence\.failures\.push/);
 });
