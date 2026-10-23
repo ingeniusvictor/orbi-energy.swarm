@@ -85,9 +85,23 @@ async function run(browser,name,width,height,mobile,touch,immersive){
       const state=page.getByTestId("orbi-estado-button");
       await state.click();
       await page.locator(".orbi-hud-detail-grid").waitFor({state:"visible"});
-      check(await page.locator(".orbi-hud-swarm").isVisible(),name+": swarm stats missing from Estado");
-      check(await page.locator(".orbi-hud-score").isVisible(),name+": score stats missing");
       await shot(page,name+"-estado");
+      const statusGeometry=await page.evaluate(()=>{
+        const names=[".orbi-game-root",".orbi-hud-detail-grid",
+          ".orbi-hud-shield",".orbi-hud-wave",".orbi-hud-swarm",".orbi-hud-score"];
+        return Object.fromEntries(names.map(selector=>{
+          const element=document.querySelector(selector);
+          const box=element?.getBoundingClientRect();
+          const css=element?getComputedStyle(element):null;
+          return [selector,{display:css?.display,visibility:css?.visibility,
+            width:box?.width,height:box?.height,y:box?.y,
+            children:element?.children.length}];
+        }));
+      });
+      check(await page.locator(".orbi-hud-swarm").isVisible(),
+        name+": swarm stats missing from Estado "+JSON.stringify(statusGeometry));
+      check(await page.locator(".orbi-hud-score").isVisible(),
+        name+": score stats missing "+JSON.stringify(statusGeometry));
       await page.locator(".orbi-immersive-panel-tabs").getByRole("button",{name:/Táctica|Tactics/}).click();
       check(await page.locator(".orbi-tactical-rail").isVisible(),name+": tactical menu inaccessible");
       await shot(page,name+"-tactica");
