@@ -109,8 +109,11 @@ async function run(browser,name,width,height,mobile,touch,immersive){
       check(await page.locator(".orbi-logistics-deck").isVisible(),name+": logistics menu inaccessible");
       await shot(page,name+"-equipo");
       await page.keyboard.press("Escape");
-      check(await page.locator(".orbi-immersive-panel-tabs").count()===0,name+": Escape failed to close Estado");
+      // React commits the drawer close asynchronously after the real Escape.
+      await page.locator(".orbi-immersive-panel-tabs").waitFor({state:"detached",timeout:5000});
       check(await page.locator(".orbi-tactical-rail").isHidden(),name+": menus did not return to hidden");
+      check(await page.locator('.orbi-immersive-essential button[aria-label="Pausar"]').count()===1,
+        name+": closing Estado also paused the game");
     }else {
       check(await page.getByTestId("orbi-estado-button").count()===0,name+": desktop/portrait received mobile cockpit");
       await shot(page,name+"-unchanged");
