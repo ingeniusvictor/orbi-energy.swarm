@@ -8924,14 +8924,14 @@ export const EnergySwarmGame: React.FC = () => {
       {/* THREAT INTEL SYSTEM DIAGNOSTIC OVERLAY */}
       {activeThreatIntel && (
         <div
-          className="fixed inset-0 bg-slate-950/90 flex items-center justify-center p-4 z-50 animate-fadeIn backdrop-blur-sm"
+          className="orbi-threat-intel-overlay fixed inset-0 bg-slate-950/90 flex items-center justify-center p-4 z-50 animate-fadeIn backdrop-blur-sm"
           role="dialog"
           aria-modal="true"
           aria-labelledby="threat-intel-title"
           aria-describedby="threat-intel-description"
         >
-          <div className="bg-slate-900 border border-cyan-500/40 rounded-xl p-5 max-w-md w-full shadow-2xl relative space-y-4 font-mono text-white text-xs">
-            <div className="flex items-center gap-2 border-b border-cyan-950/60 pb-3">
+          <div className="orbi-threat-intel-dialog bg-slate-900 border border-cyan-500/40 rounded-xl p-5 max-w-md w-full shadow-2xl relative space-y-4 font-mono text-white text-xs">
+            <div className="orbi-threat-intel-heading flex items-center gap-2 border-b border-cyan-950/60 pb-3">
               <span className="w-3 h-3 bg-cyan-500 rounded-full animate-ping" />
               <div className="flex-1">
                 <span className="text-[10px] text-cyan-400 font-bold uppercase tracking-wider">THREAT DETECTED</span>
@@ -8944,7 +8944,7 @@ export const EnergySwarmGame: React.FC = () => {
               </div>
             </div>
 
-            <div className="space-y-3.5 leading-relaxed text-[11px]">
+            <div className="orbi-threat-intel-details space-y-3.5 leading-relaxed text-[11px]">
               <div className="bg-slate-950/50 p-2.5 rounded border border-slate-800">
                 <span className="text-slate-500 text-[10px] uppercase font-bold">DESCRIPCIÓN OPERATIVA</span>
                 <p id="threat-intel-description" className="text-slate-300 mt-1">
@@ -8983,7 +8983,7 @@ export const EnergySwarmGame: React.FC = () => {
                 setPausedState(false);
                 playClickSound();
               }}
-              className="w-full bg-cyan-500 hover:bg-cyan-400 text-black py-2.5 rounded font-bold transition duration-200 active:scale-[0.98] shadow-lg shadow-cyan-500/20 text-center text-xs tracking-wider uppercase border border-cyan-300/30 cursor-pointer"
+              className="orbi-threat-intel-continue w-full bg-cyan-500 hover:bg-cyan-400 text-black py-2.5 rounded font-bold transition duration-200 active:scale-[0.98] shadow-lg shadow-cyan-500/20 text-center text-xs tracking-wider uppercase border border-cyan-300/30 cursor-pointer"
             >
               ENTENDIDO - REANUDAR CONEXIÓN
             </button>
