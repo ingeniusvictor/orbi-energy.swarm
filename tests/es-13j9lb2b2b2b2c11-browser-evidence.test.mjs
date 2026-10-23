@@ -34,3 +34,13 @@ test("C11 permanent evidence harness keeps actual browser assertions after tempo
   assert.match(src,/await writeFile\(join\(out,"evidence\.json"\)/);
   assert.match(src,/evidence\.failures\.push/);
 });
+
+test("C11 read-only authentic DEV pattern attributes come from current real attack refs",()=>{
+  const game=readFileSync(new URL("../src/game/EnergySwarmGame.tsx",import.meta.url),"utf8");
+  assert.match(game,/data-qa-pattern=\{architectQaGridLockRef\.current !== null/);
+  assert.match(game,/data-qa-director=\{architectQaDirectorRef\.current !== null/);
+  assert.match(game,/refreshArchitectQaTouchControls\(v => v \+ 1\)/);
+  assert.match(src,/getAttribute\("data-qa-pattern"\)/);
+  assert.match(src,/getAttribute\("data-qa-director"\)/);
+  assert.match(src,/=== "GRID_LOCK"/);
+});
