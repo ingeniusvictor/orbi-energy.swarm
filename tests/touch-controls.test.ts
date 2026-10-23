@@ -52,12 +52,13 @@ test("touch overlay uses pointer capture and explicit press/release signals", ()
   const overlay = read("src/components/MobileTouchOverlay.tsx");
 
   assert.match(overlay, /setPointerCapture\(event\.pointerId\)/);
-  assert.match(overlay, /onDirectionChange\(direction, true\)/);
-  assert.match(overlay, /onDirectionChange\(direction, false\)/);
+  assert.match(overlay, /onVectorChange/);
+  assert.match(overlay, /latestCallback\.current\(NEUTRAL_ANALOG_VECTOR\)/);
   assert.match(overlay, /onPointerUp/);
   assert.match(overlay, /onPointerCancel/);
   assert.match(overlay, /onLostPointerCapture/);
-  assert.match(overlay, /onKeyUp/);
+  assert.match(overlay, /window\.addEventListener\("blur", release\)/);
+  assert.match(overlay, /data-testid="orbi-analog-joystick"/);
 });
 
 test("touch movement is delta-driven inside the canonical movement pipeline", () => {
@@ -66,7 +67,8 @@ test("touch movement is delta-driven inside the canonical movement pipeline", ()
   assert.match(game, /getTouchMovementVector\(touchDirectionsRef\.current\)/);
   assert.match(game, /lastInputTypeRef\.current = "TOUCH_PAD"/);
   assert.match(game, /lastInputTypeRef\.current === "KEYBOARD" \|\| lastInputTypeRef\.current === "TOUCH_PAD"/);
-  assert.match(game, /\(moveX \/ len\) \* pSpeed \* \(delta \/ 16\.6\)/);
+  assert.match(game, /\(moveX \/ len\) \* pSpeed \* intensity \* \(delta \/ 16\.6\)/);
+  assert.match(game, /const intensity = !hasKeyboardMovement && isAnalogEngaged/);
   assert.doesNotMatch(game, /PLAYER_BASE_SPEED \* 8/);
 });
 
@@ -75,5 +77,6 @@ test("lifecycle cleanup releases all held touch directions", () => {
 
   assert.match(game, /touchDirectionsRef\.current = createTouchDirectionState\(\)/);
   assert.match(game, /if \(nextPaused\) \{\s*touchDirectionsRef\.current = createTouchDirectionState\(\)/);
-  assert.match(game, /onDirectionChange=\{setMobileTouchDirection\}/);
+  assert.match(game, /onVectorChange=\{setMobileAnalogVector\}/);
+  assert.match(game, /analogJoystickRef\.current = \{ x: 0, y: 0 \}/);
 });
