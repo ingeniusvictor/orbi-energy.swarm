@@ -1,0 +1,81 @@
+name: ES-13 Architect C12 temporary full pre-cert
+on:
+  push:
+    branches: ['feat/es13-architect-mobile-qa-status-c12']
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+      - name: Install Android SDK
+        run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0' >/dev/null
+      - name: Authorized C12 DEV QA mobile scope
+        shell: bash
+        run: |
+          git diff --name-only 9f9930b583f3f5e02519c0cfb63539e29d785054 HEAD | sort > /tmp/actual
+          printf '%s\n' \
+            '.github/workflows/es13-architect-c12-precert.yml' \
+            'src/game/EnergySwarmGame.tsx' \
+            'scripts/architect-c11-browser-evidence.mjs' \
+            'tests/es-13j9lb2b2b2b2c12-mobile-qa-status.test.mjs' | sort > /tmp/expected
+          diff -u /tmp/expected /tmp/actual
+      - run: npm ci
+      - name: Focused original Architect C5-C12 and J2
+        run: |
+          node --test tests/es-13j9lb2b2b2b2c5-grid-lock.test.mjs tests/es-13j9lb2b2b2b2c6-vector-tide.test.mjs tests/es-13j9lb2b2b2b2c7-sector-wall.test.mjs tests/es-13j9lb2b2b2b2c8-pattern-director.test.mjs tests/es-13j9lb2b2b2b2c9-integrated-qa-hud.test.mjs tests/es-13j9lb2b2b2b2c10-dev-touch-controls.test.mjs tests/es-13j9lb2b2b2b2c11-browser-evidence.test.mjs tests/es-13j9lb2b2b2b2c12-mobile-qa-status.test.mjs tests/es-13j2b-live-overdrive-adoption.test.mjs
+          npx tsx --test tests/gameplay/blackout-architect-dev-grid-lock.test.ts tests/gameplay/blackout-architect-dev-vector-tide.test.ts tests/gameplay/blackout-architect-dev-sector-wall.test.ts tests/gameplay/blackout-architect-dev-pattern-director.test.ts tests/gameplay/blackout-architect-dev-integrated-hud.test.ts tests/gameplay/blackout-architect-dev-touch-controls.test.ts
+      - name: Complete repository gameplay and platform tests
+        run: npm test
+      - name: TypeScript
+        run: npm run typecheck
+      - name: Release and evidence
+        run: |
+          npm run release:verify
+          npm run release:evidence:verify
+      - name: Web build and readiness
+        run: |
+          npm run build
+          npm run release:readiness -- --output release-readiness.json
+      - name: Android debug APK
+        run: npm run android:debug
+      - name: Verify APK
+        run: test -s android/app/build/outputs/apk/debug/app-debug.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: es13-c12-precert-apk-${{ github.sha }}
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 7
+      - name: Install isolated pinned Playwright (do not edit package lock)
+        run: |
+          npm install --no-save --package-lock=false playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Run actual DEV and production Chromium interactions
+        env:
+          ORBI_C11_OUTPUT: artifacts/es13-c12-browser
+        run: node scripts/architect-c11-browser-evidence.mjs
+      - name: Upload ACTUAL Chromium screenshots and results even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: es13-c12-real-browser-evidence-${{ github.sha }}
+          path: artifacts/es13-c12-browser/
+          if-no-files-found: warn
+          retention-days: 14
