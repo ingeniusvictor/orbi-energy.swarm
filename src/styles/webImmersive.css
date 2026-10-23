@@ -44,3 +44,39 @@
     gap: 5px;
   }
 }
+
+/* UX01B: intentional clean photo mode keeps its frame, but a tiny always
+   operable return control prevents an unmarked apparently frozen screen. */
+.orbi-game-root[data-web-immersive="true"][data-photo-mode="true"]
+  .orbi-web-photo-return {
+  position: fixed;
+  z-index: 95;
+  top: max(8px, env(safe-area-inset-top));
+  right: max(10px, env(safe-area-inset-right));
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 13px;
+  border: 1px solid rgba(103, 232, 249, .38);
+  border-radius: 10px;
+  background: rgba(2, 8, 19, .84);
+  color: #e0f2fe;
+  font: 700 11px/1.1 monospace;
+  letter-spacing: .035em;
+  cursor: pointer;
+  touch-action: manipulation;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, .4);
+}
+.orbi-web-photo-return kbd {
+  padding: 3px 5px;
+  border: 1px solid rgba(103, 232, 249, .25);
+  border-radius: 4px;
+  color: #a5f3fc;
+}
+.orbi-web-photo-return:is(:hover, :focus-visible) {
+  background: rgba(8, 47, 73, .95);
+  outline: 2px solid #67e8f9;
+  outline-offset: 2px;
+}
