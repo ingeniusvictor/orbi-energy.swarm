@@ -366,3 +366,121 @@
   width: min(450px, calc(100vw - 16px));
   pointer-events: none;
 }
+
+
+/* UX03 — Native Android / coarse-touch compact LANDSCAPE launch deck.
+   The old global max-height calc(100dvh - 11.5rem) left ~176px of deck
+   on a 740x360 screen and pushed PLAY below an ambiguous nested scroller.
+   Only the pre-game menu is affected; the immersive combat stage is intact. */
+@media (orientation: landscape) and (max-height: 600px) and (pointer: coarse) {
+  .orbi-premium-entry {
+    box-sizing: border-box;
+    height: 100dvh;
+    min-height: 0;
+    max-height: 100dvh;
+    width: 100%;
+    padding: max(4px, env(safe-area-inset-top))
+      max(10px, env(safe-area-inset-right))
+      max(4px, env(safe-area-inset-bottom))
+      max(10px, env(safe-area-inset-left)) !important;
+    overflow-x: hidden;
+    overflow-y: hidden;
+    justify-content: flex-start !important;
+    gap: 0;
+  }
+  .orbi-premium-entry .orbi-start-header {
+    flex: 0 0 auto;
+    width: 100%;
+    margin: 0 0 3px !important;
+  }
+  .orbi-premium-entry .orbi-start-header .orbi-premium-title {
+    margin-top: 0 !important;
+    font-size: clamp(17px, 3.2vw, 27px) !important;
+    line-height: 1.08;
+    letter-spacing: .015em;
+  }
+  .orbi-premium-entry .orbi-start-header .orbi-premium-eyebrow,
+  .orbi-premium-entry .orbi-start-header .orbi-premium-eyebrow + span,
+  .orbi-premium-entry .orbi-start-header p {
+    display: none;
+  }
+  .orbi-premium-entry .orbi-start-language {
+    flex: 0 0 auto;
+    margin: 1px 0 5px !important;
+    min-height: 28px;
+    padding: 2px 6px;
+    gap: 5px;
+  }
+  .orbi-premium-entry .orbi-start-language button {
+    min-height: 28px;
+    min-width: 64px;
+    padding: 3px 6px;
+  }
+  .orbi-premium-entry .orbi-start-deck {
+    flex: 1 1 0;
+    min-height: 0;
+    width: 100%;
+    max-height: none !important;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
+    padding: 5px 9px 14px !important;
+    border-radius: 12px;
+    scrollbar-width: auto;
+    scrollbar-color: rgba(103,232,249,.7) rgba(15,23,42,.55);
+  }
+  .orbi-premium-entry .orbi-start-deck::-webkit-scrollbar {
+    width: 9px;
+  }
+  .orbi-premium-entry .orbi-start-tabs {
+    display: flex;
+    flex-wrap: nowrap;
+    flex-shrink: 0;
+    position: sticky;
+    top: -5px;
+    justify-content: flex-start;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: thin;
+    gap: 4px;
+    margin: 0 0 5px !important;
+    padding: 4px 3px 6px !important;
+    scroll-padding-inline: 12px;
+    overscroll-behavior-x: contain;
+    touch-action: pan-x;
+  }
+  .orbi-premium-entry .orbi-start-tabs button {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    min-height: 39px;
+    padding: 6px 11px;
+    font-size: 11px;
+  }
+  .orbi-premium-entry .orbi-start-main-grid { gap: 7px !important; }
+  .orbi-premium-entry .orbi-start-launch {
+    display: flex;
+    flex-direction: column;
+    padding: 8px 10px !important;
+    scroll-margin-top: 53px;
+  }
+  .orbi-premium-entry .orbi-start-launch > div:first-child { order: -2; }
+  .orbi-premium-entry .orbi-start-launch > .orbi-premium-cta {
+    order: -1;
+    min-height: 48px;
+    margin: 7px 0 4px !important;
+    padding: 9px 12px !important;
+    font-size: 12px;
+  }
+  /* Pilot records below still contain these stats; don't bury PLAY behind
+     their duplicate summary on a short landscape screen. */
+  .orbi-premium-entry .orbi-start-launch-summary { display: none; }
+  .orbi-premium-entry .orbi-start-scroll-cue {
+    display: block;
+    order: 0;
+  }
+  .orbi-premium-entry .orbi-start-hero-stage {
+    min-height: 200px !important;
+  }
+}
