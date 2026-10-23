@@ -20,6 +20,7 @@ import {
   FOTON_GAMEPLAY_COMPOSITE_SIZE,
   getFotonGameplay3DFrame,
   prewarmFotonGameplay3D,
+  reportFotonGameplay3DCompositionFailure,
 } from "./fotonGameplay3DRenderer";
 
 interface EnergySwarmCanvasProps {
@@ -196,6 +197,7 @@ export function drawFoton(
 
   if (glbFrame) {
     ctx.save();
+    try {
 
     // The simple 2D integrity ring is intentionally replaced by the detached
     // 3D Dyson halo. The larger transparent composite keeps the GLB body at
@@ -225,6 +227,11 @@ export function drawFoton(
 
     ctx.restore();
     return;
+    } catch (error) {
+      ctx.restore();
+      reportFotonGameplay3DCompositionFailure(error);
+      // Continue into the already-certified 2D tactical avatar below.
+    }
   }
 
   // Loading/failure fallback only. Golden Core keeps its historical external
