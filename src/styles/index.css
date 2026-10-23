@@ -2342,3 +2342,8 @@ body {
 @media (prefers-reduced-motion:reduce) {
  .orbi-ux09-command-grid .orbi-ux09-tile,.orbi-ux09 .orbi-mobile-launch__primary {transition:none;}
 }
+
+/* UX09 touchscreen accessibility: never allow the compact mode CTAs below 44px. */
+@media (orientation: landscape) and (max-height:600px) {
+ .orbi-ux09-mode-action { min-height:44px!important;flex-shrink:0; }
+}
