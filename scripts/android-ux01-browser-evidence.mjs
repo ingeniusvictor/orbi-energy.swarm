@@ -50,9 +50,15 @@ async function run(browser,name,width,height,mobile,touch,immersive){
     const rect=await stage.boundingBox();
     check(rect,name+": stage missing");
     if(immersive){
-      const usable=height-45;
-      check(rect.height>=usable*.92,name+": stage uses only "+rect.height+" of "+usable+" available height");
-      check(rect.width>=width*.96,name+": stage does not span landscape width");
+      // Mobile Chromium emulates browser chrome; measure the game's ACTUAL
+      // visual viewport rather than the nominal device screen resolution.
+      // Native Android immersive mode hides system bars separately.
+      const rootBox=await root.boundingBox();
+      const hudBox=await page.locator(".orbi-game-hud").boundingBox();
+      check(rootBox && hudBox,name+": root/HUD rectangles missing");
+      const usable=rootBox.height-hudBox.height;
+      check(rect.height>=usable*.95,name+": stage uses only "+rect.height+" of "+usable+" actual visible game height");
+      check(rect.width>=rootBox.width*.96,name+": stage does not span available landscape width");
       const hud=page.locator(".orbi-game-hud");
       check((await hud.boundingBox()).height<=48,name+": persistent HUD too tall");
       check(await page.locator(".orbi-tactical-rail").isHidden(),name+": tactical rail takes gameplay space");
