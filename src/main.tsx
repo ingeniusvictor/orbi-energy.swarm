@@ -3,6 +3,7 @@ import {createRoot} from 'react-dom/client';
 import App from './App.tsx';
 import {registerOrbiServiceWorker} from './pwa.ts';
 import './styles/index.css';
+import './styles/androidImmersive.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
