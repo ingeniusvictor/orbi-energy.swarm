@@ -497,6 +497,8 @@ export const EnergySwarmGame: React.FC = () => {
   const architectQaCardinalsRef = useRef<Readonly<BlackoutArchitectDevQaCardinalGeometry> | null>(null);
   // Exactly one developer QA projectile, held in the existing projectilesRef array.
   const architectQaShotRef = useRef<Projectile | null>(null);
+  // C14: authentic DEV-only pointer kind observation, never used for damage.
+  const architectQaLastPointerTypeRef = useRef<"touch" | "mouse" | "pen" | null>(null);
   // Only DEV QA owns this snapshot; restore camera upon every QA teardown.
   const architectQaCameraRestoreRef = useRef<{cameraX:number;cameraY:number} | null>(null);
   const architectQaGridLockRef = useRef<BlackoutArchitectDevQaGridLockState | null>(null);
@@ -1164,6 +1166,7 @@ export const EnergySwarmGame: React.FC = () => {
     }
     // Keep J2 Overdrive handler contract isolated from projectile collection work.
     clearArchitectQaShot();
+    architectQaLastPointerTypeRef.current = null;
     // Release cardinal geometry even after any partial QA installation.
     architectQaCardinalsRef.current = null;
     const qaBoss = architectQaBossRef.current;
@@ -7381,6 +7384,7 @@ export const EnergySwarmGame: React.FC = () => {
           radius:a.radius,health:a.health,maxHealth:a.maxHealth})),
         foton: {x:playerPosRef.current.x,y:playerPosRef.current.y},
         shotActive: architectQaShotRef.current !== null,
+        lastQaPointerType: architectQaLastPointerTypeRef.current,
         camera: {x:cam.cameraX,y:cam.cameraY,zoom:cam.zoom,
           width:cam.viewportWidth,height:cam.viewportHeight},
       });
@@ -8023,6 +8027,8 @@ export const EnergySwarmGame: React.FC = () => {
       };
       projectilesRef.current.push(shot);
       architectQaShotRef.current = shot;
+      architectQaLastPointerTypeRef.current =
+        e.pointerType === "touch" ? "touch" : e.pointerType === "pen" ? "pen" : "mouse";
       return;
     }
 
