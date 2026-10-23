@@ -89,7 +89,7 @@ async function scenario(name,serviceWorkers) {
 }
 await mkdir(output,{recursive:true});
 try{
- browser=await chromium.launch({headless:true,args:["--disable-dev-shm-usage","--use-gl=angle","--use-angle=swiftshader"]});
+ browser=await chromium.launch({channel:"chrome",headless:true,args:["--disable-dev-shm-usage","--use-gl=angle","--use-angle=swiftshader"]});
  await scenario("live-sw-blocked","block");
  await scenario("live-sw-active","allow");
 }catch(e){report.failures.push({type:"launch",error:String(e)});}
