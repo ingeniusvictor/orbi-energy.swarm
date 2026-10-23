@@ -60,7 +60,7 @@ async function run(name,width,height,mobile,compact){
    await campaign.tap();
   }else{
    await shot(page,name+"-desktop-or-portrait");
-   await cta.click();
+   // UX09: legacy desktop/portrait CTA remains in DOM for archival compatibility,\n   // but all production viewports now use the accessible three-layer launch.\n   await page.getByTestId("orbi-mobile-enter").click();\n   await page.getByTestId("orbi-mobile-menu-main-play").click();\n   await page.getByTestId("orbi-mobile-campaign").click();
   }
   await page.locator("#game-canvas").waitFor({state:"visible",timeout:20000});
   const game=page.locator(".orbi-game-root");
