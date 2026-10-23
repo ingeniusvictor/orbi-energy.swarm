@@ -35,7 +35,7 @@ jobs:
       - name: Install pinned Chromium
         run: |
           npm install --no-save --package-lock=false playwright@1.55.0
-          npx playwright install --with-deps chromium
+          which google-chrome || which google-chrome-stable
       - name: Real touch mobile landscape first-frame Play and secondary tabs
         run: node scripts/android-ux03-launch-browser.mjs
       - uses: actions/upload-artifact@v4
