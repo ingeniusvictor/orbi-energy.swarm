@@ -3,9 +3,5 @@
  * corrupt simulation elapsed time or crash strict Overdrive projections.
  * Positive deltas and the existing >100ms tab-switch clamp remain unchanged. */
 export const nonNegativeAnimationFrameDelta = (
-  animationTimestampMs: number,
-  previousTimestampMs: number,
-): number => {
-  const elapsed = animationTimestampMs - previousTimestampMs;
-  return Number.isFinite(elapsed) && elapsed > 0 ? elapsed : 0;
-};
+  elapsedMs: number,
+): number => Number.isFinite(elapsedMs) && elapsedMs > 0 ? elapsedMs : 0;
