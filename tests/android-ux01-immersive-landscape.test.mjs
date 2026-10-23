@@ -47,7 +47,7 @@ test("ANDROID UX01 battlefield fills screen without distorting/cropping world or
   assert.match(game,/<EnergySwarmCanvas/);
   assert.match(game,/onPointerDown=\{handlePointerDown\}/);
   assert.match(game,/onPointerUp=\{handlePointerUp\}/);
-  assert.match(game,/<MobileTouchOverlay onDirectionChange=\{setMobileTouchDirection\}/);
+  assert.match(game,/<MobileTouchOverlay onVectorChange=\{setMobileAnalogVector\}/);
   assert.match(game,/<MobileFormationCarousel/);
 });
 
