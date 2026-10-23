@@ -217,7 +217,9 @@
   overflow-y: auto;
   align-content: start;
   grid-template-columns: minmax(0,1fr);
-  grid-template-areas: "shield" "wave" "swarm" "score" "actions";
+  /* The objective is a sixth grid child. Leaving it unnamed creates an
+     implicit second column that collapses the named sections to 0px. */
+  grid-template-areas: "shield" "wave" "objective" "swarm" "score" "actions";
   padding: 14px;
   gap: 13px;
   border: 1px solid rgba(103,232,249,.23);
