@@ -1337,6 +1337,14 @@ export const EnergySwarmGame: React.FC = () => {
         return;
       }
 
+      // UX01: Escape closes the mobile Estado drawer; it must not also pause
+      // an active game. The ordinary Escape-to-pause behavior is preserved.
+      if (e.key === "Escape" && immersiveTouchLandscape && mobilePanel !== "closed" && !isPhotoMode) {
+        e.preventDefault();
+        setMobilePanel("closed");
+        return;
+      }
+
       // Manual triple-modifier diagnostic ONLY in the unbundled Vite dev app.
       if (import.meta.env.DEV && e.ctrlKey && e.altKey && e.shiftKey && e.code === "F9") {
         e.preventDefault();
@@ -1478,7 +1486,7 @@ export const EnergySwarmGame: React.FC = () => {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
-  }, [isPlaying, isPaused, isPhotoMode, isGameOver, upgradesLevel, presentationMode]);
+  }, [isPlaying, isPaused, isPhotoMode, isGameOver, upgradesLevel, presentationMode, immersiveTouchLandscape, mobilePanel]);
 
   // --- ANDROID / WEB APP LIFECYCLE SAFETY ---
   useEffect(() => {
