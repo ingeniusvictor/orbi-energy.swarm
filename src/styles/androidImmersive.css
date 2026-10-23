@@ -296,3 +296,38 @@
   .orbi-game-root[data-immersive-landscape="true"] .orbi-game-hud { height: 42px; flex-basis: 42px; }
   .orbi-game-root[data-immersive-landscape="true"] .orbi-immersive-vitals { font-size: 10px; }
 }
+
+/* UX01B — explicitly size the battlefield from the visual viewport.
+   The legacy 68dvh stage rule must not determine a flex parent's intrinsic
+   height on short landscape phones. Reserve just 45px for essential HUD. */
+.orbi-game-root[data-immersive-landscape="true"] .orbi-game-shell {
+  position: relative;
+}
+.orbi-game-root[data-immersive-landscape="true"] .orbi-game-workspace {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100% !important;
+}
+.orbi-game-root[data-immersive-landscape="true"] .orbi-battlefield {
+  position: relative;
+  height: 100%;
+}
+.orbi-game-root[data-immersive-landscape="true"] .orbi-game-hud {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+}
+.orbi-game-root[data-immersive-landscape="true"] .orbi-battlefield > div:has(> .orbi-game-stage) {
+  position: absolute;
+  inset: 45px 0 0 0;
+  width: 100%;
+  height: auto !important;
+}
+@media (max-height: 390px) and (orientation: landscape) {
+  .orbi-game-root[data-immersive-landscape="true"] .orbi-battlefield > div:has(> .orbi-game-stage) {
+    top: 42px;
+  }
+}
