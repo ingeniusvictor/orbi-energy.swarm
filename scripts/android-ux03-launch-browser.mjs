@@ -68,6 +68,32 @@ async function run(name,width,height,mobile,compact){
   if(compact)check(data.gameMode==="true",name+": game should switch to immersive Android");
   check(await page.locator(".orbi-game-hud").isVisible(),name+": gameplay HUD hidden after Play");
   await shot(page,name+"-battlefield-after-play");
+  if(compact){
+   const joystick=page.getByTestId("orbi-analog-joystick");
+   await joystick.waitFor({state:"visible",timeout:10000});
+   const rect=await joystick.boundingBox();
+   check(rect && rect.width>=110 && rect.height>=110,name+": joystick is too small");
+   const thumb=page.locator(".orbi-analog-joystick__thumb");
+   const neutral=await thumb.evaluate(el=>getComputedStyle(el).transform);
+   const x=rect.x+rect.width/2, y=rect.y+rect.height/2;
+   const client=await ctx.newCDPSession(page);
+   try{
+    await client.send("Input.dispatchTouchEvent",{type:"touchStart",touchPoints:[{x,y}]});
+    await client.send("Input.dispatchTouchEvent",{type:"touchMove",touchPoints:[{x:x+30,y:y-25}]});
+    await page.waitForFunction(()=>document.querySelector('[data-testid="orbi-analog-joystick"]')?.getAttribute("data-engaged")==="true");
+    const moved=await thumb.evaluate(el=>getComputedStyle(el).transform);
+    check(moved!==neutral,name+": diagonal drag did not displace analog thumb");
+    await shot(page,name+"-analog-held-diagonal");
+    await client.send("Input.dispatchTouchEvent",{type:"touchEnd",touchPoints:[]});
+    await page.waitForFunction(()=>document.querySelector('[data-testid="orbi-analog-joystick"]')?.getAttribute("data-engaged")==="false");
+    const returned=await thumb.evaluate(el=>getComputedStyle(el).transform);
+    check(returned===neutral,name+": release did not return thumb to center");
+    data.analog={capture:true,moved:true,released:true};
+   }finally{
+    await client.send("Input.dispatchTouchEvent",{type:"touchEnd",touchPoints:[]}).catch(()=>{});
+    await client.detach();
+   }
+  }
   check(errors.length===0,name+": page errors "+JSON.stringify(errors));
   data.pass=true;
  }catch(error){data.pass=false;data.error=String(error);proof.failures.push({name,error:String(error),stack:error?.stack?.slice(0,1800)});}
