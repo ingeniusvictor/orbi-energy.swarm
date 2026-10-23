@@ -34,9 +34,9 @@ async function run(width,height,mobile,deviceScaleFactor=1){
   await page.goto(origin,{waitUntil:"domcontentloaded",timeout:30000});
   const enter=page.getByTestId("orbi-mobile-enter");
   if(await enter.isVisible()){
-   await enter.tap();
-   await page.getByTestId("orbi-mobile-menu-main-play").tap();
-   await page.getByTestId("orbi-mobile-campaign").tap();
+   await enter.click();
+   await page.getByTestId("orbi-mobile-menu-main-play").click();
+   await page.getByTestId("orbi-mobile-campaign").click();
   } else {
    await page.locator('[data-primary-start-cta="true"]').click();
   }
