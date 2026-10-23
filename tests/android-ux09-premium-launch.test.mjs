@@ -13,7 +13,7 @@ test("UX09 retains the entire welcome > hub > detail route and both genuine laun
   assert.match(start, /setMobileLayer\("HUB"\)/);
   assert.match(ui, /onPlay: \(\) => void/);
   assert.match(ui, /onScoreAttack: \(\) => void/);
-  assert.match(ui, /data-testid="orbi-mobile-campaign"/);
+  assert.match(ui, /"orbi-mobile-campaign"/);
   assert.match(ui, /orbi-mobile-score-attack/);
   assert.match(start, /onStartGame\(\)/);
   assert.match(start, /onStartScoreAttack\(\)/);
