@@ -51,13 +51,18 @@ async function run(width,height,mobile,deviceScaleFactor=1){
    await page.locator(".orbi-wave-intro-card").waitFor({state:"visible",timeout:45000});
    evidence.banner=await metrics(page,".orbi-wave-intro-card");
    evidence.bannerText=await page.locator(".orbi-wave-intro-card").innerText();
-   ensure(evidence.banner.width<=421&&evidence.banner.height<=77,
+   ensure(evidence.banner.width<=421&&evidence.banner.height<=61,
     name+": oversized sector banner "+JSON.stringify(evidence.banner));
    ensure(evidence.banner.bottom<height*.55,name+": banner blocks center");
    ensure((await metrics(page,".orbi-wave-intro")).pointerEvents==="none",
     name+": notification intercepts input");
    ensure(evidence.bannerText.includes("SECTOR"),name+": lost sector label");
+   evidence.sectorLabel=await metrics(page,".orbi-wave-intro-card > span");
+   ensure(evidence.sectorLabel.y>=evidence.banner.y &&
+      evidence.sectorLabel.bottom<=evidence.banner.bottom,
+      name+": sector label clipped by banner "+JSON.stringify(evidence.sectorLabel));
    await screenshot(page,name+"-real-wave-banner");
+   await page.locator(".orbi-wave-intro").waitFor({state:"hidden",timeout:12000});
    // Layout fixtures mount only the same CSS classes, outside normal game state.
    // Real gameplay is never paused/reset or altered to obtain these measurements.
    await page.evaluate(()=>{
