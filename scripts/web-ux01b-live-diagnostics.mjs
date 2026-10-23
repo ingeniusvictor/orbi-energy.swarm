@@ -75,6 +75,25 @@ async function scenario(name,serviceWorkers) {
     await sleep(3000);
     await snapshot(page,name+"-9s-after-key",info);
     const first=info.states[0],last=info.states.at(-1);
+    // Real photo-mode and lifecycle demonstration: this intentionally
+    // reveals why the current UI can show an unmarked static space frame.
+    await page.keyboard.press("F10");
+    await sleep(3000);
+    await snapshot(page,name+"-photo-mode-after-hint",info);
+    const photo=info.states.at(-1);
+    if(photo.attrs?.["data-photo-mode"]!=="true" || photo.HUD){
+      report.failures.push({scenario:name,error:"F10 photo-mode hiding not reproduced"});
+    }
+    await page.keyboard.press("Escape");
+    await sleep(300);
+    await snapshot(page,name+"-returned-to-pause",info);
+    await page.keyboard.press("p");
+    await sleep(600);
+    await snapshot(page,name+"-resume-after-photo",info);
+    const resumed=info.states.at(-1);
+    if(resumed.attrs?.["data-photo-mode"]!=="false" || !resumed.HUD){
+      report.failures.push({scenario:name,error:"Photo->pause->play recovery failed"});
+    }
     const failures=[];
     if(!last.rootPresent||!last.HUD||!last.stageVisible)failures.push("visible root / HUD / stage missing after 9s");
     if(last.attrs?.["data-photo-mode"]!=="false")failures.push("unexpected photo-mode");
