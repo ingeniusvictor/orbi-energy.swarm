@@ -331,3 +331,13 @@
     top: 42px;
   }
 }
+
+/* UX01C — shell must be anchored to the physical app viewport, not
+   vertically centered by legacy .orbi-game-root justify-center flex rules. */
+.orbi-game-root[data-immersive-landscape="true"] .orbi-game-shell {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-height: 100%;
+}
