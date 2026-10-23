@@ -24,10 +24,10 @@ async function metrics(page,selector){
    pointerEvents:s.pointerEvents,overflowY:s.overflowY,scrollHeight:el.scrollHeight};
  });
 }
-async function run(width,height,mobile){
- const name=(mobile?"touch-":"desktop-")+width+"x"+height;
+async function run(width,height,mobile,deviceScaleFactor=1){
+ const name=(mobile?"touch-":"desktop-")+width+"x"+height+"-dpr"+deviceScaleFactor;
  const context=await browser.newContext({viewport:{width,height},
-  isMobile:mobile,hasTouch:mobile,deviceScaleFactor:1,serviceWorkers:"block",reducedMotion:"reduce"});
+  isMobile:mobile,hasTouch:mobile,deviceScaleFactor,serviceWorkers:"block",reducedMotion:"reduce"});
  const page=await context.newPage(),errors=[],evidence={name,width,height,mobile};
  page.on("pageerror",e=>errors.push(String(e)));
  try {
@@ -101,7 +101,10 @@ try{
  ensure(ready,"Vite production preview unavailable");
  browser=await chromium.launch({channel:"chrome",headless:true,
   args:["--disable-dev-shm-usage","--use-gl=angle","--use-angle=swiftshader"]});
- for(const [w,h] of [[740,360],[844,390],[915,412],[1536,691]])await run(w,h,true);
+ for(const [w,h] of [[740,360],[844,390],[915,412]])await run(w,h,true);
+ // Physical screenshots around 1536x691 are commonly DPR2: 768x346 CSS.
+ // Emulate CSS viewport separately from real output pixel resolution.
+ await run(768,346,true,2);
  await run(1440,900,false);
 }catch(error){report.failures.push({name:"setup",error:String(error)});}
 finally{
