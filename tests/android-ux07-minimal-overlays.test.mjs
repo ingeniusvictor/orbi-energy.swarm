@@ -12,7 +12,7 @@ test("UX07 mobile banner uses actual runtime immersive input gate, not 600px vie
  const ux07=styles.slice(styles.indexOf("/* ANDROID UX07 — ACTUAL"));
  assert.ok(ux07.length>0);
  assert.doesNotMatch(ux07,/@media\s*\(.*max-height:\s*600px/);
- assert.match(ux07,/max-height:\s*76px !important/);
+ assert.match(ux07,/max-height:\s*60px !important/);
  assert.match(ux07,/width:\s*min\(420px,\s*46vw/);
  assert.match(ux07,/pointer-events:\s*none !important/);
  assert.match(ux07,/background:\s*transparent !important/);
