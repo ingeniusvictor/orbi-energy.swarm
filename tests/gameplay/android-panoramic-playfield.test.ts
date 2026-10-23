@@ -32,7 +32,7 @@ test("UX02 true mobile landscape draws wider WORLD, without reducing FOTON heigh
 
 test("UX02 native pointer world projection preserves camera midpoint and uniform scale", () => {
   const w = projectPanoramicCanvasViewport({width: 915, height: 368, immersive:true});
-  const cssWidth = 915, cssHeight = 323, zoom = .93;
+  const cssWidth = 915, cssHeight = 368 - 42, zoom = .93;
   const camera = {x:110,y:72};
   const pointer = {x:cssWidth *.75,y:cssHeight *.65};
   const world = {
