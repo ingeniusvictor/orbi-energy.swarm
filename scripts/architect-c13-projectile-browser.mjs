@@ -10,6 +10,11 @@ import { mkdir, writeFile, stat } from "node:fs/promises";
 import { join } from "node:path";
 
 const output=process.env.ORBI_C13_OUTPUT || "artifacts/es13-c13-browser";
+const touchMode=process.env.ORBI_C14_REAL_TOUCH === "1";
+async function nativeShot(page,x,y){
+  if(touchMode) await page.touchscreen.tap(x,y);
+  else await page.mouse.click(x,y);
+}
 const url="http://127.0.0.1:4183";
 const evidence={kind:"REAL_CHROMIUM_NATIVE_QA_PROJECTILES",cases:[],failures:[],
   consoleErrors:[],screenshots:[],noInjectedDamage:true,noManualCertification:true};
@@ -57,6 +62,14 @@ async function initialize(browser,name,width,height,isMobile,hasTouch) {
   assert(await enter.isEnabled(),name+": genuine Campaign preparation gate denied");
   await enter.click();
   await page.getByRole("button",{name:"EXIT QA Blackout Architect QA"}).waitFor({state:"visible"});
+  if(touchMode && isMobile){
+    const orientation=page.locator(".orbi-orientation-hint");
+    if(await orientation.count()){
+      const dismiss=orientation.getByRole("button",{name:/Entendido|Got it/i});
+      await dismiss.tap(); // Real native touch dismissal of the existing tutorial.
+      assert(await orientation.count()===0,name+": tutorial didn't dismiss through native tap");
+    }else if(width===390)throw Error("Expected original portrait orientation tutorial to prove dismissal");
+  }
   await page.clock.runFor(100);
   assert(await read(page),name+": authenticated QA readout not rendered");
   return {page,context};
@@ -89,7 +102,11 @@ async function shoot(page,id) {
   // On narrow touch displays, the existing rotate-device tutorial covers
   // the inner aiming arc. Aim farther along the SAME authentic world ray,
   // inside the visible Canvas and above that overlay; do not change the shot.
-  const aimDistance=(page.viewportSize()?.width??1440)<500?250:150;
+  // C14: the user has dismissed the portrait orientation overlay with a
+  // real tap. The ordinary 150-unit aim point is now unobstructed; 250 units
+  // needlessly exits the narrow Canvas for WEST. Do not clamp a shot or
+  // bypass the source's genuine Canvas hit-test.
+  const aimDistance=touchMode?150:(page.viewportSize()?.width??1440)<500?250:150;
   const scale=aimDistance/before.camera.zoom;
   const wx=before.foton.x+(dx/distance)*scale;
   const wy=before.foton.y+(dy/distance)*scale;
@@ -104,7 +121,7 @@ async function shoot(page,id) {
     y<rect.y+rect.height-3,"Natural aim cursor outside viewport "+JSON.stringify({id,x,y,rect}));
   // Native mouse pointerdown/up on real Canvas. No evaluate() dispatch,
   // no synthetic projectile creation, no mutable engine or React access.
-  await page.mouse.click(x,y);
+  await nativeShot(page,x,y);
   let after;
   for(let i=0;i<17;i++){
     await page.clock.runFor(100);
@@ -113,6 +130,8 @@ async function shoot(page,id) {
     if(hp(after,id)<old)break;
     if(i>=2 && !after.shotActive)break;
   }
+  if(touchMode)assert(after?.lastQaPointerType==="touch",
+    "QA did not receive actual native touch pointerdown: "+after?.lastQaPointerType);
   assert(after && hp(after,id) < old,
     "Native Canvas shot missed "+id+" | "+JSON.stringify({old,
       afterHP:after?hp(after,id):null,shotActive:after?.shotActive,
@@ -141,10 +160,14 @@ async function run(browser,caseName,opts,full){
     const target=untouched.boss,cam=untouched.camera,foton=untouched.foton;
     const ax=target.x-foton.x,ay=target.y-foton.y,len=Math.hypot(ax,ay);
     const rect=await page.locator("#game-canvas").boundingBox();
-    const aimDistance=(page.viewportSize()?.width??1440)<500?250:150;
+    // C14: the user has dismissed the portrait orientation overlay with a
+  // real tap. The ordinary 150-unit aim point is now unobstructed; 250 units
+  // needlessly exits the narrow Canvas for WEST. Do not clamp a shot or
+  // bypass the source's genuine Canvas hit-test.
+  const aimDistance=touchMode?150:(page.viewportSize()?.width??1440)<500?250:150;
     const aimX=foton.x+ax/len*aimDistance/cam.zoom;
     const aimY=foton.y+ay/len*aimDistance/cam.zoom;
-    await page.mouse.click(rect.x+(aimX-cam.x)*cam.zoom/cam.width*rect.width,
+    await nativeShot(page,rect.x+(aimX-cam.x)*cam.zoom/cam.width*rect.width,
       rect.y+(aimY-cam.y)*cam.zoom/cam.height*rect.height);
     await page.clock.runFor(1500);
     const protectedBoss=await read(page);
@@ -184,7 +207,7 @@ async function run(browser,caseName,opts,full){
           const rect=await page.locator("#game-canvas").boundingBox();
           const dx=obj.x-foton.x,dy=obj.y-foton.y,d=Math.hypot(dx,dy);
           const cx=foton.x+dx/d*150/cam.zoom,cy=foton.y+dy/d*150/cam.zoom;
-          await page.mouse.click(rect.x+(cx-cam.x)*cam.zoom/cam.width*rect.width,
+          await nativeShot(page,rect.x+(cx-cam.x)*cam.zoom/cam.width*rect.width,
             rect.y+(cy-cam.y)*cam.zoom/cam.height*rect.height);
           // One last genuine projectile must fly the full ~350 world units.
           // Its 1600ms lifetime remains the bound; 1300ms allows actual travel.
@@ -212,8 +235,14 @@ try{
   await server();
   browser=await chromium.launch({headless:true,args:["--disable-dev-shm-usage",
     "--use-gl=angle","--use-angle=swiftshader"]});
-  await run(browser,"desktop", [1440,900,false,false],true);
-  await run(browser,"mobile-touch", [390,844,true,true],false);
+  if(touchMode) {
+    await run(browser,"mobile-touch-full", [390,844,true,true],true);
+    await run(browser,"mobile-compact-touch", [320,700,true,true],false);
+    await run(browser,"mobile-wide-touch", [428,926,true,true],false);
+  } else {
+    await run(browser,"desktop", [1440,900,false,false],true);
+    await run(browser,"mobile-touch", [390,844,true,true],false);
+  }
 }catch(e){evidence.failures.push({message:String(e),stack:e?.stack??""});process.exitCode=1;}
 finally{
   evidence.consoleErrors=err;
