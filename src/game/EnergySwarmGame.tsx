@@ -9,6 +9,7 @@ import {
 
 import { projectPanoramicCanvasViewport } from "./panoramicCanvasViewport";
 import { projectImmersiveBattlefieldMode } from "./immersiveBattlefieldPolicy";
+import { nonNegativeAnimationFrameDelta } from "./animationFrameDelta";
 import { 
   CANVAS_HEIGHT, WORLD_WIDTH, WORLD_HEIGHT, MAX_ENEMIES, 
   MAX_PROJECTILES, MAX_RESOURCES, PLAYER_BASE_SPEED, 
@@ -217,6 +218,7 @@ import { ResultScreen } from "../components/ResultScreen";
 import { CompanionPanel } from "../components/CompanionPanel";
 import { UpgradeSelector } from "../components/UpgradeSelector";
 import { MobileTouchOverlay } from "../components/MobileTouchOverlay";
+import { WebPhotoReturn } from "../components/WebPhotoReturn";
 import { MobileFormationCarousel } from "../components/MobileFormationCarousel";
 import { OrientationHint } from "../components/OrientationHint";
 import { useViewportComposition } from "../components/useViewportComposition";
@@ -4552,8 +4554,12 @@ export const EnergySwarmGame: React.FC = () => {
       requestAnimationFrame(gameLoop);
       return;
     }
+    // rAF's frame-start timestamp may precede performance.now() captured
+    // when Start/Resume queued this frame. Negative elapsed time used to
+    // throw inside Combat Overdrive, aborting rendering after background.
     let delta = timestamp - lastTimeRef.current;
     lastTimeRef.current = timestamp;
+    delta = nonNegativeAnimationFrameDelta(delta);
 
     // Clamp huge deltas when switching tabs to avoid teleportation crashes
     if (delta > 100) delta = 16.6;
@@ -8351,6 +8357,11 @@ export const EnergySwarmGame: React.FC = () => {
           onReset={resetPhotoModeFilter}
           onExit={exitPhotoMode}
         />
+      )}
+      {/* WEB UX01B: even after the temporary photo toolbar fades out,
+          desktop players must never be trapped in a blank battlefield. */}
+      {isPhotoMode && !photoHintVisible && immersiveWebLandscape && (
+        <WebPhotoReturn onExit={exitPhotoMode} />
       )}
 
       {/* GAMEOVER / VICTORY SUMMARY BOARDS */}

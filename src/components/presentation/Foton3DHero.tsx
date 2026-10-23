@@ -121,11 +121,24 @@ export const Foton3DHero: React.FC<Foton3DHeroProps> = ({
     );
     camera.position.set(0, 0.08, 3.1);
 
-    const renderer = new THREE.WebGLRenderer({
-      alpha: true,
-      antialias: config.antialias,
-      powerPreference: "high-performance",
-    });
+    // The start-screen 3D preview is optional: a disabled or lost WebGL
+    // context must NEVER unmount the menu or prevent PLAY from being clicked.
+    // The existing CSS FOTON core stays available without a GPU.
+    let renderer: any; // three-runtime.d.ts exports the constructor at runtime, not its type
+    try {
+      renderer = new THREE.WebGLRenderer({
+        alpha: true,
+        antialias: config.antialias,
+        powerPreference: "high-performance",
+      });
+    } catch (error) {
+      console.warn(
+        "ORBI 3D hero unavailable; using CSS fallback.",
+        error instanceof Error ? error.message : String(error),
+      );
+      setStatus("FAILED");
+      return;
+    }
 
     renderer.setClearColor(0x000000, 0);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
