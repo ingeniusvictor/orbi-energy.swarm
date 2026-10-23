@@ -1,0 +1,50 @@
+name: Android UX09 Premium Launch Visuals
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/components/MobileLaunchNavigation.tsx'
+      - 'src/components/StartScreen.tsx'
+      - 'src/styles/index.css'
+      - 'public/ux09/**'
+      - 'scripts/android-ux09-premium-browser.mjs'
+      - 'tests/android-ux09-premium-launch.test.mjs'
+      - '.github/workflows/android-ux09-premium-launch.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'src/components/MobileLaunchNavigation.tsx'
+      - 'src/components/StartScreen.tsx'
+      - 'src/styles/index.css'
+      - 'public/ux09/**'
+      - 'scripts/android-ux09-premium-browser.mjs'
+      - '.github/workflows/android-ux09-premium-launch.yml'
+permissions:
+  contents: read
+jobs:
+  premium-launch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Contract, typecheck and build
+        run: |
+          node --test tests/android-ux09-premium-launch.test.mjs
+          npm run typecheck
+          npm run build
+      - name: Real Chrome navigation, artwork and screen proof
+        run: |
+          npm install --no-save --package-lock=false playwright@1.55.0
+          node scripts/android-ux09-premium-browser.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: android-ux09-launch-${{ github.sha }}
+          path: artifacts/android-ux09/
+          if-no-files-found: warn
+          retention-days: 14
