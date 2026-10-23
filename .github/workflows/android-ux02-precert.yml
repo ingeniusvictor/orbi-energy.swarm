@@ -36,7 +36,9 @@ jobs:
             'src/game/EnergySwarmCanvas.tsx' \
             'src/game/EnergySwarmGame.tsx' \
             'src/game/panoramicCanvasViewport.ts' \
-            'tests/gameplay/android-panoramic-playfield.test.ts' | sort > /tmp/expected
+            'tests/gameplay/android-panoramic-playfield.test.ts' \
+            'tests/hidpi-orientation.test.ts' \
+            'tests/runtime-viewport-adoption.test.ts' | sort > /tmp/expected
           diff -u /tmp/expected /tmp/actual
       - run: npm ci
       - name: ANDROID UX02 focused and historical regression
