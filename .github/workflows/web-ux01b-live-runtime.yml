@@ -1,5 +1,6 @@
 name: ORBI Web UX01B Live Runtime Diagnosis
 on:
+  workflow_dispatch:
   push:
     branches: [main, fix/web-ux01b-blank-battlefield]
   pull_request:
@@ -24,7 +25,10 @@ jobs:
         run: |
           npm install --no-save --package-lock=false playwright@1.55.0
           which google-chrome || which google-chrome-stable || true
-      - name: Inspect real public Chrome Vercel gameplay at 1 5 9 seconds
+      # The LIVE Vercel alias still runs OLD code before protected squash.
+      # Reproduce it manually; PR gating tests the exact candidate bundle.
+      - name: Inspect current live production, on explicit diagnostic dispatch
+        if: github.event_name == 'workflow_dispatch'
         run: node scripts/web-ux01b-live-diagnostics.mjs
       - name: Build production bundle for device failure simulation
         run: npm run typecheck && npm run build
