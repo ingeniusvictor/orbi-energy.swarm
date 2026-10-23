@@ -86,7 +86,11 @@ async function shoot(page,id) {
   const old=hp(before,id);
   const dx=obj.x-before.foton.x,dy=obj.y-before.foton.y,distance=Math.hypot(dx,dy);
   assert(distance>35 && distance<555,"Target "+id+" not within real shot range "+distance);
-  const scale=150/before.camera.zoom;
+  // On narrow touch displays, the existing rotate-device tutorial covers
+  // the inner aiming arc. Aim farther along the SAME authentic world ray,
+  // inside the visible Canvas and above that overlay; do not change the shot.
+  const aimDistance=(page.viewportSize()?.width??1440)<500?250:150;
+  const scale=aimDistance/before.camera.zoom;
   const wx=before.foton.x+(dx/distance)*scale;
   const wy=before.foton.y+(dy/distance)*scale;
   const camera=before.camera;
@@ -137,8 +141,9 @@ async function run(browser,caseName,opts,full){
     const target=untouched.boss,cam=untouched.camera,foton=untouched.foton;
     const ax=target.x-foton.x,ay=target.y-foton.y,len=Math.hypot(ax,ay);
     const rect=await page.locator("#game-canvas").boundingBox();
-    const aimX=foton.x+ax/len*150/cam.zoom;
-    const aimY=foton.y+ay/len*150/cam.zoom;
+    const aimDistance=(page.viewportSize()?.width??1440)<500?250:150;
+    const aimX=foton.x+ax/len*aimDistance/cam.zoom;
+    const aimY=foton.y+ay/len*aimDistance/cam.zoom;
     await page.mouse.click(rect.x+(aimX-cam.x)*cam.zoom/cam.width*rect.width,
       rect.y+(aimY-cam.y)*cam.zoom/cam.height*rect.height);
     await page.clock.runFor(1500);
