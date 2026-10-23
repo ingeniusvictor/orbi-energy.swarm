@@ -36,6 +36,7 @@ jobs:
             'src/game/EnergySwarmCanvas.tsx' \
             'src/game/EnergySwarmGame.tsx' \
             'src/game/panoramicCanvasViewport.ts' \
+            'src/styles/androidImmersive.css' \
             'tests/gameplay/android-panoramic-playfield.test.ts' \
             'tests/hidpi-orientation.test.ts' \
             'tests/runtime-viewport-adoption.test.ts' | sort > /tmp/expected
