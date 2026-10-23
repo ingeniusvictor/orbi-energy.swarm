@@ -57,7 +57,18 @@ async function run(browser,name,width,height,mobile,touch,immersive){
       const hudBox=await page.locator(".orbi-game-hud").boundingBox();
       check(rootBox && hudBox,name+": root/HUD rectangles missing");
       const usable=rootBox.height-hudBox.height;
-      check(rect.height>=usable*.95,name+": stage uses only "+rect.height+" of "+usable+" actual visible game height");
+      const layout=await page.evaluate(()=>{
+        const names=[".orbi-game-root",".orbi-game-shell",".orbi-game-workspace",
+          ".orbi-battlefield",".orbi-game-hud",".orbi-game-stage"];
+        return Object.fromEntries(names.map(selector=>{
+          const el=document.querySelector(selector);
+          const box=el?.getBoundingClientRect();
+          return [selector,box?{y:box.y,height:box.height,width:box.width}:null];
+        }));
+      });
+      await shot(page,name+"-viewport-layout");
+      check(rect.height>=usable*.95,name+": stage uses only "+rect.height+
+        " of "+usable+" actual visible game height: "+JSON.stringify(layout));
       check(rect.width>=rootBox.width*.96,name+": stage does not span available landscape width");
       const hud=page.locator(".orbi-game-hud");
       check((await hud.boundingBox()).height<=48,name+": persistent HUD too tall");
