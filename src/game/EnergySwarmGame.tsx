@@ -233,6 +233,7 @@ import {
 } from "./performanceDiagnostics";
 import PerformanceDiagnosticsOverlay from "../components/PerformanceDiagnosticsOverlay";
 import { createTouchDirectionState, getTouchMovementVector, hasActiveTouchDirection, type TouchDirection } from "./touchControls";
+import { projectAnalogMotion, type AnalogVector } from "./analogJoystick";
 import {
   FOTON_THREAT_REFRESH_MS,
   projectFotonThreatDirection,
@@ -460,11 +461,13 @@ export const EnergySwarmGame: React.FC = () => {
   );
   const isPausedRef = useRef(false);
   const touchDirectionsRef = useRef(createTouchDirectionState());
+  const analogJoystickRef = useRef<AnalogVector>({ x: 0, y: 0 });
 
   const setPausedState = useCallback((nextPaused: boolean) => {
     isPausedRef.current = nextPaused;
     if (nextPaused) {
       touchDirectionsRef.current = createTouchDirectionState();
+      analogJoystickRef.current = { x: 0, y: 0 };
     }
     setIsPaused(nextPaused);
   }, []);
@@ -5019,7 +5022,12 @@ export const EnergySwarmGame: React.FC = () => {
     if (keysPressedRef.current["A"] || keysPressedRef.current["ARROWLEFT"]) dirX -= 1;
     if (keysPressedRef.current["D"] || keysPressedRef.current["ARROWRIGHT"]) dirX += 1;
 
-    const touchLookVector = getTouchMovementVector(touchDirectionsRef.current);
+    const touchLookVector = projectAnalogMotion(analogJoystickRef.current);
+    const directionalLookVector = getTouchMovementVector(touchDirectionsRef.current);
+    if (touchLookVector.x === 0 && touchLookVector.y === 0) {
+      touchLookVector.x = directionalLookVector.x;
+      touchLookVector.y = directionalLookVector.y;
+    }
     if (dirX === 0 && dirY === 0 && (touchLookVector.x !== 0 || touchLookVector.y !== 0)) {
       dirX = touchLookVector.x;
       dirY = touchLookVector.y;
@@ -5094,7 +5102,10 @@ export const EnergySwarmGame: React.FC = () => {
     if (keysPressedRef.current["D"] || keysPressedRef.current["ARROWRIGHT"]) moveX += 1;
 
     const hasKeyboardMovement = moveX !== 0 || moveY !== 0;
-    const touchMoveVector = getTouchMovementVector(touchDirectionsRef.current);
+    const analogMoveVector = projectAnalogMotion(analogJoystickRef.current);
+    const legacyTouchMoveVector = getTouchMovementVector(touchDirectionsRef.current);
+    const isAnalogEngaged = analogMoveVector.x !== 0 || analogMoveVector.y !== 0;
+    const touchMoveVector = isAnalogEngaged ? analogMoveVector : legacyTouchMoveVector;
     const hasTouchMovement = touchMoveVector.x !== 0 || touchMoveVector.y !== 0;
 
     // Keyboard wins if both hardware and touch input are active. Otherwise held
@@ -5120,8 +5131,10 @@ export const EnergySwarmGame: React.FC = () => {
       if (moveX !== 0 || moveY !== 0) {
         // Normalize diagonals so two held directions do not move faster.
         const len = Math.sqrt(moveX * moveX + moveY * moveY);
-        playerPosRef.current.x += (moveX / len) * pSpeed * (delta / 16.6);
-        playerPosRef.current.y += (moveY / len) * pSpeed * (delta / 16.6);
+        // Analog magnitude controls speed; hardware keys/legacy input retain full speed.
+        const intensity = !hasKeyboardMovement && isAnalogEngaged ? Math.min(1, len) : 1;
+        playerPosRef.current.x += (moveX / len) * pSpeed * intensity * (delta / 16.6);
+        playerPosRef.current.y += (moveY / len) * pSpeed * intensity * (delta / 16.6);
       } else {
         // No hardware/touch direction held: Foton stands still.
         lastInputTypeRef.current = "NONE";
@@ -8168,6 +8181,14 @@ export const EnergySwarmGame: React.FC = () => {
   };
 
   // --- MOBILE / ANDROID HELD-DIRECTION INPUT ---
+  const setMobileAnalogVector = (vector: AnalogVector) => {
+    if (!isPlaying || isPausedRef.current || isGameOver || isUpgradeSelectionOpenRef.current) {
+      analogJoystickRef.current = { x: 0, y: 0 };
+      return;
+    }
+    analogJoystickRef.current = projectAnalogMotion(vector);
+  };
+
   const setMobileTouchDirection = (dir: TouchDirection, pressed: boolean) => {
     if (pressed && (!isPlaying || isPausedRef.current || isGameOver || isUpgradeSelectionOpenRef.current)) {
       return;
@@ -8870,7 +8891,7 @@ export const EnergySwarmGame: React.FC = () => {
                 )}
 
                 {/* MOBILE / ANDROID THUMB-ZONE CONTROLS */}
-                <MobileTouchOverlay onDirectionChange={setMobileTouchDirection} />
+                <MobileTouchOverlay onVectorChange={setMobileAnalogVector} disabled={isPaused || isGameOver || isUpgradeSelectionOpen || isPhotoMode} />
                 <MobileFormationCarousel
                   activeFormation={activeFormation}
                   onChangeFormation={triggerFormationChange}
