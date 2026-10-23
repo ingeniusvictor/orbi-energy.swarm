@@ -1,0 +1,52 @@
+name: ORBI Web Immersive UX01 Chromium
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'scripts/web-ux01-browser-evidence.mjs'
+      - '.github/workflows/web-ux01-visual.yml'
+      - 'package*.json'
+  push:
+    branches: [main, feat/web-ux01-immersive-panorama]
+    paths:
+      - 'src/**'
+      - 'scripts/web-ux01-browser-evidence.mjs'
+      - '.github/workflows/web-ux01-visual.yml'
+      - 'package*.json'
+
+permissions:
+  contents: read
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Focused web and Android viewport contract
+        run: npx tsx --test tests/gameplay/web-immersive-viewport.test.ts tests/gameplay/android-panoramic-playfield.test.ts
+      - name: TypeScript and production bundle
+        run: npm run typecheck && npm run build
+      - name: Install isolated pinned Chromium
+        run: |
+          npm install --no-save --package-lock=false playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Real mouse desktop/mobile touch Chromium geometry and drawer
+        env:
+          ORBI_WEB_UX01_OUTPUT: artifacts/web-ux01
+        run: node scripts/web-ux01-browser-evidence.mjs
+      - name: Preserve browser screenshots and JSON even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-ux01-real-chromium-${{ github.sha }}
+          path: artifacts/web-ux01/
+          if-no-files-found: warn
+          retention-days: 14
