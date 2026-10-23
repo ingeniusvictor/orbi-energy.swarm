@@ -60,7 +60,11 @@ async function run(name,width,height,mobile,compact){
    await campaign.tap();
   }else{
    await shot(page,name+"-desktop-or-portrait");
-   // UX09: legacy desktop/portrait CTA remains in DOM for archival compatibility,\n   // but all production viewports now use the accessible three-layer launch.\n   await page.getByTestId("orbi-mobile-enter").click();\n   await page.getByTestId("orbi-mobile-menu-main-play").click();\n   await page.getByTestId("orbi-mobile-campaign").click();
+   // UX09: legacy desktop/portrait CTA remains in DOM for archival compatibility,
+   // but all production viewports now use the accessible three-layer launch.
+   await page.getByTestId("orbi-mobile-enter").click();
+   await page.getByTestId("orbi-mobile-menu-main-play").click();
+   await page.getByTestId("orbi-mobile-campaign").click();
    await page.waitForTimeout(250);
    data.afterStart=await page.evaluate(()=>({layer:document.querySelector(".orbi-premium-entry")?.getAttribute("data-mobile-layer"),startScreen:!!document.querySelector(".orbi-premium-entry"),canvas:!!document.querySelector("#game-canvas"),root:document.querySelector(".orbi-game-root")?.getAttribute("data-immersive-landscape")}));
   }
