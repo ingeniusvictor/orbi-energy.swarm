@@ -329,6 +329,25 @@ export const EnergySwarmGame: React.FC = () => {
     !viewportProfile.coarsePointer &&
     viewportProfile.width >= 800 && viewportProfile.height >= 360;
   const immersiveLandscapeMode = immersiveTouchLandscape || immersiveWebLandscape;
+  const [browserFullscreen, setBrowserFullscreen] = useState(false);
+  const [browserFullscreenAvailable, setBrowserFullscreenAvailable] = useState(false);
+  useEffect(() => {
+    const sync = () => {
+      setBrowserFullscreen(Boolean(document.fullscreenElement));
+      setBrowserFullscreenAvailable(Boolean(document.fullscreenEnabled));
+    };
+    sync();
+    document.addEventListener("fullscreenchange", sync);
+    return () => document.removeEventListener("fullscreenchange", sync);
+  }, []);
+  const toggleBrowserFullscreen = useCallback(() => {
+    if (!document.fullscreenEnabled) return;
+    if (document.fullscreenElement) {
+      void document.exitFullscreen().catch(() => {});
+    } else {
+      void document.documentElement.requestFullscreen().catch(() => {});
+    }
+  }, []);
   // Shared visual viewport + reserved compact HUD: camera, Canvas and
   // pointer projection must always use the same geometry.
   const panoramicViewport = projectPanoramicCanvasViewport({
@@ -8685,6 +8704,10 @@ export const EnergySwarmGame: React.FC = () => {
                 onTogglePause={togglePause}
                 onToggleMute={toggleMute}
                 immersive={immersiveLandscapeMode}
+                webImmersive={immersiveWebLandscape}
+                webFullscreen={browserFullscreen}
+                webFullscreenAvailable={browserFullscreenAvailable}
+                onToggleWebFullscreen={immersiveWebLandscape ? toggleBrowserFullscreen : undefined}
                 mobilePanel={mobilePanel}
                 onMobilePanelChange={(panel) => {
                   setMobilePanel(panel);
