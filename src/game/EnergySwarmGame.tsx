@@ -9,6 +9,7 @@ import {
 
 import { projectPanoramicCanvasViewport } from "./panoramicCanvasViewport";
 import { projectImmersiveBattlefieldMode } from "./immersiveBattlefieldPolicy";
+import { nonNegativeAnimationFrameDelta } from "./animationFrameDelta";
 import { 
   CANVAS_HEIGHT, WORLD_WIDTH, WORLD_HEIGHT, MAX_ENEMIES, 
   MAX_PROJECTILES, MAX_RESOURCES, PLAYER_BASE_SPEED, 
@@ -4553,7 +4554,10 @@ export const EnergySwarmGame: React.FC = () => {
       requestAnimationFrame(gameLoop);
       return;
     }
-    let delta = timestamp - lastTimeRef.current;
+    // rAF's frame-start timestamp may precede performance.now() captured
+    // when Start/Resume queued this frame. Negative elapsed time used to
+    // throw inside Combat Overdrive, aborting rendering after background.
+    let delta = nonNegativeAnimationFrameDelta(timestamp, lastTimeRef.current);
     lastTimeRef.current = timestamp;
 
     // Clamp huge deltas when switching tabs to avoid teleportation crashes
