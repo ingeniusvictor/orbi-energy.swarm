@@ -8666,6 +8666,39 @@ export const EnergySwarmGame: React.FC = () => {
                 </div>
               )}
 
+              {/* C12: actual DEV QA messages in normal flow, never covering the physical Canvas. */}
+                {import.meta.env.DEV && architectQaLossVisible && !architectQaVisible && (
+                  <div
+                    role="status"
+                    aria-live="polite"
+                    className="w-full min-w-0 max-w-full rounded-md border border-rose-500/60 bg-slate-950/90 px-2 py-1.5 text-[10px] leading-snug font-bold tracking-wide break-words text-rose-200"
+                  >
+                    DEV QA FAILED — ARCHITECT ATTACK HULL 0 HP · NO GLOBAL GAME OVER · Ctrl+Alt+Shift+F9 to retry
+                  </div>
+                )}
+
+                {import.meta.env.DEV && architectQaDefeatVisible && !architectQaVisible && (
+                  <div
+                    role="status"
+                    aria-live="polite"
+                    className="w-full min-w-0 max-w-full rounded-md border border-amber-500/60 bg-slate-950/90 px-2 py-1.5 text-[10px] leading-snug font-bold tracking-wide break-words text-amber-200"
+                  >
+                    DEV QA COMPLETE — ARCHITECT CORE 0 HP · NO REWARDS · Ctrl+Alt+Shift+F9 restarts QA
+                  </div>
+                )}
+
+                {import.meta.env.DEV && architectQaVisible && (
+                  <div
+                    role="status"
+                    aria-live="polite"
+                    data-testid="architect-qa-status"
+                    className="w-full min-w-0 max-w-full rounded-md border border-cyan-500/60 bg-slate-950/90 px-2 py-1.5 text-[10px] leading-snug font-bold tracking-wide break-words text-cyan-200"
+                  >
+                    DEV QA — ARCHITECT ANCHOR HITS · WAVES/AI FROZEN · CLICK TO FIRE · Ctrl+Alt+Shift+F9 exits
+                    <div className="mt-1 text-cyan-100/80">WASD / ARROWS / TOUCH — MOVE FOTON · Single-shot QA targeting</div>
+                  </div>
+                )}
+
               {/* CANVAS INTERACTIVE PORT */}
               <div className="w-full flex flex-col items-center justify-center relative bg-slate-950 border border-slate-900 rounded-lg overflow-hidden p-1">
                 <EnergySwarmCanvas
@@ -8693,37 +8726,6 @@ export const EnergySwarmGame: React.FC = () => {
                   onPointerUp={handlePointerUp}
                   time={timeElapsedRef.current}
                 />
-
-                {import.meta.env.DEV && architectQaLossVisible && !architectQaVisible && (
-                  <div
-                    role="status"
-                    aria-live="polite"
-                    className="absolute top-2 left-2 z-30 pointer-events-none rounded-md border border-rose-500/60 bg-slate-950/90 px-3 py-2 text-[10px] font-bold tracking-wide text-rose-200"
-                  >
-                    DEV QA FAILED — ARCHITECT ATTACK HULL 0 HP · NO GLOBAL GAME OVER · Ctrl+Alt+Shift+F9 to retry
-                  </div>
-                )}
-
-                {import.meta.env.DEV && architectQaDefeatVisible && !architectQaVisible && (
-                  <div
-                    role="status"
-                    aria-live="polite"
-                    className="absolute top-2 left-2 z-30 pointer-events-none rounded-md border border-amber-500/60 bg-slate-950/90 px-3 py-2 text-[10px] font-bold tracking-wide text-amber-200"
-                  >
-                    DEV QA COMPLETE — ARCHITECT CORE 0 HP · NO REWARDS · Ctrl+Alt+Shift+F9 restarts QA
-                  </div>
-                )}
-
-                {import.meta.env.DEV && architectQaVisible && (
-                  <div
-                    role="status"
-                    aria-live="polite"
-                    className="absolute top-2 left-2 z-30 pointer-events-none rounded-md border border-cyan-500/60 bg-slate-950/90 px-3 py-2 text-[10px] font-bold tracking-wide text-cyan-200"
-                  >
-                    DEV QA — ARCHITECT ANCHOR HITS · WAVES/AI FROZEN · CLICK TO FIRE · Ctrl+Alt+Shift+F9 exits
-                    <div className="mt-1 text-cyan-100/80">WASD / ARROWS / TOUCH — MOVE FOTON · Single-shot QA targeting</div>
-                  </div>
-                )}
 
                 {performanceDiagnosticsEnabled && (
                   <PerformanceDiagnosticsOverlay
