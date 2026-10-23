@@ -90,6 +90,10 @@ async function runDevCase(browser,{name,width,height,isMobile,hasTouch}){
   await diagnostic.waitFor({state:"visible",timeout:10000});
   await enabled(auto(page),`${name}: real boss/guard failed after normal click`);
   await enabled(next(page),`${name}: manual pattern selection disabled`);
+  assert(await dock(page).getAttribute("data-qa-pattern")==="GRID_LOCK",
+    `${name}: real original QA did not select default GRID_LOCK`);
+  assert(await dock(page).getAttribute("data-qa-director")==="MANUAL",
+    `${name}: original director unexpectedly enabled`);
   // Advance actual requestAnimationFrame/render, keeping world frozen in original DEV QA.
   await page.clock.runFor(80);
   const running=await after(page,`${name}-architect-qa`);
@@ -106,6 +110,8 @@ async function runDevCase(browser,{name,width,height,isMobile,hasTouch}){
   // enable F7 BEFORE F8 cycles into later-phase manual patterns.
   await auto(page).click();
   await manual(page).waitFor({state:"visible",timeout:10000});
+  assert(await dock(page).getAttribute("data-qa-director")==="AUTO",
+    `${name}: F7 did not install real director ref`);
   await disabled(next(page),`${name}: F8 was not locked by actual phase-one F7 director`);
   const directed=await after(page,`${name}-director-locked`);
   await manual(page).click();
@@ -115,6 +121,8 @@ async function runDevCase(browser,{name,width,height,isMobile,hasTouch}){
   // Confirm real manual F8 changes pattern. Phase-one auto must FAIL CLOSED
   // if the player intentionally selects VECTOR_TIDE before breaking anchors.
   await next(page).click();
+  assert(await dock(page).getAttribute("data-qa-pattern")==="VECTOR_TIDE",
+    `${name}: F8 did not transition genuine attack ref to VECTOR_TIDE`);
   await enabled(next(page),`${name}: F8 manual selection unexpectedly disabled`);
   await page.clock.runFor(40);
   const manualTide=await after(page,`${name}-manual-vector-tide`);
@@ -124,7 +132,11 @@ async function runDevCase(browser,{name,width,height,isMobile,hasTouch}){
   await enabled(next(page),`${name}: denied director changed manual selector`);
   // SECTOR_WALL is also an upper-phase pattern; return to valid GRID_LOCK.
   await next(page).click();
+  assert(await dock(page).getAttribute("data-qa-pattern")==="SECTOR_WALL",
+    `${name}: authentic third physical attack wasn't selected`);
   await next(page).click();
+  assert(await dock(page).getAttribute("data-qa-pattern")==="GRID_LOCK",
+    `${name}: F8 did not return original GRID_LOCK`);
   await auto(page).click();
   await manual(page).waitFor({state:"visible",timeout:10000});
   await disabled(next(page),`${name}: GRID_LOCK director did not lock F8 after return`);
@@ -143,7 +155,7 @@ async function runDevCase(browser,{name,width,height,isMobile,hasTouch}){
   await page.keyboard.press("Control+Alt+Shift+F9");
   await enter(page).waitFor({state:"visible",timeout:10000});
   record(name,{viewport:{width,height,isMobile,hasTouch},screenshots:[before,running,directed,manualTide,exited],
-    verified:["real campaign start","real QA entry/exit","F7 director toggle","F8 director lock","phase-one director rejects premature VECTOR_TIDE","no canvas pointer events","F9 keyboard parity"]});
+    verified:["real campaign start","real QA entry/exit","F7 director toggle","F8 director lock","read-only actual attack ref cycle","phase-one director rejects premature VECTOR_TIDE","no canvas pointer events","F9 keyboard parity"]});
   await context.close();
 }
 async function runProduction(browser){
