@@ -1,0 +1,48 @@
+name: Android UX07 Minimal Combat Overlays
+on:
+  push:
+    branches: [main, fix/android-ux07-minimal-combat-overlays]
+    paths:
+      - 'src/styles/androidImmersive.css'
+      - 'src/game/EnergySwarmGame.tsx'
+      - 'scripts/android-ux07-overlay-browser.mjs'
+      - 'tests/android-ux07-minimal-overlays.test.mjs'
+      - '.github/workflows/android-ux07-overlays.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/styles/androidImmersive.css'
+      - 'src/game/EnergySwarmGame.tsx'
+      - 'scripts/android-ux07-overlay-browser.mjs'
+      - 'tests/android-ux07-minimal-overlays.test.mjs'
+      - '.github/workflows/android-ux07-overlays.yml'
+permissions:
+  contents: read
+jobs:
+  mobile-overlays:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Contract, TypeScript, production build
+        run: |
+          node --test tests/android-ux04-overlays.test.mjs tests/android-ux07-minimal-overlays.test.mjs
+          npm run typecheck
+          npm run build
+      - name: Actual Chrome touch sector banner and threat layouts
+        run: |
+          npm install --no-save --package-lock=false playwright@1.55.0
+          which google-chrome || which google-chrome-stable
+          node scripts/android-ux07-overlay-browser.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: android-ux07-overlays-${{ github.sha }}
+          path: artifacts/android-ux07/
+          if-no-files-found: warn
+          retention-days: 14

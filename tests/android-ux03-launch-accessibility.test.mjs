@@ -11,7 +11,9 @@ test("UX03 scales native landscape launch deck, not battle Canvas or desktop",()
  assert.match(css,/\.orbi-premium-entry \.orbi-start-tabs \{[\s\S]*?flex-wrap: nowrap/);
  assert.match(css,/\.orbi-premium-entry \.orbi-start-tabs button \{[\s\S]*?min-height: 39px/);
  assert.match(css,/\.orbi-premium-entry \.orbi-start-launch > \.orbi-premium-cta \{[\s\S]*?min-height: 48px/);
- assert.doesNotMatch(css.slice(css.indexOf("/* UX03 —")),/\.orbi-game-root\[data-immersive-landscape="true"\]/);
+ const ux03Only = css.slice(css.indexOf("/* UX03 —"), css.indexOf("/* UX04: compact Android tactical alerts"));
+ assert.ok(ux03Only.length > 0, "UX03 CSS block must remain present");
+ assert.doesNotMatch(ux03Only,/\.orbi-game-root\[data-immersive-landscape="true"\]/);
 });
 test("UX03 primary Play is still original campaign action; Score Attack and tabs remain",()=>{
  assert.match(start,/data-primary-start-cta="true"[\s\S]*?onStartGame\(\)/);
