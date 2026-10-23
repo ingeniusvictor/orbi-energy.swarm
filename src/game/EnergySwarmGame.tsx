@@ -8,6 +8,7 @@ import {
 } from "./types";
 
 import { projectPanoramicCanvasViewport } from "./panoramicCanvasViewport";
+import { projectImmersiveBattlefieldMode } from "./immersiveBattlefieldPolicy";
 import { 
   CANVAS_HEIGHT, WORLD_WIDTH, WORLD_HEIGHT, MAX_ENEMIES, 
   MAX_PROJECTILES, MAX_RESOURCES, PLAYER_BASE_SPEED, 
@@ -320,14 +321,35 @@ type InfiniteBossRematchProfile = Extract<
 
 export const EnergySwarmGame: React.FC = () => {
   const viewportProfile = useViewportComposition();
-  const immersiveTouchLandscape = viewportProfile.orientation === "LANDSCAPE" &&
-    viewportProfile.touchControlsRecommended;
-  // UX02: same visual viewport and reserved compact HUD as the actual
-  // fullscreen stage, so camera, backing store and native pointer agree.
+  const {
+    webLandscape: immersiveWebLandscape,
+    immersive: immersiveLandscapeMode,
+  } = projectImmersiveBattlefieldMode(viewportProfile);
+  const [browserFullscreen, setBrowserFullscreen] = useState(false);
+  const [browserFullscreenAvailable, setBrowserFullscreenAvailable] = useState(false);
+  useEffect(() => {
+    const sync = () => {
+      setBrowserFullscreen(Boolean(document.fullscreenElement));
+      setBrowserFullscreenAvailable(Boolean(document.fullscreenEnabled));
+    };
+    sync();
+    document.addEventListener("fullscreenchange", sync);
+    return () => document.removeEventListener("fullscreenchange", sync);
+  }, []);
+  const toggleBrowserFullscreen = useCallback(() => {
+    if (!document.fullscreenEnabled) return;
+    if (document.fullscreenElement) {
+      void document.exitFullscreen().catch(() => {});
+    } else {
+      void document.documentElement.requestFullscreen().catch(() => {});
+    }
+  }, []);
+  // Shared visual viewport + reserved compact HUD: camera, Canvas and
+  // pointer projection must always use the same geometry.
   const panoramicViewport = projectPanoramicCanvasViewport({
     width: viewportProfile.width,
     height: viewportProfile.height,
-    immersive: immersiveTouchLandscape,
+    immersive: immersiveLandscapeMode,
   });
 
   // --- REACT VIEWPORT GAME STATES (Low-frequency updates) ---
@@ -1347,7 +1369,7 @@ export const EnergySwarmGame: React.FC = () => {
 
       // UX01: Escape closes the mobile Estado drawer; it must not also pause
       // an active game. The ordinary Escape-to-pause behavior is preserved.
-      if (e.key === "Escape" && immersiveTouchLandscape && mobilePanel !== "closed" && !isPhotoMode) {
+      if (e.key === "Escape" && immersiveLandscapeMode && mobilePanel !== "closed" && !isPhotoMode) {
         e.preventDefault();
         setMobilePanel("closed");
         return;
@@ -1494,7 +1516,7 @@ export const EnergySwarmGame: React.FC = () => {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
-  }, [isPlaying, isPaused, isPhotoMode, isGameOver, upgradesLevel, presentationMode, immersiveTouchLandscape, mobilePanel]);
+  }, [isPlaying, isPaused, isPhotoMode, isGameOver, upgradesLevel, presentationMode, immersiveLandscapeMode, mobilePanel]);
 
   // --- ANDROID / WEB APP LIFECYCLE SAFETY ---
   useEffect(() => {
@@ -8240,8 +8262,9 @@ export const EnergySwarmGame: React.FC = () => {
           : "false"
       }
       data-photo-mode={isPhotoMode ? "true" : "false"}
-      data-immersive-landscape={isPlaying && immersiveTouchLandscape ? "true" : "false"}
-      data-mobile-panel={isPlaying && immersiveTouchLandscape ? mobilePanel : "closed"}
+      data-immersive-landscape={isPlaying && immersiveLandscapeMode ? "true" : "false"}
+      data-web-immersive={isPlaying && immersiveWebLandscape ? "true" : "false"}
+      data-mobile-panel={isPlaying && immersiveLandscapeMode ? mobilePanel : "closed"}
       data-photo-filter={photoFilterId}
     >
       
@@ -8676,7 +8699,11 @@ export const EnergySwarmGame: React.FC = () => {
                 onActivateOverdrive={handleOverdriveActivation}
                 onTogglePause={togglePause}
                 onToggleMute={toggleMute}
-                immersive={immersiveTouchLandscape}
+                immersive={immersiveLandscapeMode}
+                webImmersive={immersiveWebLandscape}
+                webFullscreen={browserFullscreen}
+                webFullscreenAvailable={browserFullscreenAvailable}
+                onToggleWebFullscreen={immersiveWebLandscape ? toggleBrowserFullscreen : undefined}
                 mobilePanel={mobilePanel}
                 onMobilePanelChange={(panel) => {
                   setMobilePanel(panel);

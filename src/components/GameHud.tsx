@@ -1,5 +1,5 @@
 import React from "react";
-import { Shield, Award, Users, Volume2, VolumeX, Pause, Play, Zap } from "lucide-react";
+import { Shield, Award, Users, Volume2, VolumeX, Pause, Play, Zap, Maximize2, Minimize2 } from "lucide-react";
 import { useGameTranslation, formatNumber } from "../i18n";
 import { getCampaignObjective } from "../game/campaignGuide";
 import type { ResonanceTier } from "../game/combatResonance";
@@ -33,6 +33,10 @@ interface GameHudProps {
   onTogglePause: () => void;
   onToggleMute: () => void;
   immersive?: boolean;
+  webImmersive?: boolean;
+  webFullscreen?: boolean;
+  webFullscreenAvailable?: boolean;
+  onToggleWebFullscreen?: () => void;
   mobilePanel?: "closed" | "estado" | "tactica" | "equipo";
   onMobilePanelChange?: (panel: "closed" | "estado" | "tactica" | "equipo") => void;
 }
@@ -64,6 +68,10 @@ export const GameHud: React.FC<GameHudProps> = ({
   onTogglePause,
   onToggleMute,
   immersive = false,
+  webImmersive = false,
+  webFullscreen = false,
+  webFullscreenAvailable = false,
+  onToggleWebFullscreen,
   mobilePanel = "closed",
   onMobilePanelChange
 }) => {
@@ -187,6 +195,19 @@ export const GameHud: React.FC<GameHudProps> = ({
               aria-pressed={isPaused} onClick={onTogglePause}>
               {isPaused ? <Play size={16} /> : <Pause size={16} />}
             </button>
+            {webImmersive && onToggleWebFullscreen && (
+              <button type="button" className="orbi-immersive-action"
+                data-testid="orbi-web-fullscreen"
+                aria-label={webFullscreen
+                  ? (language === "es" ? "Salir de pantalla completa" : "Exit fullscreen")
+                  : (language === "es" ? "Pantalla completa" : "Fullscreen")}
+                title={webFullscreen ? "Salir de pantalla completa (Esc)" : "Pantalla completa"}
+                aria-pressed={webFullscreen}
+                disabled={!webFullscreenAvailable}
+                onClick={onToggleWebFullscreen}>
+                {webFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+              </button>
+            )}
             <button type="button" data-testid="orbi-estado-button"
               className="orbi-immersive-action orbi-immersive-estado"
               aria-expanded={mobilePanel !== "closed"}

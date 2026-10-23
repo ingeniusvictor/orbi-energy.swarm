@@ -130,7 +130,7 @@ test("runtime touch intent augments rather than replaces CSS fallbacks", () => {
   );
 });
 
-test("runtime profile keeps 800x480 desktop/portrait while preserving movement physics", () => {
+test("runtime preserves legacy fallback while keeping movement physics", () => {
   const game = read(
     "src/game/EnergySwarmGame.tsx",
   );
@@ -142,7 +142,7 @@ test("runtime profile keeps 800x480 desktop/portrait while preserving movement p
   assert.match(canvas, /logicalWidth/);
   assert.match(canvas, /logicalHeight/);
   assert.match(viewport, /return \{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT \}/);
-  assert.match(game, /immersive: immersiveTouchLandscape/);
+  assert.match(game, /immersive: immersiveLandscapeMode/);
   assert.match(
     game,
     /PLAYER_BASE_SPEED/,

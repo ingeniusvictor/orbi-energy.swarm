@@ -1,0 +1,46 @@
+/* WEB UX01: extend the certified Android UX01/UX02 battlefield to
+   fine-pointer desktop browsers without affecting Android touch or portrait.
+   Shared Canvas/camera geometry remains authoritative; no CSS distortion. */
+.orbi-game-root[data-web-immersive="true"] {
+  background: #020712;
+}
+.orbi-game-root[data-web-immersive="true"] .orbi-game-hud {
+  background: linear-gradient(180deg, rgba(3,12,27,.92), rgba(3,12,27,.4));
+  box-shadow: inset 0 -1px rgba(103,232,249,.10);
+}
+.orbi-game-root[data-web-immersive="true"] .orbi-immersive-vitals {
+  font-size: 12px;
+  gap: 9px;
+}
+.orbi-game-root[data-web-immersive="true"] .orbi-immersive-shield-bar {
+  width: clamp(90px, 13vw, 160px);
+}
+.orbi-game-root[data-web-immersive="true"] .orbi-immersive-action {
+  min-width: 42px;
+  min-height: 42px;
+  cursor: pointer;
+}
+.orbi-game-root[data-web-immersive="true"] :is(
+  .orbi-immersive-panel-heading, .orbi-hud-detail-grid,
+  .orbi-tactical-rail, .orbi-logistics-deck
+) {
+  width: min(470px, calc(100vw - 24px));
+}
+.orbi-game-root[data-web-immersive="true"] .orbi-immersive-panel-tabs button {
+  cursor: pointer;
+}
+.orbi-game-root[data-web-immersive="true"] #game-canvas {
+  cursor: crosshair;
+}
+/* Desktop/web uses keyboard + pointer rather than fake touchscreen icons. */
+.orbi-game-root[data-web-immersive="true"] :is(
+  .orbi-touch-overlay, .orbi-touch-formation-carousel
+) {
+  display: none;
+}
+@media (max-height: 430px) and (orientation: landscape) {
+  .orbi-game-root[data-web-immersive="true"] .orbi-immersive-vitals {
+    font-size: 10px;
+    gap: 5px;
+  }
+}
