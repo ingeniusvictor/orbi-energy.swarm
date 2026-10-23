@@ -102,15 +102,34 @@ async function runDevCase(browser,{name,width,height,isMobile,hasTouch}){
       canvas.addEventListener("pointerdown",()=>{window.__orbiC11CanvasPointerDown++;},{capture:true});
     }
   });
-  await next(page).click();
-  await enabled(next(page),`${name}: manual F8 callback didn't preserve original QA`);
+  // Phase 1 admits only GRID_LOCK as an automatic director pattern;
+  // enable F7 BEFORE F8 cycles into later-phase manual patterns.
   await auto(page).click();
   await manual(page).waitFor({state:"visible",timeout:10000});
-  await disabled(next(page),`${name}: F8 was not locked by actual F7 director`);
+  await disabled(next(page),`${name}: F8 was not locked by actual phase-one F7 director`);
   const directed=await after(page,`${name}-director-locked`);
   await manual(page).click();
   await auto(page).waitFor({state:"visible",timeout:10000});
   await enabled(next(page),`${name}: F8 did not unlock when director disabled`);
+
+  // Confirm real manual F8 changes pattern. Phase-one auto must FAIL CLOSED
+  // if the player intentionally selects VECTOR_TIDE before breaking anchors.
+  await next(page).click();
+  await enabled(next(page),`${name}: F8 manual selection unexpectedly disabled`);
+  await page.clock.runFor(40);
+  const manualTide=await after(page,`${name}-manual-vector-tide`);
+  await auto(page).click();
+  assert(await auto(page).count()===1,
+    `${name}: disallowed phase-one VECTOR_TIDE unexpectedly admitted into director`);
+  await enabled(next(page),`${name}: denied director changed manual selector`);
+  // SECTOR_WALL is also an upper-phase pattern; return to valid GRID_LOCK.
+  await next(page).click();
+  await next(page).click();
+  await auto(page).click();
+  await manual(page).waitFor({state:"visible",timeout:10000});
+  await disabled(next(page),`${name}: GRID_LOCK director did not lock F8 after return`);
+  await manual(page).click();
+  await auto(page).waitFor({state:"visible",timeout:10000});
   const clicks=await page.evaluate(()=>window.__orbiC11CanvasPointerDown);
   assert(clicks===0,`${name}: C10 touch buttons leaked ${clicks} Canvas pointerdown events`);
   await exit(page).click();
@@ -123,8 +142,8 @@ async function runDevCase(browser,{name,width,height,isMobile,hasTouch}){
   await exit(page).waitFor({state:"visible",timeout:10000});
   await page.keyboard.press("Control+Alt+Shift+F9");
   await enter(page).waitFor({state:"visible",timeout:10000});
-  record(name,{viewport:{width,height,isMobile,hasTouch},screenshots:[before,running,directed,exited],
-    verified:["real campaign start","real QA entry/exit","F7 director toggle","F8 director lock","no canvas pointer events","F9 keyboard parity"]});
+  record(name,{viewport:{width,height,isMobile,hasTouch},screenshots:[before,running,directed,manualTide,exited],
+    verified:["real campaign start","real QA entry/exit","F7 director toggle","F8 director lock","phase-one director rejects premature VECTOR_TIDE","no canvas pointer events","F9 keyboard parity"]});
   await context.close();
 }
 async function runProduction(browser){
