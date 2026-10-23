@@ -1,7 +1,7 @@
 name: ORBI Web UX01B Live Runtime Diagnosis
 on:
   push:
-    branches: [fix/web-ux01b-blank-battlefield]
+    branches: [main, fix/web-ux01b-blank-battlefield]
   pull_request:
     branches: [main]
     paths:
