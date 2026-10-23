@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <!-- Adaptive icon safe area: recognizable FOTON and ten colored energies. -->
+    <path android:fillColor="#06172D" android:pathData="M0,0H108V108H0Z"/>
+    <path android:fillColor="#00000000" android:strokeColor="#4CC8F8"
+        android:strokeWidth="1.5" android:pathData="M54,17A37,32 0,1 1,53.99 17Z"/>
+    <path android:fillColor="#19CFFF" android:pathData="M54,10A4,4 0,1 1,53.99 10Z"/>
+    <path android:fillColor="#24D9A6" android:pathData="M76,17A4,4 0,1 1,75.99 17Z"/>
+    <path android:fillColor="#FF653D" android:pathData="M91,38A4,4 0,1 1,90.99 38Z"/>
+    <path android:fillColor="#C7D6E6" android:pathData="M89,63A4,4 0,1 1,88.99 63Z"/>
+    <path android:fillColor="#EF3997" android:pathData="M71,83A4,4 0,1 1,70.99 83Z"/>
+    <path android:fillColor="#FBC548" android:pathData="M50,89A4,4 0,1 1,49.99 89Z"/>
+    <path android:fillColor="#42D9FF" android:pathData="M29,79A4,4 0,1 1,28.99 79Z"/>
+    <path android:fillColor="#BB58FF" android:pathData="M18,57A4,4 0,1 1,17.99 57Z"/>
+    <path android:fillColor="#66CD4D" android:pathData="M22,31A4,4 0,1 1,21.99 31Z"/>
+    <path android:fillColor="#B1F06C" android:pathData="M33,16A4,4 0,1 1,32.99 16Z"/>
+    <path android:fillColor="#E6D5A7" android:strokeColor="#A0B7CF" android:strokeWidth="2.5"
+        android:pathData="M54,31A23,23 0,1 1,53.99 31Z"/>
+    <path android:fillColor="#020B1A" android:pathData="M54,35A19,19 0,1 1,53.99 35Z"/>
+    <path android:fillColor="#00000000" android:strokeColor="#FFE176"
+        android:strokeWidth="3.7" android:strokeLineCap="round"
+        android:pathData="M45,50A3.2,5.5 0,1 1,44.99 50ZM62,50A3.2,5.5 0,1 1,61.99 50Z"/>
+    <path android:fillColor="#00000000" android:strokeColor="#FFE176"
+        android:strokeWidth="2.8" android:strokeLineCap="round"
+        android:pathData="M46,65Q54,72 62,65"/>
+</vector>
