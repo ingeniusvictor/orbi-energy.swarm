@@ -36,6 +36,7 @@ export interface ViewportCompositionProfile {
   aspectRatio: number;
   shortLandscape: boolean;
   compactTouchLandscape: boolean;
+  coarsePointer: boolean;
   touchControlsRecommended: boolean;
   landscapeAdvisoryRecommended: boolean;
   shellDensity: ViewportShellDensity;
@@ -133,6 +134,7 @@ export const classifyViewportComposition = (
     aspectRatio,
     shortLandscape,
     compactTouchLandscape,
+    coarsePointer: input.coarsePointer,
     touchControlsRecommended,
     landscapeAdvisoryRecommended,
     shellDensity,
