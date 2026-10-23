@@ -2118,3 +2118,227 @@ body {
   .orbi-mobile-launch__mode--read-only {border-color:rgba(100,116,139,.35);color:#94a3b8;}
   .orbi-mobile-launch button:focus-visible {outline:2px solid #67e8f9;outline-offset:2px;}
 }
+
+
+/* UX09 — ORBI premium illustrated navigation.
+   Applies to desktop and Android landscape; combat HUD/joystick are untouched. */
+.orbi-premium-entry {padding:0!important; overflow:hidden!important; background:#020813!important;}
+.orbi-premium-entry>.orbi-premium-backdrop {display:none;}
+.orbi-premium-entry>.orbi-start-header,
+.orbi-premium-entry>.orbi-start-language {display:none!important;}
+.orbi-premium-entry>.orbi-start-deck {display:none!important;}
+.orbi-premium-entry .orbi-mobile-launch.orbi-ux09 {
+  display:flex!important; position:relative; isolation:isolate; z-index:20;
+  width:100%;max-width:none; height:100%; max-height:100dvh;min-height:0;
+  padding:clamp(10px,1.6vw,25px);margin:0; align-items:stretch;justify-content:stretch;
+  overflow:hidden; color:#edfaff; font-family:"Space Grotesk",system-ui,sans-serif;
+}
+.orbi-mobile-launch.orbi-ux09[data-layer="DETAIL"] {flex:1 1 auto!important;}
+.orbi-ux09-scene {position:absolute;z-index:-3;inset:0;pointer-events:none;
+  background:#071426 url("/ux09/orbi-command-world.svg") center center / cover no-repeat;}
+.orbi-ux09-scene::after {content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+  background:linear-gradient(90deg,rgba(0,9,23,.32),rgba(0,8,22,.26) 37%,rgba(1,7,20,.15) 72%,rgba(1,6,20,.43));}
+.orbi-ux09 .orbi-mobile-launch__welcome {width:100%;height:100%;min-height:0;display:flex;flex-direction:row;
+  justify-content:flex-end;align-items:center;text-align:center;}
+.orbi-ux09-identity {width:clamp(375px,49vw,720px);max-width:62%; display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:clamp(7px,1.2vh,16px);
+  padding:clamp(12px,2.1vw,34px) clamp(10px,1.7vw,24px);
+  background:radial-gradient(ellipse at center,rgba(0,12,26,.78),rgba(0,8,24,.18) 74%,transparent 100%);
+}
+.orbi-ux09 .orbi-mobile-launch__kicker {font:800 clamp(9px,1vw,14px)/1.2 "JetBrains Mono",monospace;
+  letter-spacing:.2em;color:#8de7ff;text-shadow:0 2px 15px #001a30;}
+.orbi-ux09-welcome h1 {font:900 clamp(26px,4.6vw,76px)/.94 "Space Grotesk",system-ui,sans-serif!important;
+  letter-spacing:-.04em;color:#f1fbff;margin:0;text-shadow:0 4px 16px #041023,0 0 36px rgba(56,189,248,.44);}
+.orbi-ux09-welcome h1 em {font-style:normal;color:#f8bd32;text-shadow:0 0 30px rgba(245,158,11,.34);}
+.orbi-ux09-welcome p {font:700 clamp(9px,1vw,18px)/1.25 "JetBrains Mono",monospace!important;
+  color:#e3f2ff!important;letter-spacing:.17em!important;margin:0!important;text-shadow:0 2px 8px #00101e;}
+.orbi-ux09 .orbi-mobile-launch__primary {width:min(100%,430px);min-height:clamp(44px,8vh,88px);
+  margin-top:clamp(4px,.8vh,14px);border:2px solid #fff3a0;border-radius:7px;
+  background:linear-gradient(120deg,#ef9f26 0%,#ffca4f 40%,#fff0a3 90%);
+  box-shadow:0 0 0 3px rgba(255,195,55,.12),0 14px 46px rgba(245,158,11,.38),inset 0 0 16px #fff7a333;
+  color:#08111e;display:flex;align-items:center;justify-content:center;gap:14px;
+  font:900 clamp(16px,2.5vw,30px) "Space Grotesk",system-ui,sans-serif;cursor:pointer;touch-action:manipulation;
+  transition:transform .15s ease,filter .15s ease;}
+.orbi-ux09 .orbi-mobile-launch__primary:active {transform:scale(.98);}
+.orbi-ux09 .orbi-mobile-launch__languages {display:flex;align-items:center;justify-content:center;gap:10px;color:#6ee7fb;}
+.orbi-ux09 .orbi-mobile-launch__languages button {min-width:clamp(48px,5.4vw,88px);
+  min-height:clamp(37px,6vh,58px);font:800 clamp(15px,1.4vw,23px) "Space Grotesk",system-ui,sans-serif;
+  border:1px solid rgba(94,226,255,.6);border-radius:10px;background:rgba(3,18,37,.84);color:#e0f2fe;cursor:pointer;}
+.orbi-ux09 .orbi-mobile-launch__languages button[aria-pressed="true"] {background:rgba(10,80,128,.95);
+  border-color:#5ee8ff;box-shadow:0 0 18px rgba(6,182,212,.35);color:white;}
+.orbi-ux09 .orbi-mobile-launch__version {font:600 clamp(9px,.9vw,13px) "JetBrains Mono",monospace;
+  color:#cbd5e1;text-shadow:0 2px 7px #041023;}
+/* Seven illustrated command panels, 4+3 with aspect-ratio aware sizing. */
+.orbi-ux09 .orbi-mobile-launch__hub.orbi-ux09-hub {width:100%;height:100%;min-height:0;display:flex;
+  flex-direction:column;gap:clamp(8px,1.4vh,17px);overflow:hidden;}
+.orbi-ux09-hub-header {flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;
+  gap:16px;min-height:clamp(72px,19vh,180px);
+  padding-inline:clamp(5px,1.4vw,28px);}
+.orbi-ux09-brand {display:flex;align-items:center;gap:clamp(10px,1.4vw,20px);min-width:0;}
+.orbi-ux09-brand img {width:clamp(50px,7.6vw,130px);height:clamp(50px,7.6vw,130px);object-fit:contain;}
+.orbi-ux09-brand div {display:flex;flex-direction:column;gap:2px;min-width:0;}
+.orbi-ux09-brand b {font:900 clamp(13px,2.2vw,42px)/.94 "Space Grotesk",system-ui,sans-serif;
+  white-space:nowrap;text-shadow:0 2px 18px #000;}
+.orbi-ux09-brand b em {font-style:normal;color:#ffd24a;}
+.orbi-ux09-brand span {font:700 clamp(8px,.8vw,13px) "JetBrains Mono",monospace;letter-spacing:.19em;color:#38ecff;}
+.orbi-ux09-brand h2 {font:900 clamp(16px,2.3vw,41px)/1.1 "Space Grotesk",system-ui,sans-serif;
+  margin:2px 0 0;text-shadow:0 2px 12px #06152b;}
+.orbi-ux09-metrics {display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.orbi-ux09-metrics>span {display:flex;align-items:center;gap:7px;padding:8px 11px;
+  font:800 clamp(10px,1.25vw,17px) "JetBrains Mono",monospace;border:1px solid #38bdf8;
+  background:rgba(3,16,35,.78);border-radius:9px;}
+.orbi-ux09-metrics svg {color:#4deaff;}
+.orbi-ux09-metrics button,.orbi-ux09-detail-heading>button {
+  width:clamp(42px,5vw,75px);height:clamp(42px,5vw,75px);flex-shrink:0;display:grid;place-items:center;
+  border:2px solid #38bdf8;border-radius:12px;background:rgba(4,33,60,.85);color:#f3fdff;cursor:pointer;}
+.orbi-ux09 .orbi-mobile-launch__tiles.orbi-ux09-command-grid {flex:1;min-height:0;display:grid!important;
+  grid-template-columns:repeat(12,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));
+  column-gap:clamp(7px,.9vw,15px);row-gap:clamp(7px,1.4vh,14px);padding:2px 7px 7px;
+  overflow-y:auto;overscroll-behavior:contain;}
+.orbi-ux09-command-grid .orbi-ux09-tile {grid-column:span 3;min-width:0;min-height:0;display:flex;flex-direction:column;
+  position:relative;overflow:hidden;text-align:left;padding:0;border:2px solid rgba(57,202,255,.83);
+  box-shadow:inset 0 0 18px #37bffb38,0 0 14px #029ed02b;background:#081e34;color:#ecfaff;
+  border-radius:7px;cursor:pointer;transition:transform .16s,border-color .16s;}
+.orbi-ux09-command-grid .orbi-ux09-tile:nth-child(n+5) {grid-column:span 4;}
+.orbi-ux09-command-grid .orbi-ux09-tile:active {transform:scale(.98);border-color:#fff3b3;}
+.orbi-ux09-tile-art {flex:1;min-height:0;width:100%;display:grid;place-items:center;overflow:hidden;
+  background-image:linear-gradient(165deg,rgba(6,22,45,.05),rgba(7,16,36,.6)),url("/ux09/orbi-command-world.svg");
+  background-size:cover;position:relative;}
+.orbi-ux09-tile-art::before {content:"";position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% 50%,#07254a12,#0513298f);}
+.orbi-ux09-tile-hero-icon {position:relative;z-index:1;color:#92f2ff;opacity:.85;
+  filter:drop-shadow(0 0 17px rgba(67,211,255,.7));}
+.orbi-ux09-tile--modes .orbi-ux09-tile-art {background-position:78% 65%;}
+.orbi-ux09-tile--hangar .orbi-ux09-tile-art {background-position:12% 60%;}
+.orbi-ux09-tile--tactics .orbi-ux09-tile-art {background-position:64% 25%;}
+.orbi-ux09-tile--codex .orbi-ux09-tile-art {background-position:89% 20%;}
+.orbi-ux09-tile--controls .orbi-ux09-tile-art {background-position:12% 92%;}
+.orbi-ux09-tile--settings .orbi-ux09-tile-art {background-position:52% 30%;}
+.orbi-ux09-tile--about .orbi-ux09-tile-art {background-position:84% 85%;}
+.orbi-ux09-tile-caption {display:flex;align-items:center;gap:clamp(5px,.8vw,12px);
+  width:100%;flex-shrink:0;padding:clamp(6px,1vh,13px) clamp(6px,.9vw,15px);
+  border-top:1px solid #3fd8ff;background:linear-gradient(180deg,#06152bfa,#00101cf5);}
+.orbi-ux09-tile-icon {display:grid;place-items:center;border:1px solid #23c9fe;padding:4px;border-radius:8px;color:#8ee7ff;}
+.orbi-ux09-tile-caption div {min-width:0;flex:1;}
+.orbi-ux09-tile-caption strong {display:block;font:900 clamp(10px,1.35vw,23px)/1.12 "Space Grotesk",system-ui,sans-serif;}
+.orbi-ux09-tile-caption small {display:block;color:#81dfea;font:600 clamp(8px,.77vw,13px)/1.2 "Space Grotesk",system-ui,sans-serif;margin-top:3px;}
+.orbi-ux09-tile-caption>svg {color:#67e8f9;flex-shrink:0;}
+/* Modes: sidebar plus three image-led cards, preserving actions and Infinite lock. */
+.orbi-ux09 .orbi-mobile-launch__detail.orbi-ux09-detail {width:100%;height:100%;min-height:0;display:flex;flex-direction:column;gap:10px;}
+.orbi-ux09-detail-heading {display:grid;grid-template-columns:1fr auto;grid-template-rows:auto auto;
+  align-items:center;gap:4px;min-height:clamp(48px,11vh,103px);
+  padding-inline:clamp(7px,2vw,25px);}
+.orbi-ux09-detail-heading .orbi-mobile-launch__kicker {grid-column:1;grid-row:1;font-size:clamp(9px,1.1vw,15px);}
+.orbi-ux09-detail-heading h2 {grid-column:1;grid-row:2;margin:0;font:900 clamp(19px,2.6vw,42px) "Space Grotesk",system-ui,sans-serif;
+  color:#fff;text-shadow:0 2px 15px #000;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.orbi-ux09-detail-heading>button {grid-column:2;grid-row:1/span 2;justify-self:end;}
+.orbi-ux09-modes-layout {display:grid;grid-template-columns:clamp(125px,17vw,255px) minmax(0,1fr);
+  gap:clamp(7px,1.4vw,22px);flex:1;min-height:0;padding:0 7px 7px;}
+.orbi-ux09-mode-sidebar {display:flex;flex-direction:column;align-self:stretch;justify-content:center;gap:clamp(8px,2vh,17px);min-width:0;}
+.orbi-ux09-mode-sidebar .orbi-ux09-mode-nav {width:100%;min-height:clamp(45px,12vh,78px);
+  padding:8px 10px;display:flex;align-items:center;gap:10px;font:900 clamp(10px,1.3vw,20px) "Space Grotesk",system-ui,sans-serif;
+  color:#c6f4ff;border:1px solid #38bdf8;background:rgba(1,19,40,.82);text-align:left;border-radius:4px;
+  cursor:pointer;}
+.orbi-ux09-mode-nav>span {flex:1;min-width:0;}
+.orbi-ux09-mode-sidebar .orbi-ux09-mode-nav[aria-current="true"] {color:#ffeba7;border-color:#fcd34d;
+  background:linear-gradient(95deg,#7d4a08e9,#c88c1eec);box-shadow:0 0 24px #f4bb3377;}
+.orbi-ux09-mode-sidebar .orbi-ux09-mode-nav--violet {border-color:#9357d8;color:#c9a4f6;}
+.orbi-ux09 .orbi-mobile-launch__modes.orbi-ux09-mode-grid {flex:1;min-height:0;display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(8px,1vw,18px);padding:0;align-items:stretch;}
+.orbi-ux09-mode-card {min-width:0;min-height:0;display:flex;flex-direction:column;overflow:hidden;
+  border:2px solid #f8bd4a;border-radius:8px;background:rgba(3,15,34,.95);
+  box-shadow:0 0 20px #ffc8522b, inset 0 0 15px #ffffff14;}
+.orbi-ux09-mode-card--cyan {border-color:#25d9fb;box-shadow:0 0 18px #00dfff3c;}
+.orbi-ux09-mode-card--violet {border-color:#9f4cf8;box-shadow:0 0 18px #d94bff46;}
+.orbi-ux09-mode-art {min-height:0;flex:1;display:grid;place-items:center;position:relative;
+  background-image:radial-gradient(circle at 50% 48%,#0b2b4a22,rgba(2,10,28,.12)),
+    url("/ux09/orbi-command-world.svg");background-size:cover;background-position:20% 45%;overflow:hidden;}
+.orbi-ux09-mode-card--cyan .orbi-ux09-mode-art {background-position:60% 65%;}
+.orbi-ux09-mode-card--violet .orbi-ux09-mode-art {background-position:95% 12%;}
+.orbi-ux09-mode-art svg {filter:drop-shadow(0 0 20px #fff5aa);color:#fff0b1;}
+.orbi-ux09-mode-card--cyan .orbi-ux09-mode-art svg {color:#44dfff;filter:drop-shadow(0 0 19px #00e5ff);}
+.orbi-ux09-mode-card--violet .orbi-ux09-mode-art svg {color:#c58cff;filter:drop-shadow(0 0 19px #ba42ee);}
+.orbi-ux09-mode-text {display:flex;flex-direction:column;gap:clamp(3px,.8vh,13px);
+  min-height:clamp(110px,31vh,250px);padding:clamp(6px,1.2vw,20px);
+  background:linear-gradient(180deg,rgba(0,16,33,.92),rgba(0,7,19,.99));}
+.orbi-ux09-mode-title {display:flex;align-items:center;gap:8px;}
+.orbi-ux09-mode-title>svg {flex-shrink:0;color:#f7d55d;}
+.orbi-ux09-mode-card--cyan .orbi-ux09-mode-title>svg {color:#00d8ff;}
+.orbi-ux09-mode-card--violet .orbi-ux09-mode-title>svg {color:#c084fc;}
+.orbi-ux09-mode-title h3 {font:900 clamp(14px,2vw,30px)/1 "Space Grotesk",system-ui,sans-serif;margin:0;color:white;white-space:nowrap;}
+.orbi-ux09-mode-title strong {font:800 clamp(8px,1vw,15px) "JetBrains Mono",monospace;color:#fed67a;}
+.orbi-ux09-mode-card--cyan .orbi-ux09-mode-title strong {color:#48edff;}
+.orbi-ux09-mode-card--violet .orbi-ux09-mode-title strong {color:#d9a8ff;}
+.orbi-ux09-mode-text p {font:500 clamp(9px,1vw,16px)/1.28 "Space Grotesk",system-ui,sans-serif;
+  color:#e2f3f7;margin:0;flex:1;overflow-y:auto;}
+.orbi-ux09-mode-action {min-height:clamp(31px,5.5vh,54px);display:flex;align-items:center;justify-content:center;
+  gap:10px;border:1px solid #ffe299;border-radius:5px;background:linear-gradient(110deg,#cc850e,#ffe176);
+  color:#061221;font:900 clamp(12px,1.6vw,23px) "Space Grotesk",system-ui,sans-serif;
+  text-align:center;cursor:pointer;}
+.orbi-ux09-mode-card--cyan .orbi-ux09-mode-action {border-color:#5de7ff;background:linear-gradient(110deg,#0276a7,#00cff3);color:#011523;}
+.orbi-ux09-mode-action--locked,.orbi-ux09-mode-card--violet .orbi-ux09-mode-action {
+  cursor:not-allowed;color:#c5addb;border-color:#705091;background:linear-gradient(110deg,#211032,#3d2053);}
+.orbi-mobile-launch.orbi-ux09 :is(button):focus-visible {outline:3px solid #f1fdff;outline-offset:3px;}
+/* Informational legacy detail panels still work through original tab callbacks. */
+.orbi-premium-entry[data-mobile-layer="DETAIL"]:not([data-mobile-tab="MAIN"])>.orbi-start-deck,
+.orbi-premium-entry[data-mobile-layer="DETAIL"][data-mobile-section="HANGAR"]>.orbi-start-deck {
+  display:block!important; position:relative;z-index:24;flex:1;min-height:0;width:min(1200px,96%);
+  overflow:auto!important;margin:0 auto 10px;max-height:75dvh!important;background:rgba(3,13,30,.95);}
+.orbi-premium-entry[data-mobile-layer="DETAIL"]:not([data-mobile-tab="MAIN"])>.orbi-mobile-launch.orbi-ux09,
+.orbi-premium-entry[data-mobile-layer="DETAIL"][data-mobile-section="HANGAR"]>.orbi-mobile-launch.orbi-ux09 {
+  height:auto;min-height:0;flex:0 0 auto!important;max-height:16dvh;padding-bottom:2px;}
+.orbi-premium-entry[data-mobile-layer="DETAIL"] .orbi-start-tabs {display:none!important;}
+.orbi-premium-entry[data-mobile-layer="DETAIL"][data-mobile-section="HANGAR"] .orbi-start-hero,
+.orbi-premium-entry[data-mobile-layer="DETAIL"][data-mobile-section="HANGAR"] .orbi-start-launch,
+.orbi-premium-entry[data-mobile-layer="DETAIL"][data-mobile-section="HANGAR"] .orbi-start-campaign {display:none!important;}
+@media (max-height:600px) and (orientation:landscape) {
+ .orbi-ux09-scene {background-position:50% center;}
+ .orbi-premium-entry .orbi-mobile-launch.orbi-ux09 {padding:8px 12px;}
+ .orbi-ux09 .orbi-mobile-launch__welcome {align-items:center;justify-content:flex-end;}
+ .orbi-ux09-identity {width:54%;max-width:54%;gap:6px;padding:4px 8px;}
+ .orbi-ux09-welcome h1 {font-size:clamp(22px,3.9vw,39px)!important;}
+ .orbi-ux09-welcome p {font-size:9px!important;}
+ .orbi-ux09-hub-header {min-height:61px;}
+ .orbi-ux09-brand img {width:48px;height:48px;}
+ .orbi-ux09-brand b {font-size:clamp(13px,2vw,23px);}
+ .orbi-ux09-brand h2 {font-size:clamp(16px,2.2vw,25px);}
+ .orbi-ux09-metrics>span {padding:5px;}
+ .orbi-ux09-tile-art .orbi-ux09-tile-hero-icon {width:28px;height:28px;}
+ .orbi-ux09-tile-caption {padding:4px 7px;}
+ .orbi-ux09-tile-caption strong {font-size:clamp(9px,1.26vw,14px);}
+ .orbi-ux09-tile-caption small {font-size:clamp(7px,.82vw,10px);}
+ .orbi-ux09-tile-icon {padding:2px;}
+ .orbi-ux09-tile-icon svg {width:13px;height:13px;}
+ .orbi-ux09-detail-heading {min-height:47px;}
+ .orbi-ux09-mode-title h3 {font-size:clamp(12px,1.55vw,20px);}
+ .orbi-ux09-mode-text {min-height:116px;padding:8px;gap:5px;}
+ .orbi-ux09-mode-text p {font-size:clamp(8px,1.05vw,11px);}
+ .orbi-ux09-mode-art>svg {width:32px;height:32px;}
+ .orbi-ux09-mode-sidebar .orbi-ux09-mode-nav {min-height:45px;}
+}
+@media (orientation:portrait) and (max-width:700px) {
+ .orbi-premium-entry {overflow-y:auto!important;}
+ .orbi-premium-entry .orbi-mobile-launch.orbi-ux09 {min-height:100dvh;height:auto;max-height:none;overflow-y:auto;}
+ .orbi-ux09 .orbi-mobile-launch__welcome {justify-content:center;min-height:80dvh;}
+ .orbi-ux09-identity {max-width:100%;width:100%;margin-top:28vh;}
+ .orbi-ux09-hub-header {min-height:85px;}
+ .orbi-ux09-brand img {width:50px;height:50px;}
+ .orbi-ux09-brand b {font-size:17px;}
+ .orbi-ux09-brand h2 {font-size:20px;}
+ .orbi-ux09 .orbi-mobile-launch__tiles.orbi-ux09-command-grid {grid-template-columns:repeat(2,minmax(0,1fr));
+  grid-template-rows:auto;overflow:visible;padding-bottom:22px;}
+ .orbi-ux09-command-grid .orbi-ux09-tile,.orbi-ux09-command-grid .orbi-ux09-tile:nth-child(n+5) {
+  grid-column:span 1;min-height:135px;}
+ .orbi-ux09-tile-art {min-height:62px;}
+ .orbi-ux09-tile-caption strong {font-size:11px;}
+ .orbi-ux09-metrics>span {display:none;}
+ .orbi-ux09-modes-layout {display:flex;flex-direction:column;}
+ .orbi-ux09-mode-sidebar {flex-direction:row;overflow-x:auto;justify-content:flex-start;}
+ .orbi-ux09 .orbi-mobile-launch__modes.orbi-ux09-mode-grid {display:flex!important;flex-direction:column;}
+ .orbi-ux09-mode-card {min-height:250px;}
+ .orbi-ux09-mode-art {min-height:110px;}
+ .orbi-ux09-mode-text {min-height:155px;}
+}
+@media (prefers-reduced-motion:reduce) {
+ .orbi-ux09-command-grid .orbi-ux09-tile,.orbi-ux09 .orbi-mobile-launch__primary {transition:none;}
+}
