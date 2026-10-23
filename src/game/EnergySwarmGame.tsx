@@ -8418,8 +8418,8 @@ export const EnergySwarmGame: React.FC = () => {
 
       {/* CINEMATIC WAVE INTRODUCTION BANNER OVERLAY */}
       {waveIntroConfig && !isPhotoMode && (
-        <div className="fixed inset-0 flex items-center justify-center z-40 pointer-events-none select-none">
-          <div className="bg-slate-950/85 border border-slate-900 rounded-xl p-6 shadow-[0_0_50px_rgba(0,0,0,0.85)] max-w-lg w-full text-center space-y-4 animate-scaleUp backdrop-blur-md">
+        <div className="orbi-wave-intro fixed inset-0 flex items-center justify-center z-40 pointer-events-none select-none" aria-live="polite">
+          <div className="orbi-wave-intro-card bg-slate-950/85 border border-slate-900 rounded-xl p-6 shadow-[0_0_50px_rgba(0,0,0,0.85)] max-w-lg w-full text-center space-y-4 animate-scaleUp backdrop-blur-md">
             <span 
               className="text-[10px] font-black tracking-[0.25em] block font-mono uppercase"
               style={{ color: waveIntroConfig.introColor }}
@@ -8464,7 +8464,7 @@ export const EnergySwarmGame: React.FC = () => {
               )}
             </div>
 
-            <div className="bg-slate-900/50 border border-slate-850 p-3 rounded-lg text-left space-y-1 font-mono text-[10px]">
+            <div className="orbi-wave-intro-advice bg-slate-900/50 border border-slate-850 p-3 rounded-lg text-left space-y-1 font-mono text-[10px]">
               <span className="text-amber-400 font-black tracking-wider uppercase block">💡 TACTICAL RECOMMENDATION</span>
               <p className="text-slate-300 leading-relaxed">
                 {waveIntroConfig.tacticalAdvice}
