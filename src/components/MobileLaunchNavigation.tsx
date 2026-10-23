@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import {
   ArrowLeft, Atom, BookOpen, ChevronRight, Compass, Cpu, Gauge,
   Gamepad2, Globe, Info, LockKeyhole, Play, Settings, Shield,
-  Sparkles, Target, Waves, Zap,
+  Sparkles, Zap,
 } from "lucide-react";
 
 /** UX09: keep UX06's three launch layers and callback ownership intact. */
