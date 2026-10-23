@@ -16,7 +16,7 @@ const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 let server, browser;
 
 async function startServer() {
-  server = spawn(process.execPath, ["node_modules/vite/bin/vite.js", "--preview", "--host",
+  server = spawn(process.execPath, ["node_modules/vite/bin/vite.js", "preview", "--host",
     "127.0.0.1", "--port", String(port), "--strictPort"],
     { stdio: ["ignore", "pipe", "pipe"] });
   let logs = "";
