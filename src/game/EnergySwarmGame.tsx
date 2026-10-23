@@ -217,6 +217,7 @@ import { ResultScreen } from "../components/ResultScreen";
 import { CompanionPanel } from "../components/CompanionPanel";
 import { UpgradeSelector } from "../components/UpgradeSelector";
 import { MobileTouchOverlay } from "../components/MobileTouchOverlay";
+import { WebPhotoReturn } from "../components/WebPhotoReturn";
 import { MobileFormationCarousel } from "../components/MobileFormationCarousel";
 import { OrientationHint } from "../components/OrientationHint";
 import { useViewportComposition } from "../components/useViewportComposition";
@@ -8351,6 +8352,11 @@ export const EnergySwarmGame: React.FC = () => {
           onReset={resetPhotoModeFilter}
           onExit={exitPhotoMode}
         />
+      )}
+      {/* WEB UX01B: even after the temporary photo toolbar fades out,
+          desktop players must never be trapped in a blank battlefield. */}
+      {isPhotoMode && !photoHintVisible && immersiveWebLandscape && (
+        <WebPhotoReturn onExit={exitPhotoMode} />
       )}
 
       {/* GAMEOVER / VICTORY SUMMARY BOARDS */}
