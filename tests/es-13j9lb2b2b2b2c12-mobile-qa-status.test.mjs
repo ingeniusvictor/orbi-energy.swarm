@@ -23,7 +23,7 @@ test("C12 does not touch actual Canvas pointer handling or C10 authenticated act
   assert.match(game,/onPointerMove=\{handlePointerMove\}/);
   assert.match(game,/onPointerDown=\{handlePointerDown\}/);
   assert.match(game,/onPointerUp=\{handlePointerUp\}/);
-  assert.match(game,/<MobileTouchOverlay onDirectionChange=\{setMobileTouchDirection\}/);
+  assert.match(game,/<MobileTouchOverlay onVectorChange=\{setMobileAnalogVector\}/);
   assert.match(game,/toggleArchitectQaDiagnostic\(\)/);
   assert.match(game,/toggleArchitectQaPatternDirector\(\)/);
   assert.match(game,/toggleArchitectQaAttackSelection\(\)/);
