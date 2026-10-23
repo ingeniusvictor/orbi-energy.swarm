@@ -2135,7 +2135,7 @@ body {
 }
 .orbi-mobile-launch.orbi-ux09[data-layer="DETAIL"] {flex:1 1 auto!important;}
 .orbi-ux09-scene {position:absolute;z-index:-3;inset:0;pointer-events:none;
-  background:#071426 url("/ux09/orbi-command-world.svg") center center / cover no-repeat;}
+  background:#071426 var(--orbi-ux09-world) center center / cover no-repeat;}
 .orbi-ux09-scene::after {content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
   background:linear-gradient(90deg,rgba(0,9,23,.32),rgba(0,8,22,.26) 37%,rgba(1,7,20,.15) 72%,rgba(1,6,20,.43));}
 .orbi-ux09 .orbi-mobile-launch__welcome {width:100%;height:100%;min-height:0;display:flex;flex-direction:row;
@@ -2202,7 +2202,7 @@ body {
 .orbi-ux09-command-grid .orbi-ux09-tile:nth-child(n+5) {grid-column:span 4;}
 .orbi-ux09-command-grid .orbi-ux09-tile:active {transform:scale(.98);border-color:#fff3b3;}
 .orbi-ux09-tile-art {flex:1;min-height:0;width:100%;display:grid;place-items:center;overflow:hidden;
-  background-image:linear-gradient(165deg,rgba(6,22,45,.05),rgba(7,16,36,.6)),url("/ux09/orbi-command-world.svg");
+  background-image:linear-gradient(165deg,rgba(6,22,45,.05),rgba(7,16,36,.6)),var(--orbi-ux09-world);
   background-size:cover;position:relative;}
 .orbi-ux09-tile-art::before {content:"";position:absolute;inset:0;
   background:radial-gradient(ellipse at 50% 50%,#07254a12,#0513298f);}
@@ -2252,7 +2252,7 @@ body {
 .orbi-ux09-mode-card--violet {border-color:#9f4cf8;box-shadow:0 0 18px #d94bff46;}
 .orbi-ux09-mode-art {min-height:0;flex:1;display:grid;place-items:center;position:relative;
   background-image:radial-gradient(circle at 50% 48%,#0b2b4a22,rgba(2,10,28,.12)),
-    url("/ux09/orbi-command-world.svg");background-size:cover;background-position:20% 45%;overflow:hidden;}
+    var(--orbi-ux09-world);background-size:cover;background-position:20% 45%;overflow:hidden;}
 .orbi-ux09-mode-card--cyan .orbi-ux09-mode-art {background-position:60% 65%;}
 .orbi-ux09-mode-card--violet .orbi-ux09-mode-art {background-position:95% 12%;}
 .orbi-ux09-mode-art svg {filter:drop-shadow(0 0 20px #fff5aa);color:#fff0b1;}
