@@ -8,6 +8,7 @@ import {
 } from "./types";
 
 import { projectPanoramicCanvasViewport } from "./panoramicCanvasViewport";
+import { projectImmersiveBattlefieldMode } from "./immersiveBattlefieldPolicy";
 import { 
   CANVAS_HEIGHT, WORLD_WIDTH, WORLD_HEIGHT, MAX_ENEMIES, 
   MAX_PROJECTILES, MAX_RESOURCES, PLAYER_BASE_SPEED, 
@@ -320,15 +321,10 @@ type InfiniteBossRematchProfile = Extract<
 
 export const EnergySwarmGame: React.FC = () => {
   const viewportProfile = useViewportComposition();
-  const immersiveTouchLandscape = viewportProfile.orientation === "LANDSCAPE" &&
-    viewportProfile.touchControlsRecommended;
-  // WEB UX01: use the same certified UX01 HUD/UX02 panoramic stage for
-  // real browser desktop/laptop landscapes. Keep coarse-pointer Android
-  // gating unchanged, even on large tablets, and preserve portrait layout.
-  const immersiveWebLandscape = viewportProfile.orientation === "LANDSCAPE" &&
-    !viewportProfile.coarsePointer &&
-    viewportProfile.width >= 800 && viewportProfile.height >= 360;
-  const immersiveLandscapeMode = immersiveTouchLandscape || immersiveWebLandscape;
+  const {
+    webLandscape: immersiveWebLandscape,
+    immersive: immersiveLandscapeMode,
+  } = projectImmersiveBattlefieldMode(viewportProfile);
   const [browserFullscreen, setBrowserFullscreen] = useState(false);
   const [browserFullscreenAvailable, setBrowserFullscreenAvailable] = useState(false);
   useEffect(() => {
