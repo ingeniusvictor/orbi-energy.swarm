@@ -61,6 +61,8 @@ async function run(name,width,height,mobile,compact){
   }else{
    await shot(page,name+"-desktop-or-portrait");
    // UX09: legacy desktop/portrait CTA remains in DOM for archival compatibility,\n   // but all production viewports now use the accessible three-layer launch.\n   await page.getByTestId("orbi-mobile-enter").click();\n   await page.getByTestId("orbi-mobile-menu-main-play").click();\n   await page.getByTestId("orbi-mobile-campaign").click();
+   await page.waitForTimeout(250);
+   data.afterStart=await page.evaluate(()=>({layer:document.querySelector(".orbi-premium-entry")?.getAttribute("data-mobile-layer"),startScreen:!!document.querySelector(".orbi-premium-entry"),canvas:!!document.querySelector("#game-canvas"),root:document.querySelector(".orbi-game-root")?.getAttribute("data-immersive-landscape")}));
   }
   await page.locator("#game-canvas").waitFor({state:"visible",timeout:20000});
   const game=page.locator(".orbi-game-root");
@@ -96,7 +98,7 @@ async function run(name,width,height,mobile,compact){
   }
   check(errors.length===0,name+": page errors "+JSON.stringify(errors));
   data.pass=true;
- }catch(error){data.pass=false;data.error=String(error);proof.failures.push({name,error:String(error),stack:error?.stack?.slice(0,1800)});}
+ }catch(error){data.pass=false;data.error=String(error);data.lastDOM=await page.evaluate(()=>({welcome:!!document.querySelector(".orbi-premium-entry"),layer:document.querySelector(".orbi-premium-entry")?.getAttribute("data-mobile-layer"),canvas:!!document.querySelector("#game-canvas"),gameRoot:!!document.querySelector(".orbi-game-root")})).catch(()=>null);await shot(page,name+"-error").catch(()=>{});proof.failures.push({name,error:String(error),stack:error?.stack?.slice(0,1800)});}
  finally{proof.cases.push(data);await ctx.close();}
 }
 await mkdir(folder,{recursive:true});
