@@ -4557,8 +4557,9 @@ export const EnergySwarmGame: React.FC = () => {
     // rAF's frame-start timestamp may precede performance.now() captured
     // when Start/Resume queued this frame. Negative elapsed time used to
     // throw inside Combat Overdrive, aborting rendering after background.
-    let delta = nonNegativeAnimationFrameDelta(timestamp, lastTimeRef.current);
+    let delta = timestamp - lastTimeRef.current;
     lastTimeRef.current = timestamp;
+    delta = nonNegativeAnimationFrameDelta(delta);
 
     // Clamp huge deltas when switching tabs to avoid teleportation crashes
     if (delta > 100) delta = 16.6;
