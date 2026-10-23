@@ -41,10 +41,18 @@ async function run(name,width,height,coarse,immersive,webImmersive) {
   try {
     await page.clock.install({time:new Date("2026-10-22T12:00:00Z")});
     await page.goto(url,{waitUntil:"domcontentloaded",timeout:30000});
-    const start=page.locator('[data-primary-start-cta="true"]');
-    await start.waitFor({state:"visible",timeout:30000});
     await page.clock.pauseAt(new Date("2026-10-22T12:00:05Z"));
-    await start.click();
+    const entry=page.getByTestId("orbi-mobile-enter");
+    if(coarse && width>height && height<=600) {
+      await entry.waitFor({state:"visible",timeout:30000});
+      await entry.tap();
+      await page.getByTestId("orbi-mobile-menu-main-play").tap();
+      await page.getByTestId("orbi-mobile-campaign").tap();
+    }else{
+      const start=page.locator('[data-primary-start-cta="true"]');
+      await start.waitFor({state:"visible",timeout:30000});
+      await start.click();
+    }
     // The evidence runs against the production Vite bundle (not DEV QA).
     check((await page.locator('[data-testid="architect-qa-touch-dock"]').count())===0,
       name+": developer QA controls leaked into production");
