@@ -45,9 +45,9 @@ async function run(name,width,height,coarse,immersive,webImmersive) {
     const entry=page.getByTestId("orbi-mobile-enter");
     if(await entry.isVisible()) {
       await entry.waitFor({state:"visible",timeout:30000});
-      await entry.tap();
-      await page.getByTestId("orbi-mobile-menu-main-play").tap();
-      await page.getByTestId("orbi-mobile-campaign").tap();
+      await entry.click();
+      await page.getByTestId("orbi-mobile-menu-main-play").click();
+      await page.getByTestId("orbi-mobile-campaign").click();
     }else{
       const start=page.locator('[data-primary-start-cta="true"]');
       await start.waitFor({state:"visible",timeout:30000});
