@@ -4463,6 +4463,11 @@ export const EnergySwarmGame: React.FC = () => {
           );
           // C3: first priority remains C2 physical cardinal collisions.
           // Core can be hurt only after all four anchors reached zero HP.
+          // C13: observed real physical impact only; refresh presentation,
+          // never synthesize a collision or mutate HP from the browser.
+          if (import.meta.env.DEV && qaHit !== null) {
+            refreshArchitectQaTouchControls(v => v + 1);
+          }
           const qaCoreHit = !qaHit && qaShot.life > 0
             ? resolveBlackoutArchitectDevQaCoreImpact(
                 architectEngineIdentityOwnerRef.current,
@@ -4474,6 +4479,9 @@ export const EnergySwarmGame: React.FC = () => {
                 architectQaShotRef.current,
               )
             : null;
+          if (import.meta.env.DEV && qaCoreHit !== null && !qaCoreHit.coreDisabled) {
+            refreshArchitectQaTouchControls(v => v + 1);
+          }
           if (qaCoreHit?.coreDisabled) {
             // Owner requires health>0. Revoke immediately on zero, no legacy
             // boss cinematic, score, rewards or Campaign/Infinite transition.
@@ -7356,6 +7364,29 @@ export const EnergySwarmGame: React.FC = () => {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    // C13: genuine DEV-only READ-ONLY browser targeting evidence. Reading the
+    // current authenticated owner, actual world geometry and camera never
+    // admits a boss, sets HP, fires shots or modifies a simulation reference.
+    const qaOwner = architectEngineIdentityOwnerRef.current;
+    const qaGuard = architectQaGuardRef.current;
+    const qaBoss = architectQaBossRef.current;
+    const qaGeom = architectQaCardinalsRef.current;
+    if (import.meta.env.DEV && qaOwner && qaGuard && qaBoss && qaGeom &&
+        qaGeom.boss === qaBoss && qaGeom.guard === qaGuard &&
+        qaOwner.isCurrent(qaGuard, qaBoss, bossRef.current, enemiesRef.current)) {
+      const cam = cameraStateRef.current;
+      canvas.dataset.architectQaReadout = JSON.stringify({
+        boss: {x:qaBoss.x,y:qaBoss.y,health:qaBoss.health,maxHealth:qaBoss.maxHealth},
+        anchors:qaGeom.anchors.map(a=>({id:a.id,x:a.x,y:a.y,
+          radius:a.radius,health:a.health,maxHealth:a.maxHealth})),
+        foton: {x:playerPosRef.current.x,y:playerPosRef.current.y},
+        camera: {x:cam.cameraX,y:cam.cameraY,zoom:cam.zoom,
+          width:cam.viewportWidth,height:cam.viewportHeight},
+      });
+    } else {
+      delete canvas.dataset.architectQaReadout;
+    }
+
     // Keep the simulation/render API in logical 800×480 coordinates while
     // allowing the DOM canvas backing store to scale for HiDPI displays.
     const backingScaleX = canvas.width / CANVAS_WIDTH;
@@ -8037,6 +8068,12 @@ export const EnergySwarmGame: React.FC = () => {
 
   const handlePointerUp = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (!isPlaying || isPaused) return;
+    // C13: a genuine QA projectile pointer release must NEVER become a normal
+    // click-to-move command. Normal mode input remains unchanged.
+    if (import.meta.env.DEV && architectQaBossRef.current !== null) {
+      isMouseDownRef.current = false;
+      return;
+    }
     isMouseDownRef.current = false;
     
     const duration = Date.now() - mouseDownPosRef.current.time;
