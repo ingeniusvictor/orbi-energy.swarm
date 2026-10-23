@@ -26,10 +26,19 @@ async function boot(){
  for(let i=0;i<120;i++){try{if((await fetch(origin)).ok)return;}catch{}await sleep(200);}
  throw Error("Vite production preview not ready: "+msg.slice(-1600));
 }
-async function run(name,width,height,denyWebgl){
+async function run(name,width,height,denyWebgl,skewRaf=false){
  const ctx=await browser.newContext({viewport:{width,height},serviceWorkers:"block",
    reducedMotion:"reduce",deviceScaleFactor:1});
  const page=await ctx.newPage(),errors=[],consoleErrors=[],reqFailures=[];
+ if(skewRaf) {
+  await page.addInitScript(()=>{
+   const original=window.requestAnimationFrame.bind(window);
+   // Force the precise class of real browser timing regression seen in
+   // live production: the first queued RAF clock is older than the
+   // performance.now() origin stored at Start; later deltas stay genuine.
+   window.requestAnimationFrame=cb=>original(t=>cb(t-150));
+  });
+ }
  page.on("pageerror",e=>errors.push(String(e)));
  page.on("console",msg=>{if(msg.type()==="error")consoleErrors.push(msg.text().slice(0,400))});
  page.on("requestfailed",req=>reqFailures.push(req.url()+" "+req.failure()));
@@ -42,7 +51,7 @@ async function run(name,width,height,denyWebgl){
    };
   });
  }
- const record={name,width,height,denyWebgl,errors,consoleErrors,reqFailures,observed:[]};
+ const record={name,width,height,denyWebgl,skewRaf,errors,consoleErrors,reqFailures,observed:[]};
  const state=async label=>{
   const result=await page.evaluate(()=>{
    const root=document.querySelector(".orbi-game-root");
@@ -113,6 +122,7 @@ try{
    args:["--disable-dev-shm-usage","--use-gl=angle","--use-angle=swiftshader"]});
  await run("desktop-real-chrome",1728,850,false);
  await run("desktop-no-webgl-fallback",1728,850,true);
+ await run("desktop-negative-raf-timestamp",1728,850,false,true);
 } catch(e){evidence.failures.push({scope:"init",reason:String(e)});}
 finally{
  if(browser)await browser.close();
