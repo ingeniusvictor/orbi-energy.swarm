@@ -7380,6 +7380,7 @@ export const EnergySwarmGame: React.FC = () => {
         anchors:qaGeom.anchors.map(a=>({id:a.id,x:a.x,y:a.y,
           radius:a.radius,health:a.health,maxHealth:a.maxHealth})),
         foton: {x:playerPosRef.current.x,y:playerPosRef.current.y},
+        shotActive: architectQaShotRef.current !== null,
         camera: {x:cam.cameraX,y:cam.cameraY,zoom:cam.zoom,
           width:cam.viewportWidth,height:cam.viewportHeight},
       });
