@@ -1,0 +1,140 @@
+/** WEB UX01 — real Chromium evidence for native desktop panorama and panels.
+ * No mock Canvas snapshots. QA diagnostics are not enabled by this script. */
+import { chromium } from "playwright";
+import { spawn } from "node:child_process";
+import { mkdir, stat, writeFile } from "node:fs/promises";
+import { join } from "node:path";
+
+const port = 4192;
+const url = "http://127.0.0.1:" + port;
+const output = process.env.ORBI_WEB_UX01_OUTPUT || "artifacts/web-ux01";
+const evidence = { type: "REAL_WEB_IMMERSIVE_CHROMIUM", cases: [],
+  screenshots: [], failures: [], errors: [], physicalAndroidDevice: false };
+const diagnostics = [];
+const check = (value, description) => { if (!value) throw Error(description); };
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+let server, browser;
+
+async function startServer() {
+  server = spawn(process.execPath, ["node_modules/vite/bin/vite.js", "--host",
+    "127.0.0.1", "--port", String(port), "--strictPort"],
+    { stdio: ["ignore", "pipe", "pipe"] });
+  let logs = "";
+  for (const s of [server.stdout,server.stderr]) s.on("data", x => logs += x.toString().slice(-1200));
+  for(let i=0;i<120;i++) {try{if((await fetch(url)).ok)return;}catch{} await sleep(250);}
+  throw Error("Vite startup: " + logs.slice(-1400));
+}
+async function shot(page,name) {
+  const path=join(output,name+".png");
+  await page.screenshot({path,animations:"disabled",fullPage:false});
+  const bytes=(await stat(path)).size;
+  check(bytes>10000,name+": missing screenshot");
+  evidence.screenshots.push({name,bytes});
+}
+async function run(name,width,height,coarse,immersive,webImmersive) {
+  const context=await browser.newContext({viewport:{width,height},
+    isMobile:coarse,hasTouch:coarse,deviceScaleFactor:1,
+    reducedMotion:"reduce",serviceWorkers:"block"});
+  const page=await context.newPage();
+  page.on("pageerror",e=>diagnostics.push(name+": "+String(e)));
+  page.on("console",msg=>{if(msg.type()==="error")diagnostics.push(name+": "+msg.text());});
+  try {
+    await page.clock.install({time:new Date("2026-10-22T12:00:00Z")});
+    await page.goto(url,{waitUntil:"domcontentloaded",timeout:30000});
+    const start=page.locator('[data-primary-start-cta="true"]');
+    await start.waitFor({state:"visible",timeout:30000});
+    await page.clock.pauseAt(new Date("2026-10-22T12:00:05Z"));
+    await start.click();
+    const root=page.locator(".orbi-game-root");
+    check((await root.getAttribute("data-immersive-landscape"))===String(immersive),
+      name+": unexpected immersive mode");
+    check((await root.getAttribute("data-web-immersive"))===String(webImmersive),
+      name+": unexpected desktop mode");
+    await page.clock.runFor(120);
+    const geometry=await page.evaluate(()=>{
+      const root=document.querySelector(".orbi-game-root");
+      const canvas=document.querySelector("#game-canvas");
+      const stage=document.querySelector(".orbi-game-stage");
+      const hud=document.querySelector(".orbi-game-hud");
+      if(!(root instanceof HTMLElement)||!(canvas instanceof HTMLCanvasElement)||
+         !(stage instanceof HTMLElement)||!(hud instanceof HTMLElement))return null;
+      const c=canvas.getBoundingClientRect(),s=stage.getBoundingClientRect(),h=hud.getBoundingClientRect();
+      return {root:{width:root.getBoundingClientRect().width,height:root.getBoundingClientRect().height},
+        stage:{x:s.x,y:s.y,width:s.width,height:s.height},
+        canvas:{x:c.x,y:c.y,width:c.width,height:c.height},
+        hud:{height:h.height},logicalWidth:Number(canvas.dataset.logicalWidth),
+        logicalHeight:Number(canvas.dataset.logicalHeight),
+        actualRatio:c.width/c.height,logicalRatio:Number(canvas.dataset.logicalWidth)/Number(canvas.dataset.logicalHeight)};
+    });
+    check(geometry,name+": missing game Canvas");
+    if(immersive) {
+      check(geometry.stage.width>=geometry.root.width*.985,
+        name+": battlefield stage not fullscreen "+JSON.stringify(geometry));
+      check(geometry.stage.height>=geometry.root.height-geometry.hud.height-3,
+        name+": battlefield stage short "+JSON.stringify(geometry));
+      check(geometry.hud.height<=48,name+": HUD too tall");
+      check(geometry.logicalWidth>800 && geometry.logicalHeight===480,
+        name+": panoramic world is absent "+JSON.stringify(geometry));
+      check(geometry.canvas.width>=geometry.stage.width*.985,
+        name+": game Canvas remains letterboxed");
+      check(Math.abs(geometry.actualRatio-geometry.logicalRatio)<.025,
+        name+": Canvas stretched/cropped "+JSON.stringify(geometry));
+      check(await page.locator('[data-testid="orbi-immersive-essential"]').isVisible(),
+        name+": compact HUD hidden");
+      check(!await page.locator(".orbi-tactical-rail").isVisible(),name+": old tactical rail visible");
+      check(!await page.locator(".orbi-logistics-deck").isVisible(),name+": old logistics rail visible");
+      await shot(page,name+"-battlefield");
+      const estado=page.locator('[data-testid="orbi-estado-button"]');
+      await estado.click();
+      check(await page.locator(".orbi-hud-detail-grid").isVisible(),name+": Estado grid hidden");
+      const swarm=await page.locator(".orbi-hud-swarm").boundingBox();
+      check(swarm && swarm.width>20,name+": Estado stats collapsed");
+      await shot(page,name+"-estado");
+      await page.getByRole("button",{name:/^Táctica$|^Tactics$/}).click();
+      check(await page.locator(".orbi-tactical-rail").isVisible(),name+": Tactica panel not visible");
+      await page.getByRole("button",{name:/^Equipo$|^Team$/}).click();
+      check(await page.locator(".orbi-logistics-deck").isVisible(),name+": Equipo panel not visible");
+      await page.keyboard.press("Escape");
+      await page.clock.runFor(100);
+      check(!await page.locator(".orbi-immersive-panel-heading").isVisible(),
+        name+": Escape did not close drawer");
+      check((await page.locator('.orbi-immersive-action[aria-label="Pausar"]').count())===1 ||
+            (await page.locator('.orbi-immersive-action[aria-label="Pause"]').count())===1,
+        name+": Escape inadvertently paused gameplay");
+      if(webImmersive) {
+        check(await page.locator('[data-testid="orbi-web-fullscreen"]').isVisible(),
+          name+": native browser fullscreen action inaccessible");
+        check(!await page.locator(".orbi-touch-overlay").isVisible(),
+          name+": mobile D-pad leaked into keyboard experience");
+      }else{
+        check(await page.locator(".orbi-touch-overlay").isVisible(),
+          name+": touch D-pad hidden on mobile");
+      }
+    }else{
+      check(geometry.logicalWidth===800 && geometry.logicalHeight===480,
+        name+": legacy portrait regression "+JSON.stringify(geometry));
+      await shot(page,name+"-portrait");
+    }
+    evidence.cases.push({name,pass:true,geometry});
+  }finally{await context.close();}
+}
+await mkdir(output,{recursive:true});
+try {
+  await startServer();
+  browser=await chromium.launch({headless:true,args:["--disable-dev-shm-usage",
+    "--use-gl=angle","--use-angle=swiftshader"]});
+  await run("desktop-1440x900",1440,900,false,true,true);
+  await run("desktop-1920x1080",1920,1080,false,true,true);
+  await run("laptop-1366x768",1366,768,false,true,true);
+  await run("mobile-touch-844x390",844,390,true,true,false);
+  await run("portrait-touch-390x844",390,844,true,false,false);
+}catch(error){evidence.failures.push({message:String(error),stack:error?.stack||""});process.exitCode=1;}
+finally{
+  evidence.errors=diagnostics;
+  if(browser)await browser.close();
+  if(server)server.kill("SIGTERM");
+  if(diagnostics.length)process.exitCode=1;
+  await writeFile(join(output,"evidence.json"),JSON.stringify(evidence,null,2)+"\n");
+  console.log(JSON.stringify({cases:evidence.cases.map(x=>x.name),failures:evidence.failures,
+    errors:evidence.errors,output}));
+}
