@@ -34,8 +34,8 @@ test("backing store scales independently from the logical 800x480 game space", (
 
 test("render loop resets context transform from physical pixels to logical coordinates", () => {
   const game = read("src/game/EnergySwarmGame.tsx");
-  assert.match(game, /canvas\.width \/ CANVAS_WIDTH/);
-  assert.match(game, /canvas\.height \/ CANVAS_HEIGHT/);
+  assert.match(game, /canvas\.width \/ panoramicViewport.width/);
+  assert.match(game, /canvas\.height \/ panoramicViewport.height/);
   assert.match(game, /ctx\.setTransform\(backingScaleX, 0, 0, backingScaleY, 0, 0\)/);
 });
 
