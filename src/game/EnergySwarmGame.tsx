@@ -64,6 +64,7 @@ import {
   type ArchitectQaDirectorAttackObservation,
   type BlackoutArchitectDevQaPatternDirectorState,
 } from "./blackoutArchitectDevQaPatternDirector";
+import { projectBlackoutArchitectDevQaBattleHud } from "./blackoutArchitectDevQaBattleHud";
 import {
   countActiveEvolvedEnemies,
   countLivingEnemies,
@@ -7862,6 +7863,54 @@ export const EnergySwarmGame: React.FC = () => {
         " / "+qaDirectorDraw.pattern,16,CANVAS_HEIGHT-115);
       ctx.fillText("SHARED QA HULL: "+qaDirectorDraw.qaHullHealth+"/100",
         16,CANVAS_HEIGHT-100);
+      ctx.restore();
+    }
+
+    // C9: real authenticated source-of-truth QA battle status only in Vite DEV.
+    // Read-only projection; never call normal combat UI or touch global systems.
+    const qaBattleHud=import.meta.env.DEV
+      ? projectBlackoutArchitectDevQaBattleHud(
+          architectEngineIdentityOwnerRef.current,architectQaGuardRef.current,
+          architectQaCardinalsRef.current,architectQaBossRef.current,
+          bossRef.current,enemiesRef.current,
+          architectQaGridLockRef.current,architectQaVectorTideRef.current,
+          architectQaSectorWallRef.current,
+          architectQaGridLockRef.current??architectQaVectorTideRef.current??
+            architectQaSectorWallRef.current,
+          architectQaDirectorRef.current,true)
+      : null;
+    if (qaBattleHud!==null) {
+      const n=qaBattleHud.anchors[0],e=qaBattleHud.anchors[1],
+        south=qaBattleHud.anchors[2],w=qaBattleHud.anchors[3];
+      const hp=(a:typeof n)=>Math.ceil(a.health)+"/"+a.maxHealth;
+      const left=8,top=CANVAS_HEIGHT-253;
+      ctx.save();
+      ctx.fillStyle="rgba(2,6,23,0.94)";
+      ctx.fillRect(left,top,288,115);
+      ctx.strokeStyle=qaBattleHud.attackPhase==="ACTIVE"?"#fb7185":"#22d3ee";
+      ctx.lineWidth=1;
+      ctx.strokeRect(left+0.5,top+0.5,287,114);
+      ctx.textAlign="left";
+      ctx.font="bold 10px monospace";
+      ctx.fillStyle="#f8fafc";
+      ctx.fillText("ARCHITECT QA  P"+qaBattleHud.directorPhase+
+        "  "+(qaBattleHud.directorEnabled?"AUTO":"MANUAL"),16,top+15);
+      ctx.font="bold 9px monospace";
+      ctx.fillStyle="#67e8f9";
+      ctx.fillText("N "+hp(n)+"   E "+hp(e),16,top+29);
+      ctx.fillText("S "+hp(south)+"   W "+hp(w),16,top+42);
+      ctx.fillStyle=qaBattleHud.coreExposed?"#fbbf24":"#94a3b8";
+      ctx.fillText((qaBattleHud.coreExposed?"CORE EXPOSED ":"CORE LOCKED  ")+
+        Math.ceil(qaBattleHud.coreHealth)+"/"+qaBattleHud.coreMaxHealth,
+        16,top+56);
+      ctx.fillStyle=qaBattleHud.attackPhase==="ACTIVE"?"#fda4af":"#fde68a";
+      ctx.fillText(qaBattleHud.attack+" "+qaBattleHud.attackPhase+
+        " "+Math.ceil(qaBattleHud.remainingMs)+"ms",16,top+70);
+      ctx.fillStyle="#a5f3fc";
+      ctx.fillText(qaBattleHud.directorEnabled?
+        "F7 MANUAL  F8 LOCKED  F9 EXIT":
+        "F7 AUTO  F8 PATTERN  F9 EXIT",16,top+85);
+      ctx.fillText("MOVE: WASD / ARROWS / TOUCH",16,top+100);
       ctx.restore();
     }
 
