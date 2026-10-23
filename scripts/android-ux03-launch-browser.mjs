@@ -88,7 +88,7 @@ async function run(name,width,height,mobile,compact){
 await mkdir(folder,{recursive:true});
 try{
  await boot();
- browser=await chromium.launch({headless:true,args:["--disable-dev-shm-usage","--use-gl=angle","--use-angle=swiftshader"]});
+ browser=await chromium.launch({channel:"chrome",headless:true,args:["--disable-dev-shm-usage","--use-gl=angle","--use-angle=swiftshader"]});
  for(const [width,height] of [[740,360],[844,390],[915,412]])await run("touch-"+width+"x"+height,width,height,true,true);
  await run("portrait-390x844",390,844,true,false);
  await run("desktop-1440x900",1440,900,false,false);
