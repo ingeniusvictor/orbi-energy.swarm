@@ -88,6 +88,25 @@ async function runDevCase(browser,{name,width,height,isMobile,hasTouch}){
   await exit(page).waitFor({state:"visible",timeout:10000});
   const diagnostic=page.getByText("DEV QA — ARCHITECT ANCHOR HITS",{exact:false});
   await diagnostic.waitFor({state:"visible",timeout:10000});
+  const qaStatus=page.locator('[data-testid="architect-qa-status"]');
+  await qaStatus.waitFor({state:"visible",timeout:10000});
+  const layout=await page.evaluate(()=>{
+    const canvas=document.querySelector("#game-canvas");
+    const dock=document.querySelector('[data-testid="architect-qa-touch-dock"]');
+    const status=document.querySelector('[data-testid="architect-qa-status"]');
+    if(!(canvas instanceof HTMLElement)||!(dock instanceof HTMLElement)||
+      !(status instanceof HTMLElement))return null;
+    const world=canvas.getBoundingClientRect();
+    const actions=dock.getBoundingClientRect();
+    const info=status.getBoundingClientRect();
+    return {canvasTop:world.top,dockBottom:actions.bottom,
+      statusTop:info.top,statusBottom:info.bottom,
+      statusLeft:info.left,statusRight:info.right,viewportWidth:window.innerWidth};
+  });
+  assert(layout && layout.statusBottom<=layout.canvasTop+1 &&
+    layout.dockBottom<=layout.statusTop+1 &&
+    layout.statusLeft>=-1 && layout.statusRight<=layout.viewportWidth+1,
+    `${name}: DEV QA status overlaps Canvas or leaves mobile viewport: ${JSON.stringify(layout)}`);
   await enabled(auto(page),`${name}: real boss/guard failed after normal click`);
   await enabled(next(page),`${name}: manual pattern selection disabled`);
   assert(await dock(page).getAttribute("data-qa-pattern")==="GRID_LOCK",
@@ -154,7 +173,7 @@ async function runDevCase(browser,{name,width,height,isMobile,hasTouch}){
   await exit(page).waitFor({state:"visible",timeout:10000});
   await page.keyboard.press("Control+Alt+Shift+F9");
   await enter(page).waitFor({state:"visible",timeout:10000});
-  record(name,{viewport:{width,height,isMobile,hasTouch},screenshots:[before,running,directed,manualTide,exited],
+  record(name,{viewport:{width,height,isMobile,hasTouch},screenshots:[before,running,directed,manualTide,exited],layout,
     verified:["real campaign start","real QA entry/exit","F7 director toggle","F8 director lock","read-only actual attack ref cycle","phase-one director rejects premature VECTOR_TIDE","no canvas pointer events","F9 keyboard parity"]});
   await context.close();
 }
@@ -183,7 +202,9 @@ try{
   await startServer(["preview"],productionPort,"Vite production preview");
   browser=await chromium.launch({headless:true,args:["--disable-dev-shm-usage","--use-gl=angle","--use-angle=swiftshader"]});
   await runDevCase(browser,{name:"desktop",width:1440,height:900,isMobile:false,hasTouch:false});
+  await runDevCase(browser,{name:"mobile-compact",width:320,height:700,isMobile:true,hasTouch:true});
   await runDevCase(browser,{name:"mobile-touch",width:390,height:844,isMobile:true,hasTouch:true});
+  await runDevCase(browser,{name:"mobile-wide",width:428,height:926,isMobile:true,hasTouch:true});
   await runProduction(browser);
 }catch(e){evidence.failures.push({error:String(e),stack:e?.stack||""});process.exitCode=1;}
 finally{
