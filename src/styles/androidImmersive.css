@@ -1,0 +1,298 @@
+/* ANDROID UX01 — opt-in landscape touch cockpit.
+   No effect on desktop / portrait / underlying 5:3 world coordinates. */
+.orbi-game-root[data-immersive-landscape="true"] {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  min-height: 0;
+  height: 100dvh;
+  overflow: hidden;
+  display: flex;
+  padding: 0 !important;
+  align-items: stretch;
+  justify-content: stretch;
+  background: #020712;
+}
+.orbi-game-root[data-immersive-landscape="true"] .orbi-game-shell {
+  --orbi-shell-max: none;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  flex: 1 1 auto;
+  margin: 0;
+  padding: 0;
+  gap: 0 !important;
+  justify-content: stretch;
+}
+.orbi-game-root[data-immersive-landscape="true"] .orbi-game-workspace {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  grid-template-columns: minmax(0, 1fr) !important;
+  grid-template-rows: minmax(0, 1fr);
+  grid-template-areas: "battlefield" !important;
+  gap: 0 !important;
+  align-items: stretch;
+}
+.orbi-game-root[data-immersive-landscape="true"] .orbi-battlefield {
+  grid-area: battlefield;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0 !important;
+}
+.orbi-game-root[data-immersive-landscape="true"] .orbi-battlefield > div:has(> .orbi-game-stage) {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  padding: 0;
+  background:
+    radial-gradient(ellipse at 50% 48%, rgba(11, 43, 74, .4), #020712 85%);
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  overflow: hidden;
+}
+.orbi-game-root[data-immersive-landscape="true"] .orbi-game-stage {
+  flex: 1 1 auto;
+  width: 100%;
+  height: 100% !important;
+  max-height: none;
+  min-height: 0;
+  aspect-ratio: auto !important;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+.orbi-game-root[data-immersive-landscape="true"] #game-canvas {
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* Never distort or crop gameplay/hit-test coordinates. */
+}
+.orbi-game-root[data-immersive-landscape="true"] .orbi-tactical-rail,
+.orbi-game-root[data-immersive-landscape="true"] .orbi-logistics-deck {
+  display: none;
+}
+/* The original cockpit contents remain accessible from Estado tabs. */
+.orbi-game-root[data-immersive-landscape="true"][data-mobile-panel="tactica"] .orbi-tactical-rail,
+.orbi-game-root[data-immersive-landscape="true"][data-mobile-panel="equipo"] .orbi-logistics-deck {
+  display: flex;
+  position: fixed;
+  z-index: 82;
+  right: max(8px, env(safe-area-inset-right));
+  left: auto;
+  top: calc(max(8px, env(safe-area-inset-top)) + 94px);
+  bottom: max(8px, env(safe-area-inset-bottom));
+  width: min(410px, calc(100vw - 16px));
+  height: auto;
+  max-height: none;
+  min-height: 0;
+  overflow-y: auto !important;
+  border-radius: 0 0 16px 16px;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 22px 54px rgba(0,0,0,.6);
+}
+/* Minimal essential in-combat row; detailed data is inside Estado. */
+.orbi-game-root[data-immersive-landscape="true"] .orbi-game-hud {
+  display: block;
+  position: relative;
+  z-index: 30;
+  width: 100%;
+  min-height: 0;
+  height: 45px;
+  padding: 0 max(10px, env(safe-area-inset-right)) 0 max(10px, env(safe-area-inset-left));
+  flex: 0 0 45px;
+  border: 0;
+  border-radius: 0;
+  background: linear-gradient(180deg, rgba(2,8,19,.78), rgba(2,8,19,.18));
+  box-shadow: none;
+  backdrop-filter: none;
+}
+.orbi-immersive-essential { display: none; }
+.orbi-game-root[data-immersive-landscape="true"] .orbi-immersive-essential {
+  height: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.orbi-immersive-vitals {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  color: #c9f5fd;
+  font: 700 11px/1.1 "JetBrains Mono", monospace;
+  text-shadow: 0 1px 5px #020617;
+}
+.orbi-immersive-vitals strong {
+  margin-left: 8px;
+  color: #fcd34d;
+  white-space: nowrap;
+}
+.orbi-immersive-shield-bar {
+  width: clamp(58px, 11vw, 125px);
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(31,41,55,.55);
+  border: 1px solid rgba(103,232,249,.16);
+  overflow: hidden;
+}
+.orbi-immersive-shield-bar span { display: block; height: 100%; background: #22d3ee; }
+.orbi-immersive-actions { display: flex; align-items: center; gap: 6px; }
+.orbi-immersive-action {
+  display: grid;
+  place-items: center;
+  min-width: 42px;
+  min-height: 42px;
+  padding: 0 10px;
+  border-radius: 11px;
+  border: 1px solid rgba(165,243,252,.27);
+  background: rgba(7,21,38,.48);
+  color: #e0faff;
+  font: 700 11px/1 "JetBrains Mono", monospace;
+  touch-action: manipulation;
+}
+.orbi-immersive-action:active,
+.orbi-immersive-action:focus-visible {
+  background: rgba(8,145,178,.5);
+  border-color: #67e8f9;
+}
+.orbi-immersive-action:disabled { opacity: .38; }
+.orbi-immersive-estado { letter-spacing: .02em; }
+.orbi-game-root[data-immersive-landscape="true"] .orbi-hud-detail-grid {
+  display: none;
+}
+.orbi-immersive-backdrop { display: none; }
+.orbi-game-root[data-immersive-landscape="true"] .orbi-immersive-backdrop {
+  display: block;
+  position: fixed;
+  inset: 0;
+  z-index: 78;
+  width: 100%;
+  border: 0;
+  background: rgba(1,6,15,.44);
+  backdrop-filter: blur(3px);
+}
+.orbi-immersive-panel-heading { display: none; }
+.orbi-game-root[data-immersive-landscape="true"] .orbi-immersive-panel-heading {
+  position: fixed;
+  display: block;
+  z-index: 83;
+  right: max(8px, env(safe-area-inset-right));
+  top: max(8px, env(safe-area-inset-top));
+  width: min(410px, calc(100vw - 16px));
+  padding: 8px;
+  border: 1px solid rgba(103,232,249,.23);
+  border-radius: 14px 14px 0 0;
+  background: rgba(2,10,23,.96);
+}
+.orbi-immersive-panel-tabs { display: grid; grid-template-columns: repeat(3, 1fr) 42px; gap: 4px; }
+.orbi-immersive-panel-tabs button {
+  min-height: 40px;
+  border-radius: 8px;
+  border: 1px solid rgba(103,232,249,.22);
+  background: rgba(9,28,45,.8);
+  color: #cbd5e1;
+  font-size: 11px;
+}
+.orbi-immersive-panel-tabs button[aria-pressed="true"] {
+  background: rgba(8,145,178,.35);
+  color: #a5f3fc;
+  border-color: rgba(103,232,249,.6);
+}
+.orbi-game-root[data-immersive-landscape="true"][data-mobile-panel="estado"] .orbi-hud-detail-grid {
+  position: fixed;
+  display: grid;
+  z-index: 82;
+  right: max(8px, env(safe-area-inset-right));
+  top: calc(max(8px, env(safe-area-inset-top)) + 56px);
+  bottom: max(8px, env(safe-area-inset-bottom));
+  width: min(410px, calc(100vw - 16px));
+  max-height: none;
+  overflow-y: auto;
+  align-content: start;
+  grid-template-columns: minmax(0,1fr);
+  grid-template-areas: "shield" "wave" "swarm" "score" "actions";
+  padding: 14px;
+  gap: 13px;
+  border: 1px solid rgba(103,232,249,.23);
+  border-radius: 0 0 14px 14px;
+  background: rgba(2,10,23,.97);
+  box-shadow: 0 22px 54px rgba(0,0,0,.6);
+  backdrop-filter: blur(16px);
+}
+.orbi-game-root:not([data-immersive-landscape="true"]) .orbi-hud-detail-grid {
+  display: contents;
+}
+/* Keep hit targets operable but reduce their idle visual footprint. */
+.orbi-game-root[data-immersive-landscape="true"] .orbi-touch-pad,
+.orbi-game-root[data-immersive-landscape="true"] .orbi-touch-formation-carousel {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  padding: 2px;
+  opacity: .42;
+  transition: opacity .15s ease;
+}
+.orbi-game-root[data-immersive-landscape="true"] .orbi-touch-pad {
+  left: max(12px, env(safe-area-inset-left));
+  bottom: max(10px, env(safe-area-inset-bottom));
+}
+.orbi-game-root[data-immersive-landscape="true"] .orbi-touch-pad:active,
+.orbi-game-root[data-immersive-landscape="true"] .orbi-touch-pad:focus-within,
+.orbi-game-root[data-immersive-landscape="true"] .orbi-touch-formation-carousel:active,
+.orbi-game-root[data-immersive-landscape="true"] .orbi-touch-formation-carousel:focus-within { opacity: .95; }
+.orbi-game-root[data-immersive-landscape="true"] .orbi-touch-button,
+.orbi-game-root[data-immersive-landscape="true"] .orbi-touch-formation-button {
+  width: 42px;
+  min-width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(9,27,43,.2);
+  border: 1px solid rgba(165,243,252,.28);
+  box-shadow: none;
+  color: rgba(224,250,255,.8);
+}
+.orbi-game-root[data-immersive-landscape="true"] .orbi-touch-button:active,
+.orbi-game-root[data-immersive-landscape="true"] .orbi-touch-formation-button:active {
+  background: rgba(8,145,178,.64);
+  border-color: rgba(165,243,252,.9);
+}
+.orbi-game-root[data-immersive-landscape="true"] .orbi-touch-core {
+  width: 42px;
+  height: 42px;
+  border-color: rgba(103,232,249,.16);
+  background: rgba(8,30,48,.12);
+  box-shadow: none;
+}
+.orbi-game-root[data-immersive-landscape="true"] .orbi-touch-formation-carousel {
+  grid-template-columns: 42px minmax(55px,70px) 42px;
+  right: max(12px, env(safe-area-inset-right));
+  bottom: max(10px, env(safe-area-inset-bottom));
+}
+.orbi-game-root[data-immersive-landscape="true"] .orbi-touch-formation-current span { color: rgba(251,191,36,.48); }
+.orbi-game-root[data-immersive-landscape="true"] .orbi-touch-formation-current strong { color: rgba(253,230,138,.8); }
+/* Threats still require a readable telegraph; compress decorative boss copy. */
+.orbi-game-root[data-immersive-landscape="true"] .orbi-boss-hud {
+  top: max(2px, env(safe-area-inset-top));
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
+  max-width: min(420px, 60vw);
+  gap: 2px;
+}
+.orbi-game-root[data-immersive-landscape="true"] .orbi-boss-kicker,
+.orbi-game-root[data-immersive-landscape="true"] .orbi-boss-subtitle { display: none; }
+.orbi-game-root[data-immersive-landscape="true"] .orbi-boss-title { font-size: 11px; }
+.orbi-game-root[data-immersive-landscape="true"] .orbi-boss-heading { gap: 1px; }
+.orbi-game-root[data-immersive-landscape="true"] .orbi-boss-integrity { font-size: 9px; }
+@media (max-height: 390px) and (orientation: landscape) {
+  .orbi-game-root[data-immersive-landscape="true"] .orbi-game-hud { height: 42px; flex-basis: 42px; }
+  .orbi-game-root[data-immersive-landscape="true"] .orbi-immersive-vitals { font-size: 10px; }
+}
