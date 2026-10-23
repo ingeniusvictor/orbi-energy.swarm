@@ -181,7 +181,9 @@ async function run(browser,caseName,opts,full){
           const cx=foton.x+dx/d*150/cam.zoom,cy=foton.y+dy/d*150/cam.zoom;
           await page.mouse.click(rect.x+(cx-cam.x)*cam.zoom/cam.width*rect.width,
             rect.y+(cy-cam.y)*cam.zoom/cam.height*rect.height);
-          await page.clock.runFor(850);
+          // One last genuine projectile must fly the full ~350 world units.
+          // Its 1600ms lifetime remains the bound; 1300ms allows actual travel.
+          await page.clock.runFor(1300);
           await page.getByText("DEV QA COMPLETE — ARCHITECT CORE 0 HP",{exact:false})
             .waitFor({state:"visible",timeout:10000});
           assert(await read(page)===null,"Terminal C3 left stale active identity");
