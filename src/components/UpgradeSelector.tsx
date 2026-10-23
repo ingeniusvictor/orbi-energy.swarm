@@ -72,7 +72,7 @@ export const UpgradeSelector: React.FC<UpgradeSelectorProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md select-none animate-fadeIn"
+      className="orbi-upgrade-selector fixed inset-0 z-50 flex flex-col items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md select-none animate-fadeIn"
       ref={dialogRef}
       role="dialog"
       aria-modal="true"
@@ -80,9 +80,9 @@ export const UpgradeSelector: React.FC<UpgradeSelectorProps> = ({
       aria-labelledby="upgrade-selector-title"
       aria-describedby="upgrade-selector-description"
     >
-      <div className="w-full max-w-4xl space-y-6 text-center">
+      <div className="orbi-upgrade-shell w-full max-w-4xl space-y-6 text-center">
         {/* Header Title */}
-        <div className="space-y-1.5">
+        <div className="orbi-upgrade-heading space-y-1.5">
           <span className="text-xs font-mono font-black tracking-[0.25em] text-amber-400 uppercase">
             ⚡ {language === "es" ? "SINCRONIZADOR DE INTERMISIÓN" : "INTERMISSION SYNCHRONIZER"} ⚡
           </span>
@@ -97,7 +97,7 @@ export const UpgradeSelector: React.FC<UpgradeSelectorProps> = ({
         </div>
 
         {/* Upgrade Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 pt-2">
+        <div className="orbi-upgrade-choices grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 pt-2">
           {choices.map((upgrade) => {
             const currentStacks = activeRunUpgrades[upgrade.id] || 0;
             const isMaxed = currentStacks >= upgrade.maxStacks;
@@ -113,7 +113,7 @@ export const UpgradeSelector: React.FC<UpgradeSelectorProps> = ({
                 key={upgrade.id}
                 disabled={isMaxed}
                 onClick={() => onSelect(upgrade)}
-                className={`relative group flex flex-col items-center text-center p-5 rounded-xl border text-white transition-all duration-300 ${
+                className={`orbi-upgrade-choice relative group flex flex-col items-center text-center p-5 rounded-xl border text-white transition-all duration-300 ${
                   isMaxed
                     ? "bg-slate-900/30 border-slate-900/60 opacity-50 cursor-not-allowed"
                     : `bg-slate-900/50 hover:bg-slate-900/90 border-slate-800 hover:border-amber-500/60 cursor-pointer hover:scale-[1.02] ${styles.glow}`
@@ -152,7 +152,7 @@ export const UpgradeSelector: React.FC<UpgradeSelectorProps> = ({
         </div>
 
         {/* Tactical Reroll */}
-        <div className="pt-4 flex flex-col items-center space-y-2">
+        <div className="orbi-upgrade-reroll pt-4 flex flex-col items-center space-y-2">
           <button
             disabled={rerollsRemaining <= 0}
             onClick={onReroll}
