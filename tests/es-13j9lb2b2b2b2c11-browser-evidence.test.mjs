@@ -3,7 +3,6 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 const src=readFileSync(new URL("../scripts/architect-c11-browser-evidence.mjs",import.meta.url),"utf8");
 
-
 test("C11 browser proof must drive real Vite app in actual Chromium",()=>{
   assert.match(src,/import \{ chromium \} from "playwright"/);
   assert.match(src,/await chromium\.launch\(/);
@@ -22,8 +21,7 @@ test("C11 controlled browser clock never injects owner, boss or session state",(
   assert.doesNotMatch(src,/window\.__ORBI|window\.architect|__reactFiber|React\.DevTools|\.evaluate\(.*bossRef/);
   assert.doesNotMatch(src,/localStorage\.setItem|Math\.random\s*=|mockGuard|installBoss|admitInstalledBoss/);
 });
-test("C11 CI requires physical screenshot evidence, full green checks and keeps workflow temporary",()=>{
-  assert.test("C11 permanent harness records real screenshots, browser denials and machine evidence",()=>{
+test("C11 permanent evidence harness keeps actual browser assertions after temporary workflow removal",()=>{
   assert.match(src,/await after\(page,/);
   assert.match(src,/screenshots:\[before,running,directed,manualTide,exited\]/);
   assert.match(src,/const bytes=\(await stat\(file\)\)\.size/);
