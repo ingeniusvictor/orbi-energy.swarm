@@ -3,7 +3,6 @@ import {
   OrbiMember, Enemy, Projectile, Resource, BiomeType, 
   FormationType, EnemyType, OrbiType, QualityPreset
 } from "./types";
-import { CANVAS_WIDTH, CANVAS_HEIGHT } from "./constants";
 import { getCanvasBackingStoreSize } from "./canvasResolution";
 import { projectLiveSiegeVolleyTelegraph } from "./liveSiegeVolleyIntegration";
 import { projectLiveCommandCorePresentation } from "./liveCommandCorePresentation";
@@ -25,6 +24,8 @@ import {
 
 interface EnergySwarmCanvasProps {
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
+  logicalWidth: number;
+  logicalHeight: number;
   isPaused: boolean;
   activeBiome: BiomeType;
   activeFormation: FormationType;
@@ -51,6 +52,8 @@ interface EnergySwarmCanvasProps {
 
 export const EnergySwarmCanvas: React.FC<EnergySwarmCanvasProps> = ({
   canvasRef,
+  logicalWidth,
+  logicalHeight,
   isPaused,
   playerFlash,
   flashIntensity,
@@ -69,16 +72,16 @@ export const EnergySwarmCanvas: React.FC<EnergySwarmCanvasProps> = ({
       if (!canvas) return;
 
       const { dpr, width, height } = getCanvasBackingStoreSize(
-        CANVAS_WIDTH,
-        CANVAS_HEIGHT,
+        logicalWidth,
+        logicalHeight,
         window.devicePixelRatio,
         maxDpr,
       );
 
       if (canvas.width !== width) canvas.width = width;
       if (canvas.height !== height) canvas.height = height;
-      canvas.dataset.logicalWidth = String(CANVAS_WIDTH);
-      canvas.dataset.logicalHeight = String(CANVAS_HEIGHT);
+      canvas.dataset.logicalWidth = String(logicalWidth);
+      canvas.dataset.logicalHeight = String(logicalHeight);
       canvas.dataset.pixelRatio = String(dpr);
     };
 
@@ -90,7 +93,7 @@ export const EnergySwarmCanvas: React.FC<EnergySwarmCanvasProps> = ({
       window.removeEventListener("resize", syncBackingStore);
       window.visualViewport?.removeEventListener("resize", syncBackingStore);
     };
-  }, [canvasRef, maxDpr]);
+  }, [canvasRef, maxDpr, logicalWidth, logicalHeight]);
 
   React.useEffect(() => {
     prewarmFotonGameplay3D(qualityPreset);
@@ -106,8 +109,8 @@ export const EnergySwarmCanvas: React.FC<EnergySwarmCanvasProps> = ({
       <canvas
         id="game-canvas"
         ref={canvasRef}
-        width={CANVAS_WIDTH}
-        height={CANVAS_HEIGHT}
+        width={logicalWidth}
+        height={logicalHeight}
         onPointerMove={onPointerMove}
         onPointerDown={onPointerDown}
         onPointerUp={onPointerUp}
