@@ -102,7 +102,11 @@ async function shoot(page,id) {
   // On narrow touch displays, the existing rotate-device tutorial covers
   // the inner aiming arc. Aim farther along the SAME authentic world ray,
   // inside the visible Canvas and above that overlay; do not change the shot.
-  const aimDistance=(page.viewportSize()?.width??1440)<500?250:150;
+  // C14: the user has dismissed the portrait orientation overlay with a
+  // real tap. The ordinary 150-unit aim point is now unobstructed; 250 units
+  // needlessly exits the narrow Canvas for WEST. Do not clamp a shot or
+  // bypass the source's genuine Canvas hit-test.
+  const aimDistance=touchMode?150:(page.viewportSize()?.width??1440)<500?250:150;
   const scale=aimDistance/before.camera.zoom;
   const wx=before.foton.x+(dx/distance)*scale;
   const wy=before.foton.y+(dy/distance)*scale;
@@ -156,7 +160,11 @@ async function run(browser,caseName,opts,full){
     const target=untouched.boss,cam=untouched.camera,foton=untouched.foton;
     const ax=target.x-foton.x,ay=target.y-foton.y,len=Math.hypot(ax,ay);
     const rect=await page.locator("#game-canvas").boundingBox();
-    const aimDistance=(page.viewportSize()?.width??1440)<500?250:150;
+    // C14: the user has dismissed the portrait orientation overlay with a
+  // real tap. The ordinary 150-unit aim point is now unobstructed; 250 units
+  // needlessly exits the narrow Canvas for WEST. Do not clamp a shot or
+  // bypass the source's genuine Canvas hit-test.
+  const aimDistance=touchMode?150:(page.viewportSize()?.width??1440)<500?250:150;
     const aimX=foton.x+ax/len*aimDistance/cam.zoom;
     const aimY=foton.y+ay/len*aimDistance/cam.zoom;
     await nativeShot(page,rect.x+(aimX-cam.x)*cam.zoom/cam.width*rect.width,
