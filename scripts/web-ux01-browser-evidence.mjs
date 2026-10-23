@@ -43,7 +43,7 @@ async function run(name,width,height,coarse,immersive,webImmersive) {
     await page.goto(url,{waitUntil:"domcontentloaded",timeout:30000});
     await page.clock.pauseAt(new Date("2026-10-22T12:00:05Z"));
     const entry=page.getByTestId("orbi-mobile-enter");
-    if(coarse && width>height && height<=600) {
+    if(await entry.isVisible()) {
       await entry.waitFor({state:"visible",timeout:30000});
       await entry.tap();
       await page.getByTestId("orbi-mobile-menu-main-play").tap();
