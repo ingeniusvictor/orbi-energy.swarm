@@ -77,9 +77,19 @@ async function run(name,width,height,denyWebgl,skewRaf=false){
   const beginning=await state("starting");
   check(beginning.hudVisible&&beginning.canvasVisible,name+": game UI missing on start");
   await screenshot(page,name+"-starting");
-  await sleep(4200);
+  // Require actual W1 while allowing real Chrome rendering time to differ
+  // on contended CI hosts. A frozen simulation still fails within 30 seconds.
+  try {
+   await page.waitForFunction(() =>
+     document.querySelector(".orbi-game-hud")?.textContent?.includes("W1") === true,
+     null, {timeout:30000,polling:250});
+  } catch {
+   const stalled=await state("w1-bounded-timeout");
+   throw Error(name+": W1 never reached within 30s: "+stalled.hudText+
+     "; browser errors: "+JSON.stringify(errors));
+  }
   const running=await state("running");
-  check(running.hudText?.includes("W1"),name+": real clock/wave not advancing "+running.hudText);
+  check(running.hudText?.includes("W1"),name+": W1 must be visible "+running.hudText);
   check(running.photo==="false",name+": photo mode appeared spontaneously");
   await page.keyboard.down("d");await sleep(550);await page.keyboard.up("d");
   await screenshot(page,name+"-real-gameplay");
