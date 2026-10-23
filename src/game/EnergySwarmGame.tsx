@@ -1286,6 +1286,8 @@ export const EnergySwarmGame: React.FC = () => {
       architectQaSectorWallRef.current = null;
       architectQaGridLockRef.current = grid;
     }
+    // C11: render the newly selected real DEV QA pattern without changing physics.
+    refreshArchitectQaTouchControls(v => v + 1);
   };
 
 
@@ -8616,6 +8618,10 @@ export const EnergySwarmGame: React.FC = () => {
                   role="group"
                   aria-label="Blackout Architect developer QA touch controls"
                   data-testid="architect-qa-touch-dock"
+                  data-qa-pattern={architectQaGridLockRef.current !== null ? "GRID_LOCK" :
+                    architectQaVectorTideRef.current !== null ? "VECTOR_TIDE" :
+                    architectQaSectorWallRef.current !== null ? "SECTOR_WALL" : "NONE"}
+                  data-qa-director={architectQaDirectorRef.current !== null ? "AUTO" : "MANUAL"}
                   className="w-full flex flex-wrap items-center justify-center gap-2 rounded-md border border-cyan-500/30 bg-slate-950/95 px-2 py-1.5 text-[10px] font-mono text-cyan-100"
                 >
                   <span className="font-bold text-cyan-300">DEV ARCHITECT QA</span>
