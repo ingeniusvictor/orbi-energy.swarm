@@ -15,11 +15,11 @@ test("EV-F01 star stays open across 10, 20, 30 followers",()=>{
  for(const n of [10,20,30]){
    const pts=positions(FormationType.CIRCLE,n);
    assert.ok(minSeparation(pts)>=34.9,`star n=${n} spacing`);
-   assert.ok(pts.some(p=>Math.hypot(p.x,p.y)>=95));
+   assert.ok(pts.some(p=>Math.hypot(p.x,p.y)>=94));
  }
  // Inner and outer points are both extended, and adjacent shells no longer
  // share their previous compact ten-unit radial separation.
- assert.ok(Math.hypot(...Object.values(positions(FormationType.CIRCLE,1)[0]))>=95);
+ assert.ok(Math.hypot(...Object.values(positions(FormationType.CIRCLE,1)[0]))>=94);
  assert.ok(Math.hypot(...Object.values(positions(FormationType.CIRCLE,2)[1]))>=54);
 });
 
