@@ -216,6 +216,15 @@ async function run(name,width,height,coarse,immersive,webImmersive) {
         check(joyBounds,name+": analog joystick not available for two-finger test");
         const jx=joyBounds.x+joyBounds.width*.7, jy=joyBounds.y+joyBounds.height*.5;
         const bx=thumbBounds.x+thumbBounds.width/2, by=thumbBounds.y+thumbBounds.height/2;
+        await page.evaluate(()=>{
+          window.__orbiTouchTrace=[];
+          for(const type of ["pointerdown","pointerup","pointercancel","lostpointercapture","touchstart","touchend","blur"])
+            window.addEventListener(type,event=>{
+              const target=event.target;
+              window.__orbiTouchTrace.push({type,id:event.pointerId??null,tag:target?.getAttribute?.("data-testid")||target?.className?.baseVal||target?.className||"",
+                engaged:document.querySelector('[data-testid="orbi-analog-joystick"]')?.getAttribute("data-engaged")});
+            },true);
+        });
         const cdp=await page.context().newCDPSession(page);
         await cdp.send("Input.dispatchTouchEvent",{type:"touchStart",touchPoints:[{x:jx,y:jy,id:1}]});
         check(await joystick.getAttribute("data-engaged")==="true",name+": joystick did not capture first finger");
@@ -223,7 +232,7 @@ async function run(name,width,height,coarse,immersive,webImmersive) {
         check(await joystick.getAttribute("data-engaged")==="true",name+": second finger on Dash released joystick");
         check(!await touchDash.isEnabled(),name+": Dash not activated while steering");
         await cdp.send("Input.dispatchTouchEvent",{type:"touchEnd",touchPoints:[{x:jx,y:jy,id:1}]});
-        check(await joystick.getAttribute("data-engaged")==="true",name+": Dash pointer-up released joystick");
+        check(await joystick.getAttribute("data-engaged")==="true",name+": Dash pointer-up released joystick: "+JSON.stringify(await page.evaluate(()=>window.__orbiTouchTrace?.slice(-22))));
         await cdp.send("Input.dispatchTouchEvent",{type:"touchEnd",touchPoints:[]});
         await cdp.detach();
       }
