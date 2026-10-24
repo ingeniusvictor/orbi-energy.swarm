@@ -216,7 +216,7 @@ export const PremiumNativeNavigation: React.FC<Props> = ({
                 onClick={() => onOpen("HOW_TO", "HANGAR")}><Radio size={17}/>{es ? "ABRIR MANUAL TÁCTICO" : "OPEN TACTICAL MANUAL"}<ChevronRight size={17}/></button>
             </div>
           )}
-          {isCodex && <EnergyCodex language={language} />}
+          {isCodex && <EnergyCodex language={language} onOpenLegacy={() => onOpen("CODEX", "HANGAR")} />}
           {isInfo && (
             <p className="orbi-ux10c-info-hint">{es ? "DATOS Y CONFIGURACIÓN DEL PILOTO" : "PILOT DATA & CONFIGURATION"}</p>
           )}
