@@ -48,7 +48,7 @@ export const en: TranslationSchema = {
       description: "+25% Shield Resistance, +Circular Shield Guard | -10% Projectile Damage",
       advantages: "Circular Shield Guard (+25%)",
       disadvantages: "Projectile Damage (-10%)",
-      recommendation: "Ideal for protecting Foton's vital vectors from scattered fire."
+      recommendation: "Ideal for protecting ENERGY's vital vectors from scattered fire."
     },
     CIRCLE: {
       name: "Collector Circle",
@@ -91,7 +91,7 @@ export const en: TranslationSchema = {
       name: "Scout Signal",
       subtitle: "Basic hostile reconnaissance",
       description: "Crawlers detected probing outer sectors. Defensive operations initiated.",
-      tacticalAdvice: "Use Assault Line to guard Foton's vital vectors."
+      tacticalAdvice: "Use Assault Line to guard ENERGY's vital vectors."
     },
     2: {
       name: "Parasite Drift",
@@ -102,7 +102,7 @@ export const en: TranslationSchema = {
     3: {
       name: "Drone Lock",
       subtitle: "Long-range vector threat",
-      description: "Targeting drones locked onto ORBI FOTON. High-density aiming lines.",
+      description: "Targeting drones locked onto ORBI ENERGY. High-density aiming lines.",
       tacticalAdvice: "Cover with Cross Guard. Reposition dynamically before lock fires."
     },
     4: {
@@ -187,7 +187,7 @@ export const en: TranslationSchema = {
         description: "Improves overall swarm critical strike chance by +8% up to a strict safe probability cap."
       },
       foton_integrity: {
-        name: "Foton Integrity",
+        name: "ENERGY Integrity",
         description: "Increases maximum shield capacity by +30 units and instantly restores +50 shield on purchase."
       },
       swarm_cohesion: {
@@ -200,7 +200,7 @@ export const en: TranslationSchema = {
       },
       core_magnetism: {
         name: "Core Magnetism",
-        description: "Expands Foton's gravitational magnetism attraction radius for resources by +100 pixels."
+        description: "Expands ENERGY's gravitational magnetism attraction radius for resources by +100 pixels."
       },
       fusion_resonance: {
         name: "Fusion Resonance",
@@ -208,7 +208,7 @@ export const en: TranslationSchema = {
       },
       command_velocity: {
         name: "Command Velocity",
-        description: "Increases ORBI FOTON's manual propulsion thruster speed by +15% without tearing camera sync."
+        description: "Increases ORBI ENERGY's manual propulsion thruster speed by +15% without tearing camera sync."
       },
       mitotic_mitosis: {
         name: "Mitotic Mitosis",
@@ -401,7 +401,7 @@ export const en: TranslationSchema = {
       waveReached: "Wave Reached"
     },
     cosmicBadgeTitle: "Cosmic Badge Unlocked!",
-    cosmicBadgeDesc: "Certified as an ORBI FOTON CHAMPION. Golden core glow option is now active in your database!",
+    cosmicBadgeDesc: "Certified as an ORBI ENERGY CHAMPION. Golden core glow option is now active in your database!",
     firstTimeVictory: "🏆 (First Time)"
   },
   settings: {
@@ -484,10 +484,10 @@ export const en: TranslationSchema = {
     sloganDesc: "Synchronize with your tactical swarm of core energy collectors. Harvest raw nano-crystals, defend against dark parasites, and purge the grid of the catastrophic Blackout Devourer.",
     activateSync: "ACTIVAR SINCRONIZACIÓN (PLAY DEMO)",
     simulationOps: "SIMULATION OPERATIONS",
-    howToStep1: "Pilot Orbi Foton: Foton (Amber Leader) automatically tracks your mouse pointer, or WASD / Arrow Keys on keyboard.",
+    howToStep1: "Pilot ORBI ENERGY: ENERGY (Amber Leader) automatically tracks your mouse pointer, or WASD / Arrow Keys on keyboard.",
     howToStep2: "Collect Energy Crystals: Run over Cyan crystals and Pink hexagons. Rescuing Pink Wild Orbis recruits new fighters to your shooter swarm.",
     howToStep3: "Shift Formations (1 to 6): Re-aligning your flock changes passive stats! E.g., Assault Line boosts shield values, while Collector Circle increases projectile speeds.",
-    howToStep4: "Shield Integrity: Swarms automatically focus-fire incoming crawler threats. Prevent enemy collisions from leaking onto Foton's central core!",
+    howToStep4: "Shield Integrity: Swarms automatically focus-fire incoming crawler threats. Prevent enemy collisions from leaking onto ENERGY's central core!",
     howToStep5: "Slay the Devourer: Progress through wave tiers, collect Nano-Credits, unlock terminal relics, and survive the giant boss at Wave 10.",
     controlKeybindings: "CONTROL KEYBINDINGS",
     keys: {

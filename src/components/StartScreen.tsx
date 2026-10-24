@@ -292,7 +292,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({
                 )}
 
                 <div className="absolute left-4 top-4 z-20 rounded-full border border-cyan-500/20 bg-slate-950/75 px-3 py-1 text-[9px] font-mono uppercase tracking-[0.16em] text-cyan-300">
-                  FOTON // COMMAND CORE
+                  ENERGY // COMMAND CORE
                 </div>
                 <div className="absolute right-4 top-4 z-20 rounded-full border border-indigo-500/20 bg-slate-950/75 px-3 py-1 text-[8px] font-mono uppercase tracking-[0.14em] text-indigo-300">
                   {stats.qualityPreset === QualityPreset.LOW
@@ -324,7 +324,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({
                     {language === "es" ? "CONTROL DE LANZAMIENTO" : "LAUNCH CONTROL"}
                   </div>
                   <div className="text-[8px] font-mono uppercase tracking-[0.12em] text-slate-500">
-                    ORBI // FOTON-01
+                    ORBI // ENERGY-01
                   </div>
                 </div>
                 <span className="h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_16px_rgba(52,211,153,0.9)]" />

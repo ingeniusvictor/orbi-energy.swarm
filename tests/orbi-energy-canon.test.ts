@@ -31,9 +31,10 @@ test("ORBI canon contains nine base energies plus fusion-only GAIA", () => {
   assert.equal(getOrbiEnergyDefinition("GAIA").gaiaPrerequisite, false);
 });
 
-test("FOTON is player-core only and the eight other base energies are collectible followers", () => {
-  assert.equal(getOrbiEnergyDefinition("FOTON").collectibleFollower, false);
+test("FOTON is a collectible photovoltaic ORBI; ENERGY commands as neutral protagonist", () => {
+  assert.equal(getOrbiEnergyDefinition("FOTON").collectibleFollower, true);
   assert.deepEqual(ORBI_COLLECTIBLE_ENERGY_IDS, [
+    "FOTON",
     "HYDRO",
     "AERO",
     "TERMO",
@@ -75,12 +76,12 @@ test("one shuffled recruitment cycle contains every collectible energy exactly o
   const cycle = createShuffledCollectibleEnergyCycle(
     () => deterministic[index++ % deterministic.length],
   );
-  assert.equal(cycle.length, 8);
+  assert.equal(cycle.length, 9);
   assert.deepEqual(
     [...cycle].sort(),
     [...ORBI_COLLECTIBLE_ENERGY_IDS].sort(),
   );
-  assert.equal(new Set(cycle).size, 8);
-  assert.equal(cycle.includes("FOTON"), false);
+  assert.equal(new Set(cycle).size, 9);
+  assert.equal(cycle.includes("FOTON"), true);
   assert.equal(cycle.includes("GAIA"), false);
 });
