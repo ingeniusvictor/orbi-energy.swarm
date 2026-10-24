@@ -1,0 +1,93 @@
+/* UX11-D — cinematic ENERGY status; only the paused Estado drawer. */
+.orbi-game-root[data-immersive-landscape="true"][data-mobile-panel="estado"] .orbi-premium-status {
+  gap:clamp(6px,1vh,12px);
+  background:
+    radial-gradient(ellipse at 12% 1%,rgba(234,178,70,.11),transparent 44%),
+    radial-gradient(ellipse at 85% 86%,rgba(48,188,221,.085),transparent 55%);
+}
+.orbi-ux11d-energy-preview {
+  position:relative;
+  width:100%;
+  height:clamp(85px,13vw,175px);
+  min-width:0;
+  min-height:80px;
+  max-width:100%;
+  overflow:hidden;
+  border-radius:10px;
+  border:1px solid rgba(235,189,104,.5);
+  background:
+    linear-gradient(rgba(39,78,99,.13) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(39,78,99,.13) 1px,transparent 1px),
+    radial-gradient(ellipse at 50% 45%,rgba(179,112,33,.26),rgba(3,15,30,.96) 72%);
+  background-size:21px 21px,21px 21px,auto;
+  box-shadow:inset 0 0 26px rgba(238,179,67,.10),0 0 19px rgba(247,180,76,.09);
+}
+.orbi-ux11d-viewport,
+.orbi-ux11d-fallback {position:absolute;inset:0;display:grid;place-items:center;}
+.orbi-ux11d-fallback {
+  background:radial-gradient(circle at center,rgba(240,184,86,.1),transparent 65%);
+}
+.orbi-ux11d-fallback .orbi-premium-status-energy {
+  width:clamp(68px,7.5vw,105px);
+  height:clamp(68px,7.5vw,105px);
+}
+.orbi-ux11d-energy-preview[data-3d-status="READY"] .orbi-ux11d-fallback {visibility:hidden;}
+.orbi-ux11d-energy-preview:not([data-3d-status="READY"]) .orbi-ux11d-viewport {visibility:hidden;}
+.orbi-ux11d-webgl-canvas {display:block;width:100%;height:100%;}
+.orbi-ux11d-preview-marker {
+  position:absolute;bottom:5px;right:6px;pointer-events:none;
+  color:#f7d58e;
+  font:900 8px/1 monospace;letter-spacing:.11em;
+  padding:3px 5px;background:rgba(4,18,30,.7);
+  border:1px solid rgba(232,184,103,.3);border-radius:4px;
+}
+.orbi-premium-status-core {
+  background:linear-gradient(150deg,rgba(31,30,34,.85),rgba(2,14,29,.93))!important;
+  border-color:rgba(227,182,98,.47)!important;
+}
+.orbi-premium-status-core-label strong {
+  font:900 clamp(13px,1.8vw,24px)/1 "Space Grotesk",sans-serif;
+  text-shadow:0 0 14px rgba(247,192,75,.4);
+}
+.orbi-ux11d-ability-deck {
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:clamp(5px,.7vw,11px);min-width:0;
+}
+.orbi-ux11d-ability-deck>article {
+  display:grid;grid-template-columns:minmax(0,1fr) auto;
+  align-items:center;gap:5px 10px;min-width:0;
+  padding:clamp(7px,.85vw,12px);
+  border:1px solid rgba(85,199,225,.33);
+  border-radius:10px;
+  background:linear-gradient(110deg,rgba(9,41,63,.9),rgba(1,14,33,.92));
+}
+.orbi-ux11d-ability-deck>article:first-child {
+  border-color:rgba(247,197,101,.43);
+  background:linear-gradient(115deg,rgba(73,48,13,.53),rgba(6,21,40,.94));
+}
+.orbi-ux11d-ability-deck>article>div {display:flex;align-items:center;gap:7px;min-width:0;}
+.orbi-ux11d-ability-deck>article svg {color:#ffd07a;flex:0 0 auto;}
+.orbi-ux11d-ability-deck>article strong {
+  font:900 clamp(10px,.88vw,14px)/1.1 "Space Grotesk",sans-serif;color:#e9faff;overflow-wrap:anywhere;
+}
+.orbi-ux11d-ability-deck>article p {
+  grid-column:1;grid-row:2;margin:0;
+  font:600 clamp(9px,.77vw,12px)/1.25 "Space Grotesk",sans-serif;color:#a6cfdb;
+}
+.orbi-ux11d-ability-deck>article>span {
+  grid-column:2;grid-row:1 / 3;
+  padding:7px;border:1px solid rgba(126,224,238,.34);border-radius:5px;
+  color:#67eec9;font:900 clamp(9px,.8vw,12px)/1 monospace;white-space:nowrap;
+}
+@media (orientation:landscape) and (max-height:440px) {
+  .orbi-ux11d-energy-preview {height:88px;min-height:82px;}
+  .orbi-premium-status-core {padding:5px!important;}
+  .orbi-ux11d-ability-deck>article {padding:6px;}
+  .orbi-ux11d-ability-deck>article p {font-size:9px;}
+}
+@media (orientation:landscape) and (max-width:710px) {
+  .orbi-ux11d-ability-deck {grid-template-columns:minmax(0,1fr);}
+}
+@media (prefers-reduced-motion:reduce) {
+  .orbi-ux11d-energy-preview,.orbi-ux11d-ability-deck {animation:none;}
+}
