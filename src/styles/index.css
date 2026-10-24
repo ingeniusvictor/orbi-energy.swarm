@@ -2515,3 +2515,10 @@ body {
 
 /* UX09B: ensure a comfortable ENTER target at DPR2 Android 768×346 too. */
 .orbi-ux09b [data-testid="orbi-mobile-enter"] {min-width:180px!important;}
+
+/* Localized EN mode uses native English text over the same cinematic artwork.
+   The Spanish wording painted into source art is darkened underneath. */
+.orbi-ux09:not(.orbi-ux09b) .orbi-ux09-scene::after {
+  content:"";display:block;position:absolute;inset:0;
+  background:rgba(1,8,24,.74);
+}
