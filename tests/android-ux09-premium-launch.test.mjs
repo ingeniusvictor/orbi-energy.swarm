@@ -47,3 +47,29 @@ test("UX09 official FOTON mark has ten satellites and is wired to PWA and Androi
     assert.match(read("android/app/src/main/res/mipmap-anydpi-v26/" + p), /@drawable\/orbi_foton_launcher/);
   }
 });
+
+test("UX09B includes four user-approved 1672x941 cinematic WebP assets", () => {
+  for (const name of ["welcome","command","modes","formations"]) {
+    const image = readFileSync(new URL("../public/ux09/premium/" + name + ".webp",import.meta.url));
+    assert.ok(image.length > 200_000, name + " is not the detailed source image");
+    assert.equal(image.toString("ascii",0,4),"RIFF");
+    assert.equal(image.toString("ascii",8,12),"WEBP");
+  }
+});
+test("UX09B uses native keyboard/touch controls instead of painting unclickable art",() => {
+  const art=read("src/components/PremiumArtNavigation.tsx");
+  assert.match(art,/orbi-ux09b-artboard/);
+  for(const name of ["welcome.webp","command.webp","modes.webp","formations.webp"]){
+    // Asset names are resolved from the artName state, not hardcoded individually.
+    assert.match(art,/ux09\\/premium\\/|ux09\\/premium\\/\\$\\{artName\\}/);
+    assert.ok(readFileSync(new URL("../public/ux09/premium/"+name,import.meta.url)).length>0);
+  }
+  assert.match(art,/aria-label=\\{label\\}/);
+  assert.match(art,/orbi-mobile-campaign/);
+  assert.match(art,/orbi-mobile-score-attack/);
+  assert.match(art,/orbi-mobile-infinite-locked/);
+  assert.match(art,/orbi-mobile-menu-how_to-info/);
+  assert.match(art,/orbi-ux09b-formation-manual/);
+  assert.match(ui,/matchMedia\\("\\(orientation: landscape\\)"\\)/);
+  assert.match(css,/orbi-ux09b-illustration/);
+});
