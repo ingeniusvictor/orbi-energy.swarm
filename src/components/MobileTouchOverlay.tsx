@@ -1,12 +1,16 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import type { AnalogVector } from "../game/analogJoystick";
-import { ChevronsRight } from "lucide-react";
+import { ChevronsRight, Zap } from "lucide-react";
 import { useGameTranslation } from "../i18n";
 import { projectAnalogJoystick, NEUTRAL_ANALOG_VECTOR } from "../game/analogJoystick";
 
 interface MobileTouchOverlayProps {
   onVectorChange: (vector: AnalogVector) => void;
   onDash: () => void;
+  onOverdrive: () => void;
+  overdriveReady: boolean;
+  overdriveActive: boolean;
+  overdriveRemainingMs: number;
   dashActive: boolean;
   dashReady: boolean;
   dashCooldownRemainingMs: number;
@@ -14,12 +18,15 @@ interface MobileTouchOverlayProps {
 }
 
 export const MobileTouchOverlay: React.FC<MobileTouchOverlayProps> = ({
-  onVectorChange, onDash, dashActive, dashReady, dashCooldownRemainingMs, disabled = false,
+  onVectorChange, onDash, onOverdrive, overdriveReady, overdriveActive, overdriveRemainingMs, dashActive, dashReady, dashCooldownRemainingMs, disabled = false,
 }) => {
   const { language } = useGameTranslation();
   const dashStatus = dashActive ? (language === "es" ? "IMPULSO" : "BOOST")
     : dashReady ? (language === "es" ? "LISTO" : "READY")
     : `${Math.ceil(dashCooldownRemainingMs / 1000)}s`;
+  const overdriveStatus = overdriveActive ? (language === "es" ? "ACTIVO" : "ACTIVE")
+    : overdriveReady ? (language === "es" ? "LISTO" : "READY")
+    : overdriveRemainingMs > 0 ? `${Math.ceil(overdriveRemainingMs / 1000)}s` : (language === "es" ? "CARGANDO" : "CHARGING");
   const activePointer = useRef<number | null>(null);
   const latestCallback = useRef(onVectorChange);
   const [vector, setVector] = useState<AnalogVector>({ x: 0, y: 0 });
@@ -80,20 +87,46 @@ export const MobileTouchOverlay: React.FC<MobileTouchOverlayProps> = ({
           <span />
         </div>
       </div>
-      <button type="button"
-        className="orbi-touch-dash"
-        data-testid="orbi-touch-dash"
-        data-active={dashActive ? "true" : "false"}
-        disabled={disabled || !dashReady}
-        onPointerDown={event => event.stopPropagation()}
-        onPointerUp={event => event.stopPropagation()}
-        onClick={event => { event.stopPropagation(); onDash(); }}
-        aria-label={language === "es" ? `Activar Dash de propulsión. ${dashStatus}` : `Activate propulsion Dash. ${dashStatus}`}
-      >
-        <ChevronsRight size={25} aria-hidden="true" />
-        <strong>DASH</strong>
-        <span aria-hidden="true">{dashStatus}</span>
-      </button>
+      {/* UX12: independent touch pointer IDs on joystick and abilities. */}
+      <div className="orbi-touch-abilities" data-testid="orbi-touch-abilities" role="group"
+        aria-label={language === "es" ? "Habilidades de combate" : "Combat abilities"}>
+        <button type="button" className="orbi-touch-skill orbi-touch-overdrive"
+          data-testid="orbi-touch-overdrive" data-ready={overdriveReady ? "true" : "false"}
+          data-active={overdriveActive ? "true" : "false"} disabled={disabled || !overdriveReady}
+          onPointerDown={event => {
+            event.stopPropagation();
+            if (event.pointerType !== "mouse") {
+              event.preventDefault();
+              if (!disabled && overdriveReady) onOverdrive();
+            }
+          }}
+          onClick={event => {
+            event.stopPropagation();
+            if (event.detail === 0 || (event.nativeEvent as PointerEvent).pointerType === "mouse") onOverdrive();
+          }}
+          aria-label={language === "es" ? `Activar Overdrive. ${overdriveStatus}` : `Activate Overdrive. ${overdriveStatus}`}>
+          <Zap size={25} aria-hidden="true"/>
+          <strong>OD</strong><span>{overdriveStatus}</span>
+        </button>
+        <button type="button" className="orbi-touch-skill orbi-touch-dash"
+          data-testid="orbi-touch-dash"
+          data-active={dashActive ? "true" : "false"} disabled={disabled || !dashReady}
+          onPointerDown={event => {
+            event.stopPropagation();
+            if (event.pointerType !== "mouse") {
+              event.preventDefault();
+              if (!disabled && dashReady) onDash();
+            }
+          }}
+          onClick={event => {
+            event.stopPropagation();
+            if (event.detail === 0 || (event.nativeEvent as PointerEvent).pointerType === "mouse") onDash();
+          }}
+          aria-label={language === "es" ? `Activar Dash de propulsión. ${dashStatus}` : `Activate propulsion Dash. ${dashStatus}`}>
+          <ChevronsRight size={25} aria-hidden="true" />
+          <strong>DASH</strong><span>{dashStatus}</span>
+        </button>
+      </div>
     </div>
   );
 };
