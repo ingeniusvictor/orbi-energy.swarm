@@ -633,15 +633,15 @@ export const startBgm = (intensity: "EXPLORATION" | "HIGH_INTENSITY" | "BOSS") =
 
   if (intensity === "EXPLORATION") {
     // Soft deep minor pentatonic bassline
-    notes = [110, 130.81, 146.83, 164.81, 196.00]; // A2, C3, D3, E3, G3
+    notes = [110,164.81,196,220,164.81,146.83,130.81,164.81,110,146.83,196,246.94,220,196,146.83,130.81]; // original 16-step synthwave exploration theme
     tempo = 320;
   } else if (intensity === "HIGH_INTENSITY") {
     // Fast intense sci-fi arpeggio
-    notes = [146.83, 174.61, 196.00, 220.00, 261.63, 293.66]; // D3, F3, G3, A3, C4, D4
+    notes = [146.83,220,293.66,261.63,196,261.63,349.23,293.66,146.83,196,293.66,392,261.63,220,196,174.61]; // energetic 16-step lead
     tempo = 180;
   } else {
     // Dark Boss progression
-    notes = [87.31, 98.00, 103.83, 110.00, 123.47]; // F2, G2, Ab2, A2, B2
+    notes = [87.31,87.31,103.83,98,87.31,110,103.83,123.47,87.31,98,103.83,110,130.81,123.47,98,87.31]; // 16-step dramatic boss ostinato
     tempo = 200;
   }
 
@@ -682,6 +682,21 @@ export const startBgm = (intensity: "EXPLORATION" | "HIGH_INTENSITY" | "BOSS") =
     osc.connect(filter);
     filter.connect(gainNode);
     gainNode.connect(ctx.destination);
+
+    // Soft atmospheric harmonic punctuates every fourth step. Independent
+    // hand-coded oscillator: no external audio file, licensing or network call.
+    if (index % 4 === 0) {
+      const harmonic = ctx.createOscillator();
+      const harmonicGain = ctx.createGain();
+      harmonic.type = "sine";
+      harmonic.frequency.setValueAtTime(note * (intensity === "BOSS" ? 1.5 : 2), now);
+      harmonicGain.gain.setValueAtTime(volume * .22, now);
+      harmonicGain.gain.exponentialRampToValueAtTime(.0001, now + tempo/1000*.85);
+      harmonic.connect(harmonicGain);
+      harmonicGain.connect(ctx.destination);
+      harmonic.start(now);
+      harmonic.stop(now + tempo/1000);
+    }
 
     osc.start(now);
     osc.stop(now + tempo / 1000);
