@@ -2580,6 +2580,12 @@ export const EnergySwarmGame: React.FC = () => {
       fusionEnergyRef.current,
     );
     if (!resolution) return false;
+    // EVO8 founders must retain their earned progression. Fusion may use
+    // surplus recruited copies, but never consume the original ten energy
+    // bearers (including GAIA's unique identity).
+    if (resolution.sourceIds.some((id) =>
+      swarmDoctrineRef.current.founderIds.includes(id)
+    )) return false;
 
     const fusedMemberId =
       `affinity_fusion_${resolution.recipe.id.toLowerCase()}_${runOrbiAcquiredRef.current + 1}`;
