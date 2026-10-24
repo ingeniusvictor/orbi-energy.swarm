@@ -62,7 +62,7 @@ test("Overdrive audio is mute-safe and has no activation call outside the explic
   assert.notEqual(soundStart, -1);
   const sound = audio.slice(soundStart);
   assert.match(sound, /const ctx = initAudio\(\)/);
-  assert.match(sound, /if \(!ctx \|\| isMuted\) return/);
+  assert.match(sound, /if \(!ctx \|\| isMuted \|\| !soundEffectsEnabled\) return/);
   assert.match(sound, /beginTacticalPriority\(ctx, 0\.8\)/);
 
   const handler = sliceBetween(
