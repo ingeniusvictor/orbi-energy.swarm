@@ -1,4 +1,5 @@
 import React from "react";
+import { EnergyStatus3D } from "./presentation/EnergyStatus3D";
 import { Shield, Award, Users, Volume2, VolumeX, Pause, Play, Zap, Maximize2, Minimize2, Target, Package, X, Coins, Radar, Activity } from "lucide-react";
 import { useGameTranslation, formatNumber } from "../i18n";
 import { getCampaignObjective } from "../game/campaignGuide";
@@ -266,7 +267,7 @@ export const GameHud: React.FC<GameHudProps> = ({
           </div>
           <div className="orbi-premium-status-top">
             <div className="orbi-premium-status-core">
-              <div className="orbi-premium-status-energy" aria-hidden="true"><i/><i/><span/></div>
+              <EnergyStatus3D language={language}/>
               <div className="orbi-premium-status-core-label"><strong>ENERGY</strong><span>{language === "es" ? "NÚCLEO NEUTRAL" : "NEUTRAL CORE"}</span></div>
             </div>
             <div className="orbi-premium-status-shield">
@@ -299,6 +300,22 @@ export const GameHud: React.FC<GameHudProps> = ({
               <div>{audioMuted ? <VolumeX size={16} aria-hidden="true"/> : <Volume2 size={16} aria-hidden="true"/>}
                 <span>{language === "es" ? "AUDIO" : "SOUND"}</span><strong>{audioMuted ? t("hud.muted") : t("hud.unmuted")}</strong></div>
             </div>
+          </div>
+          <div className="orbi-ux11d-ability-deck" aria-label={language === "es" ? "Habilidades y supervivencia" : "Abilities and survival"}>
+            <article>
+              <div><Zap size={17} aria-hidden="true"/><strong>ORBI OVERDRIVE</strong></div>
+              <p>{language === "es"
+                ? "Impulso ofensivo: +20% de daño durante 8 s. Consume resonancia; bloqueo de 4 s al finalizar."
+                : "Offensive surge: +20% damage for 8s. Consumes resonance; 4s reentry lock after ending."}</p>
+              <span>{overdriveStatus}</span>
+            </article>
+            <article>
+              <div><Shield size={17} aria-hidden="true"/><strong>{language === "es" ? "DEFENSA DEL NÚCLEO" : "CORE DEFENSE"}</strong></div>
+              <p>{language === "es"
+                ? "La barra corresponde al escudo de ENERGY. Los círculos de Overdrive no añaden escudos."
+                : "This bar measures ENERGY's shield. Overdrive circles do not add shields."}</p>
+              <span>{Math.round(Math.max(0, Math.min(100, shieldPercent)))}%</span>
+            </article>
           </div>
         </section>
       )}
