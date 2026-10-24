@@ -1,0 +1,232 @@
+/* UX10-C — genuine cinematic composition, bilingual native DOM.
+ * Art is a CLEAN full-bleed 1600x900 scenic SVG with no baked typography,
+ * transparent click maps, side-letterboxing or alternative English image. */
+.orbi-premium-entry .orbi-mobile-launch.orbi-ux09.orbi-ux10c {
+  position:relative!important; isolation:isolate; display:flex!important;
+  flex:1 1 auto; width:100%!important; max-width:none!important;
+  height:100%!important; max-height:100dvh!important; min-height:0!important;
+  padding:0!important; margin:0!important; box-sizing:border-box;
+  color:#f0fbff; background:#020919; overflow:hidden;
+  font-family:"Space Grotesk",system-ui,sans-serif;
+  --ux10c-teal:#78effe;--ux10c-gold:#ffd87a;--ux10c-border:rgba(111,227,252,.35);
+}
+.orbi-ux10c * {box-sizing:border-box;}
+.orbi-ux10c .orbi-ux10c-scene {
+  position:absolute!important; z-index:-3!important; inset:0!important;
+  display:block!important; width:100%!important; height:100%!important;
+  background-image:var(--ux10c-clean-art)!important;
+  background-size:cover!important; background-position:center center!important;
+  background-repeat:no-repeat!important; transform:none!important;
+  opacity:1; pointer-events:none;
+}
+.orbi-ux10c .orbi-ux10c-scene::after {
+  content:"";position:absolute;inset:0;background:
+    linear-gradient(95deg,rgba(2,6,20,.10),rgba(2,8,27,.34) 41%,rgba(2,8,25,.79) 100%),
+    linear-gradient(0deg,rgba(1,6,19,.62),transparent 27%,rgba(1,6,19,.24));
+}
+.orbi-ux10c[data-layer="HUB"] .orbi-ux10c-scene::after,
+.orbi-ux10c[data-layer="DETAIL"] .orbi-ux10c-scene::after{
+  background:linear-gradient(120deg,rgba(1,8,24,.81),rgba(2,11,30,.57) 44%,rgba(3,13,34,.79)),
+  linear-gradient(0deg,rgba(1,6,17,.8),transparent 68%);
+}
+.orbi-ux10c-scanline {position:absolute;pointer-events:none;inset:0;z-index:-1;background:repeating-linear-gradient(0deg,transparent 0 5px,rgba(22,211,246,.015) 5px 6px);opacity:.35;}
+.orbi-ux10c button {cursor:pointer;touch-action:manipulation;}
+.orbi-ux10c button:focus-visible {outline:3px solid #fff09c;outline-offset:3px;position:relative;z-index:10;}
+.orbi-ux10c .orbi-ux10c-overline,.orbi-ux10c-edition,.orbi-ux10c-eyebrow,.orbi-ux10c-tile-index,
+.orbi-ux10c-beta,.orbi-ux10c-coordinate,.orbi-ux10c-footnote,.orbi-ux10c-resource small,.orbi-ux10c-mode-body>span {
+  font-family:"JetBrains Mono",ui-monospace,monospace;
+  letter-spacing:.15em;
+}
+.orbi-ux10c .orbi-ux10c-language {display:flex;align-items:center;justify-content:center;gap:6px;color:#8beefa;
+  padding:4px 6px;border:1px solid rgba(103,232,249,.38);border-radius:50px;
+  background:rgba(2,17,35,.78);box-shadow:inset 0 0 14px rgba(9,150,200,.12);backdrop-filter:blur(8px);}
+.orbi-ux10c .orbi-ux10c-language button {border:1px solid transparent;border-radius:30px;min-width:39px;
+  padding:5px 9px;color:#92c5d5;background:transparent;font:900 11px/1 monospace;}
+.orbi-ux10c .orbi-ux10c-language button[aria-pressed="true"] {border-color:#f8ce70;background:rgba(226,158,38,.24);color:#fff0ba;}
+.orbi-ux10c .orbi-ux10c-language button:hover {color:white;}
+.orbi-ux10c .orbi-ux10c-back {height:43px;width:43px;display:grid;place-items:center;flex:0 0 auto;
+  border:1px solid rgba(103,232,249,.54);border-radius:12px;color:#c7f8ff;background:rgba(1,16,33,.9);}
+.orbi-ux10c .orbi-ux10c-back:hover {background:rgba(10,80,110,.9);border-color:#fff2a6;}
+.orbi-ux10c .orbi-ux10c-edition-led {width:7px;height:7px;background:#5ef9da;display:inline-block;border-radius:100%;
+  box-shadow:0 0 11px #49ffe0;flex:0 0 auto;}
+.orbi-ux10c .orbi-ux10c-cover {display:flex;align-items:center;justify-content:flex-end;position:relative;
+  width:100%;height:100%;min-height:0;padding:3.5% 6% 3.5% 3%;}
+.orbi-ux10c .orbi-ux10c-edition {position:absolute;top:clamp(14px,3vh,34px);left:clamp(15px,3vw,52px);
+  display:flex;align-items:center;gap:12px;color:#9ceefa;font-size:clamp(8px,.8vw,12px);font-weight:700;}
+.orbi-ux10c-edition>span:not(.orbi-ux10c-edition-led) {color:rgba(251,191,36,.7);}
+.orbi-ux10c .orbi-ux10c-cover-body {position:relative;width:52%;max-width:760px;max-height:100%;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(7px,1.4vh,20px);
+  padding:clamp(12px,2.2vw,36px) clamp(10px,2.2vw,32px);text-align:center;
+  border-left:1px solid rgba(104,221,243,.22);background:linear-gradient(112deg,transparent,rgba(1,9,27,.28) 40%,rgba(1,9,27,.68) 100%);
+  text-shadow:0 5px 22px rgba(0,0,0,.55);}
+.orbi-ux10c .orbi-ux10c-eyebrow {display:flex;align-items:center;gap:12px;font-size:clamp(8px,.75vw,11px);
+  font-weight:800;color:#a4e8f4;}
+.orbi-ux10c .orbi-ux10c-eyebrow-line {height:1px;width:clamp(20px,3vw,56px);background:#64daf0;opacity:.5;}
+.orbi-ux10c .orbi-ux10c-cover h1 {display:flex;flex-direction:column;align-items:center;gap:0;
+  margin:0!important;font:900 clamp(31px,5vw,83px)/.92 "Space Grotesk",system-ui,sans-serif;
+  letter-spacing:-.05em;color:#f8feff;filter:drop-shadow(0 3px 13px rgba(0,0,0,.6));white-space:nowrap;}
+.orbi-ux10c .orbi-ux10c-cover h1 em {font-style:normal;color:#ffd574;letter-spacing:.035em;}
+.orbi-ux10c .orbi-ux10c-cover h1 span {font-size:.77em;letter-spacing:.23em;color:#eafaff;padding-left:.24em;}
+.orbi-ux10c .orbi-ux10c-subtitle {font:800 clamp(9px,1.2vw,17px)/1.3 "JetBrains Mono",monospace;
+  color:#8eebf9;letter-spacing:clamp(.09em,.2vw,.25em);margin:0!important;}
+.orbi-ux10c .orbi-ux10c-launch-action {width:100%;display:flex;justify-content:center;margin-top:clamp(3px,.7vh,12px);}
+.orbi-ux10c .orbi-ux10c-enter {width:min(100%,360px);height:clamp(49px,8vh,82px);
+  display:flex;align-items:center;justify-content:center;gap:clamp(8px,2vw,28px);padding:8px 20px;
+  border:1.5px solid #ffe5a3;border-radius:13px;
+  background:linear-gradient(125deg,#f5cd73,#d9a636 60%,#ffe3a1);color:#071325;
+  box-shadow:0 0 33px rgba(247,185,53,.27),0 12px 30px rgba(0,0,0,.42);
+  font:900 clamp(14px,2vw,25px)/1 "Space Grotesk",sans-serif;letter-spacing:.18em;}
+.orbi-ux10c .orbi-ux10c-enter:hover {filter:brightness(1.11);box-shadow:0 0 40px rgba(247,185,53,.4);}
+.orbi-ux10c .orbi-ux10c-beta {font:700 clamp(8px,.7vw,11px)/1.2 monospace;color:#a2c6d3;}
+.orbi-ux10c .orbi-ux10c-beta span {color:#ffd574;padding:0 5px;}
+.orbi-ux10c .orbi-ux10c-coordinate {position:absolute;left:3%;bottom:3%;font-size:clamp(8px,.78vw,12px);color:#8cc4d5;}
+.orbi-ux10c .orbi-ux10c-hub {width:100%;height:100%;min-height:0;display:flex;flex-direction:column;
+  padding:clamp(9px,1.5vh,20px) clamp(13px,2.2vw,40px);gap:clamp(5px,1vh,13px);}
+.orbi-ux10c .orbi-ux10c-header {height:clamp(57px,13vh,128px);flex:0 0 auto;display:flex;
+  align-items:center;justify-content:space-between;min-width:0;gap:12px;
+  padding:clamp(5px,.8vh,10px) clamp(7px,1.5vw,20px);
+  background:linear-gradient(90deg,rgba(2,14,31,.87),rgba(2,13,29,.61));border:1px solid rgba(85,218,249,.25);
+  border-radius:12px;box-shadow:inset 0 1px rgba(103,232,249,.15);}
+.orbi-ux10c .orbi-ux10c-hub-brand {display:flex;align-items:center;min-width:0;gap:clamp(7px,1vw,16px);}
+.orbi-ux10c .orbi-ux10c-hub-brand img {width:clamp(36px,6vh,79px);height:clamp(36px,6vh,79px);
+  flex-shrink:0;object-fit:contain;filter:drop-shadow(0 0 11px rgba(66,223,241,.4));}
+.orbi-ux10c .orbi-ux10c-brand-copy {display:flex;flex-direction:column;min-width:0;gap:2px;}
+.orbi-ux10c .orbi-ux10c-brand-copy strong {font:900 clamp(11px,1.9vw,27px)/1.05 "Space Grotesk",sans-serif;white-space:nowrap;}
+.orbi-ux10c .orbi-ux10c-brand-copy strong em {color:#f9ce6e;font-style:normal;}
+.orbi-ux10c .orbi-ux10c-brand-copy h2 {margin:0;font:900 clamp(14px,2.5vw,35px)/1.1 "Space Grotesk",sans-serif;letter-spacing:.06em;}
+.orbi-ux10c .orbi-ux10c-overline {color:#79dfef;font-size:clamp(8px,.73vw,12px);font-weight:800;}
+.orbi-ux10c .orbi-ux10c-header-actions {display:flex;align-items:center;flex:0 0 auto;gap:clamp(4px,.7vw,11px);}
+.orbi-ux10c .orbi-ux10c-resource {display:flex;align-items:center;gap:clamp(4px,.55vw,9px);
+  min-width:0;padding:clamp(5px,.75vh,9px) clamp(6px,.75vw,12px);border:1px solid rgba(102,217,249,.29);
+  border-radius:10px;background:rgba(2,18,40,.85);color:#f4d68e;font:800 clamp(10px,1vw,15px)/1.1 monospace;}
+.orbi-ux10c .orbi-ux10c-resource svg {color:#7be7ff;}
+.orbi-ux10c .orbi-ux10c-resource small {font-size:9px;color:#8bd9eb;}
+.orbi-ux10c .orbi-ux10c-command-grid {display:grid!important;flex:1 1 auto;min-height:0;
+  grid-template-columns:repeat(12,minmax(0,1fr))!important;
+  grid-template-rows:repeat(2,minmax(0,1fr))!important;
+  gap:clamp(6px,1.2vh,16px)!important;padding:0!important;margin:0!important;overflow:visible!important;}
+.orbi-ux10c .orbi-ux10c-command-grid>.orbi-ux10c-tile {grid-column:span 3!important;grid-row:auto!important;
+  display:flex!important;flex-direction:column;align-items:stretch;justify-content:stretch;
+  padding:0!important;min-width:0;min-height:0;overflow:hidden!important;
+  border:1px solid rgba(94,219,252,.55);border-radius:clamp(9px,1vw,16px);
+  background:linear-gradient(145deg,rgba(6,37,67,.93),rgba(1,12,30,.95));
+  box-shadow:0 9px 26px rgba(0,0,0,.38),inset 0 0 30px rgba(23,174,224,.07);
+  transition:border-color .15s,transform .15s,box-shadow .15s;}
+.orbi-ux10c .orbi-ux10c-command-grid>.orbi-ux10c-tile:nth-child(n+5) {grid-column:span 4!important;}
+.orbi-ux10c .orbi-ux10c-command-grid>.orbi-ux10c-tile:hover {border-color:#ffdb8a;transform:translateY(-2px);box-shadow:0 0 25px rgba(251,191,36,.14);}
+.orbi-ux10c .orbi-ux10c-tile-picture {position:relative;flex:1 1 auto;min-height:0;display:grid;place-items:center;overflow:hidden;
+  background:radial-gradient(ellipse at center,rgba(20,134,160,.4),rgba(2,15,36,.06) 70%),
+  var(--ux10c-clean-art) center 47% / cover no-repeat;
+  color:#b7f8ff;}
+.orbi-ux10c .orbi-ux10c-tile-picture::after {content:"";position:absolute;inset:0;
+  border-bottom:1px solid rgba(103,232,249,.26);background:linear-gradient(0deg,rgba(2,12,28,.61),transparent 50%);}
+.orbi-ux10c .orbi-ux10c-tile-picture>svg {position:relative;z-index:1;filter:drop-shadow(0 0 12px rgba(15,220,246,.6));}
+.orbi-ux10c .orbi-ux10c-tile-rune {position:absolute;z-index:1;right:8px;top:7px;font:900 clamp(9px,1vw,14px) monospace;color:#fcd477;opacity:.7;}
+.orbi-ux10c .orbi-ux10c-tile-copy {flex:0 0 auto;display:flex;flex-direction:column;align-items:start;justify-content:center;
+  padding:clamp(6px,.9vh,13px) clamp(7px,1.05vw,17px);gap:clamp(2px,.35vh,5px);
+  min-height:clamp(51px,12vh,96px);background:linear-gradient(160deg,rgba(5,30,54,.9),rgba(2,13,29,.92));}
+.orbi-ux10c .orbi-ux10c-tile-index {display:flex;align-items:center;gap:6px;
+  font-size:clamp(8px,.75vw,11px);color:#f4cb75;font-weight:800;}
+.orbi-ux10c .orbi-ux10c-tile-copy strong {max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  color:#eafcff;font:900 clamp(11px,1.4vw,22px)/1.1 "Space Grotesk",sans-serif;}
+.orbi-ux10c .orbi-ux10c-tile-copy small {color:#8cbfcd;font:700 clamp(8px,.8vw,13px)/1.1 "Space Grotesk",sans-serif;
+  overflow:hidden;white-space:nowrap;text-overflow:ellipsis;max-width:100%;}
+.orbi-ux10c .orbi-ux10c-footnote {flex:0 0 auto;display:flex;align-items:center;gap:8px;color:#88d8e9;
+  font-size:clamp(8px,.75vw,11px);font-weight:700;}
+.orbi-ux10c .orbi-ux10c-footnote span:last-child {margin-left:auto;color:#8399b1;}
+.orbi-ux10c .orbi-ux10c-detail {display:flex;flex-direction:column;min-height:0;gap:clamp(7px,1.2vh,15px);
+  width:100%;height:100%;padding:clamp(8px,2vh,25px) clamp(13px,2.5vw,42px);}
+.orbi-ux10c .orbi-ux10c-detail-header {display:flex;flex:0 0 auto;justify-content:space-between;align-items:center;gap:14px;
+  border-bottom:1px solid rgba(103,232,249,.37);padding:3px 4px clamp(8px,1.4vh,19px);}
+.orbi-ux10c .orbi-ux10c-detail-header h2 {font:900 clamp(17px,2.9vw,42px)/1 "Space Grotesk",sans-serif;margin:5px 0 0;letter-spacing:.045em;}
+.orbi-ux10c .orbi-ux10c-modes {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));min-height:0;flex:1;gap:clamp(7px,1.35vw,23px);}
+.orbi-ux10c .orbi-ux10c-modes>.orbi-ux10c-mode {display:flex!important;flex-direction:column;min-width:0;min-height:0;padding:0!important;
+  border:1px solid rgba(107,218,247,.42);border-radius:12px;overflow:hidden;
+  background:linear-gradient(155deg,rgba(5,25,49,.95),rgba(2,12,28,.96));}
+.orbi-ux10c .orbi-ux10c-mode--campaign {border-color:rgba(251,191,36,.6)!important;}
+.orbi-ux10c .orbi-ux10c-mode--score {border-color:rgba(45,212,233,.7)!important;}
+.orbi-ux10c .orbi-ux10c-mode--infinite {border-color:rgba(180,125,243,.5)!important;}
+.orbi-ux10c .orbi-ux10c-mode-art {flex:1 1 37%;min-height:0;display:grid;place-items:center;
+  background:linear-gradient(90deg,rgba(3,16,37,.65),rgba(3,19,39,.2)),var(--ux10c-clean-art) center 35% / cover no-repeat;
+  color:#baf8ff;overflow:hidden;}
+.orbi-ux10c .orbi-ux10c-mode--campaign .orbi-ux10c-mode-art {color:#ffe49e;}
+.orbi-ux10c .orbi-ux10c-mode--infinite .orbi-ux10c-mode-art {color:#cc9eff;}
+.orbi-ux10c .orbi-ux10c-mode-body {display:flex;flex:1 1 63%;min-height:0;flex-direction:column;align-items:flex-start;
+  padding:clamp(6px,1vw,17px);gap:clamp(3px,.65vh,10px);}
+.orbi-ux10c .orbi-ux10c-mode-body h3 {font:900 clamp(13px,2vw,26px)/1.1 "Space Grotesk",sans-serif;margin:0;}
+.orbi-ux10c .orbi-ux10c-mode-body p {color:#a8ced8;line-height:1.25;font-size:clamp(9px,.9vw,14px);margin:0;flex:1 1 auto;overflow:hidden;}
+.orbi-ux10c .orbi-ux10c-mode-start,.orbi-ux10c .orbi-ux10c-mode-locked {width:100%;min-height:clamp(36px,6vh,53px);
+  padding:6px 9px;display:flex;align-items:center;justify-content:center;gap:10px;margin-top:auto;
+  font:900 clamp(10px,1vw,15px) "Space Grotesk",sans-serif;letter-spacing:.1em;border-radius:9px;}
+.orbi-ux10c .orbi-ux10c-mode-start {background:linear-gradient(95deg,#facb5f,#c79734);color:#091326;border:1px solid #fff0b9;}
+.orbi-ux10c .orbi-ux10c-mode-start:hover {filter:brightness(1.12);}
+.orbi-ux10c .orbi-ux10c-mode-locked {background:rgba(59,35,86,.36);border:1px solid rgba(175,110,235,.45);color:#c6acd9;}
+.orbi-ux10c .orbi-ux10c-tactics {display:flex;flex:1 1 auto;min-height:0;flex-direction:column;gap:clamp(6px,.8vh,10px);}
+.orbi-ux10c .orbi-ux10c-formation-grid {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));
+  flex:1 1 auto;min-height:0;gap:clamp(5px,1vh,12px);}
+.orbi-ux10c .orbi-ux10c-formation {min-width:0;min-height:0;display:flex;align-items:center;gap:clamp(7px,.8vw,13px);
+  border:1px solid rgba(112,223,244,.32);border-radius:11px;padding:clamp(6px,.9vw,16px);background:rgba(2,19,42,.9);}
+.orbi-ux10c .orbi-ux10c-formation>svg {color:#f7cc73;flex-shrink:0;}
+.orbi-ux10c .orbi-ux10c-formation>div {display:flex;flex-direction:column;min-width:0;gap:3px;}
+.orbi-ux10c .orbi-ux10c-formation span {color:#79bdcf;font:700 clamp(8px,.8vw,11px) monospace;}
+.orbi-ux10c .orbi-ux10c-formation strong {font:900 clamp(10px,1.22vw,19px)/1.1 "Space Grotesk",sans-serif;}
+.orbi-ux10c .orbi-ux10c-formation small {color:#8dbac8;font-size:clamp(8px,.75vw,12px);}
+.orbi-ux10c .orbi-ux10c-manual {height:clamp(39px,7vh,56px);flex:0 0 auto;align-self:center;display:flex;align-items:center;gap:10px;
+  padding:8px clamp(20px,3vw,42px);border:1px solid rgba(251,191,36,.62);border-radius:11px;
+  background:rgba(103,69,23,.36);color:#ffe6a4;font:900 clamp(10px,1.2vw,16px) "Space Grotesk",sans-serif;}
+.orbi-ux10c .orbi-ux10c-detail--info {height:auto!important;min-height:0!important;flex:0 0 auto;padding:clamp(8px,1vh,14px) 20px;}
+.orbi-ux10c .orbi-ux10c-detail--info .orbi-ux10c-detail-header {padding:0;border:none;}
+.orbi-ux10c .orbi-ux10c-info-hint {display:none;}
+.orbi-premium-entry[data-mobile-layer="DETAIL"][data-mobile-tab="HOW_TO"][data-mobile-section="PLAY"]>.orbi-start-deck {display:none!important;}
+.orbi-premium-entry[data-mobile-layer="DETAIL"][data-mobile-tab="HOW_TO"][data-mobile-section="PLAY"]>.orbi-mobile-launch.orbi-ux10c {
+  max-height:100dvh!important;min-height:0!important;height:100%!important;flex:1 1 auto!important;
+}
+.orbi-premium-entry[data-mobile-layer="DETAIL"]:not([data-mobile-tab="MAIN"])>.orbi-mobile-launch.orbi-ux10c.orbi-ux09,
+.orbi-premium-entry[data-mobile-layer="DETAIL"][data-mobile-section="HANGAR"]>.orbi-mobile-launch.orbi-ux10c.orbi-ux09 {
+  height:auto!important;max-height:clamp(66px,16dvh,155px)!important;min-height:0!important;flex:0 0 auto!important;overflow:visible;}
+/* Landscape phone safe-area and 360-420 high cockpit. */
+@media (orientation:landscape) and (max-height:520px) {
+  .orbi-ux10c .orbi-ux10c-cover-body {width:53%;gap:clamp(5px,1vh,10px);padding:6px 9px;}
+  .orbi-ux10c .orbi-ux10c-edition {font-size:8px;top:10px;}
+  .orbi-ux10c .orbi-ux10c-cover h1 {font-size:clamp(26px,4.6vw,53px);}
+  .orbi-ux10c .orbi-ux10c-subtitle {font-size:clamp(8px,1.1vw,12px);}
+  .orbi-ux10c .orbi-ux10c-enter {height:44px;font-size:clamp(12px,1.6vw,18px);min-width:195px;}
+  .orbi-ux10c .orbi-ux10c-beta {font-size:8px;}
+  .orbi-ux10c .orbi-ux10c-hub {padding:7px 10px;gap:6px;}
+  .orbi-ux10c .orbi-ux10c-header {height:clamp(48px,12vh,64px);padding:3px 7px;}
+  .orbi-ux10c .orbi-ux10c-brand-copy .orbi-ux10c-overline {display:none;}
+  .orbi-ux10c .orbi-ux10c-hub-brand img {width:40px;height:40px;}
+  .orbi-ux10c .orbi-ux10c-resource {padding:4px 5px;font-size:10px;}
+  .orbi-ux10c .orbi-ux10c-resource small {display:none;}
+  .orbi-ux10c .orbi-ux10c-language {padding:2px 3px;gap:3px;}
+  .orbi-ux10c .orbi-ux10c-language button {min-width:34px;padding:4px 5px;}
+  .orbi-ux10c .orbi-ux10c-back {width:34px;height:34px;}
+  .orbi-ux10c .orbi-ux10c-command-grid {gap:6px!important;}
+  .orbi-ux10c .orbi-ux10c-tile-copy {min-height:46px;padding:4px 7px;gap:2px;}
+  .orbi-ux10c .orbi-ux10c-tile-copy strong {font-size:clamp(10px,1.2vw,14px);}
+  .orbi-ux10c .orbi-ux10c-tile-copy small {font-size:8px;}
+  .orbi-ux10c .orbi-ux10c-tile-picture>svg {width:26px;height:26px;}
+  .orbi-ux10c .orbi-ux10c-footnote {font-size:8px;}
+  .orbi-ux10c .orbi-ux10c-detail {padding:7px 12px;gap:5px;}
+  .orbi-ux10c .orbi-ux10c-detail-header {padding:0 3px 5px;}
+  .orbi-ux10c .orbi-ux10c-detail-header h2 {font-size:clamp(16px,2.4vw,26px);}
+  .orbi-ux10c .orbi-ux10c-mode-body {padding:7px;gap:3px;}
+  .orbi-ux10c .orbi-ux10c-mode-art>svg {width:27px;height:27px;}
+  .orbi-ux10c .orbi-ux10c-mode-body p {font-size:9px;line-height:1.2;}
+  .orbi-ux10c .orbi-ux10c-mode-body h3 {font-size:clamp(12px,1.6vw,18px);}
+  .orbi-ux10c .orbi-ux10c-mode-start,.orbi-ux10c .orbi-ux10c-mode-locked {min-height:35px;}
+}
+@media (orientation:landscape) and (max-width:760px) {
+  .orbi-ux10c .orbi-ux10c-cover-body {width:58%;}
+  .orbi-ux10c .orbi-ux10c-hub-brand img {display:none;}
+  .orbi-ux10c .orbi-ux10c-brand-copy h2 {font-size:clamp(12px,2.1vw,18px);}
+  .orbi-ux10c .orbi-ux10c-brand-copy strong {font-size:clamp(10px,1.4vw,15px);}
+  .orbi-ux10c .orbi-ux10c-resource:nth-child(2) {display:none;}
+  .orbi-ux10c .orbi-ux10c-tile-copy strong {font-size:10px;}
+  .orbi-ux10c .orbi-ux10c-tile-copy small {display:none;}
+  .orbi-ux10c .orbi-ux10c-mode-body p {font-size:9px;line-height:1.14;}
+}
+/* Never animate expensive paint/motion on reduced-motion or Android low-power. */
+@media (prefers-reduced-motion:reduce) {
+  .orbi-ux10c *, .orbi-ux10c *::before,.orbi-ux10c *::after{animation:none!important;transition:none!important;}
+}
