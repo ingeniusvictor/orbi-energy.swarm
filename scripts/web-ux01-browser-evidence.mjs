@@ -209,7 +209,23 @@ async function run(name,width,height,coarse,immersive,webImmersive) {
         const formationDock=await page.locator(".orbi-touch-formation-carousel").boundingBox();
         check(thumbBounds && formationDock && thumbBounds.y+thumbBounds.height+4<=formationDock.y,
           name+": Dash thumb overlaps formation buttons");
-        await touchDash.click();
+        // UX12 true multi-pointer proof: thumb #1 keeps steering while
+        // independent thumb #2 triggers Dash without releasing the joystick.
+        const joystick=page.getByTestId("orbi-analog-joystick");
+        const joyBounds=await joystick.boundingBox();
+        check(joyBounds,name+": analog joystick not available for two-finger test");
+        const jx=joyBounds.x+joyBounds.width*.7, jy=joyBounds.y+joyBounds.height*.5;
+        const bx=thumbBounds.x+thumbBounds.width/2, by=thumbBounds.y+thumbBounds.height/2;
+        const cdp=await page.context().newCDPSession(page);
+        await cdp.send("Input.dispatchTouchEvent",{type:"touchStart",touchPoints:[{x:jx,y:jy,id:1}]});
+        check(await joystick.getAttribute("data-engaged")==="true",name+": joystick did not capture first finger");
+        await cdp.send("Input.dispatchTouchEvent",{type:"touchStart",touchPoints:[{x:jx,y:jy,id:1},{x:bx,y:by,id:2}]});
+        check(await joystick.getAttribute("data-engaged")==="true",name+": second finger on Dash released joystick");
+        check(!await touchDash.isEnabled(),name+": Dash not activated while steering");
+        await cdp.send("Input.dispatchTouchEvent",{type:"touchEnd",touchPoints:[{x:jx,y:jy,id:1}]});
+        check(await joystick.getAttribute("data-engaged")==="true",name+": Dash pointer-up released joystick");
+        await cdp.send("Input.dispatchTouchEvent",{type:"touchEnd",touchPoints:[]});
+        await cdp.detach();
       }
       await page.clock.runFor(50);
       check(!await dash.isEnabled(),name+": dash did not enter cooldown");
