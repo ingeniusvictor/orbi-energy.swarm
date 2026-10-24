@@ -78,6 +78,68 @@ async function caseRender(w,h,dpr,mode){
  }catch(e){report.failures.push({name,error:String(e)});report.cases.push({name,success:false});}
  finally{await context.close();}
 }
+async function caseDelta(w,h,dpr) {
+ const name="delta30-"+w+"x"+h+"-dpr"+dpr;
+ const context=await browser.newContext({viewport:{width:w,height:h},deviceScaleFactor:dpr,hasTouch:w<1000,isMobile:w<1000,serviceWorkers:"block",reducedMotion:"reduce"});
+ const page=await context.newPage(),errors=[];
+ page.on("pageerror",e=>errors.push(String(e)));
+ try {
+  await page.goto(origin,{waitUntil:"domcontentloaded",timeout:40000});
+  const result=await page.evaluate(async({w,h})=>{
+   const {calculateSwarmOffset}=await import("/src/game/formations.ts");
+   const {drawSwarmRoster}=await import("/src/game/EnergySwarmCanvas.tsx");
+   const {getOrbiEnergyDefinition}=await import("/src/game/orbiEnergyCanon.ts");
+   const {FormationType,OrbiType}=await import("/src/game/types.ts");
+   const ids=["FOTON","HYDRO","AERO","TERMO","MAGNE","ATON","KINETRIX","H2NOVA","QUANTUM"];
+   const positions=Array.from({length:30},(_,i)=>calculateSwarmOffset(FormationType.SCATTERED,i,30,0,0));
+   let minDistance=Infinity;
+   for(let i=0;i<30;i++)for(let j=i+1;j<30;j++)
+    minDistance=Math.min(minDistance,Math.hypot(positions[i].x-positions[j].x,positions[i].y-positions[j].y));
+   if(minDistance<30)throw Error("Nominal 2px E8 solid margin violated: "+minDistance);
+   const canvas=document.createElement("canvas");canvas.id="delta-proof-canvas";canvas.width=w;canvas.height=h;
+   Object.assign(canvas.style,{position:"fixed",inset:"0",width:w+"px",height:h+"px",zIndex:"2147483000"});
+   document.body.append(canvas);
+   const ctx=canvas.getContext("2d");if(!ctx)throw Error("Canvas2D unavailable");
+   ctx.fillStyle="#030a1b";ctx.fillRect(0,0,w,h);
+   const cx=w/2,cy=h/2;
+   ctx.fillStyle="#f9ce61";ctx.beginPath();ctx.arc(cx,cy,17,0,Math.PI*2);ctx.fill();
+   ctx.fillStyle="#0d1824";ctx.beginPath();ctx.arc(cx,cy,13,0,Math.PI*2);ctx.fill();
+   ctx.strokeStyle="rgba(32,225,255,.22)";
+   // Actual concentric triangles, with points drawn through the GAME renderer.
+   for(const radius of [35,95,155]){
+    ctx.beginPath();
+    for(let c=0;c<3;c++){
+     const a=-Math.PI/2+c*Math.PI*2/3;
+     const x=cx+Math.cos(a)*radius,y=cy+Math.sin(a)*radius;
+     if(c===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+    }
+    ctx.closePath();ctx.stroke();
+   }
+   const members=positions.map((point,index)=>{
+    const id=index===29?"GAIA":ids[index%ids.length],def=getOrbiEnergyDefinition(id);
+    const x=cx+point.x,y=cy+point.y;
+    return {id:"delta-proof-"+index,type:OrbiType.BEAM,name:id,
+    x,y,targetX:x+20,targetY:y,color:def.color,size:10.5,
+    shootCooldown:40,affinity:def.affinity,combatRole:def.combatRole,energyId:id,
+    attackSignature:def.attackSignature,personality:"QA",evolutionStage:4,level:8,xp:28};
+   });
+   drawSwarmRoster(ctx,members,0);
+   ctx.font="bold "+(w<1000?10:14)+"px monospace";
+   ctx.fillStyle="#ffffff";ctx.fillText("EV-F08 | DELTA CONCENTRICA · 30 E8",10,16);
+   ctx.font=(w<1000?8:10)+"px monospace";ctx.fillText("PRUEBA GEOMETRICA - NO COMBATE REAL",10,31);
+   ctx.fillText("Dist min centros: "+minDistance.toFixed(2)+" / requerido >=30",10,h-8);
+   return {count:members.length,gaia:members.filter(x=>x.energyId==="GAIA").length,minDistance,solidTipRadius:14};
+  },{w,h});
+  const path=join(folder,name+".png");
+  await page.locator("#delta-proof-canvas").screenshot({path});
+  const bytes=(await stat(path)).size;
+  if(bytes<5000)throw Error("Blank delta screenshot: "+name);
+  if(errors.length)throw Error("JS page error: "+errors.join("; "));
+  report.cases.push({name,w,h,dpr,mode:"30-synthetic-E8-delta",success:true,bytes,...result});
+ }catch(e){report.failures.push({name,error:String(e)});report.cases.push({name,success:false});}
+ finally{await context.close();}
+}
+
 await mkdir(folder,{recursive:true});
 try{
  server=spawn(process.execPath,["node_modules/vite/bin/vite.js","--host","127.0.0.1","--port",String(port),"--strictPort"],{stdio:"ignore"});
@@ -88,6 +150,7 @@ try{
  await caseRender(1440,1080,1,"atlas");
  await caseRender(1440,240,1,"hydro");
  for(const [w,h,dpr] of [[740,360,1],[844,390,1],[915,412,1],[768,346,2],[390,844,1]])await caseRender(w,h,dpr,"final");
+ for(const [w,h,dpr] of [[740,360,1],[844,390,1],[915,412,1],[768,346,2],[390,844,1]])await caseDelta(w,h,dpr);
 }catch(e){report.failures.push({name:"setup",error:String(e)})}
 finally{
  if(browser)await browser.close();
