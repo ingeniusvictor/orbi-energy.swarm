@@ -54,5 +54,5 @@ test("all modes retain their shared acquisition and Gaia hooks",()=>{
  assert.match(game,/trackGaiaEnergyAcquisition\(energyDefinition\.id\)/);
  assert.match(game,/res\.type === "ORBI"/);
  assert.match(game,/addSwarmMember\(\s*res\.orbiAffinity/);
- assert.match(game,/setScoreAttackActivation/);
+ assert.match(game,/scoreAttackActivationRef\.current/);
 });
