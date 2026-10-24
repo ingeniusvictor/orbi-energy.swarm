@@ -26,6 +26,7 @@ export interface FotonTacticalDrawOptions {
   pointerY: number;
   shieldRatio?: number;
   damageHighlightStrength?: number;
+  movementBankRadians?: number;
 }
 
 export const projectFotonIntegrityVisual = (
@@ -127,6 +128,7 @@ export const drawFotonTacticalAvatar = (
 
   ctx.save();
   ctx.translate(options.x, options.y);
+  ctx.rotate(Math.max(-.16,Math.min(.16, options.movementBankRadians ?? 0)));
   ctx.scale(pose.shellPulse, pose.shellPulse);
 
   // Real integrity ring: slate track + current shield arc.
