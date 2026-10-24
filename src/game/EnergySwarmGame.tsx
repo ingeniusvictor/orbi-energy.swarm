@@ -5192,13 +5192,17 @@ export const EnergySwarmGame: React.FC = () => {
     }
     // Dash replaces normal movement for each intersecting physics frame.
     // Collision/damage checks still run normally: this is NOT invulnerability.
-    const dashStep = stepPropulsionDash(
-      propulsionDashRef.current, timeElapsedRef.current, delta,
-      playerPosRef.current,
-      { width: WORLD_WIDTH, height: WORLD_HEIGHT, radius: DASH_PLAYER_RADIUS },
-    );
-    if (dashStep.activeDuringFrame) {
-      playerPosRef.current = dashStep.position;
+    const dashState = propulsionDashRef.current;
+    const dashStep = dashState.activatedAtMs !== null &&
+      timeElapsedRef.current - delta < dashState.activeUntilMs
+      ? stepPropulsionDash(
+          dashState, timeElapsedRef.current, delta, playerPosRef.current,
+          { width: WORLD_WIDTH, height: WORLD_HEIGHT, radius: DASH_PLAYER_RADIUS },
+        ) : null;
+    if (dashStep?.activeDuringFrame) {
+      // Preserve the existing mutable player object identity for all combat systems.
+      playerPosRef.current.x = dashStep.position.x;
+      playerPosRef.current.y = dashStep.position.y;
     } else if (lastInputTypeRef.current === "KEYBOARD" || lastInputTypeRef.current === "TOUCH_PAD") {
       if (moveX !== 0 || moveY !== 0) {
         // Normalize diagonals so two held directions do not move faster.
