@@ -56,8 +56,8 @@ export function calculateSwarmOffset(type: FormationType, index: number, total: 
       const arm = index % 4;
       const lane = Math.floor(index / 4) % 2;
       const rank = Math.floor(index / 8);
-      const radius = 52 + rank * 34;
-      const perpendicular = lane === 0 ? -18 : 18;
+      const radius = 42 + rank * 32;
+      const perpendicular = lane === 0 ? -17 : 17;
       const angle = mouseAngle + Math.PI / 4 + arm * (Math.PI / 2);
       return {
         x: Math.cos(angle) * radius - Math.sin(angle) * perpendicular,
