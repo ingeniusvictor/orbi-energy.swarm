@@ -1,4 +1,5 @@
 import React from "react";
+import { getEvo8WingCount } from "./orbiEvolution";
 import { 
   OrbiMember, Enemy, Projectile, Resource, BiomeType, 
   FormationType, EnemyType, OrbiType, QualityPreset
@@ -292,7 +293,7 @@ export function drawSwarmRoster(
       ctx.shadowBlur = 2.0;
       ctx.shadowColor = member.color;
       ctx.beginPath();
-      ctx.arc(member.x, member.y, member.size, 0, Math.PI * 2);
+      ctx.arc(member.x, member.y, Math.min(12.5, member.size), 0, Math.PI * 2);
       ctx.fill();
       if (isGaia) {
         ctx.strokeStyle = "rgba(190, 242, 100, 0.85)";
@@ -322,7 +323,10 @@ export function drawSwarmRoster(
     if (member.type === OrbiType.SOLAR_GUARDIAN) {
       localPulse *= 0.5; // Scale pulse down for Solar Guardian to maintain proportion
     }
-    const r = member.size + localPulse;
+    // ENERGY's rendered body is 37.5px across; all solid follower geometry
+    // remains inside 28px (75%), even when a fusion's legacy collision size
+    // is greater. Halos may extend beyond this visual silhouette.
+    const r = Math.min(12.5, member.size + localPulse);
 
     // Apply shoot flashing. FULL preserves the historical white-body flash;
     // REDUCED keeps the member color and limits the white highlight to glow.
@@ -349,6 +353,33 @@ export function drawSwarmRoster(
           ? `rgba(255,255,255,${reducedFlashStrength})`
           : member.color;
       ctx.fillStyle = member.color;
+    }
+
+    // E6/E7/E8 append exactly 2/4/6 compact energy-colored wings to the
+    // existing E5 body, so no extra full-body sprite is required. All tips
+    // stay within ENERGY's 75% solid-silhouette size budget.
+    const wingCount = getEvo8WingCount(member.level);
+    if (wingCount > 0) {
+      ctx.save();
+      ctx.fillStyle = member.color;
+      ctx.strokeStyle = "rgba(244, 253, 255, 0.82)";
+      ctx.lineWidth = 0.6;
+      for (let wing = 0; wing < wingCount; wing += 1) {
+        const angle = (wing / wingCount) * Math.PI * 2 - Math.PI / 2;
+        const rootRadius = r * 0.77;
+        const tipRadius = Math.min(14, r + 2);
+        const spread = wingCount === 2 ? 0.3 : 0.19;
+        ctx.beginPath();
+        ctx.moveTo(Math.cos(angle - spread) * rootRadius,
+          Math.sin(angle - spread) * rootRadius);
+        ctx.lineTo(Math.cos(angle) * tipRadius, Math.sin(angle) * tipRadius);
+        ctx.lineTo(Math.cos(angle + spread) * rootRadius,
+          Math.sin(angle + spread) * rootRadius);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+      }
+      ctx.restore();
     }
 
     // Core body fill
