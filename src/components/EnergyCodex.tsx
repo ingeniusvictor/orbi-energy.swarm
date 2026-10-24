@@ -74,7 +74,7 @@ export const EnergyCodexArtwork = React.memo(function EnergyCodexArtwork({
   );
 });
 
-export const EnergyCodex:React.FC<{language:Locale}> = ({language}) => {
+export const EnergyCodex:React.FC<{language:Locale;onOpenLegacy:()=>void}> = ({language,onOpenLegacy}) => {
   const es=language==="es";
   const [selectedId,setSelectedId]=useState<OrbiEnergyId>("FOTON");
   const [level,setLevel]=useState(1);
@@ -158,6 +158,7 @@ export const EnergyCodex:React.FC<{language:Locale}> = ({language}) => {
         <footer className="orbi-ux11c-protagonist"><Sun size={13} aria-hidden="true"/><b>{ORBI_PROTAGONIST_ID} ≠ FOTON</b>
           {es?"ENERGY es el protagonista neutral dorado; FOTON es el ORBI solar verde, independiente.":
             "ENERGY is the golden neutral protagonist; FOTON is an independent green solar ORBI."}
+          <button type="button" className="orbi-ux11c-legacy" onClick={onOpenLegacy}>{es?"ARCHIVO BLACKOUT":"BLACKOUT ARCHIVE"}</button>
         </footer>
       </article>
     </section>
