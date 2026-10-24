@@ -126,6 +126,8 @@ export interface OrbiMember {
   affinity: OrbiAffinity;
   combatRole: OrbiCombatRole;
   energyId?: OrbiEnergyId;
+  /** Special fusion class rank, not the E1–E8 evolutionary level. */
+  fusionRank?: number;
   attackSignature?: OrbiAttackSignature;
   personality: string;
   evolutionStage: number;
