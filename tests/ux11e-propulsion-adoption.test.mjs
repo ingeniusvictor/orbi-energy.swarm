@@ -16,8 +16,8 @@ test("UX11-E is wired into real gameplay physics, not a decorative HUD element",
   assert.match(game,/if \(key === "E"\)/);
   assert.match(game,/handleDashActivation\(\)/);
   assert.match(game,/stepPropulsionDash\(/);
-  assert.match(game,/if \(dashStep\.activeDuringFrame\)/);
-  assert.match(game,/playerPosRef\.current = dashStep\.position/);
+  assert.match(game,/if \(dashStep\?\.activeDuringFrame\)/);
+  assert.match(game,/playerPosRef\.current\.x = dashStep\.position\.x/);
   assert.match(game,/width: WORLD_WIDTH, height: WORLD_HEIGHT, radius: DASH_PLAYER_RADIUS/);
   assert.match(game,/setDashView\(projectPropulsionDash\(propulsionDashRef\.current, timeElapsedRef\.current\)\)/);
   assert.match(game,/createPropulsionDashState\(\)/);
