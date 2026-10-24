@@ -236,13 +236,15 @@
  * or English alternates. The clean full-bleed world underlies the whole frame. */
 .orbi-ux10c .orbi-ux10c-scene::before {
   content:"";position:absolute;z-index:0;inset:0 auto 0 0;
-  width:46%;pointer-events:none;opacity:.93;
-  background-image:var(--ux10c-hero-art);
-  background-size:100vw auto;
-  background-position:left center;
+  width:50%;pointer-events:none;opacity:1;
+  /* The gradient is OPAQUE at the seam, so the old vector ENERGY face
+     cannot shine through as a second ghost image. The baked title region
+     begins beyond the fully covered left scenic crop. */
+  background-image:linear-gradient(to right,transparent 0%,transparent 46%,rgba(2,9,22,.83) 82%,#020916 98%),var(--ux10c-hero-art);
+  background-size:100% 100%,100vw auto;
+  background-position:left center,left center;
   background-repeat:no-repeat;
-  -webkit-mask-image:linear-gradient(to right,#000 0%,#000 57%,transparent 100%);
-  mask-image:linear-gradient(to right,#000 0%,#000 57%,transparent 100%);
+  filter:brightness(1.1) saturate(1.1);
 }
 .orbi-ux10c[data-layer="HUB"] .orbi-ux10c-scene::before,
 .orbi-ux10c[data-layer="DETAIL"] .orbi-ux10c-scene::before {opacity:.53;}
