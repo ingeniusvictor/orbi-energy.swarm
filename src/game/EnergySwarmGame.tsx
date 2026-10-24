@@ -261,12 +261,20 @@ import {
   getGaiaProgressCount,
   registerGaiaEnergy,
 } from "./gaiaEvolution";
+// EVO8 activation: keep local call-site names for the existing gameplay path
+// while replacing the unreachable legacy level-10 capacity threshold.
 import {
-  createSwarmDoctrineState,
-  getSwarmDoctrineCapacity,
-  registerSwarmDoctrineLevel,
-  registerSwarmDoctrineMember,
-} from "./swarmDoctrine";
+  createEvo8SwarmDoctrine as createSwarmDoctrineState,
+  getEvo8SwarmCapacity as getSwarmDoctrineCapacity,
+  promoteEvo8Founder as registerSwarmDoctrineLevel,
+  registerEvo8Founder as registerSwarmDoctrineMember,
+} from "./evo8SwarmDoctrine";
+import {
+  applyMatchingEnergyCore,
+  getEvo8VisualStage,
+  acquisitionsForLevel,
+  type OrbiEvolutionLevel,
+} from "./orbiEvolution";
 import {
   applyCombatResonanceDamageBreak,
   createCombatResonanceState,
