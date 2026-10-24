@@ -16,22 +16,22 @@
   "prefer_related_applications": false,
   "icons": [
     {
-      "src": "ux09/orbi-launcher.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "icons/orbi-192.png",
+      "src": "ux09/premium/launcher-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "icons/orbi-512.png",
+      "src": "ux09/premium/launcher-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    },
+    {
+      "src": "ux09/orbi-launcher.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
     }
   ]
 }
