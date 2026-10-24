@@ -197,6 +197,9 @@ async function run(name,width,height,coarse,immersive,webImmersive) {
         const thumbBounds=await touchDash.boundingBox();
         check(thumbBounds && thumbBounds.width>=44 && thumbBounds.height>=44,
           name+": Dash thumb hit target too small");
+        const formationDock=await page.locator(".orbi-touch-formation-carousel").boundingBox();
+        check(thumbBounds && formationDock && thumbBounds.y+thumbBounds.height+4<=formationDock.y,
+          name+": Dash thumb overlaps formation buttons");
         await touchDash.click();
       }
       await page.clock.runFor(50);
