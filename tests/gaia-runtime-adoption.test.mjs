@@ -64,10 +64,9 @@ test("GAIA consumes H4 follower capacity while remaining outside consolidation c
     game,
     /regularSwarmCount\s*=\s*swarmRef\.current\.reduce\([\s\S]{0,220}?member\.energyId\s*===\s*"GAIA"\s*\?\s*0\s*:\s*1/,
   );
-  assert.match(
-    game,
-    /candidates\s*=\s*swarmRef\.current\.filter\([\s\S]{0,180}?m\.energyId\s*!==\s*"GAIA"/,
-  );
+  // EVO8 replaces cross-affinity XP fallback with same-energy-only ranking.
+  assert.match(game, /member\\.energyId === energyDefinition\\.id/);
+  assert.doesNotMatch(game, /Fallback if no member has this affinity/);
 });
 
 test("GAIA offense and support use bounded combat scale inside the existing swarm firing path", () => {
