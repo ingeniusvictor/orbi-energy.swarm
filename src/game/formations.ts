@@ -2,11 +2,11 @@ import { FormationType, FormationConfig } from "./types";
 
 export const FORMATIONS: Record<FormationType, FormationConfig> = {
   [FormationType.LINE]: { type: FormationType.LINE, name: "Defensive Ring", description: "+25% Shield Resistance, +Circular Shield Guard | -10% Projectile Damage", spacing: 35, shieldMod: 0.25, damageMod: -0.10, projSpeedMod: 0, critChanceMod: 0, speedMod: 1 },
-  [FormationType.CIRCLE]: { type: FormationType.CIRCLE, name: "Star Matrix", description: "+30% Damage, +15% Proj Speed | Compact five-point assault matrix", spacing: 45, shieldMod: -0.15, damageMod: 0.30, projSpeedMod: 0.15, critChanceMod: 0.05, speedMod: 1.1 },
+  [FormationType.CIRCLE]: { type: FormationType.CIRCLE, name: "Star Matrix", description: "+30% Damage, +15% Proj Speed | Open five-point assault matrix", spacing: 45, shieldMod: -0.15, damageMod: 0.30, projSpeedMod: 0.15, critChanceMod: 0.05, speedMod: 1.1 },
   [FormationType.DELTA]: { type: FormationType.DELTA, name: "Dynamic Spiral", description: "+Orbital Area Fire, +Repel Near Enemies | High Spray Dispersion", spacing: 40, shieldMod: 0, damageMod: 0.10, projSpeedMod: -0.10, critChanceMod: 0.05, speedMod: 1 },
   [FormationType.SHIELD]: { type: FormationType.SHIELD, name: "Energy Halo", description: "+35% Range, +Precision Targeting | -15% Shield Resistance", spacing: 50, shieldMod: -0.15, damageMod: 0.15, projSpeedMod: 0.20, critChanceMod: 0.10, speedMod: 0.95 },
-  [FormationType.V_SHAPE]: { type: FormationType.V_SHAPE, name: "X-Guard", description: "Four-axis close guard, strong crossfire cover | -10% Movement Speed", spacing: 30, shieldMod: 0.30, damageMod: 0, projSpeedMod: -0.05, critChanceMod: 0, speedMod: 0.90 },
-  [FormationType.SCATTERED]: { type: FormationType.SCATTERED, name: "Float Walkers", description: "+25% Evasion, +20% Crit Chance | Loose Follow Cohesion", spacing: 60, shieldMod: 0.10, damageMod: 0, projSpeedMod: 0.10, critChanceMod: 0.20, speedMod: 1.15 },
+  [FormationType.V_SHAPE]: { type: FormationType.V_SHAPE, name: "X-Guard", description: "Open four-axis cross guard | -10% Movement Speed", spacing: 30, shieldMod: 0.30, damageMod: 0, projSpeedMod: -0.05, critChanceMod: 0, speedMod: 0.90 },
+  [FormationType.SCATTERED]: { type: FormationType.SCATTERED, name: "Concentric Delta", description: "Triangular layered formation | Previous passive modifiers unchanged", spacing: 60, shieldMod: 0.10, damageMod: 0, projSpeedMod: 0.10, critChanceMod: 0.20, speedMod: 1.15 },
 };
 
 export function calculateSwarmOffset(type: FormationType, index: number, total: number, time: number, mouseAngle: number): { x: number; y: number } {
@@ -22,12 +22,22 @@ export function calculateSwarmOffset(type: FormationType, index: number, total: 
       return { x: Math.cos(angle) * radius, y: Math.sin(angle) * radius };
     }
     case FormationType.CIRCLE: {
-      // STAR MATRIX: repeated ten-vertex star shells, bounded for large swarms.
+      // EV-F01: preserve ten-point star identity while widening every shell.
+      // Previously only +10 per ring and capped outer radius at 136; shells
+      // collapsed onto one another with 20-30 companions.
       const shell = Math.floor(index / 10);
       const point = index % 10;
-      const shellOuter = Math.min(136, 78 + shell * 10);
-      const radius = point % 2 === 0 ? shellOuter : shellOuter * 0.48;
-      const angle = mouseAngle - Math.PI / 2 + point * (Math.PI / 5) + time * 0.0002;
+      // The H3 contract caps orbital offsets at 140 world units. Use
+      // staggered shell rotations to increase clearance without extending
+      // beyond that reach (including 48/64 member diagnostic scenarios).
+      const outerRadii = [94, 127, 139];
+      const innerRadii = [57, 92, 113];
+      const safeShell = Math.min(shell, 2);
+      const radius = point % 2 === 0 ? outerRadii[safeShell] : innerRadii[safeShell];
+      const shellRotation = [0, -0.18, 0.14][shell % 3] +
+        Math.max(0, shell - 2) * 0.26;
+      const angle = mouseAngle - Math.PI / 2 + point * (Math.PI / 5) +
+        shellRotation + time * 0.0002;
       return { x: Math.cos(angle) * radius, y: Math.sin(angle) * radius };
     }
     case FormationType.DELTA: {
@@ -41,17 +51,41 @@ export function calculateSwarmOffset(type: FormationType, index: number, total: 
       return { x: Math.cos(theta) * radius, y: Math.sin(theta) * radius };
     }
     case FormationType.V_SHAPE: {
-      // X-GUARD: four diagonal arms with capped reach.
+      // Four wide diagonal arms, with alternating lanes to prevent
+      // companions piling onto the same four narrow radial tracks.
       const arm = index % 4;
-      const rank = Math.floor(index / 4);
-      const radius = Math.min(138, 42 + rank * 8);
+      const lane = Math.floor(index / 4) % 2;
+      const rank = Math.floor(index / 8);
+      const radius = Math.min(138, 42 + rank * 32);
+      const perpendicular = lane === 0 ? -17 : 17;
       const angle = mouseAngle + Math.PI / 4 + arm * (Math.PI / 2);
-      return { x: Math.cos(angle) * radius, y: Math.sin(angle) * radius };
+      return {
+        x: Math.cos(angle) * radius - Math.sin(angle) * perpendicular,
+        y: Math.sin(angle) * radius + Math.cos(angle) * perpendicular,
+      };
     }
     case FormationType.SCATTERED: {
-      const organicAngle = index * 0.8 + Math.sin(time * 0.001 + index) * 0.6;
-      const dist = 40 + index * 4 + Math.cos(time * 0.0015 + index) * 15;
-      return { x: Math.cos(organicAngle) * dist, y: Math.sin(organicAngle) * dist };
+      // Compatibility: keep the serialized key SCATTERED, but its geometry
+      // is now a deterministic layered delta, never organic scatter.
+      // Ten followers per triangular perimeter; successive shells grow.
+      const shell = Math.floor(index / 10);
+      const countInShell = Math.max(1, Math.min(10, total - shell * 10));
+      const point = index % 10;
+      const radius = 88 + shell * 42;
+      const perimeterPosition = (point / countInShell) * 3;
+      const side = Math.min(2, Math.floor(perimeterPosition));
+      const fraction = perimeterPosition - side;
+      const rotation = mouseAngle * 0.15;
+      const vertex = (corner: number) => {
+        const angle = -Math.PI / 2 + corner * (Math.PI * 2 / 3) + rotation;
+        return { x: Math.cos(angle) * radius, y: Math.sin(angle) * radius };
+      };
+      const from = vertex(side);
+      const to = vertex((side + 1) % 3);
+      return {
+        x: from.x + (to.x - from.x) * fraction,
+        y: from.y + (to.y - from.y) * fraction,
+      };
     }
     default: return { x: 0, y: 0 };
   }
