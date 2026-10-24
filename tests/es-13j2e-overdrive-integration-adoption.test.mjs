@@ -99,7 +99,7 @@ test("Overdrive stinger has exactly one gameplay invocation and remains mute-saf
   const soundStart = audio.indexOf("export const playOverdriveActivationSound");
   const sound = audio.slice(soundStart);
   assert.match(sound, /const ctx = initAudio\(\)/);
-  assert.match(sound, /if \(!ctx \|\| isMuted\) return/);
+  assert.match(sound, /if \(!ctx \|\| isMuted \|\| !soundEffectsEnabled\) return/);
   assert.match(sound, /beginTacticalPriority\(ctx, 0\.8\)/);
 });
 
