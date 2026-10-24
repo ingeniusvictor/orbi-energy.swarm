@@ -43,7 +43,7 @@ CI del PR #710 sobre `c0e7b41d3a9e343add3583843adc2aee0e95a463`:
 - UX07 Overlays `40053695030`: **SUCCESS**.
 - Prueba visual Canvas2D `40053695064`: **SUCCESS**, siete capturas sintéticas, incluidas 768×346 DPR2 y orientación vertical.
 
-`main` tras squash #710: `8c2fbb4820c2ec4088ef0e9dc0a334a554eaa1d2`. Verificar CI y Android post-main de este SHA antes de llamar estable a la APK. **Las capturas corresponden a geometrías sintéticas con el renderizador real, NO a encuentros o al dispositivo Android físico**. La prueba humana Android sigue abierta en #248.
+`main` tras squash #710: `8c2fbb4820c2ec4088ef0e9dc0a334a554eaa1d2`. **Las siete verificaciones post-main SUCCESS:** CI `40053872949`, Android `40053872950`, Chromium `40053872944`, Web UX01B `40053872937`, Android UX07 `40053872923`, EVO8 Canvas sintético `40053872977` y Web Beta `40053945153`. El artefacto Android `12544781278` y el visual `12544273460` están asociados a este SHA exacto. APK debug 9.41 MB, SHA-256 `3c1ce26682640d66ed586cc111bfe1e47ddc97de0bd329123d7562f4c2050334`, ZIP/APK verificable sin corrupción. **Las capturas corresponden a geometrías sintéticas con el renderizador real, NO a encuentros o al dispositivo Android físico**. La prueba humana Android sigue abierta en #248.
 
 ## Cambios activos de la migración
 
