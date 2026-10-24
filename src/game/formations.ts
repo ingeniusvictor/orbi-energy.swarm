@@ -65,16 +65,33 @@ export function calculateSwarmOffset(type: FormationType, index: number, total: 
       };
     }
     case FormationType.SCATTERED: {
-      // Compatibility: keep the serialized key SCATTERED, but its geometry
-      // is now a deterministic layered delta, never organic scatter.
-      // Ten followers per triangular perimeter; successive shells grow.
-      const shell = Math.floor(index / 10);
-      const countInShell = Math.max(1, Math.min(10, total - shell * 10));
-      const point = index % 10;
-      const radius = 88 + shell * 42;
-      const perimeterPosition = (point / countInShell) * 3;
-      const side = Math.min(2, Math.floor(perimeterPosition));
-      const fraction = perimeterPosition - side;
+      // EV-F08: Delta Concéntrica remains mapped to the saved SCATTERED ID.
+      // A 3/9/18 occupancy schedule avoids squeezing ten large E8 bodies
+      // onto the shortest triangle. Its three aligned outlines preserve the
+      // concentric-delta silhouette at 10, 20 and 30 companions.
+      //
+      // Max vertex radius 155 is inside the 160-unit soft leash; the former
+      // 172-unit outer shell could contract dynamically and collide with the
+      // 130-unit inner outline. Static 30-E8 nominal min centre separation:
+      // >=31.9 units, against 2 * 14 solid wing tip radius + 2 margin.
+      // Selecting permanent slot indices prevents recruits from moving all
+      // existing followers whenever the partial shell grows.
+      const safeIndex = Math.max(0, Math.floor(index));
+      const shell = safeIndex < 3 ? 0 : safeIndex < 12 ? 1 : 2;
+      const shellStart = [0, 3, 12][shell];
+      const shellCapacity = [3, 9, 18][shell];
+      const local = (safeIndex - shellStart) % shellCapacity;
+      const slots = [
+        [0, 1, 2],
+        [0, 3, 6, 1, 4, 7, 2, 5, 8],
+        [0, 6, 12, 3, 9, 15, 1, 7, 13, 4, 10, 16, 2, 8, 14, 5, 11, 17],
+      ];
+      const slot = slots[shell][local];
+      const radius = [35, 95, 155][shell];
+      const phase = [0, 0.72, 0.8][shell];
+      const perimeterPosition = ((slot + phase) / shellCapacity) * 3;
+      const side = Math.floor(perimeterPosition) % 3;
+      const fraction = perimeterPosition - Math.floor(perimeterPosition);
       const rotation = mouseAngle * 0.15;
       const vertex = (corner: number) => {
         const angle = -Math.PI / 2 + corner * (Math.PI * 2 / 3) + rotation;
