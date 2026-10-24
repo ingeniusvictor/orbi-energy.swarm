@@ -191,7 +191,7 @@ import {
   playDisruptorPulseSound, playHeavyImpactSound, playShieldDeflectSound,
   playCriticalHitSound,
   playBossArrivalSound, playBossPhaseTransitionSound, playBossChargeSound,
-  playBossShardsSound, playBossPulseSound, playOverdriveActivationSound
+  playBossShardsSound, playBossPulseSound, playOverdriveActivationSound, playPropulsionDashSound
 } from "./audio";
 
 import { 
@@ -236,6 +236,7 @@ import {
 import PerformanceDiagnosticsOverlay from "../components/PerformanceDiagnosticsOverlay";
 import { createTouchDirectionState, getTouchMovementVector } from "./touchControls";
 import { projectAnalogMotion, type AnalogVector } from "./analogJoystick";
+import { activatePropulsionDash, createPropulsionDashState, projectPropulsionDash, stepPropulsionDash, DASH_PLAYER_RADIUS } from "./propulsionDash";
 import {
   FOTON_THREAT_REFRESH_MS,
   projectFotonThreatDirection,
@@ -417,6 +418,9 @@ export const EnergySwarmGame: React.FC = () => {
   const [combatOverdriveView, setCombatOverdriveView] = useState(() =>
     projectCombatOverdrive(createCombatOverdriveState(), 0, false),
   );
+  const [dashView, setDashView] = useState(() =>
+    projectPropulsionDash(createPropulsionDashState(), 0),
+  );
 
   // Stats persisting
   const [stats, setStats] = useState<GameStats>({ ...DEFAULT_STATS });
@@ -496,6 +500,8 @@ export const EnergySwarmGame: React.FC = () => {
   const fusionEnergyRef = useRef(0);
   const combatResonanceRef = useRef(createCombatResonanceState());
   const combatOverdriveRef = useRef(createCombatOverdriveState());
+  const propulsionDashRef = useRef(createPropulsionDashState());
+  const lastDashDirectionRef = useRef<AnalogVector>({ x: 0, y: -1 });
 
   const keysPressedRef = useRef<Record<string, boolean>>({});
   const activeFormationRef = useRef<FormationType>(FormationType.LINE);
@@ -1137,6 +1143,35 @@ export const EnergySwarmGame: React.FC = () => {
     }
   };
 
+  // UX11-E: movement-only impulse, unrelated to Combat Resonance/Overdrive.
+  const handleDashActivation = () => {
+    if (!isPlaying || isGameOver || isPausedRef.current || isPhotoMode ||
+        isUpgradeSelectionOpenRef.current || bossIntroTimeRef.current !== null ||
+        bossDefeatedSequenceActiveRef.current ||
+        architectQaBossRef.current !== null) return false;
+
+    const keys = keysPressedRef.current;
+    const keyboard = {
+      x: Number(Boolean(keys.D || keys.ARROWRIGHT)) - Number(Boolean(keys.A || keys.ARROWLEFT)),
+      y: Number(Boolean(keys.S || keys.ARROWDOWN)) - Number(Boolean(keys.W || keys.ARROWUP)),
+    };
+    const analog = projectAnalogMotion(analogJoystickRef.current);
+    const touch = getTouchMovementVector(touchDirectionsRef.current);
+    const direction = keyboard.x || keyboard.y ? keyboard
+      : analog.x || analog.y ? analog
+      : touch.x || touch.y ? touch
+      : lastDashDirectionRef.current;
+
+    const resolution = activatePropulsionDash(
+      propulsionDashRef.current, timeElapsedRef.current, direction,
+    );
+    if (!resolution.activated) return false;
+    propulsionDashRef.current = resolution.state;
+    setDashView(projectPropulsionDash(resolution.state, timeElapsedRef.current));
+    playPropulsionDashSound();
+    return true;
+  };
+
   const handleOverdriveActivation = () => {
     if (
       !isPlaying ||
@@ -1490,6 +1525,11 @@ export const EnergySwarmGame: React.FC = () => {
         handleOverdriveActivation();
         return;
       }
+      if (key === "E") {
+        e.preventDefault();
+        if (!e.repeat) handleDashActivation();
+        return;
+      }
 
       keysPressedRef.current[key] = true;
 
@@ -1805,6 +1845,9 @@ export const EnergySwarmGame: React.FC = () => {
     setCombatOverdriveView(
       projectCombatOverdrive(resetOverdriveState, 0, false),
     );
+    propulsionDashRef.current = createPropulsionDashState();
+    lastDashDirectionRef.current = { x: 0, y: -1 };
+    setDashView(projectPropulsionDash(propulsionDashRef.current, 0));
     playerFlashRef.current = 0;
     invincibilityTimerRef.current = 0;
 
@@ -4687,6 +4730,7 @@ export const EnergySwarmGame: React.FC = () => {
         ...liveResonanceProjection,
       });
       setCombatOverdriveView(liveOverdriveProjection);
+      setDashView(projectPropulsionDash(propulsionDashRef.current, timeElapsedRef.current));
       setScore(scoreRef.current);
       setShield(shieldRef.current);
       setSwarmSize(swarmRef.current.length + 1);
@@ -5142,7 +5186,20 @@ export const EnergySwarmGame: React.FC = () => {
       clickToMoveTargetRef.current = null;
     }
 
-    if (lastInputTypeRef.current === "KEYBOARD" || lastInputTypeRef.current === "TOUCH_PAD") {
+    if (moveX !== 0 || moveY !== 0) {
+      const directionLength = Math.hypot(moveX, moveY);
+      lastDashDirectionRef.current = { x: moveX / directionLength, y: moveY / directionLength };
+    }
+    // Dash replaces normal movement for each intersecting physics frame.
+    // Collision/damage checks still run normally: this is NOT invulnerability.
+    const dashStep = stepPropulsionDash(
+      propulsionDashRef.current, timeElapsedRef.current, delta,
+      playerPosRef.current,
+      { width: WORLD_WIDTH, height: WORLD_HEIGHT, radius: DASH_PLAYER_RADIUS },
+    );
+    if (dashStep.activeDuringFrame) {
+      playerPosRef.current = dashStep.position;
+    } else if (lastInputTypeRef.current === "KEYBOARD" || lastInputTypeRef.current === "TOUCH_PAD") {
       if (moveX !== 0 || moveY !== 0) {
         // Normalize diagonals so two held directions do not move faster.
         const len = Math.sqrt(moveX * moveX + moveY * moveY);
@@ -7701,6 +7758,29 @@ export const EnergySwarmGame: React.FC = () => {
       runOrbiAcquiredRef.current,
     );
 
+    // UX11-E: bounded propulsion streaks, no Dyson rings, no gameplay immunity.
+    if (projectPropulsionDash(propulsionDashRef.current, timeElapsedRef.current).active) {
+      const direction = propulsionDashRef.current.direction;
+      const pos = playerPosRef.current;
+      ctx.save();
+      ctx.lineCap = "round";
+      ctx.shadowColor = "#67e8f9";
+      ctx.shadowBlur = 12;
+      for (const lateral of [-11, 0, 11]) {
+        const sideX = -direction.y * lateral;
+        const sideY = direction.x * lateral;
+        ctx.beginPath();
+        ctx.moveTo(pos.x - direction.x * 16 + sideX, pos.y - direction.y * 16 + sideY);
+        ctx.lineTo(pos.x - direction.x * (lateral === 0 ? 86 : 60) + sideX,
+          pos.y - direction.y * (lateral === 0 ? 86 : 60) + sideY);
+        ctx.strokeStyle = lateral === 0 ? "#fde68a" : "#67e8f9";
+        ctx.globalAlpha = lateral === 0 ? 0.85 : 0.55;
+        ctx.lineWidth = lateral === 0 ? 4 : 2;
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
     // 8. Draw active floating text feedback (such as CRITICAL or BLOCK)
     ctx.save();
     floatingTextsRef.current.forEach((t) => {
@@ -8731,6 +8811,10 @@ export const EnergySwarmGame: React.FC = () => {
                 combatOverdriveReentryLocked={combatOverdriveView.reentryLocked}
                 combatOverdriveReentryRemainingMs={combatOverdriveView.reentryRemainingMs}
                 onActivateOverdrive={handleOverdriveActivation}
+                dashActive={dashView.active}
+                dashCanActivate={dashView.canActivate && !isPaused && !isGameOver && !isPhotoMode && !isUpgradeSelectionOpen}
+                dashCooldownRemainingMs={dashView.cooldownRemainingMs}
+                onActivateDash={handleDashActivation}
                 onTogglePause={mobilePanel !== "closed" ? () => changeImmersivePanel("closed") : togglePause}
                 onToggleMute={toggleMute}
                 immersive={immersiveLandscapeMode}
@@ -8889,7 +8973,10 @@ export const EnergySwarmGame: React.FC = () => {
                 )}
 
                 {/* MOBILE / ANDROID THUMB-ZONE CONTROLS */}
-                <MobileTouchOverlay onVectorChange={setMobileAnalogVector} disabled={isPaused || isGameOver || isUpgradeSelectionOpen || isPhotoMode} />
+                <MobileTouchOverlay onVectorChange={setMobileAnalogVector}
+                  onDash={handleDashActivation} dashActive={dashView.active}
+                  dashReady={dashView.canActivate} dashCooldownRemainingMs={dashView.cooldownRemainingMs}
+                  disabled={isPaused || isGameOver || isUpgradeSelectionOpen || isPhotoMode} />
                 <MobileFormationCarousel
                   activeFormation={activeFormation}
                   onChangeFormation={triggerFormationChange}
