@@ -1,0 +1,149 @@
+/* UX10 — native HTML/CSS immersive game UI, never screenshot text overlays.
+   One shared frame geometry for Status / Tactics / Team. No Canvas or joystick changes. */
+.orbi-game-root[data-immersive-landscape="true"] {
+  --ux10-frame-right: max(12px, env(safe-area-inset-right));
+  --ux10-frame-width: min(68vw, 1040px);
+  --ux10-tabs-top: max(8px, env(safe-area-inset-top));
+  --ux10-tabs-height: 58px;
+  --ux10-panel-top: calc(var(--ux10-tabs-top) + var(--ux10-tabs-height) + 5px);
+  --ux10-panel-bottom: max(12px, env(safe-area-inset-bottom));
+}
+.orbi-game-root[data-immersive-landscape="true"] .orbi-immersive-backdrop {
+  background: rgba(1,6,18,.54); backdrop-filter: blur(5px);
+}
+.orbi-game-root[data-immersive-landscape="true"] .orbi-premium-pause-emblem {
+  display: flex; position: fixed; z-index: 81; pointer-events: none;
+  left: 2.2vw; width: 26vw; top: 50%; transform: translateY(-50%);
+  flex-direction: column; align-items: center; gap: 10px;
+  text-align: center; color: #fde68a;
+  text-shadow: 0 0 24px rgba(245,158,11,.42);
+}
+.orbi-premium-pause-emblem { display: none; }
+.orbi-premium-pause-disc { display: grid; place-items: center; width: clamp(72px, 11vw, 152px); aspect-ratio:1; border-radius:50%; border: 3px solid rgba(251,191,36,.85); background: radial-gradient(circle, rgba(245,158,11,.28), rgba(2,8,23,.65) 65%); box-shadow: 0 0 36px rgba(245,158,11,.22), inset 0 0 28px rgba(245,158,11,.13); }
+.orbi-premium-pause-emblem strong { font: 900 clamp(17px,3vw,45px)/1.1 'Space Grotesk', sans-serif; letter-spacing: .24em; }
+.orbi-premium-pause-emblem small { font: 700 clamp(7px,.75vw,11px)/1.1 monospace; letter-spacing:.26em; }
+.orbi-game-root[data-immersive-landscape="true"] .orbi-immersive-panel-heading {
+  position: fixed; z-index: 83; box-sizing: border-box;
+  top: var(--ux10-tabs-top); right: var(--ux10-frame-right); left: auto;
+  width: var(--ux10-frame-width); height: var(--ux10-tabs-height); max-width: none;
+  padding: 5px; border: 1px solid rgba(103,232,249,.5);
+  border-radius: 15px 15px 5px 5px;
+  background: linear-gradient(150deg, rgba(4,25,45,.98), rgba(2,9,23,.97));
+  box-shadow: 0 0 22px rgba(34,211,238,.08), 0 20px 48px rgba(0,0,0,.4);
+}
+.orbi-premium-panel-paused { position: absolute; top:-1px; right:11px; display:flex; gap:4px; font:700 8px/1.2 monospace; color:#fcd34d; opacity:.9; transform:translateY(-100%); }
+.orbi-game-root[data-immersive-landscape="true"] .orbi-immersive-panel-tabs {height:100%; grid-template-columns: repeat(3,minmax(0,1fr)) 45px; gap:5px;}
+.orbi-game-root[data-immersive-landscape="true"] .orbi-immersive-panel-tabs button {
+  min-width:0; min-height:0; height:100%; display:flex; justify-content:center; align-items:center; gap:8px;
+  border:1px solid rgba(103,232,249,.25); border-radius:10px;
+  background:linear-gradient(140deg,rgba(13,40,61,.8),rgba(3,12,27,.8));
+  color:#d7eaf4; font:700 clamp(10px,1.2vw,16px)/1.15 'Space Grotesk',sans-serif;
+  letter-spacing:.03em; transition:background .15s,border-color .15s;
+}
+.orbi-game-root[data-immersive-landscape="true"] .orbi-immersive-panel-tabs button[aria-pressed="true"] {border-color:#67e8f9; color:#e0faff; background:linear-gradient(155deg,rgba(8,107,145,.65),rgba(9,39,64,.94)); box-shadow: inset 0 0 14px rgba(34,211,238,.14),0 0 12px rgba(34,211,238,.13);}
+.orbi-game-root[data-immersive-landscape="true"] .orbi-immersive-panel-tabs button:focus-visible {outline:2px solid #fbbf24;outline-offset:2px;}
+/* Identical outside bounds for all three immersive tabs. Inner content alone scrolls if necessary. */
+.orbi-game-root[data-immersive-landscape="true"][data-mobile-panel="estado"] .orbi-hud-detail-grid,
+.orbi-game-root[data-immersive-landscape="true"][data-mobile-panel="tactica"] .orbi-tactical-rail,
+.orbi-game-root[data-immersive-landscape="true"][data-mobile-panel="equipo"] .orbi-logistics-deck {
+  box-sizing:border-box; position:fixed; z-index:82; display:flex;
+  top:var(--ux10-panel-top); right:var(--ux10-frame-right); left:auto;
+  bottom:var(--ux10-panel-bottom); width:var(--ux10-frame-width); height:auto;
+  max-width:none; max-height:none; min-width:0; min-height:0;
+  overflow-y:auto; overflow-x:hidden; overscroll-behavior:contain;
+  padding:clamp(8px,1.15vw,17px); border-radius:7px 7px 15px 15px;
+  background:linear-gradient(150deg,rgba(3,19,36,.98),rgba(2,9,23,.97));
+  border:1px solid rgba(103,232,249,.43);
+  box-shadow:0 18px 70px rgba(0,0,0,.64),inset 0 0 20px rgba(34,211,238,.04);
+  scrollbar-width:thin; scrollbar-color:rgba(103,232,249,.38) transparent;
+}
+.orbi-game-root[data-immersive-landscape="true"][data-mobile-panel="estado"] .orbi-hud-detail-grid {display:block!important; grid-template-areas:none!important;}
+.orbi-game-root[data-immersive-landscape="true"][data-mobile-panel="estado"] .orbi-hud-detail-grid > :not(.orbi-premium-status) {display:none!important;}
+.orbi-premium-status {display:flex; flex-direction:column; gap:clamp(7px,1.1vw,15px); color:#e7faff; font:500 clamp(10px,1vw,13px)/1.4 'Space Grotesk',system-ui,sans-serif;}
+.orbi-premium-status-kicker {display:flex; align-items:center;gap:7px; color:#67e8f9; letter-spacing:.14em; font:800 clamp(10px,1vw,14px)/1.2 monospace; padding:3px 2px 7px; border-bottom:1px solid rgba(103,232,249,.3);}
+.orbi-premium-status-kicker b {margin-left:auto; font-size:9px; color:#fbbf24; letter-spacing:.04em;}
+.orbi-premium-status-top {display:grid; grid-template-columns: .75fr 1fr 1.1fr; gap:clamp(5px,.8vw,12px);}
+.orbi-premium-status-top > div {min-width:0; background:linear-gradient(145deg,rgba(9,41,68,.72),rgba(2,10,26,.88)); border:1px solid rgba(53,185,220,.28); border-radius:12px; padding:clamp(7px,1.1vw,16px);}
+.orbi-premium-status-core {display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px;}
+.orbi-premium-status-energy {height:clamp(54px,7.7vw,110px); width:clamp(54px,7.7vw,110px); border-radius:50%; position:relative; flex:0 0 auto; background:radial-gradient(circle at 35% 22%, #657386, #151b2a 31%,#010710 62%); border:clamp(4px,.6vw,9px) solid #ad893d; box-shadow:0 0 0 3px #26394a,0 0 26px rgba(251,191,36,.42),inset 0 0 24px #000;}
+.orbi-premium-status-energy i {position:absolute; top:32%; width:22%; height:25%; border:clamp(2px,.32vw,4px) solid #fde68a; border-radius:50%; box-shadow:0 0 9px #f59e0b;}
+.orbi-premium-status-energy i:first-child {left:19%;}.orbi-premium-status-energy i:nth-child(2){right:19%;}
+.orbi-premium-status-energy span {position:absolute; bottom:16%; left:39%; width:22%; height:13%; border-bottom:3px solid #fde68a; border-radius:50%;}
+.orbi-premium-status-core-label {display:flex; flex-direction:column; align-items:center; gap:1px; text-align:center;}
+.orbi-premium-status-core-label strong {font-size:clamp(12px,1.4vw,20px); letter-spacing:.14em; color:#fde68a;}
+.orbi-premium-status-core-label span {font-size:clamp(8px,.8vw,11px); color:#82cfe6;}
+.orbi-premium-status :is(.orbi-premium-status-shield,.orbi-premium-status-wave) h3 {display:flex;align-items:center;gap:6px;color:#7be6f9;font:800 clamp(10px,.95vw,13px)/1.2 monospace;letter-spacing:.08em;text-transform:uppercase;}
+.orbi-premium-status :is(.orbi-premium-status-shield,.orbi-premium-status-wave) > strong {display:block; margin:6px 0; color:#fef3c7; font:900 clamp(23px,3vw,44px)/1 'Space Grotesk',sans-serif;}
+.orbi-premium-status-shield > strong {color:#34d399!important;}
+.orbi-premium-status-meter {height:9px;border-radius:6px;background:#0a1c34;overflow:hidden;border:1px solid rgba(103,232,249,.25);}
+.orbi-premium-status-meter span {display:block;height:100%;background:linear-gradient(90deg,#06b6d4,#34d399);box-shadow:0 0 11px #34d399;}
+.orbi-premium-status-shield p,.orbi-premium-status-wave p {margin-top:6px;color:#b7ccda;font-size:clamp(9px,.85vw,12px);}
+.orbi-premium-status-objective {display:flex;gap:6px;margin-top:8px;padding-top:7px;border-top:1px solid rgba(103,232,249,.17);font-size:clamp(9px,.8vw,11px);}
+.orbi-premium-status-objective b {color:#67e8f9;}
+.orbi-premium-status-objective span {color:#cad8e6;}
+.orbi-premium-status-counters {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(5px,.8vw,12px);}
+.orbi-premium-status-counters article {display:flex;align-items:center;gap:clamp(6px,1.1vw,17px);background:rgba(8,29,51,.85);border:1px solid rgba(103,232,249,.27);border-radius:10px;padding:clamp(7px,1.2vw,16px);}
+.orbi-premium-status-counters article > svg {color:#fbbf24;flex:0 0 auto;}
+.orbi-premium-status-counters article:first-child > svg {color:#fb7185;}
+.orbi-premium-status-counters article div {display:flex;flex-direction:column;min-width:0;}
+.orbi-premium-status-counters article span,.orbi-premium-status-counters article small {font:700 clamp(8px,.85vw,11px)/1.2 monospace;color:#9cbed0;}
+.orbi-premium-status-counters article strong {font:900 clamp(17px,2vw,29px)/1.2 'Space Grotesk',sans-serif;color:#fff;}
+.orbi-premium-status-footer {border:1px solid rgba(103,232,249,.26);border-radius:10px;background:rgba(4,21,40,.85);padding:clamp(7px,1vw,13px);}
+.orbi-premium-status-footer h3 {color:#67e8f9;font:800 clamp(10px,1vw,14px)/1.2 monospace;letter-spacing:.08em;margin-bottom:8px;}
+.orbi-premium-status-indicators {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;}
+.orbi-premium-status-indicators > div {display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-width:0;padding:8px;border:1px solid rgba(103,232,249,.18);border-radius:7px;background:rgba(8,35,59,.54);}
+.orbi-premium-status-indicators svg {color:#67e8f9;}
+.orbi-premium-status-indicators span {font:700 clamp(8px,.7vw,11px)/1.1 monospace;color:#8bb5d0;}
+.orbi-premium-status-indicators strong {font:800 clamp(10px,.9vw,13px)/1.2 monospace;color:#34d399;overflow-wrap:anywhere;}
+/* Upgrade selector: exactly three equally sized native buttons, all visible in short landscape.
+   Remove historic UX04/UX07 mandatory horizontal carousels without touching upgrade logic. */
+@media (orientation:landscape) {
+  .orbi-upgrade-selector {box-sizing:border-box;padding: max(7px,env(safe-area-inset-top)) max(8px,env(safe-area-inset-right)) max(7px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left))!important;}
+  .orbi-upgrade-shell {display:flex;flex-direction:column;box-sizing:border-box;width:min(96vw,1100px)!important;max-width:calc(100vw - 16px)!important;max-height:calc(100dvh - 14px)!important;min-height:0;overflow:hidden;gap:clamp(4px,.9vh,10px)!important;padding:clamp(7px,1.2vh,14px)!important;border:1px solid rgba(103,232,249,.55);border-radius:18px;background:linear-gradient(135deg,rgba(4,23,42,.98),rgba(2,9,23,.98));box-shadow:0 15px 60px rgba(0,0,0,.85),inset 0 0 30px rgba(34,211,238,.05);}
+  .orbi-upgrade-heading {flex:0 0 auto;gap:2px!important;}
+  .orbi-upgrade-heading > span {font-size:clamp(8px,1.1vh,12px)!important;}
+  .orbi-upgrade-heading h2 {font-size:clamp(14px,2.7vh,30px)!important;line-height:1.05!important;}
+  .orbi-upgrade-heading p {display:none!important;}
+  .orbi-upgrade-choices {display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;grid-template-rows:minmax(0,1fr);width:100%;flex:1 1 auto;min-width:0;min-height:0;gap:clamp(5px,1.2vw,17px)!important;overflow:hidden!important;scroll-snap-type:none!important;touch-action:manipulation!important;padding:2px!important;}
+  .orbi-upgrade-choice {box-sizing:border-box;min-width:0!important;width:100%!important;max-width:none!important;height:100%;min-height:0;max-height:none!important;flex:initial!important;overflow:hidden!important;scroll-snap-align:none!important;display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:clamp(2px,.65vh,7px)!important;padding:clamp(5px,1.5vh,17px)!important;border-radius:12px!important;background:linear-gradient(155deg,rgba(8,35,59,.96),rgba(2,10,25,.96))!important;border-color:rgba(103,232,249,.35)!important;transform:none!important;}
+  .orbi-upgrade-choice:hover:not(:disabled) {border-color:#fbbf24!important;box-shadow:0 0 19px rgba(251,191,36,.18);}
+  .orbi-upgrade-choice[data-orbi-category="TACTICAL"] {border-color:rgba(52,211,153,.5)!important;}
+  .orbi-upgrade-choice[data-orbi-category="DEFENSE"] {border-color:rgba(56,189,248,.5)!important;}
+  .orbi-upgrade-choice[data-orbi-category="OFFENSE"] {border-color:rgba(251,191,36,.5)!important;}
+  .orbi-upgrade-choice > span:first-child {margin:0!important;padding:2px 7px!important;font-size:clamp(8px,1vh,11px)!important;}
+  .orbi-upgrade-choice > span:nth-child(2) {display:grid;place-items:center;flex:0 1 auto;margin:0!important;font-size:clamp(20px,4vh,43px)!important;line-height:1.1;min-height:0;filter:drop-shadow(0 0 14px rgba(34,211,238,.48));}
+  .orbi-upgrade-choice > div:nth-child(3) {flex:1 1 auto;min-height:0;display:flex;flex-direction:column;justify-content:center;gap:clamp(2px,.6vh,8px)!important;}
+  .orbi-upgrade-choice h3 {font-size:clamp(11px,1.55vh,17px)!important;line-height:1.12!important;margin:0;}
+  .orbi-upgrade-choice p {font-size:clamp(9px,1.25vh,13px)!important;line-height:1.22!important;min-height:0!important;margin:0!important;overflow-wrap:break-word;}
+  .orbi-upgrade-choice > div:last-child {flex:0 0 auto;margin:0!important;padding:clamp(2px,.7vh,8px) 0 0!important;font-size:clamp(8px,1vh,10px)!important;}
+  .orbi-upgrade-reroll {flex:0 0 auto;padding:0!important;margin:0!important;gap:0!important;}
+  .orbi-upgrade-reroll button {min-height:clamp(35px,6vh,48px);border-color:rgba(251,191,36,.6)!important;color:#fde68a;}
+  .orbi-upgrade-reroll > span {display:none!important;}
+}
+@media (orientation:landscape) and (max-height:380px) {
+  .orbi-upgrade-shell {padding:5px!important;gap:3px!important;}
+  .orbi-upgrade-choice {padding:4px!important;gap:2px!important;}
+  .orbi-upgrade-choice > span:nth-child(2) {font-size:19px!important;}
+  .orbi-upgrade-choice p {font-size:9px!important;line-height:1.13!important;}
+  .orbi-upgrade-choice h3 {font-size:11px!important;}
+  .orbi-upgrade-choice > div:last-child {font-size:8px!important;}
+}
+@media (max-width:1100px) and (orientation:landscape) {
+  .orbi-game-root[data-immersive-landscape="true"] {--ux10-frame-right:max(8px,env(safe-area-inset-right));--ux10-frame-width:calc(100vw - 16px);--ux10-tabs-height:50px;--ux10-panel-bottom:max(8px,env(safe-area-inset-bottom));}
+  .orbi-game-root[data-immersive-landscape="true"] .orbi-premium-pause-emblem {display:none;}
+  .orbi-game-root[data-immersive-landscape="true"] .orbi-premium-status-top > div {padding:6px;}
+  .orbi-game-root[data-immersive-landscape="true"] .orbi-premium-status-kicker b {display:none;}
+}
+@media (max-height:430px) and (orientation:landscape) {
+  .orbi-premium-panel-paused {display:none;}
+  .orbi-premium-status {gap:5px;}
+  .orbi-premium-status-top {gap:5px;}
+  .orbi-premium-status-core-label span {display:none;}
+  .orbi-premium-status-wave p {margin-top:2px;}
+  .orbi-premium-status-indicators > div {padding:4px;}
+  .orbi-premium-status-footer h3 {margin-bottom:4px;}
+}
+@media (orientation:portrait) {
+  .orbi-upgrade-selector {overflow-y:auto;}
+  .orbi-upgrade-choices {overflow-x:hidden!important;}
+}

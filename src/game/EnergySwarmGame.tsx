@@ -432,6 +432,9 @@ export const EnergySwarmGame: React.FC = () => {
   const [isLeftPanelCollapsed, setIsLeftPanelCollapsed] = useState(false);
   const [isRightPanelCollapsed, setIsRightPanelCollapsed] = useState(false);
   const [mobilePanel, setMobilePanel] = useState<"closed" | "estado" | "tactica" | "equipo">("closed");
+  // Opening a tactical drawer suspends the simulation without opening PauseMenu.
+  // If a future caller opens it while already paused, closing preserves that pause.
+  const mobilePanelWasPausedRef = useRef(false);
   const [activeThreatIntel, setActiveThreatIntel] = useState<EnemyType | null>(null);
 
   // Mid-run upgrades states
@@ -1384,7 +1387,7 @@ export const EnergySwarmGame: React.FC = () => {
       // an active game. The ordinary Escape-to-pause behavior is preserved.
       if (e.key === "Escape" && immersiveLandscapeMode && mobilePanel !== "closed" && !isPhotoMode) {
         e.preventDefault();
-        setMobilePanel("closed");
+        changeImmersivePanel("closed");
         return;
       }
 
@@ -1495,7 +1498,8 @@ export const EnergySwarmGame: React.FC = () => {
 
       // Handle Hotkeys
       if (key === "P" || e.key === "Escape") {
-        togglePause();
+        if (mobilePanel !== "closed") changeImmersivePanel("closed");
+        else togglePause();
       } else if (key === "M") {
         toggleMute();
       } else if (key === "R") {
@@ -1945,6 +1949,24 @@ export const EnergySwarmGame: React.FC = () => {
       setPausedState(true);
       stopBgm();
     }
+  };
+
+  // UX10: all immersive drawers share a REAL pause authority; never let
+  // an open tactical/status/equipment panel advance enemies or projectiles.
+  const changeImmersivePanel = (panel: "closed" | "estado" | "tactica" | "equipo") => {
+    if (panel !== "closed") {
+      if (mobilePanel === "closed") {
+        mobilePanelWasPausedRef.current = isPausedRef.current;
+        if (!isPausedRef.current) togglePause();
+      }
+      if (panel === "tactica") setIsLeftPanelCollapsed(false);
+      if (panel === "equipo") setIsRightPanelCollapsed(false);
+      setMobilePanel(panel);
+      return;
+    }
+    setMobilePanel("closed");
+    if (!mobilePanelWasPausedRef.current && isPausedRef.current) togglePause();
+    mobilePanelWasPausedRef.current = false;
   };
 
   const cyclePhotoModeFilter = (direction: -1 | 1) => {
@@ -8301,7 +8323,7 @@ export const EnergySwarmGame: React.FC = () => {
       )}
 
       {/* PAUSE MENU DRAWERS */}
-      {isPlaying && isPaused && !isPhotoMode && (
+      {isPlaying && isPaused && !isPhotoMode && mobilePanel === "closed" && (
         <PauseMenu
           onResume={togglePause}
           onRestart={() => {
@@ -8699,7 +8721,7 @@ export const EnergySwarmGame: React.FC = () => {
                 combatOverdriveReentryLocked={combatOverdriveView.reentryLocked}
                 combatOverdriveReentryRemainingMs={combatOverdriveView.reentryRemainingMs}
                 onActivateOverdrive={handleOverdriveActivation}
-                onTogglePause={togglePause}
+                onTogglePause={mobilePanel !== "closed" ? () => changeImmersivePanel("closed") : togglePause}
                 onToggleMute={toggleMute}
                 immersive={immersiveLandscapeMode}
                 webImmersive={immersiveWebLandscape}
@@ -8707,11 +8729,7 @@ export const EnergySwarmGame: React.FC = () => {
                 webFullscreenAvailable={browserFullscreenAvailable}
                 onToggleWebFullscreen={immersiveWebLandscape ? toggleBrowserFullscreen : undefined}
                 mobilePanel={mobilePanel}
-                onMobilePanelChange={(panel) => {
-                  setMobilePanel(panel);
-                  if (panel === "tactica") setIsLeftPanelCollapsed(false);
-                  if (panel === "equipo") setIsRightPanelCollapsed(false);
-                }}
+                onMobilePanelChange={changeImmersivePanel}
               />
 
               {/* C10: deliberate touch/keyboard buttons OUTSIDE the Canvas firing surface. */}
