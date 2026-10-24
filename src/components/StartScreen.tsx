@@ -78,6 +78,9 @@ export const StartScreen: React.FC<StartScreenProps> = ({
         onPlay={() => { playClickSound(); onStartGame(); }}
         onScoreAttack={() => { playClickSound(); onStartScoreAttack(); }}
         hasInfiniteRecord={hasInfiniteRecord}
+        audioMuted={stats.audioMuted} musicEnabled={stats.musicEnabled !== false}
+        soundEffectsEnabled={stats.soundEffectsEnabled !== false}
+        onAudioToggle={onToggleMute} onMusicToggle={onToggleMusic} onEffectsToggle={onToggleEffects}
         nanoCredits={stats.totalNanoCredits} purifiedEnergy={stats.totalPurifiedEnergy} />
       {/* GLOWING HEADER */}
       <div className="orbi-start-header relative z-10 text-center mb-5">
