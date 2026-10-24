@@ -2255,7 +2255,7 @@ export const EnergySwarmGame: React.FC = () => {
       // E9 or XP to another affinity; GAIA's synthesis cycle was already
       // registered above. Keep the resource score, but no follower mutation.
       addFloatingText(
-        `CORE ${energyDefinition.displayName} · SIN SLOT / E8`,
+        `CORE ${energyDefinition.displayName} · SIN SLOT`,
         playerPosRef.current.x, playerPosRef.current.y - 25,
         energyDefinition.color,
       );
