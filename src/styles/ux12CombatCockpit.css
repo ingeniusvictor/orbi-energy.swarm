@@ -65,6 +65,7 @@
 }
 
 
+.orbi-premium-entry[data-mobile-layer="DETAIL"][data-mobile-tab="SETTINGS"][data-mobile-section="PLAY"]>.orbi-start-deck {display:none!important;}
 /* UX12 native Android Command Center settings: the previous generic INFO strip
    was 16dvh and could not display real controls. Scope to SETTINGS only. */
 .orbi-premium-entry[data-mobile-layer="DETAIL"][data-mobile-tab="SETTINGS"][data-mobile-section="PLAY"]
