@@ -6,6 +6,8 @@ import { playClickSound } from "../game/audio";
 import { useGameTranslation, formatNumber } from "../i18n";
 
 interface CompanionPanelProps {
+  /** Actual E5/E8 10→20→30 gameplay slot authority, not legacy upgrade slots. */
+  doctrineCapacity: number;
   stats: GameStats;
   swarm: OrbiMember[];
   dialogueLog: DialogueMessage[];
@@ -15,6 +17,7 @@ interface CompanionPanelProps {
 }
 
 export const CompanionPanel: React.FC<CompanionPanelProps> = ({
+  doctrineCapacity,
   stats,
   swarm,
   dialogueLog,
@@ -26,8 +29,7 @@ export const CompanionPanel: React.FC<CompanionPanelProps> = ({
   const [activeTab, setActiveTab] = useState<"SWARM" | "CIV" | "LOG" | "RELICS">("SWARM");
   const logContainerRef = useRef<HTMLDivElement>(null);
 
-  const coreLevel = upgradesLevel?.quantum_core || 0;
-  const capacityLimit = coreLevel >= 3 ? 60 : (coreLevel === 2 ? 48 : (coreLevel === 1 ? 36 : 24));
+  const capacityLimit = doctrineCapacity; // Reflect E5/E8 doctrine; upgrades no longer mint capacity.
 
   const clickTab = (tab: "SWARM" | "CIV" | "LOG" | "RELICS") => {
     playClickSound();
@@ -42,10 +44,10 @@ export const CompanionPanel: React.FC<CompanionPanelProps> = ({
   }, [dialogueLog, activeTab]);
 
   return (
-    <div className="w-full lg:w-[330px] shrink-0 bg-slate-950/70 border border-slate-900 rounded-xl p-3 md:p-4 shadow-xl backdrop-blur-md text-white select-none flex flex-col h-[460px] lg:h-[min(82dvh,820px)] min-h-0">
+    <div className="orbi-companion-panel w-full lg:w-[330px] shrink-0 bg-slate-950/70 border border-slate-900 rounded-xl p-3 md:p-4 shadow-xl backdrop-blur-md text-white select-none flex flex-col h-[460px] lg:h-[min(82dvh,820px)] min-h-0">
       
       {/* TABS SELECTOR */}
-      <div className="flex bg-slate-900/60 p-1 rounded-lg gap-1 border border-slate-850 mb-3 text-xs uppercase">
+      <div className="orbi-companion-tabs flex bg-slate-900/60 p-1 rounded-lg gap-1 border border-slate-850 mb-3 text-xs uppercase">
         <button
           onClick={() => clickTab("SWARM")}
           className={`flex-1 py-1.5 rounded flex justify-center items-center gap-1.5 transition ${
@@ -86,7 +88,7 @@ export const CompanionPanel: React.FC<CompanionPanelProps> = ({
       </div>
 
       {/* TAB CONTENT CARDS */}
-      <div className="flex-1 overflow-y-auto pr-1">
+      <div className="orbi-companion-body flex-1 overflow-y-auto pr-1">
 
         {/* 1. SWARM ROSTER LIST */}
         {activeTab === "SWARM" && (
