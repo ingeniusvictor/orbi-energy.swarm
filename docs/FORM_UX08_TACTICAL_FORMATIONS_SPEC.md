@@ -1,6 +1,6 @@
 # FORM-UX08 — Contrato aprobado de formaciones tácticas del enjambre
 
-**Estado:** dirección de arte / diseño visual aprobada por el usuario el 2026-10-23; **geometrías 2, 5 y 6 aún NO implementadas en el motor**. El presente archivo documenta el objetivo para un PR posterior. **No es certificación de Android ni alteración del balance.**
+**Estado actualizado (2026-10-23):** **geometrías 2, 5 y 6 implementadas en el motor** mediante [PR #696](https://github.com/ingeniusvictor/orbi-energy.swarm/pull/696), squash `f93472de745695b23562ba023192763b646874cb` (CIRCLE estrella más abierta y acotada, V_SHAPE guardia cruzada en dos carriles, SCATTERED Delta Concéntrica determinista). Se mantienen enum, ciclo y modificadores anteriores. CI `40050339022`, Android `40050338983` y Chromium `40050339016` SUCCESS. **Esto NO certifica separación entre siluetas E8 de tamaño real ni prueba física Android (#248).** El resto del documento recoge la propuesta histórica y sus cifras iniciales, algunas de las cuales se ajustaron para respetar el contrato de radio táctico `<=140` (ver código vivo). [Estado integral EVO8](EV_EVO8_V02_IMPLEMENTATION_STATUS.md).
 
 - Tracking: [Issue #688](https://github.com/ingeniusvictor/orbi-energy.swarm/issues/688).
 - Base fuente auditada: `main@496348dd84158cbe6edb0fc83f18b3950fc25b1d`; `src/game/formations.ts`, `src/game/formationCycle.ts`, `src/game/EnergySwarmGame.tsx`, `src/components/MobileFormationCarousel.tsx`, `src/i18n/es.ts`, `src/i18n/en.ts`.
