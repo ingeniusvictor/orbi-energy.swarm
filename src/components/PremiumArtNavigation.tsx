@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ArrowLeft, BookOpen, ChevronRight, Globe, LockKeyhole } from "lucide-react";
+import { BookOpen, ChevronRight, Globe, LockKeyhole } from "lucide-react";
 import type { MobileLaunchLayer, MobileLaunchSection, MobileLaunchTab } from "./MobileLaunchNavigation";
 
 /**
