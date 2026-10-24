@@ -103,6 +103,7 @@ async function run(name,width,height,coarse,immersive,webImmersive) {
       const premium=page.locator(".orbi-premium-status");
       check(await premium.isVisible(),name+": premium Estado not rendered");
       const energy3d=page.locator('[data-testid="orbi-ux11d-energy-3d"]');
+      await energy3d.waitFor({state:"visible",timeout:12000});
       check(await energy3d.isVisible(),name+": 3D ENERGY status identity missing");
       check(await energy3d.getAttribute("data-energy-id")==="ENERGY",
         name+": wrong 3D ENERGY status identity");
