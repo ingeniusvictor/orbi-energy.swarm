@@ -2347,3 +2347,159 @@ body {
 @media (orientation: landscape) and (max-height:600px) {
  .orbi-ux09-mode-action { min-height:44px!important;flex-shrink:0; }
 }
+
+
+/* UX09B — cinematic artwork is the pixel-faithful, user-approved source.
+   All hit zones are real buttons placed over the exact illustrated art.
+   Image content and buttons share the same aspect ratio and viewport scale.
+   No artificial vector recreation, no baked-text duplicate DOM labels. */
+.orbi-premium-entry .orbi-mobile-launch.orbi-ux09.orbi-ux09b {
+  position:relative!important; display:flex!important; width:100%!important;
+  height:100%!important;min-height:0!important; max-height:100dvh!important;
+  justify-content:center!important;align-items:center!important;
+  overflow:hidden!important;padding:0!important;margin:0!important;
+  background:#020915!important;isolation:isolate;
+}
+.orbi-ux09b .orbi-ux09-scene {
+  position:absolute;inset:-15px;pointer-events:none;z-index:-2;
+  background-image:var(--orbi-ux09-photo)!important;
+  background-position:center!important;background-size:cover!important;
+  filter:blur(16px) brightness(.48) saturate(1.1);
+}
+.orbi-ux09b .orbi-ux09-scene::after {display:none!important;}
+.orbi-ux09b-artboard {
+  position:relative;display:block;flex:0 0 auto;
+  aspect-ratio:1672 / 941;
+  width:min(100vw,calc(100dvh * 1672 / 941));
+  max-width:100vw;max-height:100dvh;
+  overflow:hidden;isolation:isolate;
+  box-shadow:0 0 42px rgba(0,0,0,.6);
+}
+.orbi-ux09b-illustration {
+  position:absolute;inset:0;width:100%;height:100%;
+  display:block;object-fit:fill;object-position:center;
+  user-select:none;pointer-events:none;
+}
+.orbi-ux09b .orbi-ux09-identity,
+.orbi-ux09b .orbi-mobile-launch__hub.orbi-ux09-hub,
+.orbi-ux09b .orbi-mobile-launch__detail.orbi-ux09-detail,
+.orbi-ux09b .orbi-mobile-launch__modes.orbi-ux09-mode-grid,
+.orbi-ux09b .orbi-mobile-launch__tiles.orbi-ux09-command-grid {
+  position:absolute!important;inset:0!important;width:100%!important;
+  max-width:100%!important;height:100%!important;max-height:none!important;
+  margin:0!important;padding:0!important;background:none!important;
+  border:0!important;box-shadow:none!important;
+  min-height:0!important;min-width:0!important;overflow:visible!important;
+  display:block!important;pointer-events:none;
+}
+.orbi-ux09b .orbi-ux09-identity {flex:initial!important;}
+.orbi-ux09b .orbi-ux09b-hotspot {
+  position:absolute;display:block!important;min-width:0;min-height:44px;
+  box-sizing:border-box;margin:0!important;padding:0!important;
+  background:transparent!important;border:1px solid transparent!important;
+  border-radius:7px;cursor:pointer;pointer-events:auto;
+  color:transparent!important;font-size:0!important;
+  touch-action:manipulation;
+}
+.orbi-ux09b .orbi-ux09b-hotspot:is(:focus-visible,:hover) {
+  outline:2px solid #b7f2ff!important;outline-offset:-3px!important;
+  border-color:rgba(255,255,255,.6)!important;
+  background:rgba(24,214,255,.07)!important;
+  box-shadow:0 0 18px rgba(33,198,255,.45)!important;
+}
+.orbi-ux09b .orbi-ux09b-hotspot:active {
+  background:rgba(255,219,100,.18)!important;
+  transform:scale(.98);
+}
+.orbi-ux09b-sr {
+  position:absolute!important;width:1px!important;height:1px!important;
+  overflow:hidden!important;white-space:nowrap;clip:rect(0,0,0,0)!important;
+}
+.orbi-ux09b .orbi-mobile-launch__languages {
+  position:absolute!important;left:53.8%;top:69.2%;width:15.1%;height:7%;
+  padding:0!important;margin:0!important;display:flex!important;
+  align-items:stretch!important;justify-content:space-around!important;
+  gap:7%!important;pointer-events:none!important;
+  color:transparent!important;background:none!important;
+}
+.orbi-ux09b .orbi-mobile-launch__languages>svg {display:none!important;}
+.orbi-ux09b .orbi-mobile-launch__languages>button {
+  pointer-events:auto!important;cursor:pointer!important;
+  background:transparent!important;border:1px solid transparent!important;
+  box-shadow:none!important;border-radius:6px!important;
+  flex:1;min-width:0!important;height:100%;min-height:0!important;
+  font-size:0!important;color:transparent!important;
+}
+.orbi-ux09b .orbi-mobile-launch__languages>button:is(:hover,:focus-visible,[aria-pressed="true"]) {
+  outline:2px solid #99eeff!important;outline-offset:-2px!important;
+  background:rgba(28,193,247,.11)!important;
+}
+.orbi-ux09b .orbi-mobile-launch__hub.orbi-ux09-hub {gap:0!important;}
+.orbi-ux09b .orbi-mobile-launch__tiles.orbi-ux09-command-grid {
+  display:block!important;grid-template-columns:none!important;
+  grid-template-rows:none!important;
+}
+.orbi-ux09b .orbi-ux09-command-grid .orbi-ux09-tile {
+  position:absolute!important;display:block!important;grid-column:auto!important;
+  min-height:44px!important;max-height:none!important;
+  border:1px solid transparent!important;background:transparent!important;
+  box-shadow:none!important;overflow:visible!important;
+  border-radius:5px!important;color:transparent!important;
+}
+.orbi-ux09b-resource-live {
+  position:absolute;top:5.2%;left:71.3%;width:13.3%;height:5.3%;
+  z-index:2;display:flex;align-items:center;justify-content:center;
+  gap:4%;pointer-events:none;
+}
+.orbi-ux09b-resource-live>span {
+  display:flex;align-items:center;justify-content:center;flex:1;
+  height:100%;background:rgba(3,13,36,.96);border:1px solid #18cfff;
+  border-radius:4px;font:800 clamp(9px,1.4vw,17px) "JetBrains Mono",monospace;
+  color:#f9feff;text-shadow:0 0 10px #23dcff;
+}
+.orbi-ux09b-hub-back::after {content:"↶";font:900 24px/1 Arial,sans-serif;display:grid;
+  place-items:center;width:100%;height:100%;color:#eafaff!important;
+  background:rgba(1,14,30,.8);border:1px solid #25ceff;border-radius:6px;}
+.orbi-ux09b .orbi-mobile-launch__modes.orbi-ux09-mode-grid {
+  display:block!important;grid-template-columns:none!important;
+}
+.orbi-ux09b .orbi-ux09-mode-card {
+  display:contents!important;border:0!important;
+  padding:0!important;background:none!important;box-shadow:none!important;
+}
+.orbi-ux09b .orbi-ux09-mode-action.orbi-ux09b-hotspot {
+  display:block!important;position:absolute!important;min-height:44px!important;
+  background:transparent!important;border:1px solid transparent!important;
+  box-shadow:none!important;color:transparent!important;
+}
+.orbi-ux09b .orbi-ux09b-locked {
+  position:absolute;display:block;pointer-events:none;opacity:0;
+}
+.orbi-ux09b .orbi-ux09b-manual {
+  position:absolute;right:1.8%;bottom:1.5%;z-index:3;
+  display:flex;align-items:center;gap:5px;padding:7px 11px;
+  min-height:39px;pointer-events:auto;touch-action:manipulation;
+  border:1px solid #57dfff;border-radius:6px;background:rgba(2,16,39,.92);
+  color:#d8faff;font:800 12px "Space Grotesk",system-ui,sans-serif;
+  box-shadow:0 0 12px rgba(32,220,255,.3);
+}
+.orbi-ux09b .orbi-ux09b-manual:focus-visible {outline:3px solid #fff;}
+@media (orientation:landscape) {
+  /* The image is the formation section. The legacy HOW_TO remains reachable
+     through the separate "Manual táctico" button, not layered on the art. */
+  .orbi-premium-entry[data-mobile-layer="DETAIL"][data-mobile-tab="HOW_TO"][data-mobile-section="PLAY"]>.orbi-start-deck {
+    display:none!important;
+  }
+  .orbi-premium-entry[data-mobile-layer="DETAIL"][data-mobile-tab="HOW_TO"][data-mobile-section="PLAY"]>.orbi-mobile-launch.orbi-ux09b {
+    flex:1 1 auto!important;max-height:100dvh!important;height:100%!important;
+  }
+}
+@media (max-height:600px) and (orientation:landscape) {
+  .orbi-premium-entry .orbi-mobile-launch.orbi-ux09.orbi-ux09b {
+    padding:0!important;
+  }
+  .orbi-ux09b-resource-live>span{font-size:clamp(8px,1.4vw,12px);}
+  .orbi-ux09b .orbi-ux09b-manual {min-height:29px;padding:3px 7px;font-size:9px;}
+  .orbi-ux09b .orbi-ux09b-manual svg {width:12px;height:12px;}
+  .orbi-ux09b .orbi-ux09b-hub-back::after {font-size:17px;}
+}
