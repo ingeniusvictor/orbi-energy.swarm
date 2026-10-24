@@ -155,9 +155,11 @@ export const GameHud: React.FC<GameHudProps> = ({
       : combatOverdriveCanActivate
         ? "READY"
         : "CHARGE";
+  // The lightning action is the existing Overdrive, NOT a dash or shield.
+  // It consumes combat resonance; +20% player damage for 8s, then 4s reentry.
   const overdriveAriaLabel = language === "es"
-    ? `Sobrecarga ORBI: ${overdriveStatus}. Atajo O.`
-    : `ORBI Overdrive: ${overdriveStatus}. Shortcut O.`;
+    ? `ORBI Overdrive: ${overdriveStatus}. Aumenta el daño un 20% durante 8 segundos. Consume resonancia; espera 4 segundos para reactivar. Tecla O.`
+    : `ORBI Overdrive: ${overdriveStatus}. Boosts damage by 20% for 8 seconds. Consumes resonance; 4-second reentry lock. O key.`;
 
   // Localized wave details lookup helper
   const getLocalizedWaveDetails = () => {
@@ -185,10 +187,12 @@ export const GameHud: React.FC<GameHudProps> = ({
             <strong>{isWaveBreak ? `PREP ${waveBreakTimeLeft}s` : `W${currentWave}`}</strong>
           </div>
           <div className="orbi-immersive-actions">
-            <button type="button" className="orbi-immersive-action"
+            <button type="button" className="orbi-immersive-action orbi-overdrive-action"
+              data-testid="orbi-overdrive-action"
               onClick={onActivateOverdrive} disabled={!combatOverdriveActionEnabled}
               aria-label={overdriveAriaLabel} title={overdriveAriaLabel}>
               <Zap size={16} aria-hidden="true" />
+              <span className="orbi-overdrive-label" aria-hidden="true">OD</span>
             </button>
             <button type="button" className="orbi-immersive-action"
               aria-label={isPaused ? "Reanudar" : "Pausar"}

@@ -3,6 +3,7 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 import {
   FOTON_DYSON_HALO_RINGS,
+  FOTON_DYSON_HALO_DISPLAY_ENABLED,
   getUnlockedDysonHaloRingCount,
   type FotonDysonHaloRingDescriptor,
 } from "./fotonDysonHalo";
@@ -647,6 +648,9 @@ const createRuntime = (
   // The Dyson halo is a sibling scene layer, never part of the GLB/root.
   const { haloRoot, haloRings } =
     createDysonHaloRuntime(preset);
+  // Retain the ring runtime and its milestones; hide visual meshes only.
+  // Independent Overdrive combat effects and field/halo effects still render.
+  haloRoot.visible = FOTON_DYSON_HALO_DISPLAY_ENABLED;
   scene.add(haloRoot);
 
   const next: GameplayRuntime = {

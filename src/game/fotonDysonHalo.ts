@@ -14,6 +14,14 @@ export interface FotonDysonHaloRingDescriptor {
   segmentArcFraction: number;
 }
 
+/**
+ * UX11-A reversible presentation gate.
+ * Keep descriptors, unlock milestones and the runtime untouched so Dyson can
+ * be reimagined later. This flag does not change shielding, combat, collection,
+ * Golden Core awards or the independent ORBI Overdrive halo.
+ */
+export const FOTON_DYSON_HALO_DISPLAY_ENABLED = false;
+
 export const FOTON_DYSON_HALO_RED_ACCENT = 0xff1744;
 
 // Symmetric true-plane atomic triad. Pairwise plane-normal dot products are

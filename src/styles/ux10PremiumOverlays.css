@@ -259,3 +259,13 @@
   .orbi-game-root[data-immersive-landscape="true"][data-mobile-panel="equipo"] .orbi-companion-tabs button {min-height:34px;}
   .orbi-game-root[data-immersive-landscape="true"][data-mobile-panel="tactica"] .orbi-tactical-premium-formation-grid button {min-height:44px;font-size:10px;}
 }
+
+/* UX11-A: distinguish the existing Overdrive lightning button from dash.
+   The short visible label remains legible in small landscape widths. */
+.orbi-game-root[data-immersive-landscape="true"] .orbi-overdrive-action {
+  display:inline-flex;align-items:center;justify-content:center;gap:3px;
+  min-width:44px;width:auto;padding-inline:5px;
+}
+.orbi-game-root[data-immersive-landscape="true"] .orbi-overdrive-label {
+  font:900 9px/1 "JetBrains Mono",monospace;letter-spacing:.03em;color:#f8d774;
+}
