@@ -104,6 +104,38 @@ async function run(width,height,mobile,dpr=1){
    await page.getByTestId("orbi-ux09b-formation-manual").click();
    ensure(await page.locator(".orbi-start-deck").isVisible(),id+": tactical manual route broken");
    await page.getByTestId("orbi-mobile-menu-back").click();
+   await page.getByTestId("orbi-mobile-menu-codex-info").click();
+   const codex=page.getByTestId("orbi-ux11c-codex");
+   ensure(await codex.isVisible(),id+": ten-energy native Codex absent");
+   ensure(await codex.locator(".orbi-ux11c-choice").count()===10,id+": missing canonical energies");
+   const codexBoundsES=await box(page,".orbi-ux11c-codex");
+   ensure(codexBoundsES.height>=height*.65,id+": Codex collapsed into top strip");
+   ensure(await codex.locator(".orbi-ux11c-choice[data-energy='FOTON']").getAttribute("aria-pressed")==="true",
+     id+": FOTON solar default absent");
+   ensure(await codex.locator(".orbi-ux11c-foton-tag").isVisible(),id+": FOTON green solar-panel identity absent");
+   ensure((await codex.locator(".orbi-ux11c-protagonist").innerText()).includes("ENERGY ≠ FOTON"),
+     id+": protagonist was incorrectly identified as FOTON");
+   await codex.locator(".orbi-ux11c-choice[data-energy='HYDRO']").click();
+   ensure((await codex.locator(".orbi-ux11c-energy-title").innerText()).includes("HYDRO"),
+     id+": individual energy selection failed");
+   await codex.locator(".orbi-ux11c-levels button").filter({hasText:"E8"}).click();
+   ensure((await codex.locator(".orbi-ux11c-facts").first().innerText()).includes("29"),
+     id+": EVO8 acquisition cap wrong");
+   await codex.locator(".orbi-ux11c-choice[data-energy='GAIA']").click();
+   ensure((await codex.locator(".orbi-ux11c-gaia-rule").innerText()).includes("nueve"),
+     id+": GAIA incorrectly presented as collectible");
+   await shot(page,id+"-05b-codex-gaia-es");
+   await page.getByRole("button",{name:"English"}).click();
+   const codexBoundsEN=await box(page,".orbi-ux11c-codex");
+   same(codexBoundsES,codexBoundsEN,id+" Codex shell");
+   ensure((await codex.locator(".orbi-ux11c-gaia-rule").innerText()).includes("nine"),
+     id+": missing English GAIA synthesis");
+   await codex.locator(".orbi-ux11c-choice[data-energy='FOTON']").click();
+   ensure(await codex.locator(".orbi-ux11c-foton-tag").isVisible(),id+": English FOTON illustration absent");
+   await shot(page,id+"-05c-codex-foton-en");
+   await page.getByRole("button",{name:"Español"}).click();
+   await page.getByTestId("orbi-mobile-menu-back").click();
+   caseReport.energyCodex=true;
    await page.getByTestId("orbi-mobile-menu-main-play").click();
    const campaign=page.getByTestId("orbi-mobile-campaign");
    const score=page.getByTestId("orbi-mobile-score-attack");

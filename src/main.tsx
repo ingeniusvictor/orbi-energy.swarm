@@ -9,6 +9,7 @@ import './styles/webImmersive.css';
 import './styles/ux10PremiumOverlays.css';
 import './styles/ux10CinematicLaunch.css';
 import './styles/ux11Tactics.css';
+import './styles/ux11Codex.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

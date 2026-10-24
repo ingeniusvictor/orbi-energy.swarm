@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { EnergyCodex } from "./EnergyCodex";
 import { FormationDiagram, getFormationBrief, TACTICAL_FORMATION_IDS } from "./FormationDiagram";
 import { FormationType } from "../game/types";
 import {
@@ -76,7 +77,8 @@ export const PremiumNativeNavigation: React.FC<Props> = ({
   );
   const isModes = layer === "DETAIL" && tab === "MAIN" && section === "PLAY";
   const isTactics = layer === "DETAIL" && tab === "HOW_TO" && section === "PLAY";
-  const isInfo = layer === "DETAIL" && !isModes && !isTactics;
+  const isCodex = layer === "DETAIL" && tab === "CODEX" && section === "PLAY";
+  const isInfo = layer === "DETAIL" && !isModes && !isTactics && !isCodex;
   return (
     <section
       className="orbi-mobile-launch orbi-ux09 orbi-ux10c"
@@ -145,7 +147,7 @@ export const PremiumNativeNavigation: React.FC<Props> = ({
         </div>
       )}
       {layer === "DETAIL" && (
-        <div className={"orbi-ux10c-detail" + (isInfo ? " orbi-ux10c-detail--info" : "") + (isTactics ? " orbi-ux10c-detail--tactics" : "")}>
+        <div className={"orbi-ux10c-detail" + (isInfo ? " orbi-ux10c-detail--info" : "") + (isTactics ? " orbi-ux10c-detail--tactics" : "") + (isCodex ? " orbi-ux10c-detail--codex" : "")}>
           <header className="orbi-ux10c-detail-header">
             <div><span className="orbi-ux10c-overline">ORBI // {section === "HANGAR" ? "HANGAR" : "MISSION CONTROL"}</span>
               <h2>{isModes ? (es ? "MODOS DE JUEGO" : "GAME MODES") :
@@ -214,6 +216,7 @@ export const PremiumNativeNavigation: React.FC<Props> = ({
                 onClick={() => onOpen("HOW_TO", "HANGAR")}><Radio size={17}/>{es ? "ABRIR MANUAL TÁCTICO" : "OPEN TACTICAL MANUAL"}<ChevronRight size={17}/></button>
             </div>
           )}
+          {isCodex && <EnergyCodex language={language} onOpenLegacy={() => onOpen("CODEX", "HANGAR")} />}
           {isInfo && (
             <p className="orbi-ux10c-info-hint">{es ? "DATOS Y CONFIGURACIÓN DEL PILOTO" : "PILOT DATA & CONFIGURATION"}</p>
           )}
