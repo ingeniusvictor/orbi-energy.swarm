@@ -21,6 +21,8 @@ interface StartScreenProps {
   onResetStats: () => void;
   onChangePreset: (preset: QualityPreset) => void;
   onToggleMute: () => void;
+  onToggleMusic: () => void;
+  onToggleEffects: () => void;
   onToggleBossLabelsMode?: (mode: "FULL" | "IMPORTANT" | "OFF") => void;
 }
 
@@ -31,6 +33,8 @@ export const StartScreen: React.FC<StartScreenProps> = ({
   onResetStats,
   onChangePreset,
   onToggleMute,
+  onToggleMusic,
+  onToggleEffects,
   onToggleBossLabelsMode
 }) => {
   const { language, setLanguage, t } = useGameTranslation();
@@ -588,6 +592,25 @@ export const StartScreen: React.FC<StartScreenProps> = ({
                 {stats.audioMuted ? t("startScreen.audioMuted") : t("startScreen.audioActive")}
               </button>
             </div>
+
+            {/* UX12: three distinct persisted audio switches; menu remains silent until play. */}
+            <div className="grid grid-cols-2 gap-2" data-testid="orbi-audio-settings">
+              <button type="button" onClick={onToggleMusic}
+                aria-pressed={stats.musicEnabled !== false}
+                data-testid="orbi-settings-music"
+                className="min-h-[38px] rounded-lg border border-cyan-500/30 bg-slate-950/60 px-2 py-1.5 text-xs text-cyan-100">
+                {language === "es" ? "MÚSICA" : "MUSIC"} · {stats.musicEnabled !== false ? "ON" : "OFF"}
+              </button>
+              <button type="button" onClick={onToggleEffects}
+                aria-pressed={stats.soundEffectsEnabled !== false}
+                data-testid="orbi-settings-effects"
+                className="min-h-[38px] rounded-lg border border-amber-500/30 bg-slate-950/60 px-2 py-1.5 text-xs text-amber-100">
+                {language === "es" ? "EFECTOS" : "EFFECTS"} · {stats.soundEffectsEnabled !== false ? "ON" : "OFF"}
+              </button>
+            </div>
+            <p className="text-[10px] text-slate-400">{language === "es" ?
+              "La música y los efectos se controlan por separado; AUDIO silencia ambos." :
+              "Music and effects can be disabled independently; AUDIO mutes both."}</p>
 
             {/* BOSS LABELS MODE ACCESSIBILITY ACCENT */}
             <div className="flex justify-between items-center py-2 border-b border-slate-800/60">
