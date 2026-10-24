@@ -230,3 +230,28 @@
 @media (prefers-reduced-motion:reduce) {
   .orbi-ux10c *, .orbi-ux10c *::before,.orbi-ux10c *::after{animation:none!important;transition:none!important;}
 }
+
+/* UX10-C cinematic polish: use only the illustration from the leftmost
+ * portion of the approved WebP — NO baked logos, Spanish copy, buttons,
+ * or English alternates. The clean full-bleed world underlies the whole frame. */
+.orbi-ux10c .orbi-ux10c-scene::before {
+  content:"";position:absolute;z-index:0;inset:0 auto 0 0;
+  width:46%;pointer-events:none;opacity:.93;
+  background-image:var(--ux10c-hero-art);
+  background-size:100vw auto;
+  background-position:left center;
+  background-repeat:no-repeat;
+  -webkit-mask-image:linear-gradient(to right,#000 0%,#000 57%,transparent 100%);
+  mask-image:linear-gradient(to right,#000 0%,#000 57%,transparent 100%);
+}
+.orbi-ux10c[data-layer="HUB"] .orbi-ux10c-scene::before,
+.orbi-ux10c[data-layer="DETAIL"] .orbi-ux10c-scene::before {opacity:.53;}
+/* Each genuine UI module has its own scenic crop, not seven copies of one screenshot. */
+.orbi-ux10c .orbi-ux10c-tile-picture {background-size:auto,195% auto!important;}
+.orbi-ux10c .orbi-ux10c-tile--modes .orbi-ux10c-tile-picture {background-position:center,0% 10%;}
+.orbi-ux10c .orbi-ux10c-tile--hangar .orbi-ux10c-tile-picture {background-position:center,20% 38%;}
+.orbi-ux10c .orbi-ux10c-tile--tactics .orbi-ux10c-tile-picture {background-position:center,70% 22%;}
+.orbi-ux10c .orbi-ux10c-tile--codex .orbi-ux10c-tile-picture {background-position:center,100% 75%;}
+.orbi-ux10c .orbi-ux10c-tile--controls .orbi-ux10c-tile-picture {background-position:center,18% 95%;}
+.orbi-ux10c .orbi-ux10c-tile--settings .orbi-ux10c-tile-picture {background-position:center,52% 2%;}
+.orbi-ux10c .orbi-ux10c-tile--about .orbi-ux10c-tile-picture {background-position:center,88% 91%;}

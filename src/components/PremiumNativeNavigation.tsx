@@ -59,8 +59,11 @@ export const PremiumNativeNavigation: React.FC<Props> = ({
   const es = language === "es";
   const [selectedMode, setSelectedMode] = useState("campaign");
   const cleanArt = "url('" + import.meta.env.BASE_URL + "ux09/orbi-command-world.svg')";
+  // Crop ONLY the text-free left illustrated region of the approved cinematic WebP.
+  // All interactive copy and controls stay native and identical in ES/EN.
+  const cinematicPortrait = "url('" + import.meta.env.BASE_URL + "ux09/premium/welcome.webp')";
   const current = pages.find(item => item.tab === tab && item.section === section);
-  const nativeBackgroundStyle = { "--ux10c-clean-art": cleanArt, "--orbi-ux09-world": cleanArt } as React.CSSProperties;
+  const nativeBackgroundStyle = { "--ux10c-clean-art": cleanArt, "--ux10c-hero-art": cinematicPortrait, "--orbi-ux09-world": cleanArt } as React.CSSProperties;
   const langPicker = (
     <div className="orbi-ux10c-language" role="group" aria-label={es ? "Idioma" : "Language"}>
       <Globe size={14} aria-hidden="true" />

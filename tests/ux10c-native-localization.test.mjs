@@ -15,6 +15,8 @@ test("UX10-C desktop and Android landscape use ONE native scene regardless of lo
   assert.match(native,/data-ui-composition="native"/);
   assert.match(native,/data-premium-art="world-clean"/);
   assert.match(native,/ux09\/orbi-command-world\.svg/);
+  assert.match(native,/ux09\/premium\/welcome\.webp/); // scenic-only crop, never baked UI
+  assert.match(css,/mask-image:linear-gradient\(to right/);
   assert.doesNotMatch(scenic,/<text\b/);
   assert.doesNotMatch(native,/orbi-ux09b-hotspot|orbi-ux09b-illustration|premium\/command\.webp/);
   assert.match(main,/ux10CinematicLaunch\.css/);
