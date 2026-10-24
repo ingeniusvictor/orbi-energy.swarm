@@ -98,8 +98,16 @@ async function run(name,width,height,coarse,immersive,webImmersive) {
       const estado=page.locator('[data-testid="orbi-estado-button"]');
       await estado.click();
       check(await page.locator(".orbi-hud-detail-grid").isVisible(),name+": Estado grid hidden");
-      const swarm=await page.locator(".orbi-hud-swarm").boundingBox();
+      // UX10 moves the detailed counters into a native premium panel. The
+      // compact HUD rows are intentionally hidden while this drawer is open.
+      const premium=page.locator(".orbi-premium-status");
+      check(await premium.isVisible(),name+": premium Estado not rendered");
+      const swarm=await premium.locator(".orbi-premium-status-counters article").first().boundingBox();
       check(swarm && swarm.width>20,name+": Estado stats collapsed");
+      check(await premium.locator(".orbi-premium-status-counters article").count()===3,
+        name+": Estado must display live swarm, score and credits");
+      check(await page.locator('.orbi-immersive-action[aria-label="Reanudar"]').count()===1,
+        name+": Estado drawer did not actually pause simulation");
       await shot(page,name+"-estado");
       await page.getByRole("button",{name:/^Táctica$|^Tactics$/}).click();
       check(await page.locator(".orbi-tactical-rail").isVisible(),name+": Tactica panel not visible");
