@@ -65,7 +65,7 @@ test("GAIA consumes H4 follower capacity while remaining outside consolidation c
     /regularSwarmCount\s*=\s*swarmRef\.current\.reduce\([\s\S]{0,220}?member\.energyId\s*===\s*"GAIA"\s*\?\s*0\s*:\s*1/,
   );
   // EVO8 replaces cross-affinity XP fallback with same-energy-only ranking.
-  assert.match(game, /member\\.energyId === energyDefinition\\.id/);
+  assert.match(game, /member\.energyId === energyDefinition\.id/);
   assert.doesNotMatch(game, /Fallback if no member has this affinity/);
 });
 
