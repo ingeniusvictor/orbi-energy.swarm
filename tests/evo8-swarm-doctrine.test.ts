@@ -44,3 +44,19 @@ test("ENERGY protagonist is not a founder; GAIA consumes one founded slot",()=>{
  assert.equal(state.founderIds.includes("GAIA"),true);
  assert.equal(state.founderIds.includes("ENERGY"),false);
 });
+
+test("neutral ENERGY cannot claim founder slot or E5/E8 credit even before slots fill",()=>{
+ let state=createEvo8SwarmDoctrine();
+ const untouched=registerEvo8Founder(state,"ENERGY",8);
+ assert.deepEqual(untouched,state);
+ assert.equal(getEvo8SwarmCapacity(untouched),10);
+ state=registerEvo8Founder(state,"HYDRO",1);
+ assert.deepEqual(registerEvo8Founder(state,"ENERGY",5),state);
+ assert.deepEqual(promoteEvo8Founder(state,"ENERGY",8),state);
+ assert.equal(state.founderIds.length,1);
+ assert.equal(state.veteranFounderIds.length,0);
+ assert.equal(state.eliteFounderIds.length,0);
+ // Legacy accidentally containing ENERGY must not be able to earn a credit.
+ const legacy={...state,founderIds:["ENERGY","HYDRO"]};
+ assert.deepEqual(promoteEvo8Founder(legacy,"ENERGY",8),legacy);
+});
