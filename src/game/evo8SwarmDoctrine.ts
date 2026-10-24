@@ -1,4 +1,5 @@
 import { ORBI_MAX_EVOLUTION_LEVEL } from "./orbiEvolution";
+import { ORBI_PROTAGONIST_ID } from "./orbiEnergyCanon";
 
 /**
  * EV-F04 staging contract. Not connected to the live H4 doctrine yet.
@@ -31,14 +32,14 @@ const appendUnique = (items: readonly string[], id: string) =>
 export const registerEvo8Founder = (
   current: Evo8SwarmDoctrineState, id: string, level=1,
 ): Evo8SwarmDoctrineState => {
-  if(!id || current.founderIds.includes(id) || current.founderIds.length>=EVO8_FOUNDING_SLOTS) return current;
+  if(!id || id===ORBI_PROTAGONIST_ID || current.founderIds.includes(id) || current.founderIds.length>=EVO8_FOUNDING_SLOTS) return current;
   return promoteEvo8Founder({...current,founderIds:[...current.founderIds,id]},id,level);
 };
 
 export const promoteEvo8Founder = (
   current: Evo8SwarmDoctrineState, id: string, level: number,
 ): Evo8SwarmDoctrineState => {
-  if(!id || !current.founderIds.includes(id) || !Number.isFinite(level)) return current;
+  if(!id || id===ORBI_PROTAGONIST_ID || !current.founderIds.includes(id) || !Number.isFinite(level)) return current;
   const safeLevel=Math.max(1,Math.min(ORBI_MAX_EVOLUTION_LEVEL,Math.floor(level)));
   const veteranFounderIds=safeLevel>=EVO8_VETERAN_LEVEL?appendUnique(current.veteranFounderIds,id):current.veteranFounderIds;
   const eliteFounderIds=safeLevel>=EVO8_ELITE_LEVEL?appendUnique(current.eliteFounderIds,id):current.eliteFounderIds;
