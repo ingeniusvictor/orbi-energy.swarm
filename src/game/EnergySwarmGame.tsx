@@ -8519,7 +8519,7 @@ export const EnergySwarmGame: React.FC = () => {
                 </button>
               </div>
 
-              {!isLeftPanelCollapsed && (
+              {(!isLeftPanelCollapsed || mobilePanel === "tactica") && (
                 <div className="orbi-side-deck-content orbi-tactical-premium-content space-y-4 animate-fadeIn">
                   <div className="orbi-tactical-premium-audio space-y-1.5">
                     <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block">{language === "es" ? "SISTEMA DE AUDIO" : "AUDIO SYSTEM"}</span>
