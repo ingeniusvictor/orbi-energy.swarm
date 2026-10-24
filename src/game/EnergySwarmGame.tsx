@@ -9125,11 +9125,10 @@ export const EnergySwarmGame: React.FC = () => {
         </div>
       )}
 
-      {/* BRANDING LABEL WATERMARK FOOTER */}
-      <div className="orbi-brand-footer mt-3 lg:mt-1.5 text-[9px] md:text-[10px] font-mono text-slate-600 text-center flex flex-col gap-0.5">
-        <div>ORBI ENERGY SWARM &bull; v0.2.0-beta.1</div>
-        <div>Created by Víctor Marcel León Pacheco &bull; &copy; 2026 ORBI Ecosystem SpA</div>
-      </div>
+      {/* UX12: gameplay shows game brand only; creator credits stay in Acerca de ORBI. */}
+      {isPlaying && <div className="orbi-brand-footer" data-testid="orbi-game-brand">
+        <img className="orbi-ux12-hud-logo" src={import.meta.env.BASE_URL + "ux12/orbi-energy-swarm-hud.svg"} alt="ORBI ENERGY SWARM" />
+      </div>}
 
     </div>
   );
