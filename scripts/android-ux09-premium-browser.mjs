@@ -16,6 +16,18 @@ async function snap(page,name) {
  report.screenshots.push({name,bytes});
 }
 async function rect(page,sel){return page.locator(sel).first().evaluate(el=>{const b=el.getBoundingClientRect();return {x:b.x,y:b.y,width:b.width,height:b.height,bottom:b.bottom,right:b.right}});}
+
+async function waitPremiumArt(page,art) {
+ const locator=page.locator(".orbi-ux09b-illustration");
+ await locator.waitFor({state:"visible",timeout:12000});
+ const src=await locator.evaluate(async (img)=>{
+   await img.decode();
+   return {src:img.currentSrc,width:img.naturalWidth,height:img.naturalHeight};
+ });
+ ensure(src.src.includes("premium/"+art+".webp") && src.width===1672 && src.height===941,
+  "Wrong/stale premium art "+art+" "+JSON.stringify(src));
+}
+
 async function run(width,height,mobile,dpr=1){
  const id=(mobile?"touch-":"desktop-")+width+"x"+height+"-dpr"+dpr;
  const ctx=await browser.newContext({viewport:{width,height},isMobile:mobile,hasTouch:mobile,deviceScaleFactor:dpr,serviceWorkers:"block",reducedMotion:"reduce"});
@@ -50,6 +62,7 @@ async function run(width,height,mobile,dpr=1){
     ensure(await page.locator(".orbi-ux09b-illustration").isVisible(),id+": restoring premium Spanish art failed");
   }
   await page.getByTestId("orbi-mobile-enter").click();
+  if(usingArt) await waitPremiumArt(page,"command");
   await page.getByTestId("orbi-mobile-menu-main-play").waitFor({state:"visible"});
   ensure(await page.locator(".orbi-ux09-command-grid .orbi-ux09-tile").count()===7,id+": missing command tile");
   caseReport.tiles=await page.locator(".orbi-ux09-command-grid .orbi-ux09-tile").count();
@@ -59,6 +72,7 @@ async function run(width,height,mobile,dpr=1){
   }
   await snap(page,id+"-02-hub");
   await page.getByTestId("orbi-mobile-menu-main-play").click();
+  if(usingArt) await waitPremiumArt(page,"modes");
   await page.getByTestId("orbi-mobile-campaign").waitFor({state:"visible"});
   ensure(await page.getByTestId("orbi-mobile-score-attack").isVisible(),id+": Score Attack hidden");
   ensure(await page.getByTestId("orbi-mobile-infinite-locked").count()===1,id+": Infinite incorrectly unlocked");
@@ -70,12 +84,15 @@ async function run(width,height,mobile,dpr=1){
   }
   await snap(page,id+"-03-modes");
   await page.getByTestId("orbi-mobile-menu-back").click();
+  if(usingArt) await waitPremiumArt(page,"command");
   await page.getByTestId("orbi-mobile-menu-codex-info").click();
   ensure(await page.locator(".orbi-premium-entry").getAttribute("data-mobile-tab")==="CODEX",id+": codex route");
   await snap(page,id+"-04-codex");
   await page.getByTestId("orbi-mobile-menu-back").click();
   if(usingArt) {
+    await waitPremiumArt(page,"command");
     await page.getByTestId("orbi-mobile-menu-how_to-info").click();
+    await waitPremiumArt(page,"formations");
     const a=await page.locator(".orbi-ux09b-illustration").getAttribute("src");
     ensure(a?.includes("premium/formations.webp"),id+": formations visual missing");
     await snap(page,id+"-05-formations");
@@ -84,6 +101,7 @@ async function run(width,height,mobile,dpr=1){
     await page.getByTestId("orbi-mobile-menu-back").click();
   }
   await page.getByTestId("orbi-mobile-menu-main-play").click();
+  if(usingArt) await waitPremiumArt(page,"modes");
   if(mobile&&width===844) {
     await page.getByTestId("orbi-mobile-campaign").click();
     await page.locator("#game-canvas").waitFor({state:"visible",timeout:20000});
