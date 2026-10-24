@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" fill="none" role="img" aria-label="HYDRO EVO8 prototype game sprite">
+<!-- EV-F07 Lote 1: text-free fully transparent scalable art; six independent compact wings. -->
+<defs>
+ <radialGradient id="body" cx=".38" cy=".26" r=".85">
+  <stop stop-color="#e0fcff"/><stop offset=".2" stop-color="#4ad6ff"/><stop offset=".59" stop-color="#146db4"/><stop offset="1" stop-color="#06345d"/>
+ </radialGradient>
+ <linearGradient id="wing" x1="0" x2="1" y1="0" y2="1">
+  <stop stop-color="#e0fcff"/><stop offset=".34" stop-color="#146db4"/><stop offset=".67" stop-color="#06345d"/><stop offset="1" stop-color="#38bdf8"/>
+ </linearGradient>
+ <radialGradient id="element"><stop stop-color="#fff7d9"/><stop offset=".34" stop-color="#e0fcff"/><stop offset="1" stop-color="#146db4"/></radialGradient>
+</defs>
+<g><g class="orbi-evo8-wing" transform="rotate(-150 256 256)">
+   <path d="M256 177Q229 148 228 119Q228 81 256 47Q284 82 284 119Q284 149 256 177Z" fill="url(#wing)" stroke="#a5f7ff" stroke-width="5"/>
+   <path d="M256 53Q247 104 256 155Q265 104 256 53" fill="#83f1ff" opacity=".8"/>
+   <path d="M238 109Q251 102 256 86Q261 102 275 109" stroke="#d8fdff" stroke-width="3" fill="none"/>
+   <path d="M238 132L256 149L274 132" fill="none" stroke="#41bfff" stroke-width="3"/>
+ </g>
+<g class="orbi-evo8-wing" transform="rotate(-90 256 256)">
+   <path d="M256 177Q229 148 228 119Q228 81 256 47Q284 82 284 119Q284 149 256 177Z" fill="url(#wing)" stroke="#a5f7ff" stroke-width="5"/>
+   <path d="M256 53Q247 104 256 155Q265 104 256 53" fill="#83f1ff" opacity=".8"/>
+   <path d="M238 109Q251 102 256 86Q261 102 275 109" stroke="#d8fdff" stroke-width="3" fill="none"/>
+   <path d="M238 132L256 149L274 132" fill="none" stroke="#41bfff" stroke-width="3"/>
+ </g>
+<g class="orbi-evo8-wing" transform="rotate(-30 256 256)">
+   <path d="M256 177Q229 148 228 119Q228 81 256 47Q284 82 284 119Q284 149 256 177Z" fill="url(#wing)" stroke="#a5f7ff" stroke-width="5"/>
+   <path d="M256 53Q247 104 256 155Q265 104 256 53" fill="#83f1ff" opacity=".8"/>
+   <path d="M238 109Q251 102 256 86Q261 102 275 109" stroke="#d8fdff" stroke-width="3" fill="none"/>
+   <path d="M238 132L256 149L274 132" fill="none" stroke="#41bfff" stroke-width="3"/>
+ </g>
+<g class="orbi-evo8-wing" transform="rotate(30 256 256)">
+   <path d="M256 177Q229 148 228 119Q228 81 256 47Q284 82 284 119Q284 149 256 177Z" fill="url(#wing)" stroke="#a5f7ff" stroke-width="5"/>
+   <path d="M256 53Q247 104 256 155Q265 104 256 53" fill="#83f1ff" opacity=".8"/>
+   <path d="M238 109Q251 102 256 86Q261 102 275 109" stroke="#d8fdff" stroke-width="3" fill="none"/>
+   <path d="M238 132L256 149L274 132" fill="none" stroke="#41bfff" stroke-width="3"/>
+ </g>
+<g class="orbi-evo8-wing" transform="rotate(90 256 256)">
+   <path d="M256 177Q229 148 228 119Q228 81 256 47Q284 82 284 119Q284 149 256 177Z" fill="url(#wing)" stroke="#a5f7ff" stroke-width="5"/>
+   <path d="M256 53Q247 104 256 155Q265 104 256 53" fill="#83f1ff" opacity=".8"/>
+   <path d="M238 109Q251 102 256 86Q261 102 275 109" stroke="#d8fdff" stroke-width="3" fill="none"/>
+   <path d="M238 132L256 149L274 132" fill="none" stroke="#41bfff" stroke-width="3"/>
+ </g>
+<g class="orbi-evo8-wing" transform="rotate(150 256 256)">
+   <path d="M256 177Q229 148 228 119Q228 81 256 47Q284 82 284 119Q284 149 256 177Z" fill="url(#wing)" stroke="#a5f7ff" stroke-width="5"/>
+   <path d="M256 53Q247 104 256 155Q265 104 256 53" fill="#83f1ff" opacity=".8"/>
+   <path d="M238 109Q251 102 256 86Q261 102 275 109" stroke="#d8fdff" stroke-width="3" fill="none"/>
+   <path d="M238 132L256 149L274 132" fill="none" stroke="#41bfff" stroke-width="3"/>
+ </g></g>
+<g class="orbi-evo8-chassis">
+ <path d="M256 152L335 184L363 253L330 325L256 360L182 325L149 253L177 184Z" fill="#06345d" stroke="#a0eeff" stroke-width="8" stroke-linejoin="round"/>
+ <path d="M256 166L323 195L346 252L317 309L256 339L195 309L166 252L189 195Z" fill="url(#body)" stroke="#38bdf8" stroke-width="4" stroke-linejoin="round"/>
+ <path d="M256 170L256 211M186 198L217 224M326 198L296 224M176 267L217 274M336 267L296 274" stroke="#e0fcff" stroke-width="4" opacity=".60"/>
+ <path d="M184 245L194 214L215 204M328 245L318 214L297 204M194 290L222 313M318 290L290 313" fill="none" stroke="#a0eeff" stroke-width="6" opacity=".8"/>
+ <circle cx="256" cy="256" r="62" fill="#06345d" stroke="#a0eeff" stroke-width="7"/>
+ <circle cx="256" cy="256" r="51" fill="url(#body)" stroke="#38bdf8" stroke-width="3"/>
+ <g class="orbi-evo8-hydro-symbol">
+ <path d="M256 170Q237 197 222 217Q209 234 209 257A47 47 0 0 0 303 257Q303 232 289 214Z" fill="url(#element)" stroke="#e6ffff" stroke-width="5"/>
+ <path d="M234 265Q232 281 250 290" stroke="#d8faff" stroke-width="6" stroke-linecap="round" fill="none"/>
+ <path d="M195 240Q178 251 186 270M317 240Q336 257 325 272" fill="none" stroke="#a5f4ff" stroke-width="5"/>
+ <circle cx="244" cy="237" r="5" fill="#fff"/>
+ </g>
+ <path d="M207 331L232 345L280 345L305 331" stroke="#e0fcff" stroke-width="5" opacity=".88" stroke-linecap="round"/>
+</g>
+</svg>
