@@ -34,7 +34,8 @@ export const MobileLaunchNavigation: React.FC<Props> = ({
 }) => {
   const es = language === "es";
   // Vite BASE_URL keeps the same visual assets working on Pages subpaths.
-  const worldImage = `url("${import.meta.env.BASE_URL}ux09/orbi-command-world.svg")`;
+  const fallbackArt = layer==="WELCOME" ? "welcome" : layer==="HUB" ? "command" : (section==="PLAY" && tab==="MAIN") ? "modes" : "formations";
+  const worldImage = `url("${import.meta.env.BASE_URL}ux09/premium/${fallbackArt}.webp")`;
   const [selectedMode, setSelectedMode] = useState<"CAMPAIGN" | "SCORE_ATTACK" | "INFINITE">("CAMPAIGN");
   const [landscape, setLandscape] = useState(() =>
     typeof window !== "undefined" && window.matchMedia("(orientation: landscape)").matches
