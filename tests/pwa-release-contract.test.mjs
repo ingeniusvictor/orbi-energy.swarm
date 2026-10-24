@@ -39,10 +39,18 @@ test("I1 install icons are exact non-placeholder PNG dimensions", async () => {
   });
 });
 
-test("I1 index advertises manifest and install icons with relative URLs", async () => {
+test("I1/UX09B index advertises manifest and premium install icons with relative URLs", async () => {
   const index = await readFile("index.html", "utf8");
   assert.match(index, /rel="manifest" href="\.\/manifest\.webmanifest"/);
-  assert.match(index, /href="\.\/icons\/orbi-192\.png"/);
+  assert.match(index, /href="\.\/ux09\/premium\/launcher-192\.png"/);
+});
+
+test("UX09B upgraded icons preserve exact PWA pixel sizes", async () => {
+  assert.deepEqual(await readPngSize("public/ux09/premium/launcher-192.png"), {width:192,height:192});
+  assert.deepEqual(await readPngSize("public/ux09/premium/launcher-512.png"), {width:512,height:512});
+  const manifest = await readJson("public/manifest.webmanifest");
+  assert.ok(manifest.icons.some(icon => icon.src === "ux09/premium/launcher-192.png"));
+  assert.ok(manifest.icons.some(icon => icon.src === "ux09/premium/launcher-512.png"));
 });
 
 test("I1/I2 distribution remains locked while I3 completes readiness engineering", async () => {
