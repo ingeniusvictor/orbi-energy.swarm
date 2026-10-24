@@ -1,6 +1,6 @@
 import React from "react";
 import { QualityPreset } from "../game/types";
-const EnergyStatus3D = React.lazy(() => import("./EnergyStatus3D").then(module => ({default:module.EnergyStatus3D})));
+import { EnergyStatus3D } from "./EnergyStatus3D";
 import { Shield, Award, Users, Volume2, VolumeX, Pause, Play, Zap, Maximize2, Minimize2, Target, Package, X, Coins, Radar, Activity } from "lucide-react";
 import { useGameTranslation, formatNumber } from "../i18n";
 import { getCampaignObjective } from "../game/campaignGuide";
@@ -270,9 +270,7 @@ export const GameHud: React.FC<GameHudProps> = ({
           </div>
           <div className="orbi-premium-status-top">
             <div className="orbi-premium-status-core">
-              <React.Suspense fallback={<div className="orbi-premium-status-energy" aria-hidden="true"><i/><i/><span/></div>}>
-                <EnergyStatus3D qualityPreset={qualityPreset} language={language} />
-              </React.Suspense>
+              <EnergyStatus3D qualityPreset={qualityPreset} language={language} />
               <div className="orbi-premium-status-core-label"><strong>ENERGY</strong><span>{language === "es" ? "NÚCLEO NEUTRAL" : "NEUTRAL CORE"}</span></div>
             </div>
             <div className="orbi-premium-status-shield">
