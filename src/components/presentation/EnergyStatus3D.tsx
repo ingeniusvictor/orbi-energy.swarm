@@ -21,6 +21,8 @@ export const EnergyStatus3D: React.FC<{ language: Locale }> = ({ language }) => 
     let frame = 0;
     let disposed = false;
     let lastFrame = 0;
+    let lastWidth = 0;
+    let lastHeight = 0;
     let resizeObserver: ResizeObserver | null = null;
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let visible = !document.hidden;
@@ -106,9 +108,13 @@ export const EnergyStatus3D: React.FC<{ language: Locale }> = ({ language }) => 
       if(disposed || !renderer || !visible)return;
       const bounds=mount.getBoundingClientRect();
       if(bounds.width<=0 || bounds.height<=0)return;
-      renderer.setSize(Math.round(bounds.width),Math.round(bounds.height),false);
-      camera.aspect=bounds.width/bounds.height;
-      camera.updateProjectionMatrix();
+      const width=Math.round(bounds.width),height=Math.round(bounds.height);
+      if(width!==lastWidth || height!==lastHeight){
+        lastWidth=width;lastHeight=height;
+        renderer.setSize(width,height,false);
+        camera.aspect=width/height;
+        camera.updateProjectionMatrix();
+      }
       renderer.render(scene,camera);
     };
     const onVisibility=()=>{
