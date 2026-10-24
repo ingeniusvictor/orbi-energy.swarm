@@ -421,8 +421,32 @@ export function drawSwarmRoster(
       ctx.restore();
     }
 
-    // 2. LOD MID: Moderate detail, simple halos, no eyes, no complex insignias
+    // 2. LOD MID: lightweight silhouettes, but never hide an E8's six wings
+    // solely because its roster index exceeds 11. E6 and E7 retain their
+    // 2/4 wings; geometry remains inside the 14-unit solid-tip ceiling.
     if (isMid) {
+      const midWings = getEvo8WingCount(member.level);
+      if (midWings > 0) {
+        ctx.save();
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = member.color;
+        ctx.strokeStyle = "rgba(242, 253, 255, 0.9)";
+        ctx.lineWidth = 0.75;
+        for (let wing = 0; wing < midWings; wing += 1) {
+          const angle = wing * Math.PI * 2 / midWings - Math.PI / 2;
+          const spread = midWings === 2 ? 0.45 : midWings === 4 ? 0.32 : 0.25;
+          ctx.beginPath();
+          ctx.moveTo(Math.cos(angle - spread) * r * 0.67,
+            Math.sin(angle - spread) * r * 0.67);
+          ctx.lineTo(Math.cos(angle) * 14, Math.sin(angle) * 14);
+          ctx.lineTo(Math.cos(angle + spread) * r * 0.67,
+            Math.sin(angle + spread) * r * 0.67);
+          ctx.closePath();
+          ctx.fill();
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
       if (member.evolutionStage && member.evolutionStage > 1) {
         ctx.strokeStyle = "rgba(255,255,255,0.2)";
         ctx.lineWidth = 1;
