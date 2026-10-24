@@ -72,18 +72,18 @@ export const en: TranslationSchema = {
       recommendation: "Perfect for intercepting distant threats quickly."
     },
     V_SHAPE: {
-      name: "V Vanguard",
-      description: "Great Frontal Cover, Proj Absorption | -10% Movement Speed",
-      advantages: "Great Frontal Cover, Projectile Absorption",
+      name: "Cross Guard",
+      description: "Wide four-arm cross guard | -10% Movement Speed",
+      advantages: "Crosswise defensive coverage",
       disadvantages: "Movement Speed (-10%)",
-      recommendation: "Best when pushing directly against heavy front fortifications or aligned waves."
+      recommendation: "Use its four diagonals to guard against multi-directional pressure."
     },
     SCATTERED: {
-      name: "Free Dispersion",
-      description: "+25% Evasion, +20% Crit Chance | Loose Follow Cohesion",
-      advantages: "Evasion (+25%), Critical Strike Chance (+20%)",
-      disadvantages: "Loose Follow Cohesion",
-      recommendation: "Useful for dodging massive area attacks and projectile barrages."
+      name: "Concentric Delta",
+      description: "Concentric triangular layers | Existing tactical modifiers retained",
+      advantages: "Balanced triangular swarm layers",
+      disadvantages: "World-edge compression can reduce spacing",
+      recommendation: "Place companions on concentric triangular perimeters."
     }
   },
   waves: {
@@ -103,7 +103,7 @@ export const en: TranslationSchema = {
       name: "Drone Lock",
       subtitle: "Long-range vector threat",
       description: "Targeting drones locked onto ORBI FOTON. High-density aiming lines.",
-      tacticalAdvice: "Cover with V Vanguard. Reposition dynamically before lock fires."
+      tacticalAdvice: "Cover with Cross Guard. Reposition dynamically before lock fires."
     },
     4: {
       name: "Swarm Encirclement",
@@ -115,13 +115,13 @@ export const en: TranslationSchema = {
       name: "Elite Breach",
       subtitle: "Heavily armored blackout unit",
       description: "Blackout Elite breaching. Front shield protects core from front attacks.",
-      tacticalAdvice: "Use Collector Circle or Free Dispersion to flank its side armor."
+      tacticalAdvice: "Use Collector Circle or Concentric Delta to flank its side armor."
     },
     6: {
       name: "Disruptor Storm",
       subtitle: "Electromagnetic interference active",
       description: "Disruptor units pulsing waves that scatter swarm cohesion.",
-      tacticalAdvice: "Spread into Free Dispersion or use Protective Shield to absorb shocks and stay wide."
+      tacticalAdvice: "Spread into Concentric Delta or use Protective Shield to absorb shocks and stay wide."
     },
     7: {
       name: "Grid Collapse",
@@ -139,7 +139,7 @@ export const en: TranslationSchema = {
       name: "Blackout Siege",
       subtitle: "Extinction-level blackout forces",
       description: "Multiple high-density hostile vectors combining. Critical systems pushed to their limits.",
-      tacticalAdvice: "Utilize V Vanguard forward or switch dynamically to Assault Line for shield buffs."
+      tacticalAdvice: "Utilize Cross Guard forward or switch dynamically to Assault Line for shield buffs."
     },
     10: {
       name: "Blackout Devourer",
@@ -301,7 +301,7 @@ export const en: TranslationSchema = {
         name: "Elite Charge",
         description: "Ultra-fast frontal charge protected by an impenetrable front shield.",
         mechanic: "Linear physics charge with frontal invulnerability.",
-        counter: "Use Collector Circle to flank or Free Dispersion to dodge the direct impact."
+        counter: "Use Collector Circle to flank or Concentric Delta to dodge the direct impact."
       },
       front_armor: {
         name: "Front Armor",
@@ -319,7 +319,7 @@ export const en: TranslationSchema = {
         name: "Gravity Well",
         description: "A colossal field actively pulling the entire swarm toward its damaging core.",
         mechanic: "Extreme centripetal attraction force plus damage-over-time.",
-        counter: "Switch to V Vanguard and boost in the opposite direction."
+        counter: "Switch to Cross Guard and boost in the opposite direction."
       },
       orbital_shards: {
         name: "Orbital Shards",
