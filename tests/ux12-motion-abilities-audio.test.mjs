@@ -63,6 +63,14 @@ test("UX12 music and sound effects have independent persistable mixer lanes and 
  assert.match(game,/setSoundEffectsEnabled\(loaded\.soundEffectsEnabled !== false\)/);
  assert.match(game,/updateStatsAndSave\(\{ \.\.\.statsRef\.current, musicEnabled: enabled \}\)/);
  assert.match(game,/updateStatsAndSave\(\{ \.\.\.statsRef\.current, soundEffectsEnabled: enabled \}\)/);
+ const native=read("src/components/PremiumNativeNavigation.tsx");
+ const router=read("src/components/MobileLaunchNavigation.tsx");
+ assert.match(native,/data-testid="orbi-native-audio-settings"/);
+ assert.match(native,/data-testid="orbi-native-music"/);
+ assert.match(native,/data-testid="orbi-native-effects"/);
+ assert.match(native,/data-testid="orbi-native-master-audio"/);
+ assert.match(router,/onMusicToggle=\{onMusicToggle\}/);
+ assert.match(css,/data-mobile-tab="SETTINGS"/);
  assert.match(start,/data-testid="orbi-settings-music"/);
  assert.match(start,/data-testid="orbi-settings-effects"/);
  assert.match(pause,/data-testid="orbi-pause-music"/);
