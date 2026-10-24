@@ -42,6 +42,13 @@ async function run(width,height,mobile,dpr=1){
   ensure(caseReport.enter.width>=180&&caseReport.enter.height>=40,id+": start button too small");
   ensure(caseReport.enter.y>=0&&caseReport.enter.bottom<=height+2,id+": enter clipped");
   await snap(page,id+"-01-welcome");
+  if(usingArt && width===844){
+    await page.getByRole("button",{name:"English"}).click();
+    ensure((await page.getByTestId("orbi-mobile-enter").innerText()).includes("ENTER"),id+": English language not applied");
+    ensure(await page.locator(".orbi-ux09b-illustration").count()===0,id+": Spanish-only embedded art leaked into EN");
+    await page.getByRole("button",{name:"Español"}).click();
+    ensure(await page.locator(".orbi-ux09b-illustration").isVisible(),id+": restoring premium Spanish art failed");
+  }
   await page.getByTestId("orbi-mobile-enter").click();
   await page.getByTestId("orbi-mobile-menu-main-play").waitFor({state:"visible"});
   ensure(await page.locator(".orbi-ux09-command-grid .orbi-ux09-tile").count()===7,id+": missing command tile");
