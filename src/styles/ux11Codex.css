@@ -110,6 +110,8 @@
 .orbi-ux11c-note {margin:0;color:#9ecbd3;font:600 9px/1.25 "Space Grotesk",sans-serif;}
 .orbi-ux11c-protagonist {display:flex;align-items:center;gap:7px;flex:0 0 auto;padding-top:6px;border-top:1px solid rgba(80,189,209,.25);color:#acd8e2;font:700 clamp(9px,.78vw,11px)/1.2 "Space Grotesk",sans-serif;}
 .orbi-ux11c-protagonist svg,.orbi-ux11c-protagonist b {color:#f9d38c;flex:0 0 auto;}
+.orbi-ux11c-legacy {margin-left:auto;flex:0 0 auto;min-height:30px;padding:5px 9px;border-radius:6px;border:1px solid #eac577;background:rgba(75,49,14,.55);color:#ffe5a5;font:900 9px/1 monospace;cursor:pointer;}
+.orbi-ux11c-legacy:is(:hover,:focus-visible) {border-color:#fff7d4;background:rgba(120,74,19,.66);}
 
 @media (orientation:landscape) and (max-width:1050px) {
   .orbi-ux11c-codex {grid-template-columns:minmax(164px,29%) minmax(0,1fr);gap:7px;}
