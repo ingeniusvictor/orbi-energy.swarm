@@ -72,18 +72,18 @@ export const es: TranslationSchema = {
       recommendation: "Perfecto para interceptar amenazas lejanas de forma rápida."
     },
     V_SHAPE: {
-      name: "Vanguardia V",
-      description: "Excelente cobertura frontal, absorción de proyectiles | -10% de velocidad de movimiento",
-      advantages: "Gran cobertura frontal, Absorción de proyectiles",
+      name: "Guardia Cruzada",
+      description: "Defensa cruzada en cuatro brazos separados | -10% de velocidad de movimiento",
+      advantages: "Protección cruzada del enjambre",
       disadvantages: "Velocidad de movimiento reducida (-10%)",
-      recommendation: "Perfecto cuando se avanza de frente contra torretas u hordas en línea."
+      recommendation: "Útil para crear una guardia defensiva abierta en cuatro diagonales."
     },
     SCATTERED: {
-      name: "Dispersión Libre",
-      description: "+25% de evasión, +20% de probabilidad de crítico | Cohesión de seguimiento suelta",
-      advantages: "Evasión (+25%), Probabilidad de golpe crítico (+20%)",
-      disadvantages: "Seguimiento suelto del líder",
-      recommendation: "Útil para esquivar ataques masivos de área y tormentas de proyectiles."
+      name: "Delta Concéntrica",
+      description: "Delta en capas triangulares | Se mantienen los modificadores tácticos anteriores",
+      advantages: "Distribución triangular equilibrada del enjambre",
+      disadvantages: "Ajuste de posiciones cerca de bordes del mapa",
+      recommendation: "Distribuye los ORBI en triángulos concéntricos alrededor del líder."
     }
   },
   waves: {
@@ -103,7 +103,7 @@ export const es: TranslationSchema = {
       name: "Bloqueo de Drones",
       subtitle: "Amenaza de vectores a larga distancia",
       description: "Drones de ataque apuntando a ORBI FOTON. Líneas de mira de alta densidad.",
-      tacticalAdvice: "Cúbrete con Vanguardia V. Reposiciónate dinámicamente antes de que disparen."
+      tacticalAdvice: "Cúbrete con Guardia Cruzada. Reposiciónate dinámicamente antes de que disparen."
     },
     4: {
       name: "Cerco del Enjambre",
@@ -115,13 +115,13 @@ export const es: TranslationSchema = {
       name: "Brecha de Élite",
       subtitle: "Unidad blackout fuertemente blindada",
       description: "Elite Blackout detectado. Su escudo frontal protege su núcleo de ataques directos.",
-      tacticalAdvice: "Usa Círculo Colector o Dispersión Libre para flanquear su blindaje lateral."
+      tacticalAdvice: "Usa Círculo Colector o Delta Concéntrica para flanquear su blindaje lateral."
     },
     6: {
       name: "Tormenta Disruptora",
       subtitle: "Interferencia electromagnética activa",
       description: "Unidades disruptoras emitiendo pulsos que dispersan la cohesión del enjambre.",
-      tacticalAdvice: "Dispersa con Dispersión Libre o usa Escudo Protector para absorber choques y mantener amplitud."
+      tacticalAdvice: "Dispersa con Delta Concéntrica o usa Escudo Protector para absorber choques y mantener amplitud."
     },
     7: {
       name: "Colapso de la Red",
@@ -139,7 +139,7 @@ export const es: TranslationSchema = {
       name: "Asedio Blackout",
       subtitle: "Fuerzas blackout de nivel de extinción",
       description: "Múltiples vectores de alta densidad combinándose. Resistencia al límite.",
-      tacticalAdvice: "Utiliza Vanguardia V de frente o cambia dinámicamente a Línea de Asalto para sobrevivir."
+      tacticalAdvice: "Utiliza Guardia Cruzada de frente o cambia dinámicamente a Línea de Asalto para sobrevivir."
     },
     10: {
       name: "Devorador Blackout",
@@ -301,7 +301,7 @@ export const es: TranslationSchema = {
         name: "Embestida de Élite",
         description: "Acometida frontal ultra veloz protegida por un escudo frontal impenetrable.",
         mechanic: "Carga física lineal con invulnerabilidad frontal.",
-        counter: "Usa Círculo Colector para flanquear o Dispersión Libre para esquivar el impacto directo."
+        counter: "Usa Círculo Colector para flanquear o Delta Concéntrica para esquivar el impacto directo."
       },
       front_armor: {
         name: "Blindaje Frontal",
@@ -319,7 +319,7 @@ export const es: TranslationSchema = {
         name: "Pozo Gravitacional",
         description: "Un campo colosal que atrae activamente todo el enjambre hacia su núcleo dañino.",
         mechanic: "Fuerza de atracción centrípeta extrema más daño por segundo.",
-        counter: "Cambia a Vanguardia V y corre con el propulsor en dirección opuesta."
+        counter: "Cambia a Guardia Cruzada y corre con el propulsor en dirección opuesta."
       },
       orbital_shards: {
         name: "Fragmentos Orbitales",
@@ -493,7 +493,7 @@ export const es: TranslationSchema = {
     keys: {
       movement: "Movimiento",
       followCursor: "Seguir cursor",
-      formations: "Formaciones (Línea, V, Espiral, Halo, Escudo, Dispersión)",
+      formations: "Formaciones (Línea, Estrella, Espiral, Halo, Cruz, Delta)",
       pause: "Pausar simulación",
       mute: "Silenciar audio",
       reboot: "Reinicio rápido",
