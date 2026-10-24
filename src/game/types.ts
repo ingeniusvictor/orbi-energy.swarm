@@ -131,6 +131,8 @@ export interface OrbiMember {
   evolutionStage: number;
   level: number;
   xp: number;
+  /** EVO8 same-energy cores since last rank; gameplay is capped at E8. */
+  matchingCoresAtLevel?: number;
   recoilX?: number;
   recoilY?: number;
   flashTicks?: number;
