@@ -24,7 +24,7 @@ export const getEnergy3DPolicy = (quality: QualityPreset): Energy3DPolicy => {
 /** Independent neutral golden protagonist geometry. NEVER load orbi-foton.glb
  * without first certifying its visual identity; that historical GLB belongs
  * to a different launcher preview. This model intentionally has no Dyson rings. */
-export const makeEnergy3DGroup = (detail=24): THREE.Group => {
+export const makeEnergy3DGroup = (detail=24): any => {
   const group=new THREE.Group();
   const safe=Math.max(12,Math.min(40,Math.floor(detail)));
   const gold=new THREE.MeshStandardMaterial({color:0xd49a40,metalness:.82,roughness:.22});
@@ -68,12 +68,12 @@ export const makeEnergy3DGroup = (detail=24): THREE.Group => {
   return group;
 };
 
-const disposeEnergyGroup=(root:THREE.Object3D)=>{
-  root.traverse(object=>{
+const disposeEnergyGroup=(root:any)=>{
+  root.traverse((object:any)=>{
     if(!(object instanceof THREE.Mesh))return;
     object.geometry.dispose();
     const materials=Array.isArray(object.material)?object.material:[object.material];
-    materials.forEach(mat=>mat.dispose());
+    materials.forEach((mat:any)=>mat.dispose());
   });
 };
 
@@ -87,7 +87,7 @@ export const EnergyStatus3D: React.FC<{
     const mount=ref.current;
     const policy=getEnergy3DPolicy(qualityPreset);
     if(!mount||!policy.enabled) {setStatus("FALLBACK");return;}
-    let renderer:THREE.WebGLRenderer;
+    let renderer:any;
     try {
       renderer=new THREE.WebGLRenderer({alpha:true,antialias:qualityPreset!==QualityPreset.MEDIUM,powerPreference:"low-power"});
     }catch{setStatus("FALLBACK");return;}
