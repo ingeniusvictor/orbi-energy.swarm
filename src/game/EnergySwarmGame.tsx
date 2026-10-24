@@ -220,6 +220,7 @@ import { ResultScreen } from "../components/ResultScreen";
 import { CompanionPanel } from "../components/CompanionPanel";
 import { UpgradeSelector } from "../components/UpgradeSelector";
 import { MobileTouchOverlay } from "../components/MobileTouchOverlay";
+import { createEnergyThrusterPose, projectEnergyThrusterPose, drawEnergyThrusterJets } from "./energyThrusters";
 import { WebPhotoReturn } from "../components/WebPhotoReturn";
 import { MobileFormationCarousel } from "../components/MobileFormationCarousel";
 import { OrientationHint } from "../components/OrientationHint";
@@ -502,6 +503,7 @@ export const EnergySwarmGame: React.FC = () => {
   const combatOverdriveRef = useRef(createCombatOverdriveState());
   const propulsionDashRef = useRef(createPropulsionDashState());
   const lastDashDirectionRef = useRef<AnalogVector>({ x: 0, y: -1 });
+  const energyThrusterPoseRef = useRef(createEnergyThrusterPose());
 
   const keysPressedRef = useRef<Record<string, boolean>>({});
   const activeFormationRef = useRef<FormationType>(FormationType.LINE);
@@ -1847,6 +1849,7 @@ export const EnergySwarmGame: React.FC = () => {
     );
     propulsionDashRef.current = createPropulsionDashState();
     lastDashDirectionRef.current = { x: 0, y: -1 };
+    energyThrusterPoseRef.current = createEnergyThrusterPose();
     setDashView(projectPropulsionDash(propulsionDashRef.current, 0));
     playerFlashRef.current = 0;
     invincibilityTimerRef.current = 0;
@@ -5152,6 +5155,8 @@ export const EnergySwarmGame: React.FC = () => {
     cameraOffsetRef.current = { x: cam.shakeX, y: cam.shakeY };
 
     // 3. Foton movement physics (keyboard/touch share the same delta model)
+    const preMotionX = playerPosRef.current.x;
+    const preMotionY = playerPosRef.current.y;
     let moveX = 0;
     let moveY = 0;
 
@@ -5246,6 +5251,14 @@ export const EnergySwarmGame: React.FC = () => {
     // Clamp inside world boundaries (1600x960 expanded battlefield)
     playerPosRef.current.x = Math.max(16, Math.min(WORLD_WIDTH - 16, playerPosRef.current.x));
     playerPosRef.current.y = Math.max(16, Math.min(WORLD_HEIGHT - 16, playerPosRef.current.y));
+    // Visual-only physical displacement includes keyboard, analog, mouse and Dash.
+    energyThrusterPoseRef.current = projectEnergyThrusterPose(
+      energyThrusterPoseRef.current,
+      playerPosRef.current.x-preMotionX,
+      playerPosRef.current.y-preMotionY,
+      delta,
+      dashStep?.activeDuringFrame === true,
+    );
 
     // 4. Align and smooth swarm followers following Foton leader
     const mouseAngle = Math.atan2(
@@ -7737,6 +7750,12 @@ export const EnergySwarmGame: React.FC = () => {
       flashProfile,
     );
 
+    // UX12: two independent RCS jets are rendered behind the ENERGY leader,
+    // opposite the real displacement, while target gaze is retained.
+    drawEnergyThrusterJets(ctx,playerPosRef.current,energyThrusterPoseRef.current,
+      timeElapsedRef.current,
+      projectPropulsionDash(propulsionDashRef.current,timeElapsedRef.current).active);
+
     // 7. Draw reactive tactical Foton leader.
     const fotonShieldMax =
       SHIELD_MAX +
@@ -7760,6 +7779,7 @@ export const EnergySwarmGame: React.FC = () => {
       isPausedRef.current,
       fotonThreatDirectionRef.current,
       runOrbiAcquiredRef.current,
+      energyThrusterPoseRef.current.bankRadians,
     );
 
     // UX11-E: bounded propulsion streaks, no Dyson rings, no gameplay immunity.
