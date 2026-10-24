@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { PremiumArtNavigation } from "./PremiumArtNavigation";
 import {
   ArrowLeft, Atom, BookOpen, ChevronRight, Compass, Cpu, Gauge,
   Gamepad2, Globe, Info, LockKeyhole, Play, Settings, Shield,
@@ -35,6 +36,21 @@ export const MobileLaunchNavigation: React.FC<Props> = ({
   // Vite BASE_URL keeps the same visual assets working on Pages subpaths.
   const worldImage = `url("${import.meta.env.BASE_URL}ux09/orbi-command-world.svg")`;
   const [selectedMode, setSelectedMode] = useState<"CAMPAIGN" | "SCORE_ATTACK" | "INFINITE">("CAMPAIGN");
+  const [landscape, setLandscape] = useState(() =>
+    typeof window !== "undefined" && window.matchMedia("(orientation: landscape)").matches
+  );
+  React.useEffect(() => {
+    const media = window.matchMedia("(orientation: landscape)");
+    const update = () => setLandscape(media.matches);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
+  // Premium screenshots carry the approved 2026 visual identity. In portrait
+  // preserve the fully editable, localized and scrollable legacy UX09 layout.
+  const artLayer = landscape && (layer==="WELCOME" || layer==="HUB" ||
+    (layer==="DETAIL" && section==="PLAY" && (tab==="MAIN" || tab==="HOW_TO")));
+
   const choices = [
     { icon: Gamepad2, label: es ? "Modos de juego" : "Game modes", description: es ? "Campaña, desafío infinito y más" : "Campaign, survival and more", tab: "MAIN" as const, section: "PLAY" as const, art: "modes" },
     { icon: Cpu, label: es ? "Hangar y registro" : "Hangar & records", description: es ? "Gestiona y registra tu progreso" : "Manage and record progress", tab: "MAIN" as const, section: "HANGAR" as const, art: "hangar" },
@@ -61,6 +77,12 @@ export const MobileLaunchNavigation: React.FC<Props> = ({
       Icon: LockKeyhole, action: undefined, locked: true, accent: "violet",
     },
   ];
+  if (artLayer) return (
+    <PremiumArtNavigation layer={layer} section={section} tab={tab} language={language}
+      onLanguage={onLanguage} onEnter={onEnter} onBack={onBack} onOpen={onOpen}
+      onPlay={onPlay} onScoreAttack={onScoreAttack} hasInfiniteRecord={hasInfiniteRecord}
+      nanoCredits={nanoCredits} purifiedEnergy={purifiedEnergy}/>
+  );
   return (
     <section className="orbi-mobile-launch orbi-ux09" style={{ "--orbi-ux09-world": worldImage } as React.CSSProperties} data-testid="orbi-mobile-launch" data-layer={layer}
       aria-label={es ? "Centro de mando ORBI" : "ORBI command deck"}>
