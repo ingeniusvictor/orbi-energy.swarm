@@ -52,10 +52,9 @@ export function getFormationBrief(type: FormationType, language: Locale) {
   return FORMATION_BRIEFS[type][language];
 }
 
-export const FormationDiagram: React.FC<{
-  type: FormationType;
-  language: Locale;
-}> = ({ type, language }) => {
+export const FormationDiagram = React.memo(function FormationDiagram({
+  type, language,
+}: { type: FormationType; language: Locale }) {
   const count = type === FormationType.SCATTERED ? 30 :
     type === FormationType.V_SHAPE || type === FormationType.DELTA ? 16 : 10;
   const positions = Array.from({ length: count }, (_, index) =>
@@ -85,4 +84,4 @@ export const FormationDiagram: React.FC<{
       <circle cx="90" cy="62" r="2.2" fill="#ffffff" />
     </svg>
   );
-};
+);
