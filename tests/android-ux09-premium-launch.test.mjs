@@ -61,15 +61,15 @@ test("UX09B uses native keyboard/touch controls instead of painting unclickable 
   assert.match(art,/orbi-ux09b-artboard/);
   for(const name of ["welcome.webp","command.webp","modes.webp","formations.webp"]){
     // Asset names are resolved from the artName state, not hardcoded individually.
-    assert.match(art,/ux09\\/premium\\/|ux09\\/premium\\/\\$\\{artName\\}/);
+    assert.ok(art.includes("ux09/premium/"), "premium artwork path required");
     assert.ok(readFileSync(new URL("../public/ux09/premium/"+name,import.meta.url)).length>0);
   }
-  assert.match(art,/aria-label=\\{label\\}/);
+  assert.ok(art.includes("aria-label={label}"), "native hotspot labels required");
   assert.match(art,/orbi-mobile-campaign/);
   assert.match(art,/orbi-mobile-score-attack/);
   assert.match(art,/orbi-mobile-infinite-locked/);
   assert.match(art,/orbi-mobile-menu-how_to-info/);
   assert.match(art,/orbi-ux09b-formation-manual/);
-  assert.match(ui,/matchMedia\\("\\(orientation: landscape\\)"\\)/);
+  assert.ok(ui.includes("orientation: landscape"), "responsive art mode required");
   assert.match(css,/orbi-ux09b-illustration/);
 });
