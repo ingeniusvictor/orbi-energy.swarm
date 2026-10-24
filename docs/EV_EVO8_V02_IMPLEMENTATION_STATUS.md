@@ -1,7 +1,7 @@
 # EVO8 v0.2 — ENERGY / FOTON / GAIA: estado real de implementación
 
 **Corte de activación:** 2026-10-23 (verificar GitHub live antes de continuar).  
-**Último gameplay/main revisado:** `1a664839a76449f5186d450e7eb9cffed3bae232` (#715).  
+**Último gameplay/main revisado:** `26475b13b5808c7481b9372dbdf2fdfc0928a181` (#718, última modificación de código).  
 **Autoridad:** código y verificaciones GitHub; esta página no reemplaza el árbol o los checks reales.
 
 ## Canon definitivo aprobado por el usuario
@@ -32,6 +32,17 @@
 | EV-F04 — Doctrina pura 10/20/30 con promociones fundadoras E5/E8 | [#702](https://github.com/ingeniusvictor/orbi-energy.swarm/pull/702) | `2759fca1232d32df4f363fab31b27fd33aed03eb` | **Sí, activada por #710** y protegida contra ENERGY por #708 |
 | EV-F05 — Panel fotovoltaico verde en FOTON durante detalle cercano Canvas2D | [#704](https://github.com/ingeniusvictor/orbi-energy.swarm/pull/704) | `f938212804ef21cdb703760b22b017ffce9c865a` | **Sí**, insignia provisional |
 | EV-F06 — EVO8 runtime: capturas afines, GAIA gradual, 10/20/30, alas 2/4/6 y fundadores protegidos de fusión | [#710](https://github.com/ingeniusvictor/orbi-energy.swarm/pull/710) | `8c2fbb4820c2ec4088ef0e9dc0a334a554eaa1d2` | **Sí**, lógica; arte E8 premium pendiente |
+
+| EV-F09 — Fusiones FOTON/HYDRO canónicas, fundadores excluidos y metadato `fusionRank` | [#718](https://github.com/ingeniusvictor/orbi-energy.swarm/pull/718) | `26475b13b5808c7481b9372dbdf2fdfc0928a181` | **Sí**, 3×FOTON → SOLAR GUARDIAN; 3×HYDRO → HYDRO LEVIATHAN; `energyId` y `fusionRank` separados de combate `level:5` heredado. #713 abierto para seguimiento físico |
+
+## Certificación post-main EV-F09 — 2026-10-23 Chile
+
+- **Código squash:** `26475b13b5808c7481b9372dbdf2fdfc0928a181`; padre `c2c102e2d63ff2b73d37ae062748d7f2936b1caa`; árbol del PR y del commit fusionado coinciden: `f0852fc6feb6a72ac26a8b259ab487c78ebaf7d1`.
+- **CI/Android/Chromium/UX01B/UX07/Canvas/Pages post-main:** respectivamente `40056378241`, `40056378251`, `40056378226`, `40056378341`, `40056378389`, `40056378270`, `40056436298`, todos **SUCCESS**.
+- **APK debug del commit exacto:** artefacto `12545347009`, 9.414.306 bytes, SHA-256 `3c860ced8380c0a00496790b2b66640573dc16be1621e5c6e03d27162dbc692d`; ZIP de artefacto SHA-256 `e01675354186ed6c8cd75201212966bbd89fddb3ab3abfcbf0bddb07a9c88fc4`.
+- **Vercel production READY:** `dpl_BDdznA4XcD65tmRSAHi1j3t7QTMd`, commit `26475b13b5808c7481b9372dbdf2fdfc0928a181`.
+- **Límites de evidencia:** QA Canvas es sintético; sin combate sostenido con 30 ORBI E8, sin Android físico, sin certificación manual #248. Mantener #711 y #712 abiertos; #713 sigue abierto para validación longitudinal.
+- **No regenerar EVO8 ni modificar PR histórico borrador #687.**
 
 ## QA de activación EV-F06
 
