@@ -7,7 +7,7 @@
   max-height:100dvh!important;
   overflow:hidden!important;
 }
-.orbi-ux10c[data-layer="DETAIL"] .orbi-ux10c-detail:has(.orbi-ux10c-tactics) {
+.orbi-ux10c[data-layer="DETAIL"] .orbi-ux10c-detail--tactics {
   flex:1 1 auto;
   min-height:0;
   height:100%;
