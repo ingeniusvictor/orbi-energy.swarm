@@ -412,18 +412,37 @@ export function drawSwarmRoster(
 
     ctx.save();
     ctx.rotate(angle);
-    // Eye whites
-    ctx.fillStyle = "#ffffff";
-    ctx.beginPath();
-    ctx.arc(r * 0.4, -r * 0.3, r * 0.25, 0, Math.PI * 2);
-    ctx.arc(r * 0.4, r * 0.3, r * 0.25, 0, Math.PI * 2);
-    ctx.fill();
-    // Pupils
-    ctx.fillStyle = "#000000";
-    ctx.beginPath();
-    ctx.arc(r * 0.55, -r * 0.3, r * 0.12, 0, Math.PI * 2);
-    ctx.arc(r * 0.55, r * 0.3, r * 0.12, 0, Math.PI * 2);
-    ctx.fill();
+    if (member.energyId === "FOTON") {
+      // Solar FOTON is a collectible green photovoltaic ORBI, not the
+      // neutral ENERGY leader. Its panel remains identifiable at small LOD
+      // without extra textures or an independent WebGL draw pass.
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = "rgba(3, 42, 20, 0.94)";
+      ctx.fillRect(-r * 0.59, -r * 0.43, r * 1.18, r * 0.86);
+      ctx.strokeStyle = "#e4ffc4";
+      ctx.lineWidth = Math.max(0.65, r * 0.10);
+      ctx.strokeRect(-r * 0.59, -r * 0.43, r * 1.18, r * 0.86);
+      ctx.beginPath();
+      ctx.moveTo(-r * 0.2, -r * 0.43);
+      ctx.lineTo(-r * 0.2, r * 0.43);
+      ctx.moveTo(r * 0.2, -r * 0.43);
+      ctx.lineTo(r * 0.2, r * 0.43);
+      ctx.moveTo(-r * 0.59, 0);
+      ctx.lineTo(r * 0.59, 0);
+      ctx.stroke();
+    } else {
+      // Historical eyes remain unchanged on all other companion energies.
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.arc(r * 0.4, -r * 0.3, r * 0.25, 0, Math.PI * 2);
+      ctx.arc(r * 0.4, r * 0.3, r * 0.25, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#000000";
+      ctx.beginPath();
+      ctx.arc(r * 0.55, -r * 0.3, r * 0.12, 0, Math.PI * 2);
+      ctx.arc(r * 0.55, r * 0.3, r * 0.12, 0, Math.PI * 2);
+      ctx.fill();
+    }
     ctx.restore();
 
     // Double orbiting wings for Fusion Units
