@@ -1,5 +1,8 @@
 # UX10 — Premium Gameplay UI Continuity
 
+> **UX10-C / 2026-10-24 — Bienvenida y Command Center ES/EN nativos:** [PR #724](https://github.com/ingeniusvictor/orbi-energy.swarm/pull/724) fusionado con squash de código `1d3e0c1235ef43e9f661ea927b286b05b91308e0`, padre `4f07db6301566e0464d4f336e22bf126a0e518e5`, árbol `87a3014a8c8c51d7fa3c5d2bbf4f2ad3ff496eec` igual al PR. Se eliminó la condición `language==="es"` del menú cinematográfico landscape; ES/EN ahora usan misma composición React `PremiumNativeNavigation` con texto, idioma, créditos, siete tarjetas reales, modos y seis formaciones. Fondo adaptativo limpio `orbi-command-world.svg` sin texto, región escénica izquierda del arte UX09 aprobada con logo/botones horneados recortados fuera de la región visible. Portrait usa imagen sin textos horneados. Android físico **no certificado** (#248), pulido artístico final puede continuar (#694/#720). **Seis post-main SUCCESS**: CI `40064608349`, Android `40064608356`, UX09 Chrome `40064608414`, Chromium `40064608359`, UX01B `40064608324`, Web Beta `40064677080`. APK debug artifact `12549210851`, 9.426.738 bytes SHA-256 `954b2d74ec87a2624b8a7f075bcffcd69ea5a2cc58d218d7e6af4b5502ae95b1`; ZIP digest `713da8ba75415b40a34b6e1ce1a5a53a31da8594b8357bab0b5d07cb304aba13`. No afirmar producción Vercel nueva sin verificar deployment.
+
+
 **Corte:** 2026-10-24, autoridad GitHub live `main`. Este documento es una certificación documental separada de código.
 
 ## Tramo UX10-A integrado
