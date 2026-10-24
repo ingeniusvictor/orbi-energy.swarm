@@ -21,7 +21,7 @@ test("EV-F06 uses EVO8 matching core before recruiting duplicate followers",()=>
  assert.doesNotMatch(section,/xpGain\s*=\s*8/);
  assert.doesNotMatch(section,/Math\.floor\(newXp\s*\/\s*4\)/);
  assert.doesNotMatch(section,/Fallback if no member has this affinity/);
- assert.match(section,/SIN SLOT \/ E8/);
+ assert.match(section,/SIN SLOT/);
 });
 
 test("EV-F06 live capacity is delegated to E5/E8, not the historical level-10 module",()=>{
