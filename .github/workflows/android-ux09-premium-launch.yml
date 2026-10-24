@@ -7,9 +7,6 @@ on:
       - 'src/components/PremiumNativeNavigation.tsx'
       - 'src/styles/ux10CinematicLaunch.css'
       - 'tests/ux10c-native-localization.test.mjs'
-      - 'src/components/PremiumNativeNavigation.tsx'
-      - 'src/styles/ux10CinematicLaunch.css'
-      - 'tests/ux10c-native-localization.test.mjs'
       - 'src/components/StartScreen.tsx'
       - 'src/styles/index.css'
       - 'public/ux09/**'
@@ -20,6 +17,9 @@ on:
     branches: [main]
     paths:
       - 'src/components/MobileLaunchNavigation.tsx'
+      - 'src/components/PremiumNativeNavigation.tsx'
+      - 'src/styles/ux10CinematicLaunch.css'
+      - 'tests/ux10c-native-localization.test.mjs'
       - 'src/components/StartScreen.tsx'
       - 'src/styles/index.css'
       - 'public/ux09/**'
