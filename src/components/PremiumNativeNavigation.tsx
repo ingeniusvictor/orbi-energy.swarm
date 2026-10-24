@@ -145,7 +145,7 @@ export const PremiumNativeNavigation: React.FC<Props> = ({
         </div>
       )}
       {layer === "DETAIL" && (
-        <div className={"orbi-ux10c-detail" + (isInfo ? " orbi-ux10c-detail--info" : "")}>
+        <div className={"orbi-ux10c-detail" + (isInfo ? " orbi-ux10c-detail--info" : "") + (isTactics ? " orbi-ux10c-detail--tactics" : "")}>
           <header className="orbi-ux10c-detail-header">
             <div><span className="orbi-ux10c-overline">ORBI // {section === "HANGAR" ? "HANGAR" : "MISSION CONTROL"}</span>
               <h2>{isModes ? (es ? "MODOS DE JUEGO" : "GAME MODES") :
