@@ -102,6 +102,23 @@ async function run(name,width,height,coarse,immersive,webImmersive) {
       // compact HUD rows are intentionally hidden while this drawer is open.
       const premium=page.locator(".orbi-premium-status");
       check(await premium.isVisible(),name+": premium Estado not rendered");
+      const energy3d=page.locator('[data-testid="orbi-ux11d-energy-3d"]');
+      check(await energy3d.isVisible(),name+": 3D ENERGY status identity missing");
+      check(await energy3d.getAttribute("data-energy-id")==="ENERGY",
+        name+": wrong 3D ENERGY status identity");
+      await page.waitForFunction(() => {
+        const stage=document.querySelector('[data-testid="orbi-ux11d-energy-3d"]');
+        return stage && ["READY","FALLBACK"].includes(stage.getAttribute("data-energy-3d-status"));
+      },null,{timeout:12000});
+      const energy3dStatus=await energy3d.getAttribute("data-energy-3d-status");
+      if(energy3dStatus==="READY"){
+        check(await energy3d.locator("canvas.orbi-ux11d-energy-canvas").count()===1,
+          name+": WebGL ENERGY canvas not mounted");
+      }else{
+        check(await energy3d.locator(".orbi-ux11d-energy-fallback").isVisible(),
+          name+": WebGL-off CSS ENERGY fallback absent");
+      }
+
       const swarm=await premium.locator(".orbi-premium-status-counters article").first().boundingBox();
       check(swarm && swarm.width>20,name+": Estado stats collapsed");
       check(await premium.locator(".orbi-premium-status-counters article").count()===3,
