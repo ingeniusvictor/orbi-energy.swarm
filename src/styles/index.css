@@ -2503,3 +2503,12 @@ body {
   .orbi-ux09b .orbi-ux09b-manual svg {width:12px;height:12px;}
   .orbi-ux09b .orbi-ux09b-hub-back::after {font-size:17px;}
 }
+
+/* UX09B: portrait keeps the live multilingual cards with cinematic backplates,
+   darkened for legibility rather than baking Spanish text into interactive UI. */
+@media (orientation:portrait) {
+  .orbi-ux09:not(.orbi-ux09b) .orbi-ux09-scene::after {
+    content:"";display:block;position:absolute;inset:0;
+    background:rgba(1,8,24,.75);
+  }
+}
