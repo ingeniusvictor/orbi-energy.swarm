@@ -45,7 +45,7 @@ async function run(name,width,height,mobile,compact){
    await page.getByTestId("orbi-mobile-menu-main-play").waitFor({state:"visible"});
    await shot(page,name+"-command-hub");
    await page.getByTestId("orbi-mobile-menu-settings-info").tap();
-   check(await page.locator(".orbi-start-deck").isVisible(),name+": settings submenu inaccessible");
+   check(await page.getByTestId("orbi-native-audio-settings").isVisible(),name+": native settings submenu inaccessible");
    await shot(page,name+"-settings-submenu");
    await page.getByTestId("orbi-mobile-menu-back").tap();
    await page.getByTestId("orbi-mobile-menu-main-play").tap();
