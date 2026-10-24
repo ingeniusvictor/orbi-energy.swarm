@@ -30,7 +30,7 @@ test("UX10-B six tactical formations retain functional buttons and canonical lan
  }
  assert.match(game,/onClick=\{\(\) => triggerFormationChange\(f.type\)\}/);
  assert.match(game,/aria-pressed=\{isSel\}/);
- assert.match(game,/onClick=\{changeMinimapMode\(m\)\}/);
+ assert.match(game,/onClick=\{\(\) => changeMinimapMode\(m\)\}/);
  assert.match(game,/onClick=\{\(\) => changeQualityPreset\(q\)\}/);
 });
 
