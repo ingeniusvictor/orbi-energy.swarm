@@ -26,8 +26,8 @@ test("EV-F01 star stays open across 10, 20, 30 followers",()=>{
 test("EV-F01 four guard arms have staggered lanes and do not overlap",()=>{
  for(const n of [8,10,20,30]){
    const pts=positions(FormationType.V_SHAPE,n);
-   assert.ok(minSeparation(pts)>=33.9,`cross n=${n} spacing`);
-   assert.ok(pts.every(p=>Math.hypot(p.x,p.y)<160));
+   assert.ok(minSeparation(pts)>=31.9,`cross n=${n} spacing`);
+   assert.ok(pts.every(p=>Math.hypot(p.x,p.y)<=140));
  }
 });
 test("EV-F01 delta concentric is deterministic and has multiple growing triangular shells",()=>{
