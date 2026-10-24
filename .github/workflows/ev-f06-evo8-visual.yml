@@ -3,16 +3,19 @@ on:
   pull_request:
     branches: [main]
     paths:
+      - 'src/game/formations.ts'
       - 'src/game/EnergySwarmGame.tsx'
       - 'src/game/EnergySwarmCanvas.tsx'
       - 'src/game/gaiaEvolution.ts'
       - 'src/game/orbiEvolution.ts'
       - 'src/game/evo8SwarmDoctrine.ts'
       - 'scripts/ev-f06-evo8-visual-browser.mjs'
+      - 'tests/ev-f08-delta-wing-clearance.test.ts'
       - '.github/workflows/ev-f06-evo8-visual.yml'
   push:
     branches: [main]
     paths:
+      - 'src/game/formations.ts'
       - 'src/game/EnergySwarmGame.tsx'
       - 'src/game/EnergySwarmCanvas.tsx'
       - 'src/game/gaiaEvolution.ts'
@@ -35,7 +38,7 @@ jobs:
         run: |
           npm run typecheck
           npm run build
-          npx tsx --test tests/orbi-evo8-contract.test.ts tests/gaia-evolution.test.ts tests/evo8-swarm-doctrine.test.ts
+          npx tsx --test tests/orbi-evo8-contract.test.ts tests/gaia-evolution.test.ts tests/evo8-swarm-doctrine.test.ts tests/ev-f08-delta-wing-clearance.test.ts tests/ev-f01-formations-geometry.test.ts
       - name: Actual canvas renderer screenshots (synthetic Orbi layouts, not real encounters)
         run: |
           npm install --no-save --package-lock=false playwright@1.55.0
