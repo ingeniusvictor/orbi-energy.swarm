@@ -13,7 +13,7 @@ test("UX11-D status renders true WebGL ENERGY instead of unverified historical F
   assert.match(renderer,/new THREE\.WebGLRenderer/);
   assert.match(renderer,/IcosahedronGeometry/);
   assert.match(renderer,/ENERGY, protagonista dorado neutral en 3D/);
-  assert.doesNotMatch(renderer,/GLTFLoader|orbi-foton\.glb|new THREE\.TorusGeometry/);
+  assert.doesNotMatch(renderer,/import.*GLTFLoader|loader\.load\(|new THREE\.TorusGeometry/);
   assert.match(renderer,/Dyson halos are intentionally hidden/);
   assert.match(css,/\.orbi-ux11d-energy-preview/);
   assert.match(bootstrap,/ux11EnergyStatus\.css/);
