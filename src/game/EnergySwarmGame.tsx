@@ -2222,7 +2222,7 @@ export const EnergySwarmGame: React.FC = () => {
       }
 
       addFloatingText(
-        `${energyDefinition.displayName} CORE · ${targetOrbi.matchingCoresAtLevel}/${targetOrbi.level === 8 ? 0 : targetOrbi.level}`,
+        `${energyDefinition.displayName} CORE · ${targetOrbi.level === 8 ? "E8/MÁX" : `${targetOrbi.matchingCoresAtLevel}/${targetOrbi.level}`}`,
         playerPosRef.current.x, playerPosRef.current.y - 24,
         targetOrbi.color,
       );
