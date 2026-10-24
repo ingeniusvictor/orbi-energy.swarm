@@ -33,9 +33,9 @@ export const MobileLaunchNavigation: React.FC<Props> = ({
   nanoCredits = 0, purifiedEnergy = 0,
 }) => {
   const es = language === "es";
-  // Vite BASE_URL keeps the same visual assets working on Pages subpaths.
-  const fallbackArt = layer==="WELCOME" ? "welcome" : layer==="HUB" ? "command" : (section==="PLAY" && tab==="MAIN") ? "modes" : "formations";
-  const worldImage = `url("${import.meta.env.BASE_URL}ux09/premium/${fallbackArt}.webp")`;
+  // Portrait fallback uses a text-free world illustration, never Spanish
+  // buttons and logos baked into a WebP beneath real English controls.
+  const worldImage = 'url("' + import.meta.env.BASE_URL + 'ux09/orbi-command-world.svg")';
   const [selectedMode, setSelectedMode] = useState<"CAMPAIGN" | "SCORE_ATTACK" | "INFINITE">("CAMPAIGN");
   const [landscape, setLandscape] = useState(() =>
     typeof window !== "undefined" && window.matchMedia("(orientation: landscape)").matches

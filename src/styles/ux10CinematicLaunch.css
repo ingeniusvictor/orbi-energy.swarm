@@ -255,3 +255,8 @@
 .orbi-ux10c .orbi-ux10c-tile--controls .orbi-ux10c-tile-picture {background-position:center,18% 95%;}
 .orbi-ux10c .orbi-ux10c-tile--settings .orbi-ux10c-tile-picture {background-position:center,52% 2%;}
 .orbi-ux10c .orbi-ux10c-tile--about .orbi-ux10c-tile-picture {background-position:center,88% 91%;}
+
+/* UX10-C: clean responsive portrait fallback — no Spanish text rendered inside image. */
+@media (orientation:portrait) {
+ .orbi-mobile-launch.orbi-ux09:not(.orbi-ux10c) .orbi-ux09-scene {background-position:31% center!important;}
+}
