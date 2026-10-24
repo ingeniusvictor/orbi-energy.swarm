@@ -31,7 +31,7 @@ test("UX09 has seven illustrated navigation modules with accessible back and lan
 });
 test("UX09 replaces the dark mobile background with a bundled scene on mobile and desktop", () => {
   assert.match(css, /orbi-ux09-scene/);
-  assert.match(ui, /orbi-command-world\.svg/);
+  assert.ok(ui.includes("ux09/premium/"),"portrait also uses premium art");
   assert.match(css, /--orbi-ux09-world/);
   assert.match(css, /orbi-ux09-mode-card--violet/);
   assert.match(css, /orientation:portrait/);
@@ -40,11 +40,11 @@ test("UX09 replaces the dark mobile background with a bundled scene on mobile an
 });
 test("UX09 official FOTON mark has ten satellites and is wired to PWA and Android", () => {
   assert.equal((icon.match(/<circle cx=/g) || []).length >= 10, true);
-  assert.ok(manifest.icons.some(x => x.src === "ux09/orbi-launcher.svg" && x.sizes === "any"));
-  assert.match(read("index.html"), /ux09\/orbi-launcher\.svg/);
+  assert.ok(manifest.icons.some(x => x.src === "ux09/premium/launcher-512.png" && x.sizes === "512x512"));
+  assert.ok(read("index.html").includes("ux09/premium/launcher-512.png"));
   assert.match(android, /Adaptive icon safe area/);
   for (const p of ["ic_launcher.xml","ic_launcher_round.xml"]) {
-    assert.match(read("android/app/src/main/res/mipmap-anydpi-v26/" + p), /@drawable\/orbi_foton_launcher/);
+    assert.ok(read("android/app/src/main/res/mipmap-anydpi-v26/" + p).includes("@drawable/orbi_launcher_premium"));
   }
 });
 
@@ -72,4 +72,15 @@ test("UX09B uses native keyboard/touch controls instead of painting unclickable 
   assert.match(art,/orbi-ux09b-formation-manual/);
   assert.ok(ui.includes("orientation: landscape"), "responsive art mode required");
   assert.match(css,/orbi-ux09b-illustration/);
+});
+
+
+test("UX09B uses the real premium launcher at web 192/512 and Android adaptive foreground",() => {
+  for (const w of [192,512]) {
+    const img=readFileSync(new URL("../public/ux09/premium/launcher-"+w+".png",import.meta.url));
+    assert.ok(img.length > 40_000);
+    assert.equal(img.toString("hex",0,8),"89504e470d0a1a0a");
+  }
+  const androidImage=readFileSync(new URL("../android/app/src/main/res/drawable-nodpi/orbi_launcher_premium.png",import.meta.url));
+  assert.ok(androidImage.length>200_000);
 });
