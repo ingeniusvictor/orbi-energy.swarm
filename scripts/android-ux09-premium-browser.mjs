@@ -167,6 +167,7 @@ async function run(width,height,mobile,dpr=1){
    ensure((await musicButton.innerText()).includes("BACKGROUND MUSIC"),id+": bilingual audio missing");
    await musicButton.click();
    await effectsButton.click();
+   await page.getByRole("button",{name:"Español"}).click();
    await page.getByTestId("orbi-mobile-menu-back").click();
    caseReport.ux12AudioSettings=true;
    await page.getByTestId("orbi-mobile-menu-main-play").click();
