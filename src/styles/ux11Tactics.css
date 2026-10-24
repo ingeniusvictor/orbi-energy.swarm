@@ -1,0 +1,181 @@
+/* UX11-B — repair the short DETAIL height override and compose genuine formation
+   controls/diagrams. Applies only to tactics; UX10-C welcome stays untouched. */
+.orbi-premium-entry[data-mobile-layer="DETAIL"][data-mobile-tab="HOW_TO"][data-mobile-section="PLAY"] > .orbi-mobile-launch.orbi-ux09.orbi-ux10c {
+  flex:1 1 auto!important;
+  height:100%!important;
+  min-height:0!important;
+  max-height:100dvh!important;
+  overflow:hidden!important;
+}
+.orbi-ux10c[data-layer="DETAIL"] .orbi-ux10c-detail:has(.orbi-ux10c-tactics) {
+  flex:1 1 auto;
+  min-height:0;
+  height:100%;
+  overflow:hidden;
+}
+.orbi-ux10c .orbi-ux10c-tactics {
+  flex:1 1 auto;
+  min-height:0;
+  overflow:hidden;
+  gap:clamp(4px,.8vh,9px);
+}
+.orbi-ux11b-tactics-intro {
+  flex:0 0 auto;
+  margin:0;
+  color:#a5d5e3;
+  font:600 clamp(9px,.9vw,12px)/1.25 "Space Grotesk",sans-serif;
+}
+.orbi-ux10c .orbi-ux10c-formation-grid {
+  display:grid;
+  flex:1 1 auto;
+  min-height:0;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  scrollbar-width:thin;
+  scrollbar-color:#438ba5 transparent;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  grid-template-rows:none;
+  grid-auto-rows:minmax(113px,1fr);
+  align-content:start;
+  padding:2px;
+  gap:clamp(6px,1vw,12px);
+}
+.orbi-ux10c .orbi-ux10c-formation {
+  box-sizing:border-box;
+  display:grid;
+  grid-template-columns:minmax(75px,.76fr) minmax(0,1fr);
+  align-items:stretch;
+  gap:clamp(6px,.7vw,12px);
+  width:100%;
+  min-height:113px;
+  height:auto;
+  min-width:0;
+  margin:0;
+  padding:clamp(5px,.65vw,10px);
+  text-align:left;
+  color:#f1faff;
+  background:linear-gradient(135deg,rgba(13,52,79,.94),rgba(2,13,31,.96));
+  border:1px solid rgba(111,226,252,.36);
+  box-shadow:inset 0 0 18px rgba(48,190,227,.07);
+  transition:border-color .15s,box-shadow .15s;
+}
+.orbi-ux10c .orbi-ux10c-formation[aria-pressed="true"] {
+  border-color:#ffd67d;
+  box-shadow:0 0 18px rgba(249,190,85,.20),inset 0 0 18px rgba(249,190,85,.12);
+}
+.orbi-ux10c .orbi-ux10c-formation:is(:hover,:focus-visible) {border-color:#ffe7a9;}
+.orbi-ux11b-card-art {
+  position:relative;
+  min-width:0;
+  min-height:0;
+  display:grid;
+  place-items:center;
+  overflow:hidden;
+  border:1px solid rgba(90,207,234,.24);
+  border-radius:8px;
+  background:radial-gradient(circle at center,rgba(5,94,125,.37),rgba(2,10,26,.88) 71%);
+}
+.orbi-ux11b-diagram {display:block;width:100%;height:100%;max-height:112px;object-fit:contain;}
+.orbi-ux10c .orbi-ux11b-card-copy {min-width:0;display:flex;flex-direction:column;justify-content:center;gap:4px;}
+.orbi-ux10c .orbi-ux11b-card-copy span {font:800 9px/1 monospace;letter-spacing:.1em;color:#f8d387;}
+.orbi-ux10c .orbi-ux11b-card-copy strong {
+  color:#f4fcff;font:900 clamp(10px,1.15vw,17px)/1.13 "Space Grotesk",sans-serif;
+  overflow-wrap:anywhere;
+}
+.orbi-ux10c .orbi-ux11b-card-copy small {font:600 clamp(8px,.8vw,11px)/1.2 "Space Grotesk",sans-serif;color:#9acbda;}
+.orbi-ux10c .orbi-ux11b-card-copy em {font:700 clamp(8px,.8vw,11px)/1.15 "Space Grotesk",sans-serif;color:#6deacb;font-style:normal;}
+.orbi-ux10c .orbi-ux11b-formation-info {
+  flex:0 0 auto;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:clamp(7px,1vw,15px);
+  padding:5px 9px;
+  min-height:34px;
+  min-width:0;
+  border:1px solid rgba(250,207,113,.36);
+  border-radius:9px;
+  background:linear-gradient(100deg,rgba(86,58,17,.38),rgba(5,36,54,.8));
+  font:700 clamp(8px,.85vw,12px)/1.2 "Space Grotesk",sans-serif;
+}
+.orbi-ux11b-formation-info strong {color:#ffe6a9;white-space:nowrap;}
+.orbi-ux11b-formation-info span {color:#b0f6e5;}
+.orbi-ux11b-formation-info small {color:#aac5d2;font-size:inherit;}
+.orbi-ux10c .orbi-ux10c-manual {min-height:38px;height:clamp(38px,6vh,50px);}
+
+/* Battle overlay: preserve fixed Estado/Equipo frame and real selection callbacks. */
+.orbi-game-root[data-immersive-landscape="true"][data-mobile-panel="tactica"] .orbi-tactical-rail {
+  display:flex!important;
+  flex-direction:column;
+  min-height:0!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+}
+.orbi-game-root[data-immersive-landscape="true"][data-mobile-panel="tactica"] .orbi-tactical-premium-content {
+  flex:0 0 auto!important;
+  display:grid!important;
+  min-height:min-content!important;
+  max-height:none!important;
+  overflow:visible!important;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  align-content:start;
+}
+.orbi-game-root[data-immersive-landscape="true"][data-mobile-panel="tactica"] .orbi-tactical-premium-formation-grid {
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  grid-auto-rows:minmax(93px,auto);
+  align-items:stretch;
+}
+.orbi-game-root[data-immersive-landscape="true"][data-mobile-panel="tactica"] .orbi-tactical-premium-formation-grid button {
+  display:grid!important;
+  grid-template-columns:minmax(64px,.7fr) minmax(0,1fr);
+  grid-template-rows:1fr auto;
+  align-items:center;
+  justify-items:stretch;
+  width:100%;
+  min-width:0;
+  min-height:93px;
+  height:auto;
+  padding:6px;
+  text-align:left;
+  gap:5px;
+  overflow:hidden;
+}
+.orbi-ux11b-combat-formation-art {
+  display:block;
+  min-width:0;
+  min-height:66px;
+  grid-row:1 / 3;
+  align-self:stretch;
+  border:1px solid rgba(94,224,249,.18);
+  border-radius:7px;
+  background:radial-gradient(circle,rgba(19,94,124,.30),rgba(1,9,28,.8));
+}
+.orbi-ux11b-combat-formation-copy {display:flex;flex-direction:column;gap:4px;min-width:0;}
+.orbi-ux11b-combat-formation-copy strong {font:800 clamp(10px,1vw,13px)/1.1 "Space Grotesk",sans-serif;overflow-wrap:anywhere;}
+.orbi-ux11b-combat-formation-copy small {color:#a9cfda;font:600 9px/1.1 "Space Grotesk",sans-serif;}
+.orbi-ux11b-combat-formation-copy em {font:700 9px/1.15 "Space Grotesk",sans-serif;color:#63e0c4;font-style:normal;}
+.orbi-ux11b-combat-formation-state {grid-column:2;justify-self:start;color:#f2cd77;overflow-wrap:anywhere;}
+.orbi-game-root[data-immersive-landscape="true"][data-mobile-panel="tactica"] .orbi-tactical-premium-formation-grid button[aria-pressed="true"] {border-color:#fbd078;}
+
+/* Short horizontal phones scroll only within the card grid; no compressed tracks. */
+@media (orientation:landscape) and (max-width:1100px) {
+  .orbi-ux10c .orbi-ux10c-formation-grid {grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:minmax(106px,auto);}
+  .orbi-ux10c .orbi-ux10c-formation {min-height:106px;}
+  .orbi-ux11b-formation-info small {display:none;}
+  .orbi-game-root[data-immersive-landscape="true"][data-mobile-panel="tactica"] .orbi-tactical-premium-formation-grid {grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+}
+@media (orientation:landscape) and (max-width:690px) {
+  .orbi-ux10c .orbi-ux10c-formation-grid {grid-template-columns:repeat(2,minmax(0,1fr));}
+  .orbi-ux11b-tactics-intro {font-size:9px;}
+  .orbi-ux11b-formation-info {justify-content:space-between;}
+}
+@media (orientation:landscape) and (max-height:420px) {
+  .orbi-ux10c .orbi-ux10c-detail-header {flex:0 0 auto;}
+  .orbi-ux10c .orbi-ux11b-card-copy {gap:2px;}
+  .orbi-ux10c .orbi-ux10c-formation-grid {grid-auto-rows:minmax(101px,auto);}
+  .orbi-ux10c .orbi-ux10c-formation {min-height:101px;}
+  .orbi-ux10c .orbi-ux10c-manual {min-height:35px;height:35px;}
+}
+@media (prefers-reduced-motion:reduce) {
+  .orbi-ux10c .orbi-ux10c-formation {transition:none;}
+}
