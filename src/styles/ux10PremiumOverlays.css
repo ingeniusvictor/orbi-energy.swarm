@@ -148,6 +148,21 @@
   .orbi-upgrade-choices {overflow-x:hidden!important;}
 }
 
+/* UX10-B dimensional stability: inherited Tailwind transition-all on side rails
+   animated their former sidebar width during the new immersive tab switch.
+   These are fullscreen modal views, not expanding sidebar cards. */
+.orbi-game-root[data-immersive-landscape="true"][data-mobile-panel="tactica"] .orbi-tactical-rail,
+.orbi-game-root[data-immersive-landscape="true"][data-mobile-panel="equipo"] .orbi-logistics-deck {
+  width:var(--ux10-frame-width)!important;
+  height:auto!important;
+  top:var(--ux10-panel-top)!important;
+  bottom:var(--ux10-panel-bottom)!important;
+  right:var(--ux10-frame-right)!important;
+  left:auto!important;
+  transition:none!important;
+  flex:initial!important;
+}
+
 /* UX10-B — premium interiors retain actual tactical actions and true EVO8 roster. */
 .orbi-game-root[data-immersive-landscape="true"][data-mobile-panel="tactica"] .orbi-tactical-rail,
 .orbi-game-root[data-immersive-landscape="true"][data-mobile-panel="equipo"] .orbi-logistics-deck {
