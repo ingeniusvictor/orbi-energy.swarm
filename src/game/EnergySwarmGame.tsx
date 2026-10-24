@@ -2164,127 +2164,96 @@ export const EnergySwarmGame: React.FC = () => {
     );
     const regularSwarmCount = swarmRef.current.length;
 
-    // Capacity lock converts additional cores into veteran progression rather
-    // than raw bodies. This is the main H4 anti-snowball rule.
-    if (regularSwarmCount >= capacityLimit) {
-      // Find candidates with same affinity. GAIA can never be consolidated.
-      let candidates = swarmRef.current.filter(
-        (m) =>
-          m.energyId !== "GAIA" &&
-          m.affinity === affinity,
+    // EVO8: an acquisition always strengthens a matching energy first. In
+    // particular, a full roster cannot lend HYDRO XP to an AERO member.
+    // Prefer the most advanced living instance to preserve founder promotion
+    // credits and finish its 29-acquisition path before recruiting duplicates.
+    const matchingFollowers = swarmRef.current
+      .filter((member) =>
+        member.energyId === energyDefinition.id &&
+        member.level < 8 &&
+        member.type !== OrbiType.HYDRO_LEVIATHAN &&
+        member.type !== OrbiType.SOLAR_GUARDIAN
+      )
+      .sort((a, b) =>
+        b.level - a.level ||
+        (b.matchingCoresAtLevel ?? 0) - (a.matchingCoresAtLevel ?? 0)
       );
-      
-      // If we have candidates of same affinity, prioritize those with same combat role
-      if (candidates.length > 0) {
-        const roleMatches = candidates.filter((m) => m.combatRole === combatRole);
-        if (roleMatches.length > 0) {
-          candidates = roleMatches;
-        }
-      } else {
-        // Fallback if no member has this affinity at all
-        candidates = swarmRef.current.filter(
-        (m) => m.energyId !== "GAIA",
-      );
-      }
-      
-      // From these candidates, find the lowest level and XP
-      let minLevel = Infinity;
-      let minXp = Infinity;
-      candidates.forEach((m) => {
-        const lvl = m.level || 1;
-        const xp = m.xp || 0;
-        if (lvl < minLevel) {
-          minLevel = lvl;
-          minXp = xp;
-        } else if (lvl === minLevel) {
-          if (xp < minXp) {
-            minXp = xp;
-          }
-        }
-      });
+    const targetOrbi = matchingFollowers[0];
+    if (targetOrbi) {
+      const oldLevel = targetOrbi.level;
+      const oldStage = getEvo8VisualStage(oldLevel);
+      const update = applyMatchingEnergyCore({
+        energyId: energyDefinition.id,
+        level: Math.max(1, Math.min(8, oldLevel)) as OrbiEvolutionLevel,
+        matchingCoresAtLevel: targetOrbi.matchingCoresAtLevel ?? 0,
+      }, energyDefinition.id);
 
-      // Filter candidates that match this minimum level & XP
-      const bestCandidates = candidates.filter((m) => {
-        const lvl = m.level || 1;
-        const xp = m.xp || 0;
-        return lvl === minLevel && xp === minXp;
-      });
+      targetOrbi.level = update.progress.level;
+      targetOrbi.matchingCoresAtLevel = update.progress.matchingCoresAtLevel;
+      targetOrbi.xp = acquisitionsForLevel(targetOrbi.level) - 1 +
+        targetOrbi.matchingCoresAtLevel;
+      targetOrbi.evolutionStage = getEvo8VisualStage(targetOrbi.level);
+      // Physical hitboxes remain as before; visual radius is independently
+      // capped to ENERGY in the Canvas renderer, even for E8 and fusions.
+      targetOrbi.size = Math.min(10.5, 5 + (targetOrbi.evolutionStage - 1) * 1.5 +
+        (targetOrbi.level - 1) * 0.15);
+      targetOrbi.shootCooldown = Math.max(20,
+        80 - (targetOrbi.evolutionStage - 1) * 12 -
+        (targetOrbi.level - 1) * 1.5);
 
-      // Pick a random candidate from bestCandidates (no siempre el primero!)
-      const targetOrbi = bestCandidates[Math.floor(Math.random() * bestCandidates.length)];
-
-      if (targetOrbi) {
-        const oldXp = targetOrbi.xp || 0;
-        const oldStage = targetOrbi.evolutionStage || 1;
-        const oldLevel = targetOrbi.level || 1;
-
-        // Deliver XP
-        const xpGain = 8;
-        const newXp = oldXp + xpGain;
-        targetOrbi.xp = newXp;
-
-        // Determine new evolution stage based on cumulative XP
-        // Thresholds: SPARK -> FOTON: 8 XP, FOTON -> GUARDIAN: 24 XP, GUARDIAN -> PRIME: 60 XP
-        let newStage = 1;
-        if (newXp >= 60) newStage = 4; // PRIME
-        else if (newXp >= 24) newStage = 3; // GUARDIAN
-        else if (newXp >= 8) newStage = 2; // FOTON
-        targetOrbi.evolutionStage = newStage;
-
-        // Level up calculation: every 4 XP gives a level
-        const newLevel = Math.floor(newXp / 4) + 1;
-        targetOrbi.level = newLevel;
-        const doctrineCapacityBefore = getSwarmDoctrineCapacity(
-          swarmDoctrineRef.current,
-        );
+      const capacityBefore = getSwarmDoctrineCapacity(swarmDoctrineRef.current);
+      if (update.levelUp) {
         swarmDoctrineRef.current = registerSwarmDoctrineLevel(
-          swarmDoctrineRef.current,
-          targetOrbi.id,
-          newLevel,
-        );
-        const doctrineCapacityAfter = getSwarmDoctrineCapacity(
-          swarmDoctrineRef.current,
-        );
-        if (doctrineCapacityAfter > doctrineCapacityBefore) {
-          postDialogue(
-            "SYSTEM",
-            "DOCTRINA DE ENJAMBRE: veterano L" + newLevel + " habilita slot " + doctrineCapacityAfter + "/30.",
-          );
-        }
-
-        // Scale statistics per level & stage
-        targetOrbi.size = 5 + (newStage - 1) * 1.5 + (newLevel - 1) * 0.15;
-        targetOrbi.shootCooldown = Math.max(20, 80 - (newStage - 1) * 12 - (newLevel - 1) * 1.5);
-
-        // Show clear feedback as required
-        addFloatingText("CORE CONSOLIDATED", playerPosRef.current.x, playerPosRef.current.y - 12, targetOrbi.color);
-        addFloatingText(`${targetOrbi.name} +${xpGain} XP`, playerPosRef.current.x, playerPosRef.current.y - 25, targetOrbi.color);
-
-        if (newLevel > oldLevel) {
-          if (newStage > oldStage) {
-            const stageName = newStage === 4 ? "PRIME" : (newStage === 3 ? "GUARDIAN" : "FOTON");
-            addFloatingText(`${targetOrbi.name} EVOLVED: ${stageName}!`, playerPosRef.current.x, playerPosRef.current.y - 38, targetOrbi.color);
-            postDialogue("SYSTEM", `EVOLUTION DETECTED: ${targetOrbi.name} reaches Stage ${newStage} (${stageName})!`);
-          } else {
-            addFloatingText(`${targetOrbi.name} LEVEL UP! (L${newLevel})`, playerPosRef.current.x, playerPosRef.current.y - 38, targetOrbi.color);
-            postDialogue("SYSTEM", `LEVEL UP: ${targetOrbi.name} reaches Level ${newLevel}`);
-          }
-        }
-
-        playRecruitSound();
-        screenShakeRef.current = 15;
-
-        // Massive flash explosion sparkles of matching color
-        triggerExplosion(
-          particlesRef.current,
-          getQualityConfig(stats.qualityPreset).maxParticles,
-          ParticleType.FUSION,
-          targetOrbi.x,
-          targetOrbi.y,
-          targetOrbi.color,
-          18
+          swarmDoctrineRef.current, targetOrbi.id, targetOrbi.level,
         );
       }
+      const capacityAfter = getSwarmDoctrineCapacity(swarmDoctrineRef.current);
+      if (capacityAfter > capacityBefore) {
+        postDialogue(
+          "SYSTEM",
+          `DOCTRINA EVO8: ${targetOrbi.name} E${targetOrbi.level} habilita slot ${capacityAfter}/30.`,
+        );
+      }
+
+      addFloatingText(
+        `${energyDefinition.displayName} CORE · ${targetOrbi.matchingCoresAtLevel}/${targetOrbi.level === 8 ? 0 : targetOrbi.level}`,
+        playerPosRef.current.x, playerPosRef.current.y - 24,
+        targetOrbi.color,
+      );
+      if (update.levelUp) {
+        const evolved = getEvo8VisualStage(targetOrbi.level) > oldStage;
+        addFloatingText(
+          `${targetOrbi.name} E${targetOrbi.level}${evolved ? " · EVOLUCIÓN" : ""}`,
+          playerPosRef.current.x, playerPosRef.current.y - 38,
+          targetOrbi.color,
+        );
+        postDialogue(
+          "SYSTEM",
+          `${targetOrbi.name} asciende E${oldLevel} → E${targetOrbi.level}${evolved ? " · nueva forma" : ""}.`,
+        );
+      }
+      playRecruitSound();
+      screenShakeRef.current = update.levelUp ? 14 : 5;
+      triggerExplosion(
+        particlesRef.current,
+        getQualityConfig(stats.qualityPreset).maxParticles,
+        ParticleType.FUSION,
+        targetOrbi.x, targetOrbi.y, targetOrbi.color,
+        update.levelUp ? 18 : 9,
+      );
+      return;
+    }
+
+    if (regularSwarmCount >= capacityLimit) {
+      // No candidate of this same energy is eligible. E8 extras never yield
+      // E9 or XP to another affinity; GAIA's synthesis cycle was already
+      // registered above. Keep the resource score, but no follower mutation.
+      addFloatingText(
+        `CORE ${energyDefinition.displayName} · SIN SLOT / E8`,
+        playerPosRef.current.x, playerPosRef.current.y - 25,
+        energyDefinition.color,
+      );
       return;
     }
 
@@ -2311,7 +2280,8 @@ export const EnergySwarmGame: React.FC = () => {
       personality,
       evolutionStage: 1,
       level: 1,
-      xp: 0
+      xp: 0,
+      matchingCoresAtLevel: 0,
     };
 
     swarmRef.current.push(member);
