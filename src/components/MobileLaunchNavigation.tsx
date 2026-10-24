@@ -49,7 +49,7 @@ export const MobileLaunchNavigation: React.FC<Props> = ({
   }, []);
   // Premium screenshots carry the approved 2026 visual identity. In portrait
   // preserve the fully editable, localized and scrollable legacy UX09 layout.
-  const artLayer = landscape && (layer==="WELCOME" || layer==="HUB" ||
+  const artLayer = landscape && language==="es" && (layer==="WELCOME" || layer==="HUB" ||
     (layer==="DETAIL" && section==="PLAY" && (tab==="MAIN" || tab==="HOW_TO")));
 
   const choices = [
