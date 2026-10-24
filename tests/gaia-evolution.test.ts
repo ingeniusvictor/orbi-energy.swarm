@@ -5,6 +5,7 @@ import {
   GAIA_REQUIRED_ENERGY_COUNT,
   createGaiaEvolutionState,
   getGaiaCombatScale,
+  getGaiaLevelForCompletedCycles,
   getGaiaProgressCount,
   registerGaiaEnergy,
 } from "../src/game/gaiaEvolution.ts";
@@ -58,7 +59,7 @@ test("one complete prerequisite set creates one GAIA level and resets cycle mask
   assert.equal(state.completedCycles, 1);
 });
 
-test("each later full set levels the same GAIA progression again", () => {
+test("later full sets yield matching GAIA essences with triangular level requirements", () => {
   let state = createGaiaEvolutionState();
 
   for (let cycle = 0; cycle < 3; cycle += 1) {
@@ -67,7 +68,7 @@ test("each later full set levels the same GAIA progression again", () => {
     }
   }
 
-  assert.equal(state.gaiaLevel, 3);
+  assert.equal(state.gaiaLevel, 2);
   assert.equal(state.completedCycles, 3);
   assert.equal(state.cycleMask, 0);
 });
@@ -95,12 +96,9 @@ test("GAIA combat evolution is meaningful but hard bounded", () => {
   assert.ok(level10.cooldownMultiplier < level1.cooldownMultiplier);
   assert.ok(level10.incomingDamageMultiplier < level1.incomingDamageMultiplier);
 
-  assert.equal(level1000.damageMultiplier, 2.2);
-  assert.equal(level1000.cooldownMultiplier, 0.62);
-  assert.equal(level1000.shieldSupportMultiplier, 2.5);
-  assert.equal(level1000.incomingDamageMultiplier, 0.75);
-  assert.equal(level1000.size, 10.5);
+  assert.deepEqual(level1000, getGaiaCombatScale(8));
   assert.equal(level1000.evolutionStage, 4);
+  assert.ok(level1000.size <= 10.5);
 });
 
 test("out-of-order acquisition with duplicates completes once per nine unique energies", () => {
@@ -192,4 +190,30 @@ test("GAIA progress helper reports unique energy bits in bounded state", () => {
   state = registerGaiaEnergy(state, "AERO").state;
   state = registerGaiaEnergy(state, "HYDRO").state;
   assert.equal(getGaiaProgressCount(state), 2);
+});
+
+test("GAIA v0.2 caps at E8 and changes full body at E1 E3 E5 E8", () => {
+  assert.deepEqual(
+    Array.from({length: 30}, (_, i) => getGaiaLevelForCompletedCycles(i)),
+    [0,1,2,2,3,3,3,4,4,4,4,5,5,5,5,5,6,6,6,6,6,6,7,7,7,7,7,7,7,8],
+  );
+  assert.equal(getGaiaLevelForCompletedCycles(100000), 8);
+  assert.equal(getGaiaLevelForCompletedCycles(Number.POSITIVE_INFINITY), 0);
+  assert.equal(getGaiaCombatScale(6).evolutionStage, 3);
+  assert.equal(getGaiaCombatScale(7).evolutionStage, 3);
+  assert.equal(getGaiaCombatScale(8).evolutionStage, 4);
+  assert.deepEqual(getGaiaCombatScale(8), getGaiaCombatScale(9999));
+});
+
+test("29 full nine-energy cycles reach GAIA E8 with no further levels", () => {
+  let state = createGaiaEvolutionState();
+  for (let cycle=1; cycle<=35; cycle+=1) {
+    for(const energy of ORBI_GAIA_REQUIRED_FOLLOWER_IDS) {
+      state = registerGaiaEnergy(state, energy).state;
+    }
+    assert.equal(state.gaiaLevel, getGaiaLevelForCompletedCycles(cycle));
+    assert.ok(state.gaiaLevel<=8);
+  }
+  assert.equal(state.gaiaLevel, 8);
+  assert.equal(state.completedCycles, 35);
 });
