@@ -17,7 +17,7 @@ test("H12 runtime adopts the pure Affinity Fusion Director", () => {
   assert.match(game, /const tryTriggerAffinityFusion = \(\) =>/);
   assert.match(
     game,
-    /resolveAffinityFusion\(\s*swarmRef\.current,\s*fusionEnergyRef\.current,?\s*\)/,
+    /resolveAffinityFusion\(\s*swarmRef\.current,\s*fusionEnergyRef\.current,\s*new Set\(swarmDoctrineRef\.current\.founderIds\),?\s*\)/,
   );
   assert.match(
     game,
@@ -87,6 +87,7 @@ test("fusion creation cannot mint a new founder or level-5 doctrine credit", () 
 
 test("H12 source authority is canonical metadata, never visual color", () => {
   assert.match(director, /member\.combatRole === recipe\.sourceCombatRole/);
+  assert.match(director, /member\.energyId === recipe\.sourceEnergyId/);
   assert.match(director, /COLLECTIBLE_FUSION_SOURCE_IDS/);
   assert.doesNotMatch(director, /member\.color|#f59e0b|#0ea5e9/);
 });

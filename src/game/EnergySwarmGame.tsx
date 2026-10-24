@@ -2578,6 +2578,7 @@ export const EnergySwarmGame: React.FC = () => {
     const resolution = resolveAffinityFusion(
       swarmRef.current,
       fusionEnergyRef.current,
+      new Set(swarmDoctrineRef.current.founderIds),
     );
     if (!resolution) return false;
     // EVO8 founders must retain their earned progression. Fusion may use

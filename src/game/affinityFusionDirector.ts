@@ -16,6 +16,9 @@ export type AffinityFusionRecipeId =
 
 export interface AffinityFusionOutputProfile {
   type: OrbiType.SOLAR_GUARDIAN | OrbiType.HYDRO_LEVIATHAN;
+  energyId: OrbiEnergyId;
+  /** Fusion class rank; independent of EVO8 level and never a promotion credit. */
+  fusionRank: number;
   name: string;
   color: string;
   size: number;
@@ -31,6 +34,7 @@ export interface AffinityFusionOutputProfile {
 
 export interface AffinityFusionRecipe {
   id: AffinityFusionRecipeId;
+  sourceEnergyId: OrbiEnergyId;
   sourceCombatRole: OrbiCombatRole;
   sourceCount: typeof AFFINITY_FUSION_SOURCE_COUNT;
   output: AffinityFusionOutputProfile;
@@ -47,16 +51,7 @@ export interface AppliedAffinityFusion {
   consumedMembers: readonly [OrbiMember, OrbiMember, OrbiMember];
 }
 
-const COLLECTIBLE_FUSION_SOURCE_IDS = new Set<OrbiEnergyId>([
-  "HYDRO",
-  "AERO",
-  "TERMO",
-  "MAGNE",
-  "ATON",
-  "KINETRIX",
-  "H2NOVA",
-  "QUANTUM",
-]);
+const COLLECTIBLE_FUSION_SOURCE_IDS = new Set<OrbiEnergyId>(["FOTON", "HYDRO"]);
 
 const FUSION_CLASS_TYPES = new Set<OrbiType>([
   OrbiType.SOLAR_GUARDIAN,
@@ -71,10 +66,13 @@ const FUSION_CLASS_TYPES = new Set<OrbiType>([
 export const AFFINITY_FUSION_RECIPES: readonly AffinityFusionRecipe[] = [
   {
     id: "BEAM_SOLAR_GUARDIAN",
+    sourceEnergyId: "FOTON",
     sourceCombatRole: "beam",
     sourceCount: AFFINITY_FUSION_SOURCE_COUNT,
     output: {
       type: OrbiType.SOLAR_GUARDIAN,
+      energyId: "FOTON",
+      fusionRank: 1,
       name: "SOLAR GUARDIAN",
       color: "#fbbf24",
       size: 7,
@@ -90,10 +88,13 @@ export const AFFINITY_FUSION_RECIPES: readonly AffinityFusionRecipe[] = [
   },
   {
     id: "PULSE_HYDRO_LEVIATHAN",
+    sourceEnergyId: "HYDRO",
     sourceCombatRole: "pulse",
     sourceCount: AFFINITY_FUSION_SOURCE_COUNT,
     output: {
       type: OrbiType.HYDRO_LEVIATHAN,
+      energyId: "HYDRO",
+      fusionRank: 1,
       name: "HYDRO LEVIATHAN",
       color: "#22d3ee",
       size: 16,
@@ -114,7 +115,6 @@ export const isAffinityFusionSource = (
 ): boolean =>
   Boolean(member.energyId) &&
   COLLECTIBLE_FUSION_SOURCE_IDS.has(member.energyId as OrbiEnergyId) &&
-  member.energyId !== "FOTON" &&
   member.energyId !== "GAIA" &&
   !FUSION_CLASS_TYPES.has(member.type);
 
@@ -134,6 +134,7 @@ const compareWeakestFusionSource = (
 export const resolveAffinityFusion = (
   members: readonly OrbiMember[],
   fusionEnergy: number,
+  protectedMemberIds: ReadonlySet<string> = new Set(),
 ): AffinityFusionResolution | null => {
   if (!Number.isFinite(fusionEnergy) || fusionEnergy < AFFINITY_FUSION_ENERGY_COST) {
     return null;
@@ -144,7 +145,9 @@ export const resolveAffinityFusion = (
       .filter(
         (member) =>
           isAffinityFusionSource(member) &&
-          member.combatRole === recipe.sourceCombatRole,
+          member.energyId === recipe.sourceEnergyId &&
+          member.combatRole === recipe.sourceCombatRole &&
+          !protectedMemberIds.has(member.id),
       )
       .sort(compareWeakestFusionSource);
 
@@ -186,6 +189,11 @@ export const applyAffinityFusion = (
   spawnPosition: { x: number; y: number },
 ): AppliedAffinityFusion | null => {
   if (!fusedMemberId) return null;
+  // Do not trust a stale/spoofed resolution to redefine a canonical class.
+  const canonicalRecipe = AFFINITY_FUSION_RECIPES.find((recipe) =>
+    recipe.id === resolution.recipe.id,
+  );
+  if (!canonicalRecipe) return null;
 
   const sourceIds = new Set(resolution.sourceIds);
   if (sourceIds.size !== AFFINITY_FUSION_SOURCE_COUNT) return null;
@@ -203,13 +211,14 @@ export const applyAffinityFusion = (
     consumedMembers.some(
       (member) =>
         !isAffinityFusionSource(member) ||
-        member.combatRole !== resolution.recipe.sourceCombatRole,
+        member.energyId !== canonicalRecipe.sourceEnergyId ||
+        member.combatRole !== canonicalRecipe.sourceCombatRole,
     )
   ) {
     return null;
   }
 
-  const output = resolution.recipe.output;
+  const output = canonicalRecipe.output;
   const fusedMember: OrbiMember = {
     id: fusedMemberId,
     type: output.type,
@@ -220,6 +229,8 @@ export const applyAffinityFusion = (
     targetY: spawnPosition.y,
     color: output.color,
     size: output.size,
+    energyId: output.energyId,
+    fusionRank: output.fusionRank,
     shootCooldown: output.shootCooldown,
     affinity: output.affinity,
     combatRole: output.combatRole,
