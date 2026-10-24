@@ -3,7 +3,7 @@ import { Atom, ChevronLeft, ChevronRight, Droplets, Flame, Leaf, Magnet, Orbit, 
 import { ORBI_ENERGY_CANON, ORBI_GAIA_REQUIRED_FOLLOWER_IDS, ORBI_PROTAGONIST_ID } from "../game/orbiEnergyCanon";
 import { getOrbiAttackProfile } from "../game/orbiAttackProfiles";
 import { acquisitionsForLevel, getEvo8VisualStage, getEvo8WingCount, ORBI_MAX_EVOLUTION_LEVEL } from "../game/orbiEvolution";
-import { GAIA_REQUIRED_ENERGY_COUNT, getGaiaLevelForCompletedCycles } from "../game/gaiaEvolution";
+import { getGaiaLevelForCompletedCycles } from "../game/gaiaEvolution";
 import type { OrbiCombatRole, OrbiEnergyId } from "../game/types";
 
 type Locale = "es" | "en";
