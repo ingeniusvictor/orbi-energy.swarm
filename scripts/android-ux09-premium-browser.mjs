@@ -187,6 +187,20 @@ async function run(width,height,mobile,dpr=1){
    caseReport.portraitFallback=true;
   }
   ensure(errors.length===0,id+": page JS errors "+errors.join("; "));
+  // EV-F07: browser-load actual transparent E8 SVGs at real combat size (not only source checks).
+  const galleryPage=await context.newPage();
+  galleryPage.on("pageerror",e=>errors.push("EVO8 gallery: "+String(e)));
+  await galleryPage.goto(origin+"/evo8-lot1-review.html",{waitUntil:"domcontentloaded",timeout:15000});
+  const images=galleryPage.locator("article[data-energy] img");
+  ensure(await images.count()===9,id+": E8 lot-one gallery missing image sizes");
+  await Promise.all((await images.all()).map(image=>image.evaluate(el=>el.decode())));
+  const imageProof=await images.evaluateAll(els=>els.map(el=>({ok:el.complete&&el.naturalWidth===512&&el.naturalHeight===512,width:el.getBoundingClientRect().width,source:el.getAttribute("src")})));
+  ensure(imageProof.every(item=>item.ok),id+": EVO8 lot-one gallery image failed to decode");
+  ensure(imageProof.filter(item=>Math.abs(item.width-28)<.01).length===3,
+    id+": real-size sprite not 28 px for all three identities");
+  await shot(galleryPage,id+"-evo8-lot1-art-review");
+  await galleryPage.close();
+  caseReport.lot1Art=true;
   caseReport.pass=true;
  } catch(error){caseReport.pass=false;caseReport.error=String(error);report.failures.push({id,error:String(error)});}
  finally{report.cases.push(caseReport);await context.close();}

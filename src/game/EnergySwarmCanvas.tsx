@@ -1,5 +1,6 @@
 import React from "react";
 import { getEvo8WingCount } from "./orbiEvolution";
+import { prewarmEvo8Lot1Sprites, disposeEvo8Lot1Sprites, drawEvo8Lot1Sprite } from "./evo8PremiumSprite";
 import { 
   OrbiMember, Enemy, Projectile, Resource, BiomeType, 
   FormationType, EnemyType, OrbiType, QualityPreset
@@ -99,7 +100,9 @@ export const EnergySwarmCanvas: React.FC<EnergySwarmCanvasProps> = ({
 
   React.useEffect(() => {
     prewarmFotonGameplay3D(qualityPreset);
+    prewarmEvo8Lot1Sprites(import.meta.env.BASE_URL);
     return () => {
+      disposeEvo8Lot1Sprites();
       disposeFotonGameplay3D();
     };
   }, [qualityPreset]);
@@ -317,6 +320,15 @@ export function drawSwarmRoster(
     const ry = member.recoilY || 0;
     const recoilMod = isNear ? 1.0 : 0.5;
     ctx.translate(member.x + rx * recoilMod, member.y + ry * recoilMod);
+
+    // EV-F07: one cached, transparent E8 sprite at ≤28 world units.
+    // Loading/error/non-E8/fusions keep the original Canvas2D member, unchanged.
+    // No new entity, collision box, attack effect or game progression mutation.
+    if (drawEvo8Lot1Sprite(ctx, member, flashProfile.friendlyWhiteFlashStrength,
+      member.flashTicks ?? 0)) {
+      ctx.restore();
+      return;
+    }
 
     // Orbiting/pulsing size modulation
     let localPulse = isNear ? Math.sin(time * 0.005 + idx * 0.5) * 1.5 : 0;

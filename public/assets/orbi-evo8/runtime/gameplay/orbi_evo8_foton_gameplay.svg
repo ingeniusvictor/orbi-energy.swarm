@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" fill="none" role="img" aria-label="FOTON EVO8 prototype game sprite">
+<!-- EV-F07 Lote 1: text-free fully transparent scalable art; six independent compact wings. -->
+<defs>
+ <radialGradient id="body" cx=".38" cy=".26" r=".85">
+  <stop stop-color="#e9ffc4"/><stop offset=".2" stop-color="#7aff7e"/><stop offset=".59" stop-color="#279e67"/><stop offset="1" stop-color="#063c31"/>
+ </radialGradient>
+ <linearGradient id="wing" x1="0" x2="1" y1="0" y2="1">
+  <stop stop-color="#e9ffc4"/><stop offset=".34" stop-color="#279e67"/><stop offset=".67" stop-color="#063c31"/><stop offset="1" stop-color="#7cff56"/>
+ </linearGradient>
+ <radialGradient id="element"><stop stop-color="#fff7d9"/><stop offset=".34" stop-color="#e9ffc4"/><stop offset="1" stop-color="#279e67"/></radialGradient>
+</defs>
+<g><g class="orbi-evo8-wing" transform="rotate(-150 256 256)">
+   <path d="M256 178L243 140L240 61Q256 45 272 61L269 140L256 178Z" fill="url(#wing)" stroke="#c9ffd1" stroke-width="5" stroke-linejoin="round"/>
+   <path d="M245 67L267 67L264 137L248 137Z" fill="#0a493c" stroke="#98f7aa" stroke-width="2"/>
+   <path d="M256 68V136M246 90H266M246 112H266" stroke="#5ad78a" stroke-width="2" opacity=".86"/>
+   <path d="M250 138L256 163L262 138" fill="#dcffba" opacity=".85"/>
+ </g>
+<g class="orbi-evo8-wing" transform="rotate(-90 256 256)">
+   <path d="M256 178L243 140L240 61Q256 45 272 61L269 140L256 178Z" fill="url(#wing)" stroke="#c9ffd1" stroke-width="5" stroke-linejoin="round"/>
+   <path d="M245 67L267 67L264 137L248 137Z" fill="#0a493c" stroke="#98f7aa" stroke-width="2"/>
+   <path d="M256 68V136M246 90H266M246 112H266" stroke="#5ad78a" stroke-width="2" opacity=".86"/>
+   <path d="M250 138L256 163L262 138" fill="#dcffba" opacity=".85"/>
+ </g>
+<g class="orbi-evo8-wing" transform="rotate(-30 256 256)">
+   <path d="M256 178L243 140L240 61Q256 45 272 61L269 140L256 178Z" fill="url(#wing)" stroke="#c9ffd1" stroke-width="5" stroke-linejoin="round"/>
+   <path d="M245 67L267 67L264 137L248 137Z" fill="#0a493c" stroke="#98f7aa" stroke-width="2"/>
+   <path d="M256 68V136M246 90H266M246 112H266" stroke="#5ad78a" stroke-width="2" opacity=".86"/>
+   <path d="M250 138L256 163L262 138" fill="#dcffba" opacity=".85"/>
+ </g>
+<g class="orbi-evo8-wing" transform="rotate(30 256 256)">
+   <path d="M256 178L243 140L240 61Q256 45 272 61L269 140L256 178Z" fill="url(#wing)" stroke="#c9ffd1" stroke-width="5" stroke-linejoin="round"/>
+   <path d="M245 67L267 67L264 137L248 137Z" fill="#0a493c" stroke="#98f7aa" stroke-width="2"/>
+   <path d="M256 68V136M246 90H266M246 112H266" stroke="#5ad78a" stroke-width="2" opacity=".86"/>
+   <path d="M250 138L256 163L262 138" fill="#dcffba" opacity=".85"/>
+ </g>
+<g class="orbi-evo8-wing" transform="rotate(90 256 256)">
+   <path d="M256 178L243 140L240 61Q256 45 272 61L269 140L256 178Z" fill="url(#wing)" stroke="#c9ffd1" stroke-width="5" stroke-linejoin="round"/>
+   <path d="M245 67L267 67L264 137L248 137Z" fill="#0a493c" stroke="#98f7aa" stroke-width="2"/>
+   <path d="M256 68V136M246 90H266M246 112H266" stroke="#5ad78a" stroke-width="2" opacity=".86"/>
+   <path d="M250 138L256 163L262 138" fill="#dcffba" opacity=".85"/>
+ </g>
+<g class="orbi-evo8-wing" transform="rotate(150 256 256)">
+   <path d="M256 178L243 140L240 61Q256 45 272 61L269 140L256 178Z" fill="url(#wing)" stroke="#c9ffd1" stroke-width="5" stroke-linejoin="round"/>
+   <path d="M245 67L267 67L264 137L248 137Z" fill="#0a493c" stroke="#98f7aa" stroke-width="2"/>
+   <path d="M256 68V136M246 90H266M246 112H266" stroke="#5ad78a" stroke-width="2" opacity=".86"/>
+   <path d="M250 138L256 163L262 138" fill="#dcffba" opacity=".85"/>
+ </g></g>
+<g class="orbi-evo8-chassis">
+ <path d="M256 152L335 184L363 253L330 325L256 360L182 325L149 253L177 184Z" fill="#063c31" stroke="#c6ffd3" stroke-width="8" stroke-linejoin="round"/>
+ <path d="M256 166L323 195L346 252L317 309L256 339L195 309L166 252L189 195Z" fill="url(#body)" stroke="#7cff56" stroke-width="4" stroke-linejoin="round"/>
+ <path d="M256 170L256 211M186 198L217 224M326 198L296 224M176 267L217 274M336 267L296 274" stroke="#e9ffc4" stroke-width="4" opacity=".60"/>
+ <path d="M184 245L194 214L215 204M328 245L318 214L297 204M194 290L222 313M318 290L290 313" fill="none" stroke="#c6ffd3" stroke-width="6" opacity=".8"/>
+ <circle cx="256" cy="256" r="62" fill="#063c31" stroke="#c6ffd3" stroke-width="7"/>
+ <circle cx="256" cy="256" r="51" fill="url(#body)" stroke="#7cff56" stroke-width="3"/>
+ <g class="orbi-evo8-solar-panel" transform="translate(256 232)">
+ <path d="M-69 -48L69 -48L78 10L-78 10Z" fill="#0c3f3a" stroke="#e4ffc1" stroke-width="7" stroke-linejoin="round"/>
+ <path d="M-63 -40L63 -40L69 4L-69 4Z" fill="#13665c"/>
+ <g stroke="#74ecab" stroke-width="3" opacity=".9">
+ <path d="M-36 -40L-38 4M0 -40V4M36 -40L38 4M-66 -18H66"/>
+ </g><path d="M-69 -48L69 -48" stroke="#fff5b7" stroke-width="5"/>
+ <path d="M-31 21L-27 39M31 21L27 39" stroke="#d2ffc7" stroke-width="6"/>
+ </g>
+ <path d="M233 285Q256 298 279 285" stroke="#b7ffc5" stroke-width="6" stroke-linecap="round" fill="none"/>
+ <path d="M207 331L232 345L280 345L305 331" stroke="#e9ffc4" stroke-width="5" opacity=".88" stroke-linecap="round"/>
+</g>
+</svg>
