@@ -486,12 +486,15 @@ export function drawSwarmRoster(
       ctx.stroke();
 
       const wingA = time * 0.005 + idx;
+      const satelliteSolidRadius =
+        member.type === OrbiType.SOLAR_GUARDIAN ? 1.25 : 2.5;
+      const satelliteOrbitRadius = Math.min(r * 1.8, 14 - satelliteSolidRadius);
       ctx.fillStyle = "#ffffff";
       ctx.beginPath();
       ctx.arc(
-        Math.cos(wingA) * r * 1.8,
-        Math.sin(wingA) * r * 1.8,
-        member.type === OrbiType.SOLAR_GUARDIAN ? 1.25 : 2.5,
+        Math.cos(wingA) * satelliteOrbitRadius,
+        Math.sin(wingA) * satelliteOrbitRadius,
+        satelliteSolidRadius,
         0,
         Math.PI * 2
       );
