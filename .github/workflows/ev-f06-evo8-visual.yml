@@ -15,6 +15,7 @@ on:
   push:
     branches: [main]
     paths:
+      - 'src/game/formations.ts'
       - 'src/game/EnergySwarmGame.tsx'
       - 'src/game/EnergySwarmCanvas.tsx'
       - 'src/game/gaiaEvolution.ts'
