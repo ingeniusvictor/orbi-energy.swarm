@@ -1,5 +1,8 @@
 # ES-13 — Arcade Evolution & Dynamic Warfront
 
+> **EV-EVO8 v0.2 / 2026-10-23 — estado confirmado en GitHub:** Formaciones 2/5/6 ya ejecutan geometrías nuevas (PR #696), el protagonista se presenta como ENERGY y FOTON es coleccionable fotovoltaico verde; GAIA exige nueve energías (PR #700), icono solar FOTON integrado (PR #704). **El motor EVO8 (PR #698) y la doctrina E5/E8 (PR #702) están fusionados como API pura pero todavía NO conectados a la progresión activa.** Último main de código: `f938212804ef21cdb703760b22b017ffce9c865a`; CI/Android/Chromium/Web UX01B/Web Beta SUCCESS; prueba física #248 pendiente. [Leer estado EVO8 v0.2](EV_EVO8_V02_IMPLEMENTATION_STATUS.md). Los registros históricos más abajo conservan su significado en la fecha de creación, no representan el estado live actual.
+
+
 Status: ACTIVE PROGRAM  
 Repository: `ingeniusvictor/orbi-energy.swarm`
 
