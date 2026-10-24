@@ -319,7 +319,7 @@ export const GameHud: React.FC<GameHudProps> = ({
           </div>
         </section>
       )}
-      {/* 1. HEALTH SHIELD BAR */
+      {/* 1. HEALTH SHIELD BAR */}
       <div className="orbi-hud-shield flex items-center gap-2 max-w-[220px]">
         <span className="flex items-center gap-1 text-slate-400 font-bold shrink-0 uppercase">
           <Shield size={11} className="text-cyan-400" />
