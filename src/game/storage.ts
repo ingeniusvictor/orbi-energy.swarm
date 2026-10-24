@@ -25,6 +25,8 @@ export const DEFAULT_STATS: GameStats = {
   bossDefeated: false,
   gameMemories: [],
   audioMuted: false,
+  musicEnabled: true,
+  soundEffectsEnabled: true,
   qualityPreset: QualityPreset.MEDIUM,
   tutorialCompleted: false,
   screenShakeMode: "FULL",
