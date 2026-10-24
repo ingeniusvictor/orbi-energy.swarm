@@ -8,8 +8,8 @@ const game=read("src/game/EnergySwarmGame.tsx");
 const css=read("src/styles/ux11Status3D.css");
 const chrome=read("scripts/web-ux01-browser-evidence.mjs");
 test("UX11-D isolated 3D component mounts only in Estado with lazy import",()=>{
-  assert.match(hud,/React\.lazy\(\(\) => import\("\.\/EnergyStatus3D"\)/);
-  assert.match(hud,/React\.Suspense/);
+  assert.match(hud,/import \{ EnergyStatus3D \} from "\.\/EnergyStatus3D"/);
+  assert.doesNotMatch(hud,/React\.Suspense/);
   assert.match(hud,/<EnergyStatus3D qualityPreset=\{qualityPreset\} language=\{language\}/);
   assert.match(hud,/immersive && mobilePanel === "estado"/);
   assert.match(game,/qualityPreset=\{stats\.qualityPreset\}/);
