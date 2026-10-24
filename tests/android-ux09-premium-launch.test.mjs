@@ -31,7 +31,7 @@ test("UX09 has seven illustrated navigation modules with accessible back and lan
 });
 test("UX09 replaces the dark mobile background with a bundled scene on mobile and desktop", () => {
   assert.match(css, /orbi-ux09-scene/);
-  assert.ok(ui.includes("ux09/premium/"),"portrait also uses premium art");
+  assert.ok(ui.includes("ux09/orbi-command-world.svg"),"portrait uses clean scenery without baked Spanish labels");
   assert.match(css, /--orbi-ux09-world/);
   assert.match(css, /orbi-ux09-mode-card--violet/);
   assert.match(css, /orientation:portrait/);

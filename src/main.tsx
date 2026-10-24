@@ -7,6 +7,7 @@ import './styles/androidImmersive.css';
 import './styles/analogJoystick.css';
 import './styles/webImmersive.css';
 import './styles/ux10PremiumOverlays.css';
+import './styles/ux10CinematicLaunch.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

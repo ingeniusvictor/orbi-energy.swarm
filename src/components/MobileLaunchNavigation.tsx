@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { PremiumArtNavigation } from "./PremiumArtNavigation";
+import { PremiumNativeNavigation } from "./PremiumNativeNavigation";
 import {
   ArrowLeft, Atom, BookOpen, ChevronRight, Compass, Cpu, Gauge,
   Gamepad2, Globe, Info, LockKeyhole, Play, Settings, Shield,
@@ -33,9 +33,9 @@ export const MobileLaunchNavigation: React.FC<Props> = ({
   nanoCredits = 0, purifiedEnergy = 0,
 }) => {
   const es = language === "es";
-  // Vite BASE_URL keeps the same visual assets working on Pages subpaths.
-  const fallbackArt = layer==="WELCOME" ? "welcome" : layer==="HUB" ? "command" : (section==="PLAY" && tab==="MAIN") ? "modes" : "formations";
-  const worldImage = `url("${import.meta.env.BASE_URL}ux09/premium/${fallbackArt}.webp")`;
+  // Portrait fallback uses a text-free world illustration, never Spanish
+  // buttons and logos baked into a WebP beneath real English controls.
+  const worldImage = 'url("' + import.meta.env.BASE_URL + 'ux09/orbi-command-world.svg")';
   const [selectedMode, setSelectedMode] = useState<"CAMPAIGN" | "SCORE_ATTACK" | "INFINITE">("CAMPAIGN");
   const [landscape, setLandscape] = useState(() =>
     typeof window !== "undefined" && window.matchMedia("(orientation: landscape)").matches
@@ -47,10 +47,9 @@ export const MobileLaunchNavigation: React.FC<Props> = ({
     media.addEventListener("change", update);
     return () => media.removeEventListener("change", update);
   }, []);
-  // Premium screenshots carry the approved 2026 visual identity. In portrait
-  // preserve the fully editable, localized and scrollable legacy UX09 layout.
-  const artLayer = landscape && language==="es" && (layer==="WELCOME" || layer==="HUB" ||
-    (layer==="DETAIL" && section==="PLAY" && (tab==="MAIN" || tab==="HOW_TO")));
+  // UX10-C: one native cinematic composition for BOTH ES and EN landscape.
+  // Portrait retains its compact accessible UX09 layout and live controls.
+  const artLayer = landscape;
 
   const choices = [
     { icon: Gamepad2, label: es ? "Modos de juego" : "Game modes", description: es ? "Campaña, desafío infinito y más" : "Campaign, survival and more", tab: "MAIN" as const, section: "PLAY" as const, art: "modes" },
@@ -79,7 +78,7 @@ export const MobileLaunchNavigation: React.FC<Props> = ({
     },
   ];
   if (artLayer) return (
-    <PremiumArtNavigation layer={layer} section={section} tab={tab} language={language}
+    <PremiumNativeNavigation layer={layer} section={section} tab={tab} language={language}
       onLanguage={onLanguage} onEnter={onEnter} onBack={onBack} onOpen={onOpen}
       onPlay={onPlay} onScoreAttack={onScoreAttack} hasInfiniteRecord={hasInfiniteRecord}
       nanoCredits={nanoCredits} purifiedEnergy={purifiedEnergy}/>
