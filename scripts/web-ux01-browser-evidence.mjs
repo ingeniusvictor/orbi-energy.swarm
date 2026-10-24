@@ -108,11 +108,31 @@ async function run(name,width,height,coarse,immersive,webImmersive) {
         name+": Estado must display live swarm, score and credits");
       check(await page.locator('.orbi-immersive-action[aria-label="Reanudar"]').count()===1,
         name+": Estado drawer did not actually pause simulation");
+      const estadoBounds=await page.locator(".orbi-hud-detail-grid").boundingBox();
+      check(estadoBounds && estadoBounds.width>200 && estadoBounds.height>80,name+": Estado bounds invalid");
       await shot(page,name+"-estado");
       await page.getByRole("button",{name:/^Táctica$|^Tactics$/}).click();
       check(await page.locator(".orbi-tactical-rail").isVisible(),name+": Tactica panel not visible");
+      const tacticalBounds=await page.locator(".orbi-tactical-rail").boundingBox();
+      check(tacticalBounds && Math.abs(tacticalBounds.x-estadoBounds.x)<3 &&
+        Math.abs(tacticalBounds.y-estadoBounds.y)<3 &&
+        Math.abs(tacticalBounds.width-estadoBounds.width)<3 &&
+        Math.abs(tacticalBounds.height-estadoBounds.height)<3,
+        name+": Tactica diverges from Estado frame");
+      check(await page.locator(".orbi-tactical-premium-formation-grid button").count()===6,
+        name+": six canonical tactical formations not present");
+      await shot(page,name+"-tactica");
       await page.getByRole("button",{name:/^Equipo$|^Team$/}).click();
       check(await page.locator(".orbi-logistics-deck").isVisible(),name+": Equipo panel not visible");
+      const equipmentBounds=await page.locator(".orbi-logistics-deck").boundingBox();
+      check(equipmentBounds && Math.abs(equipmentBounds.x-estadoBounds.x)<3 &&
+        Math.abs(equipmentBounds.y-estadoBounds.y)<3 &&
+        Math.abs(equipmentBounds.width-estadoBounds.width)<3 &&
+        Math.abs(equipmentBounds.height-estadoBounds.height)<3,
+        name+": Equipo diverges from Estado frame");
+      check(await page.locator(".orbi-companion-tabs button").count()===4,
+        name+": equipment navigation lost a tab");
+      await shot(page,name+"-equipo");
       await page.keyboard.press("Escape");
       await page.clock.runFor(100);
       check(!await page.locator(".orbi-immersive-panel-heading").isVisible(),

@@ -212,6 +212,7 @@ import {
 } from "./runtimeCadence";
 
 import { StartScreen } from "../components/StartScreen";
+import { useGameTranslation } from "../i18n";
 import { GameHud } from "../components/GameHud";
 import { PauseMenu } from "../components/PauseMenu";
 import { ResultScreen } from "../components/ResultScreen";
@@ -331,6 +332,7 @@ type InfiniteBossRematchProfile = Extract<
 >;
 
 export const EnergySwarmGame: React.FC = () => {
+  const { language } = useGameTranslation();
   const viewportProfile = useViewportComposition();
   const {
     webLandscape: immersiveWebLandscape,
@@ -8503,7 +8505,7 @@ export const EnergySwarmGame: React.FC = () => {
               
               <div className="flex justify-between items-center border-b border-slate-900 pb-2">
                 {!isLeftPanelCollapsed ? (
-                  <span className="text-xs font-bold font-mono tracking-wider text-cyan-400">⚡ TACTICAL RAIL</span>
+                  <span className="text-xs font-bold font-mono tracking-wider text-cyan-400">⚡ {language === "es" ? "RAÍL TÁCTICO" : "TACTICAL RAIL"}</span>
                 ) : (
                   <span className="text-[10px] font-bold font-mono text-cyan-500">TAC</span>
                 )}
@@ -8517,9 +8519,9 @@ export const EnergySwarmGame: React.FC = () => {
               </div>
 
               {!isLeftPanelCollapsed && (
-                <div className="orbi-side-deck-content space-y-4 animate-fadeIn">
-                  <div className="space-y-1.5">
-                    <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block">AUDIO SYSTEM</span>
+                <div className="orbi-side-deck-content orbi-tactical-premium-content space-y-4 animate-fadeIn">
+                  <div className="orbi-tactical-premium-audio space-y-1.5">
+                    <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block">{language === "es" ? "SISTEMA DE AUDIO" : "AUDIO SYSTEM"}</span>
                     <button
                       onClick={toggleMute}
                       className={`w-full flex items-center justify-between p-2 rounded border text-xs font-mono font-bold transition ${
@@ -8528,13 +8530,13 @@ export const EnergySwarmGame: React.FC = () => {
                           : "bg-cyan-950/15 border-cyan-500/10 text-cyan-400 hover:bg-cyan-950/25"
                       }`}
                     >
-                      <span>VOLUME STATE:</span>
-                      <span className="uppercase">{audioMuted ? "MUTED" : "UNMUTED"}</span>
+                      <span>{language === "es" ? "AUDIO TÁCTICO" : "TACTICAL AUDIO"}</span>
+                      <span className="uppercase">{audioMuted ? (language === "es" ? "SILENCIADO" : "MUTED") : (language === "es" ? "ACTIVADO" : "ENABLED")}</span>
                     </button>
                   </div>
 
-                  <div className="space-y-1.5">
-                    <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block">TACTICAL RADAR</span>
+                  <div className="orbi-tactical-premium-radar space-y-1.5">
+                    <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block">{language === "es" ? "RADAR TÁCTICO" : "TACTICAL RADAR"}</span>
                     <div className="grid grid-cols-3 gap-1 bg-slate-900/60 p-1 rounded-lg border border-slate-850 text-[10px] font-mono">
                       {(["FULL", "COMPACT", "OFF"] as const).map((m) => {
                         const isSel = stats.minimapMode === m;
@@ -8555,8 +8557,8 @@ export const EnergySwarmGame: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="space-y-1.5">
-                    <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block">VISUAL ENGINE</span>
+                  <div className="orbi-tactical-premium-visual space-y-1.5">
+                    <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block">{language === "es" ? "MOTOR VISUAL" : "VISUAL ENGINE"}</span>
                     <div className="grid grid-cols-2 gap-1 bg-slate-900/60 p-1 rounded-lg border border-slate-850 text-[10px] font-mono">
                       {([QualityPreset.LOW, QualityPreset.MEDIUM, QualityPreset.HIGH, QualityPreset.ULTRA]).map((q) => {
                         const isSel = stats.qualityPreset === q;
@@ -8577,16 +8579,16 @@ export const EnergySwarmGame: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block">FORMACIONES · CLIC / TECLAS 1–6</span>
-                    <div className="flex flex-col gap-1.5">
+                  <div className="orbi-tactical-premium-formations space-y-2">
+                    <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block">{language === "es" ? "FORMACIONES · CLIC / TECLAS 1–6" : "FORMATIONS · CLICK / KEYS 1–6"}</span>
+                    <div className="orbi-tactical-premium-formation-grid flex flex-col gap-1.5">
                       {[
-                        { type: FormationType.LINE, label: "Línea de Asalto" },
-                        { type: FormationType.CIRCLE, label: "Círculo Colector" },
-                        { type: FormationType.DELTA, label: "Delta Convergente" },
-                        { type: FormationType.SHIELD, label: "Escudo Protector" },
-                        { type: FormationType.V_SHAPE, label: "Vanguardia V" },
-                        { type: FormationType.SCATTERED, label: "Dispersión Libre" }
+                        { type: FormationType.LINE, label: language === "es" ? "Línea de Asalto" : "Assault Line" },
+                        { type: FormationType.CIRCLE, label: language === "es" ? "Círculo Colector" : "Collector Circle" },
+                        { type: FormationType.DELTA, label: language === "es" ? "Delta Convergente" : "Convergent Delta" },
+                        { type: FormationType.SHIELD, label: language === "es" ? "Escudo Protector" : "Protective Shield" },
+                        { type: FormationType.V_SHAPE, label: language === "es" ? "Guardia Cruzada" : "Cross Guard" },
+                        { type: FormationType.SCATTERED, label: language === "es" ? "Delta Concéntrica" : "Concentric Delta" }
                       ].map((f) => {
                         const isSel = activeFormation === f.type;
                         return (
@@ -8610,8 +8612,8 @@ export const EnergySwarmGame: React.FC = () => {
                   </div>
 
                   {/* LIVE RUN BUILD STATUS LIST */}
-                  <div className="space-y-1.5 border-t border-slate-900 pt-3">
-                    <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block">ACTIVE RUN BUILD</span>
+                  <div className="orbi-tactical-premium-build space-y-1.5 border-t border-slate-900 pt-3">
+                    <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block">{language === "es" ? "MEJORAS ACTIVAS" : "ACTIVE RUN BUILD"}</span>
                     {Object.keys(activeRunUpgrades).length === 0 ? (
                       <span className="text-[9px] text-slate-600 block italic">No mid-run upgrades active yet.</span>
                     ) : (
@@ -8631,9 +8633,9 @@ export const EnergySwarmGame: React.FC = () => {
                   </div>
 
                   {/* LIVE WAVE INTEL PANEL */}
-                  <div className="space-y-1.5 border-t border-slate-900 pt-3">
+                  <div className="orbi-tactical-premium-threats space-y-1.5 border-t border-slate-900 pt-3">
                     <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block">
-                      THREAT INTEL (
+                      {language === "es" ? "AMENAZAS" : "THREAT INTEL"} (
                       {currentThreatDescriptor.sourceMode === "INFINITE"
                         ? `SECTOR ${currentThreatDescriptor.sector} · WAVE ${currentThreatDescriptor.waveNumber}/${currentThreatDescriptor.waveCount}`
                         : `WAVE ${currentWave}`}
@@ -8914,6 +8916,7 @@ export const EnergySwarmGame: React.FC = () => {
               {!isRightPanelCollapsed && (
                 <div className="orbi-side-deck-content animate-fadeIn">
                   <CompanionPanel
+                    doctrineCapacity={getSwarmDoctrineCapacity(swarmDoctrineRef.current)}
                     stats={stats}
                     swarm={swarmRef.current}
                     dialogueLog={dialogueLog}
