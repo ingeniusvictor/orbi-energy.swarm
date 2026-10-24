@@ -362,13 +362,13 @@ export function drawSwarmRoster(
     if (wingCount > 0) {
       ctx.save();
       ctx.fillStyle = member.color;
-      ctx.strokeStyle = "rgba(244, 253, 255, 0.82)";
-      ctx.lineWidth = 0.6;
+      ctx.strokeStyle = "rgba(244, 253, 255, 0.94)";
+      ctx.lineWidth = 1.05;
       for (let wing = 0; wing < wingCount; wing += 1) {
         const angle = (wing / wingCount) * Math.PI * 2 - Math.PI / 2;
-        const rootRadius = r * 0.77;
-        const tipRadius = Math.min(14, r + 2);
-        const spread = wingCount === 2 ? 0.3 : 0.19;
+        const rootRadius = r * 0.67;
+        const tipRadius = 14;
+        const spread = wingCount === 2 ? 0.45 : wingCount === 4 ? 0.32 : 0.25;
         ctx.beginPath();
         ctx.moveTo(Math.cos(angle - spread) * rootRadius,
           Math.sin(angle - spread) * rootRadius);
