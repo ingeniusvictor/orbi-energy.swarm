@@ -33,7 +33,7 @@ async function shot(page,name) {
 }
 async function run(name,width,height,coarse,immersive,webImmersive) {
   const context=await browser.newContext({viewport:{width,height},
-    isMobile:coarse,hasTouch:coarse,deviceScaleFactor:1,
+    isMobile:coarse,hasTouch:coarse,deviceScaleFactor:coarse?2:1,
     reducedMotion:"reduce",serviceWorkers:"block"});
   const page=await context.newPage();
   page.on("pageerror",e=>diagnostics.push(name+": "+String(e)));
@@ -108,7 +108,7 @@ async function run(name,width,height,coarse,immersive,webImmersive) {
         name+": Estado must display live swarm, score and credits");
       const energyPreview=premium.getByTestId("orbi-ux11d-energy-preview");
       check(await energyPreview.isVisible(),name+": ENERGY 3D status module absent");
-      check(await premium.locator(".orbi-ux11d-ability-deck article").count()===2,
+      check(await premium.locator(".orbi-ux11d-ability-deck article").count()===3,
         name+": Estado combat ability cards missing");
       check((await premium.locator(".orbi-ux11d-ability-deck").innerText()).includes("OVERDRIVE"),
         name+": Overdrive details missing");
@@ -185,6 +185,27 @@ async function run(name,width,height,coarse,immersive,webImmersive) {
         check(await page.locator(".orbi-touch-overlay").isVisible(),
           name+": touch D-pad hidden on mobile");
       }
+      // UX11-E: exercise the real Dash action against the production engine.
+      const dash=page.getByTestId("orbi-dash-action");
+      check(await dash.isVisible(),name+": immersive Dash control absent");
+      check(await dash.isEnabled(),name+": Dash not initially ready");
+      if(webImmersive) {
+        await page.keyboard.press("E");
+      } else {
+        const touchDash=page.getByTestId("orbi-touch-dash");
+        check(await touchDash.isVisible(),name+": right-thumb Dash button absent");
+        const thumbBounds=await touchDash.boundingBox();
+        check(thumbBounds && thumbBounds.width>=44 && thumbBounds.height>=44,
+          name+": Dash thumb hit target too small");
+        const formationDock=await page.locator(".orbi-touch-formation-carousel").boundingBox();
+        check(thumbBounds && formationDock && thumbBounds.y+thumbBounds.height+4<=formationDock.y,
+          name+": Dash thumb overlaps formation buttons");
+        await touchDash.click();
+      }
+      await page.clock.runFor(50);
+      check(!await dash.isEnabled(),name+": dash did not enter cooldown");
+      await page.clock.runFor(200);
+      check(!await dash.isEnabled(),name+": Dash cooldown bypassed");
     }else{
       check(geometry.logicalWidth===800 && geometry.logicalHeight===480,
         name+": legacy portrait regression "+JSON.stringify(geometry));

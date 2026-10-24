@@ -1,6 +1,6 @@
 import React from "react";
 import { EnergyStatus3D } from "./presentation/EnergyStatus3D";
-import { Shield, Award, Users, Volume2, VolumeX, Pause, Play, Zap, Maximize2, Minimize2, Target, Package, X, Coins, Radar, Activity } from "lucide-react";
+import { Shield, Award, Users, Volume2, VolumeX, Pause, Play, Zap, Maximize2, Minimize2, Target, Package, X, Coins, Radar, Activity, ChevronsRight } from "lucide-react";
 import { useGameTranslation, formatNumber } from "../i18n";
 import { getCampaignObjective } from "../game/campaignGuide";
 import type { ResonanceTier } from "../game/combatResonance";
@@ -31,6 +31,10 @@ interface GameHudProps {
   combatOverdriveReentryLocked: boolean;
   combatOverdriveReentryRemainingMs: number;
   onActivateOverdrive: () => void;
+  dashActive: boolean;
+  dashCanActivate: boolean;
+  dashCooldownRemainingMs: number;
+  onActivateDash: () => void;
   onTogglePause: () => void;
   onToggleMute: () => void;
   immersive?: boolean;
@@ -66,6 +70,10 @@ export const GameHud: React.FC<GameHudProps> = ({
   combatOverdriveReentryLocked,
   combatOverdriveReentryRemainingMs,
   onActivateOverdrive,
+  dashActive,
+  dashCanActivate,
+  dashCooldownRemainingMs,
+  onActivateDash,
   onTogglePause,
   onToggleMute,
   immersive = false,
@@ -162,6 +170,16 @@ export const GameHud: React.FC<GameHudProps> = ({
     ? `ORBI Overdrive: ${overdriveStatus}. Aumenta el daño un 20% durante 8 segundos. Consume resonancia; espera 4 segundos para reactivar. Tecla O.`
     : `ORBI Overdrive: ${overdriveStatus}. Boosts damage by 20% for 8 seconds. Consumes resonance; 4-second reentry lock. O key.`;
 
+  const dashSeconds = Math.max(0, Math.ceil(dashCooldownRemainingMs / 1000));
+  const dashStatus = dashActive
+    ? (language === "es" ? "IMPULSO" : "BOOST")
+    : !dashCanActivate
+      ? (language === "es" ? `RECARGA ${dashSeconds}s` : `RECHARGE ${dashSeconds}s`)
+      : (language === "es" ? "LISTO" : "READY");
+  const dashAriaLabel = language === "es"
+    ? `Dash de propulsión: ${dashStatus}. Desplazamiento rápido sin invulnerabilidad. Tecla E, usa la dirección actual o la última.`
+    : `Propulsion dash: ${dashStatus}. Fast movement without invulnerability. E key, current or last direction.`;
+
   // Localized wave details lookup helper
   const getLocalizedWaveDetails = () => {
     const waveKey = String(currentWave);
@@ -194,6 +212,13 @@ export const GameHud: React.FC<GameHudProps> = ({
               aria-label={overdriveAriaLabel} title={overdriveAriaLabel}>
               <Zap size={16} aria-hidden="true" />
               <span className="orbi-overdrive-label" aria-hidden="true">OD</span>
+            </button>
+            <button type="button" className="orbi-immersive-action orbi-dash-action"
+              data-testid="orbi-dash-action"
+              onClick={onActivateDash} disabled={!dashCanActivate}
+              aria-label={dashAriaLabel} title={dashAriaLabel}>
+              <ChevronsRight size={18} aria-hidden="true" />
+              <span aria-hidden="true">DASH</span>
             </button>
             <button type="button" className="orbi-immersive-action"
               aria-label={isPaused ? "Reanudar" : "Pausar"}
@@ -296,6 +321,7 @@ export const GameHud: React.FC<GameHudProps> = ({
             <div className="orbi-premium-status-indicators">
               <div><Activity size={16} aria-hidden="true"/><span>{language === "es" ? "RESONANCIA" : "RESONANCE"}</span><strong>{Math.round(combatResonance)}%</strong></div>
               <div><Zap size={16} aria-hidden="true"/><span>OVERDRIVE</span><strong>{overdriveStatus}</strong></div>
+              <div><ChevronsRight size={16} aria-hidden="true"/><span>DASH · E</span><strong>{dashStatus}</strong></div>
               <div><Target size={16} aria-hidden="true"/><span>{language === "es" ? "CADENA" : "CHAIN"}</span><strong>{combatChain} · ×{combatScoreMultiplier.toFixed(2)}</strong></div>
               <div>{audioMuted ? <VolumeX size={16} aria-hidden="true"/> : <Volume2 size={16} aria-hidden="true"/>}
                 <span>{language === "es" ? "AUDIO" : "SOUND"}</span><strong>{audioMuted ? t("hud.muted") : t("hud.unmuted")}</strong></div>
@@ -308,6 +334,13 @@ export const GameHud: React.FC<GameHudProps> = ({
                 ? "Impulso ofensivo: +20% de daño durante 8 s. Consume resonancia; bloqueo de 4 s al finalizar."
                 : "Offensive surge: +20% damage for 8s. Consumes resonance; 4s reentry lock after ending."}</p>
               <span>{overdriveStatus}</span>
+            </article>
+            <article>
+              <div><ChevronsRight size={17} aria-hidden="true"/><strong>DASH · E</strong></div>
+              <p>{language === "es"
+                ? "Impulso de 180 ms según dirección actual/última. Recarga de 3,2 s; sin inmunidad ni gasto de resonancia."
+                : "180ms dash in the current/last direction. 3.2s cooldown; no immunity or resonance cost."}</p>
+              <span>{dashStatus}</span>
             </article>
             <article>
               <div><Shield size={17} aria-hidden="true"/><strong>{language === "es" ? "DEFENSA DEL NÚCLEO" : "CORE DEFENSE"}</strong></div>
@@ -412,6 +445,11 @@ export const GameHud: React.FC<GameHudProps> = ({
 
       {/* 5. QUICK CONTROLLER BUTTONS */}
       <div className="orbi-hud-actions flex items-center gap-1">
+        <button type="button" data-testid="orbi-dash-action-desktop"
+          onClick={onActivateDash} disabled={!dashCanActivate}
+          className="orbi-dash-action-compact"
+          aria-label={dashAriaLabel} title={dashAriaLabel}
+        ><ChevronsRight size={12} aria-hidden="true" /><span>{dashStatus}</span></button>
         <button
           onClick={onActivateOverdrive}
           disabled={!combatOverdriveActionEnabled}

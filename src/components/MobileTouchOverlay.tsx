@@ -1,15 +1,25 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import type { AnalogVector } from "../game/analogJoystick";
+import { ChevronsRight } from "lucide-react";
+import { useGameTranslation } from "../i18n";
 import { projectAnalogJoystick, NEUTRAL_ANALOG_VECTOR } from "../game/analogJoystick";
 
 interface MobileTouchOverlayProps {
   onVectorChange: (vector: AnalogVector) => void;
+  onDash: () => void;
+  dashActive: boolean;
+  dashReady: boolean;
+  dashCooldownRemainingMs: number;
   disabled?: boolean;
 }
 
 export const MobileTouchOverlay: React.FC<MobileTouchOverlayProps> = ({
-  onVectorChange, disabled = false,
+  onVectorChange, onDash, dashActive, dashReady, dashCooldownRemainingMs, disabled = false,
 }) => {
+  const { language } = useGameTranslation();
+  const dashStatus = dashActive ? (language === "es" ? "IMPULSO" : "BOOST")
+    : dashReady ? (language === "es" ? "LISTO" : "READY")
+    : `${Math.ceil(dashCooldownRemainingMs / 1000)}s`;
   const activePointer = useRef<number | null>(null);
   const latestCallback = useRef(onVectorChange);
   const [vector, setVector] = useState<AnalogVector>({ x: 0, y: 0 });
@@ -70,6 +80,20 @@ export const MobileTouchOverlay: React.FC<MobileTouchOverlayProps> = ({
           <span />
         </div>
       </div>
+      <button type="button"
+        className="orbi-touch-dash"
+        data-testid="orbi-touch-dash"
+        data-active={dashActive ? "true" : "false"}
+        disabled={disabled || !dashReady}
+        onPointerDown={event => event.stopPropagation()}
+        onPointerUp={event => event.stopPropagation()}
+        onClick={event => { event.stopPropagation(); onDash(); }}
+        aria-label={language === "es" ? `Activar Dash de propulsión. ${dashStatus}` : `Activate propulsion Dash. ${dashStatus}`}
+      >
+        <ChevronsRight size={25} aria-hidden="true" />
+        <strong>DASH</strong>
+        <span aria-hidden="true">{dashStatus}</span>
+      </button>
     </div>
   );
 };
