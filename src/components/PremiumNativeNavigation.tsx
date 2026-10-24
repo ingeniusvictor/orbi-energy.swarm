@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import {
   ArrowLeft, Atom, BookOpen, ChevronRight, Compass, Cpu, Gamepad2,
   Globe, Info, LockKeyhole, Play, Settings, Shield, Sparkles, Zap,
-  Gauge, Orbit, Radio, Target, Move, Volume2,
+  Gauge, Orbit, Radio, Target, Move,
 } from "lucide-react";
 import type { MobileLaunchLayer, MobileLaunchSection, MobileLaunchTab } from "./MobileLaunchNavigation";
 
