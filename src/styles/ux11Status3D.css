@@ -1,0 +1,57 @@
+/* UX11-D — paused State cockpit. ENERGY is gold and independent of green FOTON.
+   The WebGL viewport is optional and never changes the battle Canvas context. */
+.orbi-premium-status-core {
+  position:relative;isolation:isolate;
+  background:radial-gradient(ellipse at center,rgba(137,99,33,.29),rgba(1,10,29,.96) 70%)!important;
+  border-color:rgba(247,199,103,.55)!important;
+  box-shadow:inset 0 0 30px rgba(248,186,73,.06),0 0 20px rgba(218,152,40,.1);
+}
+.orbi-ux11d-energy-stage {
+  position:relative;
+  flex:0 0 auto;
+  width:clamp(72px,9.8vw,146px);
+  height:clamp(67px,9.2vw,132px);
+  border-radius:14px;
+  display:grid;
+  place-items:center;
+  overflow:hidden;
+  background:
+    radial-gradient(ellipse at center,rgba(247,194,67,.19),transparent 62%),
+    linear-gradient(135deg,rgba(3,20,45,.72),rgba(1,7,23,.96));
+  border:1px solid rgba(251,202,102,.3);
+}
+.orbi-ux11d-energy-stage:after {
+  content:"";position:absolute;inset:4px;pointer-events:none;border-radius:10px;
+  border:1px solid rgba(255,230,167,.14);z-index:3;
+}
+.orbi-ux11d-energy-mount {position:absolute;inset:0;z-index:2;pointer-events:none;}
+.orbi-ux11d-energy-canvas {display:block;width:100%;height:100%;pointer-events:none;}
+.orbi-ux11d-energy-stage .orbi-ux11d-energy-fallback {
+  position:absolute;left:50%;top:47%;transform:translate(-50%,-50%) scale(.7);
+  z-index:1;pointer-events:none;
+}
+.orbi-ux11d-energy-stage[data-energy-3d-status="READY"] .orbi-ux11d-energy-fallback {opacity:0;}
+.orbi-ux11d-energy-stage[data-energy-3d-status="FALLBACK"] .orbi-ux11d-energy-mount {display:none;}
+.orbi-ux11d-energy-fallback-label {position:absolute;left:0;right:0;bottom:6px;text-align:center;z-index:4;color:#e2cb93;font:900 8px monospace;}
+.orbi-premium-status-core-label strong {font-size:clamp(12px,1.35vw,22px);text-shadow:0 0 15px rgba(245,182,77,.4);}
+.orbi-premium-status-kicker {
+  background:linear-gradient(90deg,rgba(3,72,100,.24),rgba(3,20,44,0));
+  border-radius:6px 6px 0 0;
+}
+.orbi-premium-status-top .orbi-premium-status-shield {border-color:rgba(76,215,174,.42);}
+.orbi-premium-status-top .orbi-premium-status-wave {border-color:rgba(83,211,240,.45);}
+.orbi-premium-status-shield>strong {text-shadow:0 0 16px rgba(52,211,153,.29);}
+.orbi-premium-status-wave>strong {text-shadow:0 0 16px rgba(103,232,249,.22);}
+.orbi-premium-status-meter {height:clamp(8px,1.1vh,13px);}
+.orbi-premium-status-counters article {
+  background:linear-gradient(110deg,rgba(11,40,70,.92),rgba(4,22,41,.90));
+  box-shadow:inset 0 0 13px rgba(87,220,239,.05);
+}
+.orbi-premium-status-indicators>div {background:linear-gradient(145deg,rgba(11,51,70,.66),rgba(2,17,37,.88));}
+@media (orientation:landscape) and (max-height:430px) {
+  .orbi-ux11d-energy-stage {width:clamp(65px,8.4vw,97px);height:clamp(63px,8.3vw,90px);}
+  .orbi-premium-status-core {gap:1px;}
+}
+@media (prefers-reduced-motion:reduce) {
+  .orbi-ux11d-energy-stage {animation:none!important;}
+}
