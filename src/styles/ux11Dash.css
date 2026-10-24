@@ -15,7 +15,7 @@
    support two fingers (hold direction + tap dash) and safe-area insets. */
 .orbi-touch-dash {
   position:absolute;right:max(18px,env(safe-area-inset-right));
-  bottom:max(35px,env(safe-area-inset-bottom));
+  bottom:max(112px,calc(env(safe-area-inset-bottom) + 98px));
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   width:78px;height:78px;gap:1px;z-index:2;
   color:#e0fbff;font:900 11px/1 "Space Grotesk",sans-serif;
@@ -32,7 +32,7 @@
 /* Five factual telemetry signals including Dash, without horizontal overflow. */
 .orbi-premium-status-indicators {grid-template-columns:repeat(5,minmax(0,1fr));}
 @media (orientation:landscape) and (max-height:520px) {
-  .orbi-touch-dash {height:64px;width:64px;bottom:max(20px,env(safe-area-inset-bottom));border-radius:17px;}
+  .orbi-touch-dash {height:64px;width:64px;bottom:max(102px,calc(env(safe-area-inset-bottom) + 90px));border-radius:17px;}
   .orbi-touch-dash svg {width:22px;height:22px;}
   .orbi-game-root[data-immersive-landscape="true"] .orbi-immersive-shield-bar {width:clamp(35px,7vw,70px);}
   .orbi-game-root[data-immersive-landscape="true"] .orbi-immersive-vitals strong {margin-left:0;}
