@@ -884,3 +884,24 @@ export const playOverdriveActivationSound = () => {
     osc.stop(stopAt);
   });
 };
+
+ 
+/** Short two-tone propulsion cue. Independent of the longer Overdrive stinger. */
+export const playPropulsionDashSound = () => {
+  const ctx = initAudio();
+  if (!ctx || isMuted) return;
+  const now = ctx.currentTime;
+  const duration = 0.16;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = "sawtooth";
+  osc.frequency.setValueAtTime(690, now);
+  osc.frequency.exponentialRampToValueAtTime(160, now + duration);
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.linearRampToValueAtTime(laneGain(ctx, 0.055, "TACTICAL"), now + 0.012);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start(now);
+  osc.stop(now + duration);
+};
