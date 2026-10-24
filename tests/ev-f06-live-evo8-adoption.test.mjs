@@ -56,3 +56,13 @@ test("all modes retain their shared acquisition and Gaia hooks",()=>{
  assert.match(game,/addSwarmMember\(\s*res\.orbiAffinity/);
  assert.match(game,/scoreAttackActivationRef\.current/);
 });
+
+test("fusion protects the founding ten EVO8 progression holders",()=>{
+ const start=game.indexOf("const tryTriggerAffinityFusion =");
+ const end=game.indexOf("// --- WAVE TRANSITIONS DIRECTOR ---",start);
+ assert.ok(start>=0&&end>start);
+ const section=game.slice(start,end);
+ assert.match(section,/resolution\.sourceIds\.some/);
+ assert.match(section,/swarmDoctrineRef\.current\.founderIds\.includes\(id\)/);
+ assert.ok(section.indexOf("resolution.sourceIds.some")<section.indexOf("applyAffinityFusion("));
+});
