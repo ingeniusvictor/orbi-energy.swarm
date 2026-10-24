@@ -32,7 +32,6 @@
 | EV-F04 — Doctrina pura 10/20/30 con promociones fundadoras E5/E8 | [#702](https://github.com/ingeniusvictor/orbi-energy.swarm/pull/702) | `2759fca1232d32df4f363fab31b27fd33aed03eb` | **Sí, activada por #710** y protegida contra ENERGY por #708 |
 | EV-F05 — Panel fotovoltaico verde en FOTON durante detalle cercano Canvas2D | [#704](https://github.com/ingeniusvictor/orbi-energy.swarm/pull/704) | `f938212804ef21cdb703760b22b017ffce9c865a` | **Sí**, insignia provisional |
 | EV-F06 — EVO8 runtime: capturas afines, GAIA gradual, 10/20/30, alas 2/4/6 y fundadores protegidos de fusión | [#710](https://github.com/ingeniusvictor/orbi-energy.swarm/pull/710) | `8c2fbb4820c2ec4088ef0e9dc0a334a554eaa1d2` | **Sí**, lógica; arte E8 premium pendiente |
-
 | EV-F09 — Fusiones FOTON/HYDRO canónicas, fundadores excluidos y metadato `fusionRank` | [#718](https://github.com/ingeniusvictor/orbi-energy.swarm/pull/718) | `26475b13b5808c7481b9372dbdf2fdfc0928a181` | **Sí**, 3×FOTON → SOLAR GUARDIAN; 3×HYDRO → HYDRO LEVIATHAN; `energyId` y `fusionRank` separados de combate `level:5` heredado. #713 abierto para seguimiento físico |
 
 ## Certificación post-main EV-F09 — 2026-10-23 Chile
