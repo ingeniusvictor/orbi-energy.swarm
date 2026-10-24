@@ -1,0 +1,49 @@
+/* UX11-E — native Dash controls. Never overlay text/graphics baked into art. */
+.orbi-dash-action {color:#b9f6ff;border-color:rgba(34,211,238,.48);}
+.orbi-dash-action:not(:disabled) {background:linear-gradient(140deg,rgba(13,75,103,.86),rgba(4,26,47,.9));box-shadow:inset 0 0 12px rgba(34,211,238,.08);}
+.orbi-dash-action > span {font-size:8px;letter-spacing:.05em;font-weight:900;}
+.orbi-dash-action-compact {
+  display:inline-flex;align-items:center;gap:4px;min-height:27px;
+  padding:3px 7px;border:1px solid rgba(34,211,238,.48);
+  border-radius:6px;background:rgba(9,47,69,.7);color:#a5f3fc;
+  font:900 9px/1 monospace;white-space:nowrap;cursor:pointer;
+}
+.orbi-dash-action-compact:disabled {opacity:.38;cursor:not-allowed;}
+.orbi-game-root[data-immersive-landscape="true"] .orbi-immersive-actions {gap:clamp(3px,.55vw,7px);}
+.orbi-game-root[data-immersive-landscape="true"] .orbi-dash-action {display:flex;flex-direction:column;gap:0;padding:0 7px;min-width:44px;}
+/* Primary touch action opposite the left joystick; independent pointer targets
+   support two fingers (hold direction + tap dash) and safe-area insets. */
+.orbi-touch-dash {
+  position:absolute;right:max(18px,env(safe-area-inset-right));
+  bottom:max(35px,env(safe-area-inset-bottom));
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  width:78px;height:78px;gap:1px;z-index:2;
+  color:#e0fbff;font:900 11px/1 "Space Grotesk",sans-serif;
+  border-radius:22px;border:2px solid rgba(103,232,249,.65);
+  background:radial-gradient(circle at 45% 26%,rgba(20,151,181,.66),rgba(3,23,42,.94));
+  box-shadow:0 0 24px rgba(34,211,238,.18),inset 0 0 16px rgba(34,211,238,.12);
+  pointer-events:auto;touch-action:manipulation;user-select:none;-webkit-user-select:none;
+}
+.orbi-touch-dash svg {color:#fde68a;}
+.orbi-touch-dash span {font:800 9px/1 monospace;color:#a5f3fc;}
+.orbi-touch-dash[data-active="true"] {border-color:#fcd34d;}
+.orbi-touch-dash:disabled {opacity:.42;filter:saturate(.55);}
+.orbi-touch-dash:focus-visible,.orbi-dash-action-compact:focus-visible {outline:2px solid #fbbf24;outline-offset:2px;}
+/* Five factual telemetry signals including Dash, without horizontal overflow. */
+.orbi-premium-status-indicators {grid-template-columns:repeat(5,minmax(0,1fr));}
+@media (orientation:landscape) and (max-height:520px) {
+  .orbi-touch-dash {height:64px;width:64px;bottom:max(20px,env(safe-area-inset-bottom));border-radius:17px;}
+  .orbi-touch-dash svg {width:22px;height:22px;}
+  .orbi-game-root[data-immersive-landscape="true"] .orbi-immersive-shield-bar {width:clamp(35px,7vw,70px);}
+  .orbi-game-root[data-immersive-landscape="true"] .orbi-immersive-vitals strong {margin-left:0;}
+  .orbi-premium-status-indicators > div {padding:4px;}
+  .orbi-premium-status-indicators strong {font-size:9px;}
+}
+@media (orientation:landscape) and (max-width:680px) {
+  .orbi-game-root[data-immersive-landscape="true"] .orbi-immersive-action {min-width:37px;padding:0 5px;}
+  .orbi-game-root[data-immersive-landscape="true"] .orbi-immersive-vitals {font-size:9px;gap:3px;}
+  .orbi-premium-status-indicators {grid-template-columns:repeat(3,minmax(0,1fr));}
+}
+@media (prefers-reduced-motion:reduce) {
+  .orbi-touch-dash,.orbi-dash-action {animation:none;transition:none;}
+}
