@@ -8702,7 +8702,8 @@ export const EnergySwarmGame: React.FC = () => {
             {/* COLUMN 2: BATTLEFIELD CORE (Center Column) */}
             <div className="orbi-battlefield flex-1 flex flex-col gap-2">
               <GameHud
-                presentationMode={presentationMode}
+                qualityPreset={stats.qualityPreset}
+                 presentationMode={presentationMode}
                 score={score}
                 shield={shield}
                 shieldMax={SHIELD_MAX + (upgradesLevel.hydrogen_deflector || 0) * 15 + (activeRunUpgrades.foton_integrity || 0) * 30}
