@@ -121,3 +121,9 @@
   .orbi-ux12-launch-audio {grid-template-columns:1fr;align-content:start;overflow-y:auto;}
   .orbi-ux12-launch-audio>button {min-height:72px;height:auto;padding:12px;}
 }
+
+/* Actual physical Android UX03: campaign and Score Attack must offer ≥44px hit targets. */
+.orbi-game-root .orbi-ux12-hud-logo {pointer-events:none;}
+@media (orientation:landscape) and (max-height:520px) {
+  .orbi-ux10c[data-layer="DETAIL"] .orbi-ux10c-mode-start {min-height:44px!important;flex-shrink:0;}
+}
