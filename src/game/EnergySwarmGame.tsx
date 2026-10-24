@@ -8323,7 +8323,7 @@ export const EnergySwarmGame: React.FC = () => {
       )}
 
       {/* PAUSE MENU DRAWERS */}
-      {isPlaying && isPaused && mobilePanel === "closed" && !isPhotoMode && (
+      {isPlaying && isPaused && !isPhotoMode && mobilePanel === "closed" && (
         <PauseMenu
           onResume={togglePause}
           onRestart={() => {

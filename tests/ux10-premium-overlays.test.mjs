@@ -14,7 +14,7 @@ test("UX10 panel entry freezes simulation and panel exit preserves prior pause",
  assert.match(part,/if \(!isPausedRef\.current\) togglePause\(\)/);
  assert.match(part,/if \(!mobilePanelWasPausedRef\.current && isPausedRef\.current\) togglePause\(\)/);
  assert.match(game,/onMobilePanelChange=\{changeImmersivePanel\}/);
- assert.match(game,/mobilePanel === "closed" && !isPhotoMode/);
+ assert.match(game,/isPlaying && isPaused && !isPhotoMode && mobilePanel === "closed"/);
  assert.match(game,/onTogglePause=\{mobilePanel !== "closed"/);
  assert.match(game,/changeImmersivePanel\("closed"\)/);
 });
