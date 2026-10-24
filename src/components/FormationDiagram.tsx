@@ -84,4 +84,4 @@ export const FormationDiagram = React.memo(function FormationDiagram({
       <circle cx="90" cy="62" r="2.2" fill="#ffffff" />
     </svg>
   );
-);
+});
