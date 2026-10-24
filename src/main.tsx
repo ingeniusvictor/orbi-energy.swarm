@@ -11,6 +11,7 @@ import './styles/ux10CinematicLaunch.css';
 import './styles/ux11Tactics.css';
 import './styles/ux11Codex.css';
 import './styles/ux11EnergyStatus.css';
+import './styles/ux11Dash.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
