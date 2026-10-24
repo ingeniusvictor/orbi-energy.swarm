@@ -43,7 +43,7 @@ test("EV-F06 GAIA requires nine distinct energies and triangular cycle ranking",
 
 test("EVO8 full body 1,3,5,8 and wings 6,7,8 fit ENERGY 75 percent",()=>{
  assert.match(canvas,/getEvo8WingCount\(member\.level\)/);
- assert.match(canvas,/Math\.min\(14, r \+ 2\)/);
+ assert.match(canvas,/const tipRadius = 14/);
  assert.match(canvas,/const r = Math\.min\(12\.5, member\.size \+ localPulse\)/);
  assert.match(canvas,/Math\.min\(12\.5, member\.size\)/);
  assert.match(game,/targetOrbi\.evolutionStage = getEvo8VisualStage\(targetOrbi\.level\)/);
