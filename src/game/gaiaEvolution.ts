@@ -60,9 +60,9 @@ export const createGaiaEvolutionState = (): GaiaEvolutionState => ({
 
 /**
  * Registers one acquired canonical follower energy toward GAIA synthesis.
- * FOTON is the permanently-present ninth synthesis source, so the live cycle
- * only needs the eight collectible prerequisite energies. Duplicates inside
- * the active cycle are intentionally ignored.
+ * ENERGY is the neutral permanent leader, not a synthesis ingredient.
+ * GAIA requires the nine separately collectible energies (including the
+ * photovoltaic ORBI FOTON). Duplicate energies in one cycle are ignored.
  */
 export const registerGaiaEnergy = (
   current: GaiaEvolutionState,

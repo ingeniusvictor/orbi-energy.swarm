@@ -48,7 +48,7 @@ export const es: TranslationSchema = {
       description: "+25% de resistencia de escudo, +Protector de escudo circular | -10% de daño de proyectil",
       advantages: "Resistencia de escudo circular (+25%)",
       disadvantages: "Daño de proyectil (-10%)",
-      recommendation: "Ideal para defender los vectores vitales de Foton contra ataques dispersos."
+      recommendation: "Ideal para defender los vectores vitales de ENERGY contra ataques dispersos."
     },
     CIRCLE: {
       name: "Círculo Colector",
@@ -91,7 +91,7 @@ export const es: TranslationSchema = {
       name: "Señal Exploradora",
       subtitle: "Reconocimiento hostil básico",
       description: "Rastreadores detectados analizando los sectores exteriores. Operaciones de defensa iniciadas.",
-      tacticalAdvice: "Usa Línea de Asalto para proteger los vectores vitales de Foton."
+      tacticalAdvice: "Usa Línea de Asalto para proteger los vectores vitales de ENERGY."
     },
     2: {
       name: "Deriva Parasitaria",
@@ -102,7 +102,7 @@ export const es: TranslationSchema = {
     3: {
       name: "Bloqueo de Drones",
       subtitle: "Amenaza de vectores a larga distancia",
-      description: "Drones de ataque apuntando a ORBI FOTON. Líneas de mira de alta densidad.",
+      description: "Drones de ataque apuntando a ORBI ENERGY. Líneas de mira de alta densidad.",
       tacticalAdvice: "Cúbrete con Guardia Cruzada. Reposiciónate dinámicamente antes de que disparen."
     },
     4: {
@@ -187,7 +187,7 @@ export const es: TranslationSchema = {
         description: "Mejora la probabilidad de golpe crítico general del enjambre en +8% hasta un límite seguro."
       },
       foton_integrity: {
-        name: "Integridad Foton",
+        name: "Integridad ENERGY",
         description: "Aumenta la capacidad máxima de escudo en +30 unidades y restaura +50 de escudo al comprar."
       },
       swarm_cohesion: {
@@ -200,7 +200,7 @@ export const es: TranslationSchema = {
       },
       core_magnetism: {
         name: "Magnetismo de Núcleo",
-        description: "Expande el radio de atracción gravitacional de Foton para recursos en +100 píxeles."
+        description: "Expande el radio de atracción gravitacional de ENERGY para recursos en +100 píxeles."
       },
       fusion_resonance: {
         name: "Resonancia de Fusión",
@@ -208,7 +208,7 @@ export const es: TranslationSchema = {
       },
       command_velocity: {
         name: "Velocidad de Comando",
-        description: "Aumenta la velocidad de propulsión manual de ORBI FOTON en +15% sin perder sincronía de cámara."
+        description: "Aumenta la velocidad de propulsión manual de ORBI ENERGY en +15% sin perder sincronía de cámara."
       },
       mitotic_mitosis: {
         name: "Mitosis Mitótica",
@@ -401,7 +401,7 @@ export const es: TranslationSchema = {
       waveReached: "Oleada Alcanzada"
     },
     cosmicBadgeTitle: "¡Insignia Cósmica Desbloqueada!",
-    cosmicBadgeDesc: "¡Certificado como CAMPEÓN ORBI FOTON! El brillo del núcleo dorado ya está activo en tu base de datos.",
+    cosmicBadgeDesc: "¡Certificado como CAMPEÓN ORBI ENERGY! El brillo del núcleo dorado ya está activo en tu base de datos.",
     firstTimeVictory: "🏆 (Primera vez)"
   },
   settings: {
@@ -484,10 +484,10 @@ export const es: TranslationSchema = {
     sloganDesc: "Sincroniza con tu enjambre táctico de recolectores de energía. Cosecha nano-cristales, defiéndete de parásitos oscuros y purga la red del catastrófico Devorador Blackout.",
     activateSync: "ACTIVAR SINCRONIZACIÓN (INICIAR JUEGO)",
     simulationOps: "OPERACIONES DE SIMULACIÓN",
-    howToStep1: "Pilota a Orbi Foton: Foton (líder ámbar) sigue automáticamente el puntero del mouse o las teclas WASD/Flechas.",
+    howToStep1: "Pilota a ENERGY: ENERGY (líder ámbar) sigue automáticamente el puntero del mouse o las teclas WASD/Flechas.",
     howToStep2: "Recolecta Cristales de Energía: Pasa por encima de los cristales Cyan y hexágonos Rosas. Rescata Orbis Rosas Salvajes para reclutar nuevos seguidores a tu enjambre.",
     howToStep3: "Cambia Formaciones (1 al 6): ¡Re-alinear tu enjambre cambia tus estadísticas pasivas! Por ejemplo, Línea de Asalto mejora tu escudo, mientras que Círculo Colector aumenta la velocidad de disparo.",
-    howToStep4: "Integridad del Escudo: Tus seguidores disparan automáticamente a las amenazas cercanas. ¡Evita que las colisiones dañen el núcleo central de Foton!",
+    howToStep4: "Integridad del Escudo: Tus seguidores disparan automáticamente a las amenazas cercanas. ¡Evita que las colisiones dañen el núcleo central de ENERGY!",
     howToStep5: "Derrota al Devorador: Progresa a través de las oleadas, recolecta Nano-Créditos, desbloquea mejoras y sobrevive al jefe gigante en la Oleada 10.",
     controlKeybindings: "TECLAS DE CONTROL",
     keys: {

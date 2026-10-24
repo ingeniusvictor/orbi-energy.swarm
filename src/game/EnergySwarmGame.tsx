@@ -919,7 +919,7 @@ export const EnergySwarmGame: React.FC = () => {
     });
 
     // Companion greets player
-    postDialogue("COMPANION", "Estación LUX-8 sincronizada. Orbi Foton listo para cosechar.");
+    postDialogue("COMPANION", "Estación LUX-8 sincronizada. ENERGY listo para cosechar.");
   }, [postDialogue]);
 
   // --- SYNC STATS STATE TO REF AND PERSISTENCE HELPER ---
@@ -1888,7 +1888,7 @@ export const EnergySwarmGame: React.FC = () => {
     activeFormationRef.current = FormationType.LINE;
     setActiveFormation(FormationType.LINE);
 
-    postDialogue("COMPANION", "Sincronización activada. Núcleo Foton operando a resonancia base.");
+    postDialogue("COMPANION", "Sincronización activada. Núcleo ENERGY operando a resonancia base.");
 
     startBgm("EXPLORATION");
 
@@ -1997,8 +1997,8 @@ export const EnergySwarmGame: React.FC = () => {
   };
 
   // --- CANONICAL ORBI ENERGY RECRUITMENT CYCLE ---
-  // FOTON is the player core and GAIA is fusion-only. Every shuffled cycle
-  // therefore contains each of the eight collectible base energies exactly once.
+  // ENERGY is the neutral player core. Every shuffled cycle now contains
+  // nine collectible energies including photovoltaic FOTON; GAIA is synthesis-only.
   const recruitBagRef = useRef<OrbiEnergyId[]>([]);
   const gaiaEvolutionRef = useRef(createGaiaEvolutionState());
   const gaiaMemberRef = useRef<OrbiMember | null>(null);
@@ -2123,8 +2123,8 @@ export const EnergySwarmGame: React.FC = () => {
     postDialogue(
       "SYSTEM",
       isNewGaia
-        ? "GAIA DESPERTADA: las nueve energías han entrado en síntesis. Unidad atacante/defensora enlazada."
-        : `GAIA EVOLUCIONA A NIVEL ${update.state.gaiaLevel}: nueva síntesis completa de las nueve energías.`,
+        ? "GAIA DESPERTADA: las nueve energías coleccionables han entrado en síntesis. Unidad atacante/defensora enlazada."
+        : `GAIA EVOLUCIONA A NIVEL ${update.state.gaiaLevel}: nueva síntesis completa de las nueve energías coleccionables.`,
     );
   };
 

@@ -18,17 +18,20 @@ export interface OrbiEnergyDefinition {
   gaiaPrerequisite: boolean;
 }
 
+/** ENERGY commands the swarm but is not an elemental follower. */
+export const ORBI_PROTAGONIST_ID = "ENERGY" as const;
+
 export const ORBI_ENERGY_CANON: readonly OrbiEnergyDefinition[] = [
   {
     id: "FOTON",
     displayName: "FOTON",
     energyLabel: "Energía Fotovoltaica",
     affinity: "solar",
-    color: "#ffd740",
+    color: "#7cff56",
     combatRole: "beam",
     attackSignature: "FOTON_LANCE",
-    loreRole: "Núcleo solar protagonista · daño, soporte y purificación",
-    collectibleFollower: false,
+    loreRole: "ORBI fotovoltaico coleccionable · panel solar verde y lanza de luz",
+    collectibleFollower: true,
     gaiaPrerequisite: true,
   },
   {
@@ -48,7 +51,7 @@ export const ORBI_ENERGY_CANON: readonly OrbiEnergyDefinition[] = [
     displayName: "AERO",
     energyLabel: "Energía Eólica",
     affinity: "wind",
-    color: "#5eead4",
+    color: "#e7f4ff",
     combatRole: "rapid",
     attackSignature: "AERO_CRESCENT",
     loreRole: "Movilidad · dispersión y empuje aerodinámico",
@@ -72,7 +75,7 @@ export const ORBI_ENERGY_CANON: readonly OrbiEnergyDefinition[] = [
     displayName: "MAGNE",
     energyLabel: "Energía Electromagnética",
     affinity: "magnetic",
-    color: "#22d3ee",
+    color: "#dde7f2",
     combatRole: "arc",
     attackSignature: "MAGNE_ARC",
     loreRole: "Control magnético · atracción y agrupamiento",
@@ -84,7 +87,7 @@ export const ORBI_ENERGY_CANON: readonly OrbiEnergyDefinition[] = [
     displayName: "ATON",
     energyLabel: "Energía Atómica",
     affinity: "nuclear",
-    color: "#a78bfa",
+    color: "#ff4db8",
     combatRole: "beam",
     attackSignature: "ATON_PARTICLE",
     loreRole: "Potencia atómica · daño pesado y degradación progresiva",
@@ -96,7 +99,7 @@ export const ORBI_ENERGY_CANON: readonly OrbiEnergyDefinition[] = [
     displayName: "KINETRIX",
     energyLabel: "Energía Cinética",
     affinity: "kinetic",
-    color: "#fb923c",
+    color: "#facc15",
     combatRole: "rapid",
     attackSignature: "KINETRIX_LANCE",
     loreRole: "Impulso cinético · velocidad, combos y críticos",
@@ -108,7 +111,7 @@ export const ORBI_ENERGY_CANON: readonly OrbiEnergyDefinition[] = [
     displayName: "H2NOVA",
     energyLabel: "Hidrógeno Verde",
     affinity: "hydrogen",
-    color: "#e0f2fe",
+    color: "#38d9ed",
     combatRole: "support",
     attackSignature: "H2NOVA_CELL",
     loreRole: "Reserva H₂ · escudos, restauración y soporte energético",
@@ -120,7 +123,7 @@ export const ORBI_ENERGY_CANON: readonly OrbiEnergyDefinition[] = [
     displayName: "QUANTUM",
     energyLabel: "Energía Cuántica",
     affinity: "quantum",
-    color: "#f472b6",
+    color: "#ba53ff",
     combatRole: "arc",
     attackSignature: "QUANTUM_PHASE",
     loreRole: "Manipulación espacial · duplicación y fase cuántica",
@@ -132,7 +135,7 @@ export const ORBI_ENERGY_CANON: readonly OrbiEnergyDefinition[] = [
     displayName: "GAIA",
     energyLabel: "Síntesis de las Nueve Energías",
     affinity: "gaia",
-    color: "#a3e635",
+    color: "#72cf4f",
     combatRole: "support",
     attackSignature: "GAIA_SYNTHESIS",
     loreRole: "Fusión total · atacante/defensor, barrera y fortificación",
@@ -160,7 +163,7 @@ export const ORBI_COLLECTIBLE_ENERGY_IDS = ORBI_ENERGY_CANON
 export const ORBI_GAIA_REQUIRED_FOLLOWER_IDS = ORBI_ENERGY_CANON
   .filter(
     (definition) =>
-      definition.gaiaPrerequisite && definition.id !== "FOTON",
+      definition.gaiaPrerequisite,
   )
   .map((definition) => definition.id) as readonly OrbiEnergyId[];
 

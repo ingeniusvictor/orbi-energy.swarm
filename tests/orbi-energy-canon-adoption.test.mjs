@@ -39,8 +39,8 @@ test("wild Orbi drops preserve their exact canonical identity through collection
   );
 });
 
-test("GAIA and FOTON cannot enter the normal follower recruitment cycle", () => {
-  assert.match(canon, /id: "FOTON"[\s\S]*collectibleFollower: false/);
+test("GAIA cannot enter the recruit bag; FOTON can, while ENERGY is neutral", () => {
+  assert.match(canon, /id: "FOTON"[\s\S]{0,380}collectibleFollower: true/);
   assert.match(canon, /id: "GAIA"[\s\S]*collectibleFollower: false/);
   assert.match(
     canon,

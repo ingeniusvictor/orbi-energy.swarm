@@ -91,7 +91,7 @@ export const MobileLaunchNavigation: React.FC<Props> = ({
       {layer === "WELCOME" && (
         <div className="orbi-mobile-launch__welcome orbi-ux09-welcome">
           <div className="orbi-ux09-identity">
-            <span className="orbi-mobile-launch__kicker">ORBI ECOSYSTEM // FOTON-01</span>
+            <span className="orbi-mobile-launch__kicker">ORBI ECOSYSTEM // ENERGY-01</span>
             <h1>ORBI <em>ENERGY</em> SWARM</h1>
             <p>{es ? "SISTEMA TÁCTICO DE ENJAMBRE" : "TACTICAL SWARM COMMAND SYSTEM"}</p>
             <button className="orbi-mobile-launch__primary" data-testid="orbi-mobile-enter"

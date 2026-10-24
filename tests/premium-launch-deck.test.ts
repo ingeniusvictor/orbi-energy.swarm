@@ -92,10 +92,10 @@ test("launch deck has a visible scroll affordance for genuinely short viewports"
   );
 });
 
-test("new launch hero reserves a stable stage for future 3D Foton integration", () => {
+test("new launch hero reserves a stable stage for existing 3D ENERGY leader integration", () => {
   assert.match(start, /orbi-start-hero-stage/);
   assert.match(start, /orbi-start-core/);
-  assert.match(start, /FOTON \/\/ COMMAND CORE/);
+  assert.match(start, /ENERGY \/\/ COMMAND CORE/);
 });
 
 test("persistent progression surfaces remain available", () => {

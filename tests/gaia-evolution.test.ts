@@ -12,11 +12,12 @@ import {
   ORBI_GAIA_REQUIRED_FOLLOWER_IDS,
 } from "../src/game/orbiEnergyCanon.ts";
 
-test("GAIA synthesis requires the eight followers around permanent FOTON", () => {
-  assert.equal(GAIA_REQUIRED_ENERGY_COUNT, 8);
+test("GAIA synthesis requires nine collectible energies around permanent neutral ENERGY", () => {
+  assert.equal(GAIA_REQUIRED_ENERGY_COUNT, 9);
   assert.deepEqual(
     [...ORBI_GAIA_REQUIRED_FOLLOWER_IDS].sort(),
     [
+      "FOTON",
       "AERO",
       "ATON",
       "H2NOVA",
@@ -71,14 +72,14 @@ test("each later full set levels the same GAIA progression again", () => {
   assert.equal(state.cycleMask, 0);
 });
 
-test("FOTON and GAIA themselves are not follower prerequisites", () => {
+test("FOTON is a GAIA prerequisite while GAIA itself is not", () => {
   const initial = createGaiaEvolutionState();
   const foton = registerGaiaEnergy(initial, "FOTON");
   const gaia = registerGaiaEnergy(initial, "GAIA");
 
-  assert.equal(foton.accepted, false);
+  assert.equal(foton.accepted, true);
   assert.equal(gaia.accepted, false);
-  assert.deepEqual(foton.state, initial);
+  assert.equal(foton.progressCount, 1);
   assert.deepEqual(gaia.state, initial);
 });
 
@@ -102,10 +103,10 @@ test("GAIA combat evolution is meaningful but hard bounded", () => {
   assert.equal(level1000.evolutionStage, 4);
 });
 
-test("out-of-order acquisition with duplicates completes exactly once per eight unique energies", () => {
+test("out-of-order acquisition with duplicates completes once per nine unique energies", () => {
   const order = [
     "QUANTUM", "HYDRO", "HYDRO", "ATON", "AERO",
-    "TERMO", "QUANTUM", "MAGNE", "H2NOVA", "KINETRIX",
+    "TERMO", "QUANTUM", "MAGNE", "H2NOVA", "KINETRIX", "FOTON",
   ] as const;
   let state = createGaiaEvolutionState();
   let completions = 0;
@@ -125,17 +126,17 @@ test("partial second cycle preserves GAIA level until all distinct energies retu
   for (const id of ORBI_GAIA_REQUIRED_FOLLOWER_IDS) {
     state = registerGaiaEnergy(state, id).state;
   }
-  for (const id of ORBI_GAIA_REQUIRED_FOLLOWER_IDS.slice(0, 7)) {
+  for (const id of ORBI_GAIA_REQUIRED_FOLLOWER_IDS.slice(0, 8)) {
     state = registerGaiaEnergy(state, id).state;
   }
   const duplicate = registerGaiaEnergy(
     state, ORBI_GAIA_REQUIRED_FOLLOWER_IDS[0],
   );
   assert.equal(duplicate.duplicate, true);
-  assert.equal(duplicate.progressCount, 7);
+  assert.equal(duplicate.progressCount, 8);
   assert.equal(duplicate.state.gaiaLevel, 1);
   const completed = registerGaiaEnergy(
-    duplicate.state, ORBI_GAIA_REQUIRED_FOLLOWER_IDS[7],
+    duplicate.state, ORBI_GAIA_REQUIRED_FOLLOWER_IDS[8],
   );
   assert.equal(completed.cycleCompleted, true);
   assert.equal(completed.state.gaiaLevel, 2);
