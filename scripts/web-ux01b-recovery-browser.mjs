@@ -69,9 +69,15 @@ async function run(name,width,height,denyWebgl,skewRaf=false){
  };
  try{
   await page.goto(origin,{waitUntil:"domcontentloaded",timeout:30000});
-  const start=page.locator('[data-primary-start-cta="true"]');
-  await start.waitFor({state:"visible",timeout:30000});
-  await start.click();
+  // UX09B launch is a three-layer real UI. The legacy CTA remains in the
+  // DOM but is intentionally hidden; drive the same player journey as users.
+  await page.getByTestId("orbi-mobile-enter").waitFor({state:"visible",timeout:30000});
+  await page.getByTestId("orbi-mobile-enter").click();
+  await page.getByTestId("orbi-mobile-menu-main-play").waitFor({state:"visible",timeout:12000});
+  await page.getByTestId("orbi-mobile-menu-main-play").click();
+  const campaign=page.getByTestId("orbi-mobile-campaign");
+  await campaign.waitFor({state:"visible",timeout:12000});
+  await campaign.click();
   await page.locator("#game-canvas").waitFor({state:"visible",timeout:15000});
   await sleep(700);
   const beginning=await state("starting");
