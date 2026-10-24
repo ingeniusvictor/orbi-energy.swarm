@@ -108,7 +108,7 @@ async function run(name,width,height,coarse,immersive,webImmersive) {
         name+": Estado must display live swarm, score and credits");
       const energyPreview=premium.getByTestId("orbi-ux11d-energy-preview");
       check(await energyPreview.isVisible(),name+": ENERGY 3D status module absent");
-      check(await premium.locator(".orbi-ux11d-ability-deck article").count()===2,
+      check(await premium.locator(".orbi-ux11d-ability-deck article").count()===3,
         name+": Estado combat ability cards missing");
       check((await premium.locator(".orbi-ux11d-ability-deck").innerText()).includes("OVERDRIVE"),
         name+": Overdrive details missing");
