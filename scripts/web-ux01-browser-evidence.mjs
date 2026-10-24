@@ -186,8 +186,17 @@ async function run(name,width,height,coarse,immersive,webImmersive) {
           name+": touch D-pad hidden on mobile");
       }
       // UX11-E: exercise the real Dash action against the production engine.
-      const dash=page.getByTestId("orbi-dash-action");
-      check(await dash.isVisible(),name+": immersive Dash control absent");
+      const dash=page.getByTestId(webImmersive?"orbi-dash-action":"orbi-touch-dash");
+      check(await dash.isVisible(),name+": active Dash control absent");
+      if (!webImmersive) {
+        check(!await page.getByTestId("orbi-dash-action").isVisible(),name+": duplicate top Dash button still visible");
+        check(!await page.getByTestId("orbi-overdrive-action").isVisible(),name+": duplicate top Overdrive button still visible");
+        const overdrive=page.getByTestId("orbi-touch-overdrive");
+        check(await overdrive.isVisible(),name+": right thumb Overdrive absent");
+        const overdriveRect=await overdrive.boundingBox();
+        const dashRect=await dash.boundingBox();
+        check(overdriveRect && dashRect && overdriveRect.y+overdriveRect.height<=dashRect.y-2,name+": abilities overlap");
+      }
       check(await dash.isEnabled(),name+": Dash not initially ready");
       if(webImmersive) {
         await page.keyboard.press("E");
