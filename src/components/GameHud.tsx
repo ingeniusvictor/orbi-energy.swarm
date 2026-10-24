@@ -1,4 +1,6 @@
 import React from "react";
+import { QualityPreset } from "../game/types";
+import { EnergyStatus3D } from "./EnergyStatus3D";
 import { Shield, Award, Users, Volume2, VolumeX, Pause, Play, Zap, Maximize2, Minimize2, Target, Package, X, Coins, Radar, Activity } from "lucide-react";
 import { useGameTranslation, formatNumber } from "../i18n";
 import { getCampaignObjective } from "../game/campaignGuide";
@@ -7,6 +9,7 @@ import type { ScoreAttackLiveEngineStartMode } from "../game/scoreAttackLiveEngi
 import { SCORE_ATTACK_DURATION_MS } from "../game/scoreAttackTimeboxProjection";
 
 interface GameHudProps {
+  qualityPreset?: QualityPreset;
   presentationMode: ScoreAttackLiveEngineStartMode;
   score: number;
   shield: number;
@@ -42,6 +45,7 @@ interface GameHudProps {
 }
 
 export const GameHud: React.FC<GameHudProps> = ({
+  qualityPreset = QualityPreset.MEDIUM,
   presentationMode,
   score,
   shield,
@@ -266,7 +270,7 @@ export const GameHud: React.FC<GameHudProps> = ({
           </div>
           <div className="orbi-premium-status-top">
             <div className="orbi-premium-status-core">
-              <div className="orbi-premium-status-energy" aria-hidden="true"><i/><i/><span/></div>
+              <EnergyStatus3D qualityPreset={qualityPreset} language={language} />
               <div className="orbi-premium-status-core-label"><strong>ENERGY</strong><span>{language === "es" ? "NÚCLEO NEUTRAL" : "NEUTRAL CORE"}</span></div>
             </div>
             <div className="orbi-premium-status-shield">
