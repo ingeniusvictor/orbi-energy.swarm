@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { EnergyCodex } from "./EnergyCodex";
+import { PremiumMissionArtwork } from "./presentation/PremiumMissionArtwork";
+import { SCORE_ATTACK_DURATION_MS } from "../game/scoreAttackTimeboxProjection";
 import { FormationDiagram, getFormationBrief, TACTICAL_FORMATION_IDS } from "./FormationDiagram";
 import { FormationType } from "../game/types";
 import {
@@ -132,7 +134,8 @@ export const PremiumNativeNavigation: React.FC<Props> = ({
                 className={"orbi-ux09-tile orbi-ux10c-tile orbi-ux10c-tile--" + item.key}
                 onClick={() => onOpen(item.tab, item.section)}>
                 <div className="orbi-ux10c-tile-picture" aria-hidden="true">
-                  <item.Icon size={38} strokeWidth={1.3}/>
+                  <PremiumMissionArtwork scene={item.key} />
+                  <span className="orbi-ux11f-tile-icon"><item.Icon size={17} strokeWidth={1.8}/></span>
                   <span className="orbi-ux10c-tile-rune">{String(i + 1).padStart(2, "0")}</span>
                 </div>
                 <div className="orbi-ux10c-tile-copy">
@@ -164,9 +167,23 @@ export const PremiumNativeNavigation: React.FC<Props> = ({
               {modes.map(mode => (
                 <article key={mode.key} className={"orbi-ux09-mode-card orbi-ux10c-mode orbi-ux10c-mode--" + mode.key}
                   data-selected={selectedMode === mode.key} data-locked={mode.lock}>
-                  <div className="orbi-ux10c-mode-art" aria-hidden="true"><mode.Icon size={44} strokeWidth={1.35} /></div>
+                  <div className="orbi-ux10c-mode-art" aria-hidden="true">
+                    <PremiumMissionArtwork scene={mode.key} />
+                    <span className="orbi-ux11f-mode-seal"><mode.Icon size={20} strokeWidth={1.8}/></span>
+                    <span className="orbi-ux11f-mode-progress">
+                      {mode.key === "campaign" ? "EVO8 · ORBI" :
+                        mode.key === "score" ? `${SCORE_ATTACK_DURATION_MS / 1000}s · SCORE` :
+                        hasInfiniteRecord ? (es ? "ACCESO EN CAMPAÑA" : "IN CAMPAIGN") :
+                          (es ? "ACCESO CONDICIONAL" : "CONDITIONAL ACCESS")}
+                    </span>
+                  </div>
                   <div className="orbi-ux10c-mode-body">
-                    <span className="orbi-ux10c-overline">{mode.key.toUpperCase()}</span>
+                    <span className="orbi-ux10c-overline orbi-ux11f-mode-eyebrow">
+                      <span className="orbi-ux11f-edition-dot" />
+                      {mode.key === "campaign" ? (es ? "MISIÓN PRINCIPAL" : "MAIN MISSION") :
+                        mode.key === "score" ? (es ? "DESAFÍO CRONOMETRADO" : "TIMED CHALLENGE") :
+                        (es ? "DESDE CAMPAÑA" : "FROM CAMPAIGN")}
+                    </span>
                     <h3>{es ? mode.es : mode.en}</h3>
                     <p>{es ? mode.descEs : mode.descEn}</p>
                     {mode.lock ? (

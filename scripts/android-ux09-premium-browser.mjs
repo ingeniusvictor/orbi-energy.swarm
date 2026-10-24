@@ -60,6 +60,13 @@ async function run(width,height,mobile,dpr=1){
    await page.getByTestId("orbi-mobile-enter").click();
    await page.getByTestId("orbi-mobile-menu-main-play").waitFor({state:"visible"});
    ensure(await page.locator(".orbi-ux10c-command-grid .orbi-ux10c-tile").count()===7,id+": fewer than seven genuine cards");
+   const moduleArts=await page.locator(".orbi-ux10c-command-grid .orbi-ux11f-scene").evaluateAll(els=>els.map(el=>el.getAttribute("data-scene")));
+   ensure(moduleArts.join(",")==="modes,hangar,tactics,codex,controls,settings,about",
+     id+": seven distinct module art scenes missing "+moduleArts.join(","));
+   ensure(await page.locator(".orbi-ux11f-scene text").count()===0,
+     id+": native premium illustration has baked text");
+   const activeArts=await page.locator(".orbi-ux10c-command-grid .orbi-ux11f-scene").evaluateAll(els=>els.filter(el=>{const r=el.getBoundingClientRect();return r.width>30&&r.height>40;}).length);
+   ensure(activeArts===7,id+": illustrated cards collapsed");
    ensure(await page.getByRole("heading",{name:"COMMAND CENTER"}).isVisible(),id+": old English hub loaded");
    const hubEN=await box(page,".orbi-ux10c-command-grid");
    const cardsEN=await page.locator(".orbi-ux10c-tile").evaluateAll(els=>els.map(el=>{let b=el.getBoundingClientRect();return {x:b.x,y:b.y,width:b.width,height:b.height,bottom:b.bottom,right:b.right}}));
@@ -116,12 +123,16 @@ async function run(width,height,mobile,dpr=1){
    ensure((await codex.locator(".orbi-ux11c-protagonist").innerText()).includes("ENERGY ≠ FOTON"),
      id+": protagonist was incorrectly identified as FOTON");
    await codex.locator(".orbi-ux11c-choice[data-energy='HYDRO']").click();
+   ensure(await codex.locator(".orbi-ux11f-signature--HYDRO").count()===1,
+     id+": Codex signature HYDRO missing");
    ensure((await codex.locator(".orbi-ux11c-energy-title").innerText()).includes("HYDRO"),
      id+": individual energy selection failed");
    await codex.locator(".orbi-ux11c-levels button").filter({hasText:"E8"}).click();
    ensure((await codex.locator(".orbi-ux11c-facts").first().innerText()).includes("29"),
      id+": EVO8 acquisition cap wrong");
    await codex.locator(".orbi-ux11c-choice[data-energy='GAIA']").click();
+   ensure(await codex.locator(".orbi-ux11f-signature--GAIA").count()===1,
+     id+": GAIA identity art missing");
    ensure((await codex.locator(".orbi-ux11c-gaia-rule").innerText()).includes("nueve"),
      id+": GAIA incorrectly presented as collectible");
    await shot(page,id+"-05b-codex-gaia-es");
@@ -142,6 +153,14 @@ async function run(width,height,mobile,dpr=1){
    ensure(await campaign.isVisible() && await score.isVisible(),id+": Campaign/Score missing");
    ensure(await page.getByTestId("orbi-mobile-infinite-locked").count()===1,id+": Infinite unguarded");
    ensure(await page.locator(".orbi-ux10c-mode").count()===3,id+": mode cards missing");
+   const modeArts=await page.locator(".orbi-ux10c-modes .orbi-ux11f-scene").evaluateAll(els=>els.map(el=>el.getAttribute("data-scene")));
+   ensure(modeArts.length===3,id+": mode artwork missing");
+   ensure(modeArts.join(",")==="campaign,score,infinite",id+": each game mode must have unique art");
+   ensure(await page.locator(".orbi-ux11f-mode-progress").count()===3,
+     id+": real mode technical captions missing");
+   ensure((await page.locator(".orbi-ux10c-mode--score .orbi-ux11f-mode-progress").innerText()).includes("60s"),
+     id+": Score Attack duration should come from canonical timebox");
+   caseReport.premiumFinish=true;
    await shot(page,id+"-06-modes-es");
    if(mobile && width===844){
      await campaign.click();
