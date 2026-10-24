@@ -186,7 +186,7 @@ import {
   playShootSound, playEnemyShootSound, playDamageSound, playEnemyExplodeSound, 
   playRecruitSound, playCrystalSound, playBiomeChangeSound, playClickSound, 
   playPauseSound, playUnpauseSound, playGameOverSound, playVictorySound, 
-  setMuteState, initAudio, startBgm, stopBgm,
+  setMuteState, setMusicEnabled, setSoundEffectsEnabled, initAudio, startBgm, stopBgm,
   playDroneChargeSound, playDisruptorChargeSound, playEliteChargeSound,
   playDisruptorPulseSound, playHeavyImpactSound, playShieldDeflectSound,
   playCriticalHitSound,
@@ -919,10 +919,10 @@ export const EnergySwarmGame: React.FC = () => {
     setStats(loaded);
     setHighScore(loaded.highScore);
     setAudioMuted(loaded.audioMuted);
-    // Restore persisted mute state without starting BGM before a user gesture.
-    if (loaded.audioMuted) {
-      setMuteState(true);
-    }
+    // Restore independent mixer preferences; never auto-play before user gesture.
+    setMusicEnabled(loaded.musicEnabled !== false);
+    setSoundEffectsEnabled(loaded.soundEffectsEnabled !== false);
+    setMuteState(loaded.audioMuted);
 
     // Load level states
     const levels: Record<string, number> = {};
@@ -2068,11 +2068,31 @@ export const EnergySwarmGame: React.FC = () => {
   }, [isPhotoMode]);
 
   // --- TOGGLE MUTE ---
+  const resumeBackgroundMusic = () => {
+    if(!isPlaying || audioMuted) return;
+    startBgm(bossActiveRef.current ? "BOSS" : waveActiveRef.current ? "HIGH_INTENSITY" : "EXPLORATION");
+  };
   const toggleMute = () => {
     const next = !audioMuted;
     setAudioMuted(next);
     setMuteState(next);
+    updateStatsAndSave({ ...statsRef.current, audioMuted: next });
+    if (!next) {
+      startBgm(bossActiveRef.current ? "BOSS" : waveActiveRef.current ? "HIGH_INTENSITY" : "EXPLORATION");
+      if(!isPlaying) stopBgm();
+    }
     playClickSound();
+  };
+  const toggleMusic = () => {
+    const enabled = statsRef.current.musicEnabled === false;
+    setMusicEnabled(enabled);
+    updateStatsAndSave({ ...statsRef.current, musicEnabled: enabled });
+    if(enabled && !audioMuted) resumeBackgroundMusic();
+  };
+  const toggleEffects = () => {
+    const enabled = statsRef.current.soundEffectsEnabled === false;
+    setSoundEffectsEnabled(enabled);
+    updateStatsAndSave({ ...statsRef.current, soundEffectsEnabled: enabled });
   };
 
   // --- CANONICAL ORBI ENERGY RECRUITMENT CYCLE ---
@@ -8421,6 +8441,8 @@ export const EnergySwarmGame: React.FC = () => {
             setStats(next);
           }}
           onToggleMute={toggleMute}
+          onToggleMusic={toggleMusic}
+          onToggleEffects={toggleEffects}
           onToggleBossLabelsMode={(mode) => {
             const next = { ...stats, bossLabelsMode: mode };
             saveGameStats(next);
@@ -8446,7 +8468,11 @@ export const EnergySwarmGame: React.FC = () => {
             setPausedState(false);
           }}
           audioMuted={audioMuted}
+          musicEnabled={stats.musicEnabled !== false}
+          soundEffectsEnabled={stats.soundEffectsEnabled !== false}
           onToggleMute={toggleMute}
+          onToggleMusic={toggleMusic}
+          onToggleEffects={toggleEffects}
           screenShakeMode={stats.screenShakeMode || "FULL"}
           onSetScreenShakeMode={(mode) => {
             const next = { ...stats, screenShakeMode: mode };
@@ -8816,6 +8842,8 @@ export const EnergySwarmGame: React.FC = () => {
                 isWaveBreak={isWaveBreak}
                 waveBreakTimeLeft={waveBreakTimeLeft}
                 audioMuted={audioMuted}
+                musicEnabled={stats.musicEnabled !== false}
+                onToggleMusic={toggleMusic}
                 isPaused={isPaused}
                 nanoCredits={nanoCredits}
                 combatChain={combatResonanceView.chain}
