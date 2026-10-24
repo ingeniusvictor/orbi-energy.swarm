@@ -57,6 +57,18 @@ export const PremiumArtNavigation: React.FC<Props> = ({
 }) => {
   const es = language === "es";
   const [selectedMode,setSelectedMode] = useState("CAMPAIGN");
+  // Load the next cinematic scenes ahead of menu transitions. This prevents
+  // a fast tap from momentarily leaving the previous illustration visible.
+  React.useEffect(() => {
+    if (typeof Image === "undefined") return;
+    const warm = ["command", "modes", "formations"].map(name => {
+      const img = new Image();
+      img.src = `${import.meta.env.BASE_URL}ux09/premium/${name}.webp`;
+      return img;
+    });
+    return () => { warm.length = 0; };
+  }, []);
+
   const showModes = layer === "DETAIL" && tab === "MAIN" && section === "PLAY";
   const showTactics = layer === "DETAIL" && tab === "HOW_TO" && section === "PLAY";
   const artName = layer === "WELCOME" ? "welcome" : layer === "HUB" ? "command" : showModes ? "modes" : "formations";
@@ -69,7 +81,7 @@ export const PremiumArtNavigation: React.FC<Props> = ({
       style={{ "--orbi-ux09-photo": background } as React.CSSProperties}>
       <div className="orbi-ux09-scene" aria-hidden="true" />
       <div className="orbi-ux09b-artboard" data-testid="orbi-ux09b-artboard">
-        <img className="orbi-ux09b-illustration" src={artwork}
+        <img key={artName} className="orbi-ux09b-illustration" src={artwork}
           alt={es ? "Escena cinematográfica original del universo ORBI" : "Original ORBI Universe cinematic scene"}
           draggable={false} fetchPriority={layer==="WELCOME" ? "high" : "auto"}/>
         {layer==="WELCOME" && (
