@@ -9,6 +9,8 @@ import {
 
 let audioCtx: AudioContext | null = null;
 let isMuted = false;
+let musicEnabled = true;
+let soundEffectsEnabled = true;
 let currentBgmNode: OscillatorNode | null = null;
 let bgmTimer: NodeJS.Timeout | null = null;
 let bgmSequenceActive = false;
@@ -70,13 +72,24 @@ export const setMuteState = (muted: boolean) => {
     if (audioCtx) {
       audioCtx.resume();
     }
-    startBgm("EXPLORATION");
+    // Session owner restarts BGM in the correct gameplay phase, never in menus.
   }
 };
 
 export const getMuteState = (): boolean => {
   return isMuted;
 };
+
+/** Independent BGM and SFX lanes. Persisted in GameStats by the React owner. */
+export const setMusicEnabled = (enabled:boolean):void => {
+  musicEnabled=enabled;
+  if(!enabled) stopBgm();
+};
+export const setSoundEffectsEnabled = (enabled:boolean):void => {
+  soundEffectsEnabled=enabled;
+};
+export const getMusicEnabled = ():boolean => musicEnabled;
+export const getSoundEffectsEnabled = ():boolean => soundEffectsEnabled;
 
 // --- SYNTH PROCEDURAL SOUND GENERATORS ---
 
@@ -101,7 +114,7 @@ function createGain(
 // 1. Player/Swarm Shoot Sound
 export const playShootSound = () => {
   const ctx = initAudio();
-  if (!ctx || isMuted) return;
+  if (!ctx || isMuted || !soundEffectsEnabled) return;
 
   const osc = ctx.createOscillator();
   const gain = createGain(ctx, 0.15, 0.08);
@@ -120,7 +133,7 @@ export const playShootSound = () => {
 // 2. Enemy Shoot Sound
 export const playEnemyShootSound = () => {
   const ctx = initAudio();
-  if (!ctx || isMuted) return;
+  if (!ctx || isMuted || !soundEffectsEnabled) return;
 
   const osc = ctx.createOscillator();
   const gain = createGain(ctx, 0.25, 0.04);
@@ -139,7 +152,7 @@ export const playEnemyShootSound = () => {
 // 3. Player Took Damage
 export const playDamageSound = () => {
   const ctx = initAudio();
-  if (!ctx || isMuted) return;
+  if (!ctx || isMuted || !soundEffectsEnabled) return;
 
   const osc = ctx.createOscillator();
   const osc2 = ctx.createOscillator();
@@ -166,7 +179,7 @@ export const playDamageSound = () => {
 // 4. Enemy Exploded
 export const playEnemyExplodeSound = (isElite = false) => {
   const ctx = initAudio();
-  if (!ctx || isMuted) return;
+  if (!ctx || isMuted || !soundEffectsEnabled) return;
 
   const duration = isElite ? 0.6 : 0.35;
   const gainValue = isElite ? 0.2 : 0.1;
@@ -201,7 +214,7 @@ export const playEnemyExplodeSound = (isElite = false) => {
 // 5. Recruit New Swarm Orbi
 export const playRecruitSound = () => {
   const ctx = initAudio();
-  if (!ctx || isMuted) return;
+  if (!ctx || isMuted || !soundEffectsEnabled) return;
 
   const now = ctx.currentTime;
   const notes = [261.63, 329.63, 392.00, 523.25]; // C4, E4, G4, C5
@@ -231,7 +244,7 @@ export const playRecruitSound = () => {
 // 6. Gather Crystal / Energy Sound
 export const playCrystalSound = (isEnergy = false) => {
   const ctx = initAudio();
-  if (!ctx || isMuted) return;
+  if (!ctx || isMuted || !soundEffectsEnabled) return;
 
   const osc = ctx.createOscillator();
   const gain = createGain(ctx, 0.2, 0.08);
@@ -253,7 +266,7 @@ export const playCrystalSound = (isEnergy = false) => {
 // 7. Biome Portal Warp Shift
 export const playBiomeChangeSound = () => {
   const ctx = initAudio();
-  if (!ctx || isMuted) return;
+  if (!ctx || isMuted || !soundEffectsEnabled) return;
 
   const now = ctx.currentTime;
   const duration = 0.8;
@@ -281,7 +294,7 @@ export const playBiomeChangeSound = () => {
 // 8. General Click
 export const playClickSound = () => {
   const ctx = initAudio();
-  if (!ctx || isMuted) return;
+  if (!ctx || isMuted || !soundEffectsEnabled) return;
 
   const osc = ctx.createOscillator();
   const gain = createGain(ctx, 0.05, 0.1);
@@ -300,7 +313,7 @@ export const playClickSound = () => {
 // 9. Pause Sound
 export const playPauseSound = () => {
   const ctx = initAudio();
-  if (!ctx || isMuted) return;
+  if (!ctx || isMuted || !soundEffectsEnabled) return;
 
   const osc = ctx.createOscillator();
   const gain = createGain(ctx, 0.3, 0.1);
@@ -319,7 +332,7 @@ export const playPauseSound = () => {
 // 10. Unpause Sound
 export const playUnpauseSound = () => {
   const ctx = initAudio();
-  if (!ctx || isMuted) return;
+  if (!ctx || isMuted || !soundEffectsEnabled) return;
 
   const osc = ctx.createOscillator();
   const gain = createGain(ctx, 0.3, 0.1);
@@ -338,7 +351,7 @@ export const playUnpauseSound = () => {
 // 11. Game Over Fanfare
 export const playGameOverSound = () => {
   const ctx = initAudio();
-  if (!ctx || isMuted) return;
+  if (!ctx || isMuted || !soundEffectsEnabled) return;
 
   stopBgm();
   const now = ctx.currentTime;
@@ -366,7 +379,7 @@ export const playGameOverSound = () => {
 // 12. Victory Fanfare
 export const playVictorySound = () => {
   const ctx = initAudio();
-  if (!ctx || isMuted) return;
+  if (!ctx || isMuted || !soundEffectsEnabled) return;
 
   stopBgm();
   const now = ctx.currentTime;
@@ -394,7 +407,7 @@ export const playVictorySound = () => {
 // 13. Drone Charge Sound
 export const playDroneChargeSound = () => {
   const ctx = initAudio();
-  if (!ctx || isMuted) return;
+  if (!ctx || isMuted || !soundEffectsEnabled) return;
 
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
@@ -422,7 +435,7 @@ export const playDisruptorChargeSound = (
   tacticalPriority = false,
 ) => {
   const ctx = initAudio();
-  if (!ctx || isMuted) return;
+  if (!ctx || isMuted || !soundEffectsEnabled) return;
 
   if (tacticalPriority) {
     beginTacticalPriority(ctx, 1.0);
@@ -462,7 +475,7 @@ export const playDisruptorPulseSound = (
   tacticalPriority = false,
 ) => {
   const ctx = initAudio();
-  if (!ctx || isMuted) return;
+  if (!ctx || isMuted || !soundEffectsEnabled) return;
 
   if (tacticalPriority) {
     beginTacticalPriority(ctx, 0.4);
@@ -497,7 +510,7 @@ export const playDisruptorPulseSound = (
 // 16. Elite Charge Sound
 export const playEliteChargeSound = () => {
   const ctx = initAudio();
-  if (!ctx || isMuted) return;
+  if (!ctx || isMuted || !soundEffectsEnabled) return;
 
   const osc = ctx.createOscillator();
   const gain = createGain(ctx, 0.3, 0.12);
@@ -516,7 +529,7 @@ export const playEliteChargeSound = () => {
 // 17. Shield Deflect Metal Clink Sound
 export const playShieldDeflectSound = () => {
   const ctx = initAudio();
-  if (!ctx || isMuted) return;
+  if (!ctx || isMuted || !soundEffectsEnabled) return;
 
   const osc = ctx.createOscillator();
   const osc2 = ctx.createOscillator();
@@ -543,7 +556,7 @@ export const playShieldDeflectSound = () => {
 // 18. Heavy Impact Sound
 export const playHeavyImpactSound = () => {
   const ctx = initAudio();
-  if (!ctx || isMuted) return;
+  if (!ctx || isMuted || !soundEffectsEnabled) return;
 
   const osc = ctx.createOscillator();
   const gain = createGain(ctx, 0.3, 0.22);
@@ -567,7 +580,7 @@ export const playHeavyImpactSound = () => {
 // 19. Critical Hit Crisp Sound
 export const playCriticalHitSound = () => {
   const ctx = initAudio();
-  if (!ctx || isMuted) return;
+  if (!ctx || isMuted || !soundEffectsEnabled) return;
 
   const osc = ctx.createOscillator();
   const osc2 = ctx.createOscillator();
@@ -610,7 +623,7 @@ export const stopBgm = () => {
 
 export const startBgm = (intensity: "EXPLORATION" | "HIGH_INTENSITY" | "BOSS") => {
   const ctx = initAudio();
-  if (!ctx || isMuted) return;
+  if (!ctx || isMuted || !musicEnabled) return;
 
   stopBgm();
   bgmSequenceActive = true;
@@ -685,7 +698,7 @@ export const startBgm = (intensity: "EXPLORATION" | "HIGH_INTENSITY" | "BOSS") =
 // 20. Boss Arrival Alarm Cue
 export const playBossArrivalSound = () => {
   const ctx = initAudio();
-  if (!ctx || isMuted) return;
+  if (!ctx || isMuted || !soundEffectsEnabled) return;
 
   const now = ctx.currentTime;
   const duration = 1.5;
@@ -732,7 +745,7 @@ export const playBossArrivalSound = () => {
 // 21. Boss Phase Transition Screech
 export const playBossPhaseTransitionSound = () => {
   const ctx = initAudio();
-  if (!ctx || isMuted) return;
+  if (!ctx || isMuted || !soundEffectsEnabled) return;
 
   const now = ctx.currentTime;
   beginTacticalPriority(ctx, 0.8);
@@ -766,7 +779,7 @@ export const playBossPhaseTransitionSound = () => {
 // 22. Boss Charge Target Lock Sweeper
 export const playBossChargeSound = () => {
   const ctx = initAudio();
-  if (!ctx || isMuted) return;
+  if (!ctx || isMuted || !soundEffectsEnabled) return;
 
   beginTacticalPriority(ctx, 0.4);
 
@@ -791,7 +804,7 @@ export const playBossChargeSound = () => {
 // 23. Boss Shard Burst Noise Sound
 export const playBossShardsSound = () => {
   const ctx = initAudio();
-  if (!ctx || isMuted) return;
+  if (!ctx || isMuted || !soundEffectsEnabled) return;
 
   beginTacticalPriority(ctx, 0.2);
 
@@ -817,7 +830,7 @@ export const playBossShardsSound = () => {
 // 24. Boss Singularity Pulse Resonance Sound
 export const playBossPulseSound = () => {
   const ctx = initAudio();
-  if (!ctx || isMuted) return;
+  if (!ctx || isMuted || !soundEffectsEnabled) return;
 
   beginTacticalPriority(ctx, 0.6);
 
@@ -852,7 +865,7 @@ export const playBossPulseSound = () => {
 // Called only after a successful explicit activation gesture; never on mount.
 export const playOverdriveActivationSound = () => {
   const ctx = initAudio();
-  if (!ctx || isMuted) return;
+  if (!ctx || isMuted || !soundEffectsEnabled) return;
 
   beginTacticalPriority(ctx, 0.8);
   const now = ctx.currentTime;
@@ -889,7 +902,7 @@ export const playOverdriveActivationSound = () => {
 /** Short two-tone propulsion cue. Independent of the longer Overdrive stinger. */
 export const playPropulsionDashSound = () => {
   const ctx = initAudio();
-  if (!ctx || isMuted) return;
+  if (!ctx || isMuted || !soundEffectsEnabled) return;
   const now = ctx.currentTime;
   const duration = 0.16;
   const osc = ctx.createOscillator();
