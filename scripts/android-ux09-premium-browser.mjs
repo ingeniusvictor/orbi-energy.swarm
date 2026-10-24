@@ -35,7 +35,7 @@ async function run(width,height,mobile,dpr=1){
     ensure(source.complete && source.width===1672 && source.height===941,id+": wrong art or unloaded "+JSON.stringify(source));
     caseReport.premiumSource=source.src;
   } else {
-    ensure(img.includes("orbi-command-world.svg"),id+": portrait fallback backdrop absent");
+    ensure(img.includes("ux09/premium/welcome.webp"),id+": portrait cinematic backdrop absent");
   }
   caseReport.welcome=await rect(page,".orbi-ux09-identity");
   caseReport.enter=await rect(page,"[data-testid='orbi-mobile-enter']");
