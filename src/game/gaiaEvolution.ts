@@ -1,3 +1,4 @@
+import { acquisitionsForLevel, getEvo8VisualStage, ORBI_MAX_EVOLUTION_LEVEL } from "./orbiEvolution";
 import {
   ORBI_GAIA_REQUIRED_FOLLOWER_IDS,
 } from "./orbiEnergyCanon";
@@ -52,6 +53,17 @@ export const getGaiaProgressCount = (
   state: GaiaEvolutionState,
 ) => countBits(state.cycleMask);
 
+/** First full nine-energy set creates E1; further full sets are matching GAIA essences. */
+export const getGaiaLevelForCompletedCycles = (cycles: number): number => {
+  if (!Number.isFinite(cycles) || cycles < 1) return 0;
+  let level = 1;
+  for (let next = 2; next <= ORBI_MAX_EVOLUTION_LEVEL; next += 1) {
+    if (cycles < acquisitionsForLevel(next)) break;
+    level = next;
+  }
+  return level;
+};
+
 export const createGaiaEvolutionState = (): GaiaEvolutionState => ({
   cycleMask: 0,
   gaiaLevel: 0,
@@ -99,7 +111,7 @@ export const registerGaiaEnergy = (
   if (nextMask === REQUIRED_MASK) {
     const state: GaiaEvolutionState = {
       cycleMask: 0,
-      gaiaLevel: current.gaiaLevel + 1,
+      gaiaLevel: getGaiaLevelForCompletedCycles(current.completedCycles + 1),
       completedCycles: current.completedCycles + 1,
     };
     return {
@@ -127,15 +139,11 @@ export const registerGaiaEnergy = (
   };
 };
 
-/**
- * GAIA may evolve indefinitely as a progression counter, while live combat
- * benefits stay explicitly bounded so repeated synthesis never destabilizes
- * projectile budgets, enemy density or frame cost.
- */
+/** GAIA level is capped at E8 even if the lifetime synthesis counter grows. */
 export const getGaiaCombatScale = (
   level: number,
 ): GaiaCombatScale => {
-  const safeLevel = Math.max(1, Math.floor(level || 1));
+  const safeLevel = Math.max(1, Math.min(ORBI_MAX_EVOLUTION_LEVEL, Math.floor(level || 1)));
   const steps = safeLevel - 1;
 
   return {
@@ -144,7 +152,6 @@ export const getGaiaCombatScale = (
     shieldSupportMultiplier: Math.min(2.5, 1 + steps * 0.14),
     incomingDamageMultiplier: Math.max(0.75, 0.92 - steps * 0.015),
     size: Math.min(10.5, 7.2 + steps * 0.22),
-    evolutionStage:
-      safeLevel >= 4 ? 4 : safeLevel >= 2 ? 3 : 2,
+    evolutionStage: getEvo8VisualStage(safeLevel),
   };
 };
