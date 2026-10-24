@@ -36,7 +36,9 @@ test("EV-F01 delta concentric is deterministic and has multiple growing triangul
    assert.equal(pts.length,n);
    assert.ok(pts.every(p=>Number.isFinite(p.x)&&Number.isFinite(p.y)));
    if(n>=20){
-      const shells=[pts.slice(0,10),pts.slice(10,20),pts.slice(20,30)];
+      // EV-F08 uses explicit 3/9/18 triangular shells, not the old 10/10/10
+      // index grouping. Keep the actual radial hierarchy assertion.
+      const shells=[pts.slice(0,3),pts.slice(3,12),pts.slice(12,30)];
       const avgRadius=(a:{x:number;y:number}[])=>a.reduce((sum,p)=>sum+Math.hypot(p.x,p.y),0)/a.length;
       assert.ok(avgRadius(shells[1])>avgRadius(shells[0])+20);
       if(n>=30)assert.ok(avgRadius(shells[2])>avgRadius(shells[1])+20);
