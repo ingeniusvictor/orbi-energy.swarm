@@ -106,6 +106,36 @@ async function run(name,width,height,coarse,immersive,webImmersive) {
       check(swarm && swarm.width>20,name+": Estado stats collapsed");
       check(await premium.locator(".orbi-premium-status-counters article").count()===3,
         name+": Estado must display live swarm, score and credits");
+      const energyPreview=premium.getByTestId("orbi-ux11d-energy-preview");
+      check(await energyPreview.isVisible(),name+": ENERGY 3D status module absent");
+      check(await premium.locator(".orbi-ux11d-ability-deck article").count()===2,
+        name+": Estado combat ability cards missing");
+      check((await premium.locator(".orbi-ux11d-ability-deck").innerText()).includes("OVERDRIVE"),
+        name+": Overdrive details missing");
+      check((await energyPreview.getAttribute("aria-label")).includes("ENERGY"),
+        name+": hero identity is not ENERGY");
+      await page.waitForFunction(() => {
+        const el=document.querySelector('[data-testid="orbi-ux11d-energy-preview"]');
+        return el && ["READY","FALLBACK"].includes(el.getAttribute("data-3d-status"));
+      },{timeout:10000});
+      const status=await energyPreview.getAttribute("data-3d-status");
+      if(status==="READY"){
+        const canvas=energyPreview.locator(".orbi-ux11d-webgl-canvas");
+        check(await canvas.isVisible(),name+": WebGL hero canvas missing");
+        const size=await canvas.boundingBox();
+        check(size && size.width>=55 && size.height>=70,name+": 3D viewport collapsed");
+        // Validate actual browser context-loss downgrade with the CSS preview.
+        await canvas.evaluate(el=>el.dispatchEvent(new Event("webglcontextlost",{bubbles:true,cancelable:true})));
+        await page.waitForFunction(()=>
+          document.querySelector('[data-testid="orbi-ux11d-energy-preview"]')?.getAttribute("data-3d-status")==="FALLBACK");
+        check(await energyPreview.locator(".orbi-ux11d-fallback").isVisible(),
+          name+": WebGL context loss did not expose CSS hero");
+      } else {
+        check(await energyPreview.locator(".orbi-ux11d-fallback").isVisible(),
+          name+": missing WebGL still suppresses hero");
+      }
+      check(await premium.locator(".orbi-ux11d-ability-deck").isVisible(),
+        name+": status interaction lost after WebGL check");
       check(await page.locator('.orbi-immersive-action[aria-label="Reanudar"]').count()===1,
         name+": Estado drawer did not actually pause simulation");
       const estadoBounds=await page.locator(".orbi-hud-detail-grid").boundingBox();
