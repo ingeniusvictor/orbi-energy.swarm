@@ -1,0 +1,64 @@
+/* UX12 — joystick-safe, nonredundant combat cockpit.
+   No changes to the approved welcome / command-center layers. */
+.orbi-game-root[data-immersive-landscape="true"][data-touch-controls="recommended"]
+  .orbi-immersive-actions .orbi-dash-action,
+.orbi-game-root[data-immersive-landscape="true"][data-touch-controls="recommended"]
+  .orbi-immersive-actions .orbi-overdrive-action {display:none!important;}
+
+.orbi-touch-abilities {
+  position:absolute;
+  right:max(12px,env(safe-area-inset-right));
+  bottom:calc(max(10px,env(safe-area-inset-bottom)) + 66px);
+  width:168px;
+  max-width:calc(100vw - 24px);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:8px;z-index:4;pointer-events:none;
+}
+.orbi-touch-skill {
+  pointer-events:auto;touch-action:manipulation;
+  width:60px;height:60px;min-width:54px;min-height:54px;
+  border-radius:50%;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:0;isolation:isolate;user-select:none;-webkit-user-select:none;
+  color:#dff8ff;font:900 10px/1.02 "Space Grotesk",sans-serif;
+  border:2px solid rgba(103,232,249,.72);
+  background:radial-gradient(circle at 40% 21%,rgba(23,122,165,.76),rgba(4,15,39,.97));
+  box-shadow:0 0 18px rgba(44,218,240,.24),inset 0 0 16px rgba(42,195,224,.14);
+}
+.orbi-touch-skill svg {height:21px;width:21px;color:#e6f7ff;}
+.orbi-touch-skill span {font-size:9px;color:#b4e5ed;line-height:1.18;}
+.orbi-touch-skill strong {font-size:10px;letter-spacing:.04em;}
+.orbi-touch-overdrive {border-color:rgba(251,196,75,.77);color:#ffe4a4;background:radial-gradient(circle at 45% 25%,rgba(182,106,28,.68),rgba(32,18,29,.95));box-shadow:0 0 18px rgba(247,173,50,.2),inset 0 0 11px rgba(240,145,41,.14);}
+.orbi-touch-overdrive svg {color:#ffe18d;}
+.orbi-touch-skill[data-active="true"] {border-color:#fff1a5;box-shadow:0 0 19px rgba(255,216,115,.34);}
+.orbi-touch-skill:disabled {opacity:.5;filter:saturate(.55);}
+.orbi-touch-skill:focus-visible {outline:2px solid #fff0b3;outline-offset:3px;}
+.orbi-touch-skill:active:not(:disabled) {transform:scale(.94);}
+/* Never intercept the left joystick: the transparent dock itself has no pointer surface. */
+.orbi-touch-overlay .orbi-analog-joystick {z-index:3;}
+/* Premium game brand: the author is still credited in the About screen, not over combat. */
+.orbi-brand-footer img.orbi-ux12-hud-logo {
+  display:block;object-fit:contain;
+  width:clamp(135px,16vw,212px);height:42px;
+  filter:drop-shadow(0 2px 8px rgba(7,42,78,.5));
+}
+.orbi-game-root[data-immersive-landscape="true"] .orbi-brand-footer {
+  position:absolute;top:0;left:50%;transform:translateX(-50%);
+  z-index:18;pointer-events:none;padding:0;margin:0!important;
+  opacity:.85;display:flex;justify-content:center;align-items:center;
+}
+@media (orientation:landscape) and (max-height:520px){
+  .orbi-touch-abilities {bottom:calc(max(8px,env(safe-area-inset-bottom)) + 60px);gap:6px;}
+  .orbi-touch-skill {width:52px;height:52px;min-width:52px;min-height:52px;}
+  .orbi-touch-skill svg {width:18px;height:18px;}
+  .orbi-touch-skill strong {font-size:9px;}
+  .orbi-touch-skill span {font-size:8px;}
+  .orbi-game-root[data-immersive-landscape="true"] .orbi-brand-footer img.orbi-ux12-hud-logo {height:36px;width:160px;}
+}
+@media (orientation:landscape) and (max-width:670px){
+  .orbi-touch-abilities {width:146px;}
+  .orbi-game-root[data-immersive-landscape="true"] .orbi-brand-footer {opacity:.68;}
+}
+@media (prefers-reduced-motion:reduce){
+  .orbi-touch-skill {transition:none!important;animation:none!important;}
+}
