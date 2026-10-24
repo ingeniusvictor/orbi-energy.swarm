@@ -1,7 +1,7 @@
 # EVO8 v0.2 — ENERGY / FOTON / GAIA: estado real de implementación
 
 **Corte de activación:** 2026-10-23 (verificar GitHub live antes de continuar).  
-**Último gameplay/main revisado:** `8c2fbb4820c2ec4088ef0e9dc0a334a554eaa1d2`.  
+**Último gameplay/main revisado:** `1a664839a76449f5186d450e7eb9cffed3bae232` (#715).  
 **Autoridad:** código y verificaciones GitHub; esta página no reemplaza el árbol o los checks reales.
 
 ## Canon definitivo aprobado por el usuario
@@ -29,7 +29,7 @@
 | EV-F01 — Formación 2 abierta, 5 X separada, 6 Delta Concéntrica; IDs serializados y stats preservados | [#696](https://github.com/ingeniusvictor/orbi-energy.swarm/pull/696) | `f93472de745695b23562ba023192763b646874cb` | **Sí** (geometrías / i18n, no sprites EVO8) |
 | EV-F02 — Núcleo puro EVO8 de 8 niveles, 29 adquisiciones y cuatro siluetas | [#698](https://github.com/ingeniusvictor/orbi-energy.swarm/pull/698) | `a1f93a8ed91a4a767dd52c7071d04c0326c96f5d` | **API activada en runtime por #710** |
 | EV-F03 — ENERGY neutral, FOTON fotovoltaico y GAIA de 9 afinidades | [#700](https://github.com/ingeniusvictor/orbi-energy.swarm/pull/700) | `b2c258d973cd768b003bdb5673cc81717b1edacb` | **Sí**, canon, reclutamiento, GAIA y etiquetas |
-| EV-F04 — Doctrina pura 10/20/30 con promociones fundadoras E5/E8 | [#702](https://github.com/ingeniusvictor/orbi-energy.swarm/pull/702) | `2759fca1232d32df4f363fab31b27fd33aed03eb` | **No**, API preparada |
+| EV-F04 — Doctrina pura 10/20/30 con promociones fundadoras E5/E8 | [#702](https://github.com/ingeniusvictor/orbi-energy.swarm/pull/702) | `2759fca1232d32df4f363fab31b27fd33aed03eb` | **Sí, activada por #710** y protegida contra ENERGY por #708 |
 | EV-F05 — Panel fotovoltaico verde en FOTON durante detalle cercano Canvas2D | [#704](https://github.com/ingeniusvictor/orbi-energy.swarm/pull/704) | `f938212804ef21cdb703760b22b017ffce9c865a` | **Sí**, insignia provisional |
 | EV-F06 — EVO8 runtime: capturas afines, GAIA gradual, 10/20/30, alas 2/4/6 y fundadores protegidos de fusión | [#710](https://github.com/ingeniusvictor/orbi-energy.swarm/pull/710) | `8c2fbb4820c2ec4088ef0e9dc0a334a554eaa1d2` | **Sí**, lógica; arte E8 premium pendiente |
 
@@ -53,14 +53,24 @@ CI del PR #710 sobre `c0e7b41d3a9e343add3583843adc2aee0e95a463`:
 4. En Canvas2D se reutilizan las etapas E1/E3/E5/E8 existentes, con alas 2/4/6 E6/E7/E8 y radio visual sólido limitado a ENERGY; colisiones de fusiones no se reescribieron.
 5. Campaign, Infinite y Score Attack comparten la misma ruta de adquisición; guardados de estadísticas y archivos de partida históricos quedan sin modificación de esquema. El progreso individual del seguidor continúa siendo **estado de la sesión**, no una nueva promesa de guardado/resume de sesiones interrumpidas.
 
+## EV-F08 — Delta Concéntrica E8 ya fusionada en main
+
+- PR [#715](https://github.com/ingeniusvictor/orbi-energy.swarm/pull/715), squash `1a664839a76449f5186d450e7eb9cffed3bae232`, único padre `ee526090696b62cb0856a5f8f2ef219d43547098`, `tree` `4df45da69990d1ef86954a84e4b591547e715057`.
+- Nueva geometría `SCATTERED` conserva su enum, bonificaciones y ciclo de formaciones; posición permanente 3/9/18 en tres perímetros triangulares de radios 35/95/155. Los 30 ORBI E8 tienen distancia nominal mínima de **31.9228758103** unidades entre centros; el máximo radio visual sólido del ala es 14, conservando margen mínimo ≥2. No modifica joystick, RNG, colisiones físicas ni límites de cámara.
+- Canvas2D dibuja alas E6/E7/E8 (2/4/6) también para compañeros en LOD medio 13–30, sin añadir un renderizador adicional.
+- **CI premerge** #715 SUCCESS: CI `40054905526`, Android `40054905521`, Chromium `40054905516`, prueba Canvas `40054905542`. Artefacto `12544722143`: 12 capturas sintéticas, 5 de Delta-30 en 740×360, 844×390, 915×412, 768×346 DPR2 y vertical 390×844; cero errores del informe JSON. Estas capturas **no son encuentros reales**.
+- **Post-main exacto** `1a664839a76449f5186d450e7eb9cffed3bae232`: CI `40055109100` SUCCESS, Android `40055109044` SUCCESS, Chromium `40055109085` SUCCESS, UX01B `40055109123` SUCCESS, Canvas `40055109099` SUCCESS, Web Beta `40055194250` SUCCESS.
+- Artefacto Android debug post-main `12544788528`, ZIP íntegro, APK 9.414.210 bytes con manifiesto y DEX, SHA-256 `297f97f1aba36f62b194380313953462a46908d2d5c99c380775c4cab8b87337`. **No es Play release ni certificación física.**
+- El Issue [#712](https://github.com/ingeniusvictor/orbi-energy.swarm/issues/712) sigue **abierto** por superposición de *halos*, movimiento real de seguidores junto a límites y evidencia de dispositivo #248. No declarar separación visual perfecta a partir de geometrías nominales.
+
 ## Pendientes explícitos, sin declarar finalización artística
 
 - [#711](https://github.com/ingeniusvictor/orbi-energy.swarm/issues/711): crear los **nueve** sprites transparentes E8 premium; la insignia y las alas procedurales actuales son provisionales. El póster compuesto aprobado no sustituye las sprites originales. No confundir la prueba sintética con aceptación de arte AAA.
-- [#712](https://github.com/ingeniusvictor/orbi-energy.swarm/issues/712): comprobar separación de alas y cuerpos E8 en Delta Concéntrica con 30 seguidores; la distancia nominal mínima puede ser ~21 unidades frente al diámetro sólido teórico ~28.
+- [#712](https://github.com/ingeniusvictor/orbi-energy.swarm/issues/712): geometría estática ya corregida en #715 (mínimo 31,92); comprobar halos, dinámicas de formación y bordes en partida y Android real antes de cerrar.
 - [#713](https://github.com/ingeniusvictor/orbi-energy.swarm/issues/713): alinear recetas Solar Guardian/Hydro Leviathan, identidad canónica de energía y rango de fusión independiente del nivel E1-E8. La protección de fundadores ya está activa pero no representa migración de recetas.
 - [#248](https://github.com/ingeniusvictor/orbi-energy.swarm/issues/248): pruebas físicas Android de tamaños, HUD, control 360°, E8 alas y rendimiento.
 - [#694](https://github.com/ingeniusvictor/orbi-energy.swarm/issues/694): pulido retrato/inglés y texto FOTON incrustado en fondos premium; protagonista mostrado como ENERGY sin mezclarlo con la afinidad solar.
-- [#709](https://github.com/ingeniusvictor/orbi-energy.swarm/issues/709): mantener abierto hasta consolidar evidencia final de jugabilidad y asegurar que no hay defectos de síntesis/fusiones/guardados en dispositivo.
+- [#709](https://github.com/ingeniusvictor/orbi-energy.swarm/issues/709): **cerrado** tras implementar EVO8 en #710; la QA física se conserva separadamente en #248 y las deudas de fusiones/arte tienen sus Issues #713/#711.
 
 ## Política de cambios siguientes
 
