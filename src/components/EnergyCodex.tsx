@@ -32,6 +32,48 @@ const ICONS = {
   ATON:Atom,KINETRIX:Zap,H2NOVA:Waves,QUANTUM:Orbit,GAIA:Leaf,
 } as const;
 
+/** Decorative, source-driven energy signatures (NOT gameplay collision geometry).
+ * Every energy has distinct physics-inspired motifs, not one recycled icon. */
+const EnergyCodexSignature:React.FC<{id:OrbiEnergyId;color:string}> = ({id,color}) => (
+  <g className={"orbi-ux11f-codex-signature orbi-ux11f-signature--"+id}
+    stroke={color} fill="none" strokeWidth="2.8" strokeLinecap="round">
+    {id==="HYDRO"&&[-1,0,1].map(i=><path key={i} d={"M92 "+(100+i*23)+"Q130 "+(72+i*23)+" 170 "+(100+i*23)+"T248 "+(100+i*23)} opacity=".75"/>)}
+    {id==="AERO"&&[-1,0,1].map(i=><path key={i} d={"M93 "+(90+i*27)+"Q174 "+(38+i*29)+" 247 "+(90+i*27)+"L235 "+(82+i*27)} opacity=".82"/>)}
+    {id==="TERMO"&&Array.from({length:9},(_,i)=><path key={i} d="M170 29L170 56" transform={"rotate("+(i*40)+" 170 116)"} strokeWidth={i%3===0?5:2.4} opacity=".72"/>)}
+    {id==="MAGNE"&&<>
+      <path d="M109 78V118A61 61 0 0 0 231 118V78" strokeWidth="12" opacity=".55"/>
+      <path d="M109 78V98M231 78V98" stroke="#d7faff" strokeWidth="14" />
+      <path d="M89 140L111 146L103 163M251 140L230 146L238 163" strokeWidth="3.2"/>
+    </>}
+    {id==="ATON"&&<>
+      <ellipse cx="170" cy="116" rx="101" ry="40" transform="rotate(34 170 116)" opacity=".7"/>
+      <ellipse cx="170" cy="116" rx="101" ry="40" transform="rotate(-34 170 116)" opacity=".7"/>
+      <ellipse cx="170" cy="116" rx="101" ry="40" transform="rotate(90 170 116)" opacity=".7"/>
+      <circle cx="104" cy="91" r="6" fill={color}/>
+    </>}
+    {id==="KINETRIX"&&<>
+      <path d="M95 71L135 89L111 116L157 129L135 167" strokeWidth="5"/>
+      <path d="M244 64L211 99L239 124L205 155" strokeWidth="4"/>
+      <path d="M113 188L153 176 M235 177L265 162" opacity=".65"/>
+    </>}
+    {id==="H2NOVA"&&<>
+      <circle cx="108" cy="119" r="24" strokeWidth="4" opacity=".65"/>
+      <circle cx="232" cy="119" r="24" strokeWidth="4" opacity=".65"/>
+      <path d="M132 119H151M190 119H208" strokeWidth="8" opacity=".68"/>
+      <circle cx="108" cy="119" r="7" fill={color}/><circle cx="232" cy="119" r="7" fill={color}/>
+    </>}
+    {id==="QUANTUM"&&<>
+      <path d="M170 18L257 66V166L170 214L83 166V66Z" strokeDasharray="10 7" opacity=".7"/>
+      <path d="M170 49L227 83V151L170 183L113 151V83Z" strokeWidth="4" opacity=".54"/>
+      <path d="M170 18V49M83 66L113 83M257 66L227 83M83 166L113 151M257 166L227 151" opacity=".7"/>
+    </>}
+    {id==="GAIA"&&<>
+      <path d="M170 27L248 66L266 139L209 204L129 204L74 139L92 66Z" strokeWidth="3.4" opacity=".66"/>
+      <path d="M92 66L248 66M74 139L266 139M129 204L170 27L209 204" opacity=".27"/>
+    </>}
+  </g>
+);
+
 /** Codex illustration, not the actual in-game sprite. FOTON stays solar green,
  * and ENERGY is never rendered as one of the ten collectible-energy identities. */
 export const EnergyCodexArtwork = React.memo(function EnergyCodexArtwork({
@@ -52,6 +94,7 @@ export const EnergyCodexArtwork = React.memo(function EnergyCodexArtwork({
           const y=80+Math.floor(i/2)*35;
           return <path key={i} d={"M"+(170+side*52)+" "+(y+17)+" L"+(170+side*83)+" "+(y-16)+" L"+(170+side*100)+" "+(y+5)+" Z"} fill={color} fillOpacity=".38" stroke={color}/>;
         })}
+        <EnergyCodexSignature id={id} color={color}/>
         {id==="GAIA"&&ORBI_GAIA_REQUIRED_FOLLOWER_IDS.map((energy,i)=>{
           const a=i*Math.PI*2/9-Math.PI/2;
           const x=170+Math.cos(a)*100,y=116+Math.sin(a)*100;
