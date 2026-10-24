@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { FormationDiagram, getFormationBrief, TACTICAL_FORMATION_IDS } from "./FormationDiagram";
+import { FormationType } from "../game/types";
 import {
   ArrowLeft, Atom, BookOpen, ChevronRight, Compass, Cpu, Gamepad2,
   Globe, Info, LockKeyhole, Play, Settings, Shield, Sparkles, Zap,
@@ -58,6 +60,7 @@ export const PremiumNativeNavigation: React.FC<Props> = ({
 }) => {
   const es = language === "es";
   const [selectedMode, setSelectedMode] = useState("campaign");
+  const [selectedFormation, setSelectedFormation] = useState<FormationType>(FormationType.LINE);
   const cleanArt = "url('" + import.meta.env.BASE_URL + "ux09/orbi-command-world.svg')";
   // Crop ONLY the text-free left illustrated region of the approved cinematic WebP.
   // All interactive copy and controls stay native and identical in ES/EN.
@@ -142,7 +145,7 @@ export const PremiumNativeNavigation: React.FC<Props> = ({
         </div>
       )}
       {layer === "DETAIL" && (
-        <div className={"orbi-ux10c-detail" + (isInfo ? " orbi-ux10c-detail--info" : "")}>
+        <div className={"orbi-ux10c-detail" + (isInfo ? " orbi-ux10c-detail--info" : "") + (isTactics ? " orbi-ux10c-detail--tactics" : "")}>
           <header className="orbi-ux10c-detail-header">
             <div><span className="orbi-ux10c-overline">ORBI // {section === "HANGAR" ? "HANGAR" : "MISSION CONTROL"}</span>
               <h2>{isModes ? (es ? "MODOS DE JUEGO" : "GAME MODES") :
@@ -178,14 +181,35 @@ export const PremiumNativeNavigation: React.FC<Props> = ({
           )}
           {isTactics && (
             <div className="orbi-ux10c-tactics">
-              <div className="orbi-ux10c-formation-grid">
-                {formations.map(f => (
-                  <div className="orbi-ux10c-formation" key={f.key}>
-                    <f.Icon size={22} aria-hidden="true"/>
-                    <div><span>{f.key} / 06</span><strong>{es ? f.es : f.en}</strong><small>{es ? f.descEs : f.descEn}</small></div>
-                  </div>
-                ))}
+              <p className="orbi-ux11b-tactics-intro">
+                {es ? "Selecciona una formación para consultar su geometría y sus ventajas reales. Durante la partida: teclas 1–6 o selector táctil."
+                    : "Select a formation to inspect its geometry and verified benefits. In battle: keys 1–6 or the touch selector."}
+              </p>
+              <div className="orbi-ux10c-formation-grid" role="group"
+                aria-label={es ? "Seis formaciones tácticas" : "Six tactical formations"}>
+                {formations.map((f, index) => {
+                  const type = TACTICAL_FORMATION_IDS[index];
+                  const brief = getFormationBrief(type, language);
+                  return (
+                    <button type="button" className="orbi-ux10c-formation"
+                      key={f.key} data-formation={type} aria-pressed={selectedFormation === type}
+                      onClick={() => setSelectedFormation(type)}>
+                      <div className="orbi-ux11b-card-art"><FormationDiagram type={type} language={language} /></div>
+                      <div className="orbi-ux11b-card-copy">
+                        <span>{f.key} / 06</span>
+                        <strong>{es ? f.es : f.en}</strong>
+                        <small>{brief.shape}</small>
+                        <em>{brief.effect}</em>
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
+              <aside className="orbi-ux11b-formation-info" aria-live="polite">
+                <strong>{getFormationBrief(selectedFormation, language).name}</strong>
+                <span>{getFormationBrief(selectedFormation, language).effect}</span>
+                <small>{getFormationBrief(selectedFormation, language).tradeoff}</small>
+              </aside>
               <button type="button" className="orbi-ux10c-manual" data-testid="orbi-ux09b-formation-manual"
                 onClick={() => onOpen("HOW_TO", "HANGAR")}><Radio size={17}/>{es ? "ABRIR MANUAL TÁCTICO" : "OPEN TACTICAL MANUAL"}<ChevronRight size={17}/></button>
             </div>

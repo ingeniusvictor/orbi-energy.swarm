@@ -75,7 +75,32 @@ async function run(width,height,mobile,dpr=1){
    // The EN/ES click path must preserve the same seven routes.
    await page.getByTestId("orbi-mobile-menu-how_to-info").click();
    ensure(await page.locator(".orbi-ux10c-formation").count()===6,id+": formations missing");
+   const tacticsES=await box(page,".orbi-ux10c[data-layer='DETAIL']");
+   const formationGridES=await box(page,".orbi-ux10c-formation-grid");
+   ensure(tacticsES.height>=height*.72,id+": tactics still collapsed vertically");
+   ensure(formationGridES.height>=90,id+": formation grid has no usable viewport");
+   const formationsGeometry=await page.locator(".orbi-ux10c-formation").evaluateAll(els=>
+     els.map(el=>({height:el.getBoundingClientRect().height,width:el.getBoundingClientRect().width})));
+   ensure(formationsGeometry.every(c=>c.height>=90&&c.width>=135),
+     id+": tactical cards compressed "+JSON.stringify(formationsGeometry));
+   ensure(await page.locator(".orbi-ux10c-formation svg[role='img']").count()===6,
+     id+": tactical vector art missing");
+   await page.locator(".orbi-ux10c-formation").nth(1).click();
+   ensure(await page.locator(".orbi-ux10c-formation").nth(1).getAttribute("aria-pressed")==="true",
+     id+": native tactics selection inactive");
+   ensure((await page.locator(".orbi-ux11b-formation-info").innerText()).includes("Círculo Colector"),
+     id+": tactical advantage not updated");
    await shot(page,id+"-05-formations");
+   await page.getByRole("button",{name:"English"}).click();
+   const tacticsEN=await box(page,".orbi-ux10c[data-layer='DETAIL']");
+   const formationGridEN=await box(page,".orbi-ux10c-formation-grid");
+   same(tacticsES,tacticsEN,id+" tactics shell");
+   same(formationGridES,formationGridEN,id+" formation grid");
+   ensure((await page.locator(".orbi-ux11b-formation-info").innerText()).includes("Collector Circle"),
+     id+": English tactical details absent");
+   await shot(page,id+"-05-formations-en");
+   await page.getByRole("button",{name:"Español"}).click();
+   caseReport.tacticsResponsive=true;
    await page.getByTestId("orbi-ux09b-formation-manual").click();
    ensure(await page.locator(".orbi-start-deck").isVisible(),id+": tactical manual route broken");
    await page.getByTestId("orbi-mobile-menu-back").click();

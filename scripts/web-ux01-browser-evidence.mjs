@@ -121,6 +121,12 @@ async function run(name,width,height,coarse,immersive,webImmersive) {
         name+": Tactica diverges from Estado frame");
       check(await page.locator(".orbi-tactical-premium-formation-grid button").count()===6,
         name+": six canonical tactical formations not present");
+      const tacticalCards=await page.locator(".orbi-tactical-premium-formation-grid button").evaluateAll(els=>
+        els.map(el=>({width:el.getBoundingClientRect().width,height:el.getBoundingClientRect().height})));
+      check(tacticalCards.every(c=>c.width>=145 && c.height>=75),
+        name+": tactical live formation cards compressed "+JSON.stringify(tacticalCards));
+      check(await page.locator(".orbi-tactical-premium-formation-grid svg[role='img']").count()===6,
+        name+": real geometric illustrations missing from battle tactics");
       await shot(page,name+"-tactica");
       await page.getByRole("button",{name:/^Equipo$|^Team$/}).click();
       check(await page.locator(".orbi-logistics-deck").isVisible(),name+": Equipo panel not visible");

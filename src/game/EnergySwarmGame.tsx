@@ -1,3 +1,4 @@
+import { FormationDiagram, getFormationBrief } from "../components/FormationDiagram";
 import React, { useEffect, useRef, useState, useCallback } from "react";
 
 import { 
@@ -8518,7 +8519,7 @@ export const EnergySwarmGame: React.FC = () => {
                 </button>
               </div>
 
-              {!isLeftPanelCollapsed && (
+              {(!isLeftPanelCollapsed || mobilePanel === "tactica") && (
                 <div className="orbi-side-deck-content orbi-tactical-premium-content space-y-4 animate-fadeIn">
                   <div className="orbi-tactical-premium-audio space-y-1.5">
                     <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block">{language === "es" ? "SISTEMA DE AUDIO" : "AUDIO SYSTEM"}</span>
@@ -8603,8 +8604,15 @@ export const EnergySwarmGame: React.FC = () => {
                                 : "bg-slate-900/40 border-slate-850/60 text-slate-400 hover:text-white hover:bg-slate-900/60"
                             }`}
                           >
-                            <span>{f.label}</span>
-                            <span className="text-[8.5px] uppercase tracking-wider text-slate-500 shrink-0">{isSel ? "ACTIVA" : f.type}</span>
+                            <span className="orbi-ux11b-combat-formation-art"><FormationDiagram type={f.type} language={language} /></span>
+                            <span className="orbi-ux11b-combat-formation-copy">
+                              <strong>{f.label}</strong>
+                              <small>{getFormationBrief(f.type, language).shape}</small>
+                              <em>{getFormationBrief(f.type, language).effect}</em>
+                            </span>
+                            <span className="orbi-ux11b-combat-formation-state text-[8.5px] uppercase tracking-wider shrink-0">
+                              {isSel ? (language === "es" ? "ACTIVA" : "ACTIVE") : f.type}
+                            </span>
                           </button>
                         );
                       })}

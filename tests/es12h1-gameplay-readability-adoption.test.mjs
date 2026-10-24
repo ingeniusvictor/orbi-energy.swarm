@@ -40,7 +40,7 @@ test("desktop formation controls explicitly advertise and expose interactivity",
   assert.match(game, /FORMACIONES · CLIC \/ TECLAS 1–6/);
   assert.match(game, /type="button"[\s\S]{0,180}?aria-pressed=\{isSel\}/);
   assert.match(game, /onClick=\{\(\) => triggerFormationChange\(f\.type\)\}/);
-  assert.match(game, /\{isSel \? "ACTIVA" : f\.type\}/);
+  assert.match(game, /isSel \? \(language === "es" \? "ACTIVA" : "ACTIVE"\) : f\.type/);
 });
 
 test("swarm roster uses one scroll surface and a taller responsive cockpit panel", () => {
