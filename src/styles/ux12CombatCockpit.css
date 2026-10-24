@@ -14,6 +14,7 @@
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   gap:8px;z-index:4;pointer-events:none;
 }
+.orbi-touch-abilities>.orbi-touch-dash {position:relative;right:auto;bottom:auto;z-index:auto;}
 .orbi-touch-skill {
   pointer-events:auto;touch-action:manipulation;
   width:60px;height:60px;min-width:54px;min-height:54px;
