@@ -9000,6 +9000,10 @@ export const EnergySwarmGame: React.FC = () => {
                 <MobileTouchOverlay onVectorChange={setMobileAnalogVector}
                   onDash={handleDashActivation} dashActive={dashView.active}
                   dashReady={dashView.canActivate} dashCooldownRemainingMs={dashView.cooldownRemainingMs}
+                  onOverdrive={handleOverdriveActivation}
+                  overdriveReady={combatOverdriveView.canActivate}
+                  overdriveActive={combatOverdriveView.active}
+                  overdriveRemainingMs={combatOverdriveView.active ? combatOverdriveView.remainingMs : combatOverdriveView.reentryRemainingMs}
                   disabled={isPaused || isGameOver || isUpgradeSelectionOpen || isPhotoMode} />
                 <MobileFormationCarousel
                   activeFormation={activeFormation}
