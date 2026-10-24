@@ -16,7 +16,9 @@ test("I5 follower cooldown uses initialized frame mutator projection", () => {
 
 test("I5 persisted unmuted profile does not autoplay BGM on mount", () => {
   assert.doesNotMatch(source, /setAudioMuted\(loaded\.audioMuted\);\s*setMuteState\(loaded\.audioMuted\);/);
-  assert.match(source, /setAudioMuted\(loaded\.audioMuted\);[\s\S]*?if \(loaded\.audioMuted\) \{\s*setMuteState\(true\);\s*\}/);
+  assert.match(source, /setAudioMuted\(loaded\.audioMuted\);[\s\S]*?setMusicEnabled\(loaded\.musicEnabled !== false\);[\s\S]*?setMuteState\(loaded\.audioMuted\);/);
+  const audio = await readFile(new URL("../src/game/audio.ts", import.meta.url), "utf8");
+  assert.doesNotMatch(audio.slice(audio.indexOf("export const setMuteState"),audio.indexOf("export const getMuteState")),/startBgm\(/);
 });
 
 test("I5 suspended loop materializes one frozen frame without advancing simulation", () => {
