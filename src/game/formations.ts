@@ -27,10 +27,17 @@ export function calculateSwarmOffset(type: FormationType, index: number, total: 
       // collapsed onto one another with 20-30 companions.
       const shell = Math.floor(index / 10);
       const point = index % 10;
-      const shellOuter = 95 + shell * 35;
-      const shellInner = 55 + shell * 35;
-      const radius = point % 2 === 0 ? shellOuter : shellInner;
-      const angle = mouseAngle - Math.PI / 2 + point * (Math.PI / 5) + time * 0.0002;
+      // The H3 contract caps orbital offsets at 140 world units. Use
+      // staggered shell rotations to increase clearance without extending
+      // beyond that reach (including 48/64 member diagnostic scenarios).
+      const outerRadii = [94, 127, 139];
+      const innerRadii = [57, 92, 113];
+      const safeShell = Math.min(shell, 2);
+      const radius = point % 2 === 0 ? outerRadii[safeShell] : innerRadii[safeShell];
+      const shellRotation = [0, -0.18, 0.14][shell % 3] +
+        Math.max(0, shell - 2) * 0.26;
+      const angle = mouseAngle - Math.PI / 2 + point * (Math.PI / 5) +
+        shellRotation + time * 0.0002;
       return { x: Math.cos(angle) * radius, y: Math.sin(angle) * radius };
     }
     case FormationType.DELTA: {
