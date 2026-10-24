@@ -30,6 +30,12 @@ interface Props {
   nanoCredits?: number;
   purifiedEnergy?: number;
   hasInfiniteRecord: boolean;
+  audioMuted: boolean;
+  musicEnabled: boolean;
+  soundEffectsEnabled: boolean;
+  onAudioToggle: () => void;
+  onMusicToggle: () => void;
+  onEffectsToggle: () => void;
 }
 
 const pages = [
@@ -60,6 +66,7 @@ const modes = [
 export const PremiumNativeNavigation: React.FC<Props> = ({
   layer, section, tab, language, onLanguage, onEnter, onBack, onOpen,
   onPlay, onScoreAttack, nanoCredits = 0, purifiedEnergy = 0, hasInfiniteRecord,
+  audioMuted, musicEnabled, soundEffectsEnabled, onAudioToggle, onMusicToggle, onEffectsToggle,
 }) => {
   const es = language === "es";
   const [selectedMode, setSelectedMode] = useState("campaign");
@@ -234,6 +241,26 @@ export const PremiumNativeNavigation: React.FC<Props> = ({
             </div>
           )}
           {isCodex && <EnergyCodex language={language} onOpenLegacy={() => onOpen("CODEX", "HANGAR")} />}
+          {layer === "DETAIL" && tab === "SETTINGS" && section === "PLAY" && (
+            <div className="orbi-ux12-launch-audio" data-testid="orbi-native-audio-settings"
+              role="group" aria-label={es ? "Controles de audio" : "Audio controls"}>
+              <button type="button" data-testid="orbi-native-music" aria-pressed={musicEnabled} onClick={onMusicToggle}>
+                <strong>{es ? "MÚSICA DE FONDO" : "BACKGROUND MUSIC"}</strong>
+                <span>{es ? "Exploración, combate y jefes" : "Exploration, battle and bosses"}</span>
+                <b>{musicEnabled ? "ON" : "OFF"}</b>
+              </button>
+              <button type="button" data-testid="orbi-native-effects" aria-pressed={soundEffectsEnabled} onClick={onEffectsToggle}>
+                <strong>{es ? "EFECTOS DE SONIDO" : "SOUND EFFECTS"}</strong>
+                <span>{es ? "Disparos, alertas y habilidades" : "Shots, alerts and abilities"}</span>
+                <b>{soundEffectsEnabled ? "ON" : "OFF"}</b>
+              </button>
+              <button type="button" data-testid="orbi-native-master-audio" aria-pressed={!audioMuted} onClick={onAudioToggle}>
+                <strong>{es ? "AUDIO GENERAL" : "MASTER AUDIO"}</strong>
+                <span>{es ? "Silenciar todos los sonidos" : "Mute every audio channel"}</span>
+                <b>{audioMuted ? "OFF" : "ON"}</b>
+              </button>
+            </div>
+          )}
           {isInfo && (
             <p className="orbi-ux10c-info-hint">{es ? "DATOS Y CONFIGURACIÓN DEL PILOTO" : "PILOT DATA & CONFIGURATION"}</p>
           )}

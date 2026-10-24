@@ -1,6 +1,6 @@
 import React from "react";
 import { EnergyStatus3D } from "./presentation/EnergyStatus3D";
-import { Shield, Award, Users, Volume2, VolumeX, Pause, Play, Zap, Maximize2, Minimize2, Target, Package, X, Coins, Radar, Activity, ChevronsRight } from "lucide-react";
+import { Shield, Award, Users, Volume2, VolumeX, Pause, Play, Zap, Music2, Maximize2, Minimize2, Target, Package, X, Coins, Radar, Activity, ChevronsRight } from "lucide-react";
 import { useGameTranslation, formatNumber } from "../i18n";
 import { getCampaignObjective } from "../game/campaignGuide";
 import type { ResonanceTier } from "../game/combatResonance";
@@ -18,6 +18,8 @@ interface GameHudProps {
   isWaveBreak: boolean;
   waveBreakTimeLeft: number; // in seconds
   audioMuted: boolean;
+  musicEnabled: boolean;
+  onToggleMusic: () => void;
   isPaused: boolean;
   nanoCredits: number;
   combatChain: number;
@@ -57,6 +59,8 @@ export const GameHud: React.FC<GameHudProps> = ({
   isWaveBreak,
   waveBreakTimeLeft,
   audioMuted,
+  musicEnabled,
+  onToggleMusic,
   isPaused,
   nanoCredits,
   combatChain,
@@ -220,6 +224,12 @@ export const GameHud: React.FC<GameHudProps> = ({
               <ChevronsRight size={18} aria-hidden="true" />
               <span aria-hidden="true">DASH</span>
             </button>
+            <button type="button" className="orbi-immersive-action orbi-immersive-music"
+              data-testid="orbi-immersive-music-toggle"
+              onClick={onToggleMusic} aria-pressed={musicEnabled}
+              aria-label={language === "es" ? (musicEnabled ? "Apagar música" : "Activar música") : (musicEnabled ? "Turn music off" : "Turn music on")}>
+              {musicEnabled ? <Music2 size={17} aria-hidden="true"/> : <VolumeX size={17} aria-hidden="true"/>}
+            </button>
             <button type="button" className="orbi-immersive-action"
               aria-label={isPaused ? "Reanudar" : "Pausar"}
               aria-pressed={isPaused} onClick={onTogglePause}>
@@ -338,8 +348,8 @@ export const GameHud: React.FC<GameHudProps> = ({
             <article>
               <div><ChevronsRight size={17} aria-hidden="true"/><strong>DASH · E</strong></div>
               <p>{language === "es"
-                ? "Impulso de 180 ms según dirección actual/última. Recarga de 3,2 s; sin inmunidad ni gasto de resonancia."
-                : "180ms dash in the current/last direction. 3.2s cooldown; no immunity or resonance cost."}</p>
+                ? "Impulso de 180 ms según dirección actual/última. Recarga de 10 s; sin inmunidad ni gasto de resonancia."
+                : "180ms dash in the current/last direction. 10s cooldown; no immunity or resonance cost."}</p>
               <span>{dashStatus}</span>
             </article>
             <article>

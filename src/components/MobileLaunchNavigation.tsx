@@ -23,6 +23,12 @@ interface Props {
   onPlay: () => void;
   onScoreAttack: () => void;
   hasInfiniteRecord: boolean;
+  audioMuted: boolean;
+  musicEnabled: boolean;
+  soundEffectsEnabled: boolean;
+  onAudioToggle: () => void;
+  onMusicToggle: () => void;
+  onEffectsToggle: () => void;
   nanoCredits?: number;
   purifiedEnergy?: number;
 }
@@ -30,6 +36,7 @@ interface Props {
 export const MobileLaunchNavigation: React.FC<Props> = ({
   layer, section, tab, language, onLanguage, onEnter, onBack,
   onOpen, onPlay, onScoreAttack, hasInfiniteRecord,
+  audioMuted, musicEnabled, soundEffectsEnabled, onAudioToggle, onMusicToggle, onEffectsToggle,
   nanoCredits = 0, purifiedEnergy = 0,
 }) => {
   const es = language === "es";
@@ -81,6 +88,8 @@ export const MobileLaunchNavigation: React.FC<Props> = ({
     <PremiumNativeNavigation layer={layer} section={section} tab={tab} language={language}
       onLanguage={onLanguage} onEnter={onEnter} onBack={onBack} onOpen={onOpen}
       onPlay={onPlay} onScoreAttack={onScoreAttack} hasInfiniteRecord={hasInfiniteRecord}
+      audioMuted={audioMuted} musicEnabled={musicEnabled} soundEffectsEnabled={soundEffectsEnabled}
+      onAudioToggle={onAudioToggle} onMusicToggle={onMusicToggle} onEffectsToggle={onEffectsToggle}
       nanoCredits={nanoCredits} purifiedEnergy={purifiedEnergy}/>
   );
   return (
@@ -138,6 +147,19 @@ export const MobileLaunchNavigation: React.FC<Props> = ({
             <h2>{tab === "MAIN" ? (section === "PLAY" ? (es ? "MODOS DE JUEGO" : "GAME MODES") : (es ? "HANGAR Y REGISTROS" : "HANGAR & RECORDS")) : choices.find(x => x.tab === tab)?.label}</h2>
             <button onClick={onBack} data-testid="orbi-mobile-menu-back" aria-label={es ? "Volver al centro de mando" : "Back to command center"}><ArrowLeft size={24}/></button>
           </div>
+          {tab === "SETTINGS" && section === "PLAY" && (
+            <div className="orbi-ux12-launch-audio" data-testid="orbi-portrait-audio-settings">
+              <button type="button" onClick={onMusicToggle} aria-pressed={musicEnabled} data-testid="orbi-portrait-music">
+                {es ? "MÚSICA" : "MUSIC"} · {musicEnabled ? "ON" : "OFF"}
+              </button>
+              <button type="button" onClick={onEffectsToggle} aria-pressed={soundEffectsEnabled} data-testid="orbi-portrait-effects">
+                {es ? "EFECTOS" : "EFFECTS"} · {soundEffectsEnabled ? "ON" : "OFF"}
+              </button>
+              <button type="button" onClick={onAudioToggle} aria-pressed={!audioMuted} data-testid="orbi-portrait-master-audio">
+                {es ? "AUDIO GENERAL" : "MASTER AUDIO"} · {!audioMuted ? "ON" : "OFF"}
+              </button>
+            </div>
+          )}
           {tab === "MAIN" && section === "PLAY" && (
             <div className="orbi-ux09-modes-layout">
               <nav className="orbi-ux09-mode-sidebar" aria-label={es ? "Seleccionar modo" : "Select mode"}>

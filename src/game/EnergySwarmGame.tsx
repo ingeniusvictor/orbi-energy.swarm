@@ -186,7 +186,7 @@ import {
   playShootSound, playEnemyShootSound, playDamageSound, playEnemyExplodeSound, 
   playRecruitSound, playCrystalSound, playBiomeChangeSound, playClickSound, 
   playPauseSound, playUnpauseSound, playGameOverSound, playVictorySound, 
-  setMuteState, initAudio, startBgm, stopBgm,
+  setMuteState, setMusicEnabled, setSoundEffectsEnabled, initAudio, startBgm, stopBgm,
   playDroneChargeSound, playDisruptorChargeSound, playEliteChargeSound,
   playDisruptorPulseSound, playHeavyImpactSound, playShieldDeflectSound,
   playCriticalHitSound,
@@ -220,6 +220,7 @@ import { ResultScreen } from "../components/ResultScreen";
 import { CompanionPanel } from "../components/CompanionPanel";
 import { UpgradeSelector } from "../components/UpgradeSelector";
 import { MobileTouchOverlay } from "../components/MobileTouchOverlay";
+import { createEnergyThrusterPose, projectEnergyThrusterPose, drawEnergyThrusterJets } from "./energyThrusters";
 import { WebPhotoReturn } from "../components/WebPhotoReturn";
 import { MobileFormationCarousel } from "../components/MobileFormationCarousel";
 import { OrientationHint } from "../components/OrientationHint";
@@ -502,6 +503,7 @@ export const EnergySwarmGame: React.FC = () => {
   const combatOverdriveRef = useRef(createCombatOverdriveState());
   const propulsionDashRef = useRef(createPropulsionDashState());
   const lastDashDirectionRef = useRef<AnalogVector>({ x: 0, y: -1 });
+  const energyThrusterPoseRef = useRef(createEnergyThrusterPose());
 
   const keysPressedRef = useRef<Record<string, boolean>>({});
   const activeFormationRef = useRef<FormationType>(FormationType.LINE);
@@ -917,10 +919,10 @@ export const EnergySwarmGame: React.FC = () => {
     setStats(loaded);
     setHighScore(loaded.highScore);
     setAudioMuted(loaded.audioMuted);
-    // Restore persisted mute state without starting BGM before a user gesture.
-    if (loaded.audioMuted) {
-      setMuteState(true);
-    }
+    // Restore independent mixer preferences; never auto-play before user gesture.
+    setMusicEnabled(loaded.musicEnabled !== false);
+    setSoundEffectsEnabled(loaded.soundEffectsEnabled !== false);
+    setMuteState(loaded.audioMuted);
 
     // Load level states
     const levels: Record<string, number> = {};
@@ -1847,6 +1849,7 @@ export const EnergySwarmGame: React.FC = () => {
     );
     propulsionDashRef.current = createPropulsionDashState();
     lastDashDirectionRef.current = { x: 0, y: -1 };
+    energyThrusterPoseRef.current = createEnergyThrusterPose();
     setDashView(projectPropulsionDash(propulsionDashRef.current, 0));
     playerFlashRef.current = 0;
     invincibilityTimerRef.current = 0;
@@ -2065,11 +2068,31 @@ export const EnergySwarmGame: React.FC = () => {
   }, [isPhotoMode]);
 
   // --- TOGGLE MUTE ---
+  const resumeBackgroundMusic = () => {
+    if(!isPlaying || audioMuted) return;
+    startBgm(bossActiveRef.current ? "BOSS" : waveActiveRef.current ? "HIGH_INTENSITY" : "EXPLORATION");
+  };
   const toggleMute = () => {
     const next = !audioMuted;
     setAudioMuted(next);
     setMuteState(next);
+    updateStatsAndSave({ ...(statsRef.current ?? stats), audioMuted: next });
+    if (!next) {
+      startBgm(bossActiveRef.current ? "BOSS" : waveActiveRef.current ? "HIGH_INTENSITY" : "EXPLORATION");
+      if(!isPlaying) stopBgm();
+    }
     playClickSound();
+  };
+  const toggleMusic = () => {
+    const enabled = statsRef.current?.musicEnabled === false;
+    setMusicEnabled(enabled);
+    updateStatsAndSave({ ...(statsRef.current ?? stats), musicEnabled: enabled });
+    if(enabled && !audioMuted) resumeBackgroundMusic();
+  };
+  const toggleEffects = () => {
+    const enabled = statsRef.current?.soundEffectsEnabled === false;
+    setSoundEffectsEnabled(enabled);
+    updateStatsAndSave({ ...(statsRef.current ?? stats), soundEffectsEnabled: enabled });
   };
 
   // --- CANONICAL ORBI ENERGY RECRUITMENT CYCLE ---
@@ -5152,6 +5175,8 @@ export const EnergySwarmGame: React.FC = () => {
     cameraOffsetRef.current = { x: cam.shakeX, y: cam.shakeY };
 
     // 3. Foton movement physics (keyboard/touch share the same delta model)
+    const preMotionX = playerPosRef.current.x;
+    const preMotionY = playerPosRef.current.y;
     let moveX = 0;
     let moveY = 0;
 
@@ -5246,6 +5271,14 @@ export const EnergySwarmGame: React.FC = () => {
     // Clamp inside world boundaries (1600x960 expanded battlefield)
     playerPosRef.current.x = Math.max(16, Math.min(WORLD_WIDTH - 16, playerPosRef.current.x));
     playerPosRef.current.y = Math.max(16, Math.min(WORLD_HEIGHT - 16, playerPosRef.current.y));
+    // Visual-only physical displacement includes keyboard, analog, mouse and Dash.
+    energyThrusterPoseRef.current = projectEnergyThrusterPose(
+      energyThrusterPoseRef.current,
+      playerPosRef.current.x-preMotionX,
+      playerPosRef.current.y-preMotionY,
+      delta,
+      dashStep?.activeDuringFrame === true,
+    );
 
     // 4. Align and smooth swarm followers following Foton leader
     const mouseAngle = Math.atan2(
@@ -7737,6 +7770,12 @@ export const EnergySwarmGame: React.FC = () => {
       flashProfile,
     );
 
+    // UX12: two independent RCS jets are rendered behind the ENERGY leader,
+    // opposite the real displacement, while target gaze is retained.
+    drawEnergyThrusterJets(ctx,playerPosRef.current,energyThrusterPoseRef.current,
+      timeElapsedRef.current,
+      projectPropulsionDash(propulsionDashRef.current,timeElapsedRef.current).active);
+
     // 7. Draw reactive tactical Foton leader.
     const fotonShieldMax =
       SHIELD_MAX +
@@ -7760,6 +7799,7 @@ export const EnergySwarmGame: React.FC = () => {
       isPausedRef.current,
       fotonThreatDirectionRef.current,
       runOrbiAcquiredRef.current,
+      energyThrusterPoseRef.current.bankRadians,
     );
 
     // UX11-E: bounded propulsion streaks, no Dyson rings, no gameplay immunity.
@@ -8401,6 +8441,8 @@ export const EnergySwarmGame: React.FC = () => {
             setStats(next);
           }}
           onToggleMute={toggleMute}
+          onToggleMusic={toggleMusic}
+          onToggleEffects={toggleEffects}
           onToggleBossLabelsMode={(mode) => {
             const next = { ...stats, bossLabelsMode: mode };
             saveGameStats(next);
@@ -8426,7 +8468,11 @@ export const EnergySwarmGame: React.FC = () => {
             setPausedState(false);
           }}
           audioMuted={audioMuted}
+          musicEnabled={stats.musicEnabled !== false}
+          soundEffectsEnabled={stats.soundEffectsEnabled !== false}
           onToggleMute={toggleMute}
+          onToggleMusic={toggleMusic}
+          onToggleEffects={toggleEffects}
           screenShakeMode={stats.screenShakeMode || "FULL"}
           onSetScreenShakeMode={(mode) => {
             const next = { ...stats, screenShakeMode: mode };
@@ -8796,6 +8842,8 @@ export const EnergySwarmGame: React.FC = () => {
                 isWaveBreak={isWaveBreak}
                 waveBreakTimeLeft={waveBreakTimeLeft}
                 audioMuted={audioMuted}
+                musicEnabled={stats.musicEnabled !== false}
+                onToggleMusic={toggleMusic}
                 isPaused={isPaused}
                 nanoCredits={nanoCredits}
                 combatChain={combatResonanceView.chain}
@@ -8980,6 +9028,10 @@ export const EnergySwarmGame: React.FC = () => {
                 <MobileTouchOverlay onVectorChange={setMobileAnalogVector}
                   onDash={handleDashActivation} dashActive={dashView.active}
                   dashReady={dashView.canActivate} dashCooldownRemainingMs={dashView.cooldownRemainingMs}
+                  onOverdrive={handleOverdriveActivation}
+                  overdriveReady={combatOverdriveView.canActivate}
+                  overdriveActive={combatOverdriveView.active}
+                  overdriveRemainingMs={combatOverdriveView.active ? combatOverdriveView.remainingMs : combatOverdriveView.reentryRemainingMs}
                   disabled={isPaused || isGameOver || isUpgradeSelectionOpen || isPhotoMode} />
                 <MobileFormationCarousel
                   activeFormation={activeFormation}
@@ -9101,11 +9153,10 @@ export const EnergySwarmGame: React.FC = () => {
         </div>
       )}
 
-      {/* BRANDING LABEL WATERMARK FOOTER */}
-      <div className="orbi-brand-footer mt-3 lg:mt-1.5 text-[9px] md:text-[10px] font-mono text-slate-600 text-center flex flex-col gap-0.5">
-        <div>ORBI ENERGY SWARM &bull; v0.2.0-beta.1</div>
-        <div>Created by Víctor Marcel León Pacheco &bull; &copy; 2026 ORBI Ecosystem SpA</div>
-      </div>
+      {/* UX12: gameplay shows game brand only; creator credits stay in Acerca de ORBI. */}
+      {isPlaying && <div className="orbi-brand-footer" data-testid="orbi-game-brand">
+        <img className="orbi-ux12-hud-logo" src={import.meta.env.BASE_URL + "ux12/orbi-energy-swarm-hud.svg"} alt="ORBI ENERGY SWARM" />
+      </div>}
 
     </div>
   );

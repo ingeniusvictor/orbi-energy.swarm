@@ -395,6 +395,8 @@ export interface GameStats {
   bossDefeated: boolean;
   gameMemories: string[];
   audioMuted: boolean;
+  musicEnabled?: boolean;
+  soundEffectsEnabled?: boolean;
   qualityPreset: QualityPreset;
   tutorialCompleted: boolean;
   screenShakeMode: "FULL" | "REDUCED" | "OFF";

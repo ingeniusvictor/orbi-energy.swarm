@@ -167,6 +167,7 @@ export function drawFoton(
   isPaused: boolean = false,
   threatDirection: { x: number; y: number } = { x: 0, y: 0 },
   orbiCount: number = 0,
+  movementBankRadians: number = 0,
 ) {
   // Historical FULL mode preserves the original invincibility flicker.
   if (
@@ -208,10 +209,12 @@ export function drawFoton(
     // its 37.5px visual footprint while giving the orbital rings room.
     const half =
       FOTON_GAMEPLAY_COMPOSITE_SIZE / 2;
+    ctx.translate(x,y);
+    ctx.rotate(Math.max(-.16,Math.min(.16,movementBankRadians)));
     ctx.drawImage(
       glbFrame,
-      x - half,
-      y - half,
+      -half,
+      -half,
       FOTON_GAMEPLAY_COMPOSITE_SIZE,
       FOTON_GAMEPLAY_COMPOSITE_SIZE,
     );
@@ -222,8 +225,8 @@ export function drawFoton(
         damageHighlightStrength * 0.28;
       ctx.drawImage(
         glbFrame,
-        x - half,
-        y - half,
+        -half,
+        -half,
         FOTON_GAMEPLAY_COMPOSITE_SIZE,
         FOTON_GAMEPLAY_COMPOSITE_SIZE,
       );
@@ -268,6 +271,7 @@ export function drawFoton(
     pointerY: pointerPos.y,
     shieldRatio,
     damageHighlightStrength,
+    movementBankRadians,
   });
 }
 

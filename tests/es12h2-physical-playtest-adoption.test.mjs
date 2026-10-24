@@ -28,7 +28,7 @@ test("Dyson progression uses monotonic run acquisition instead of live follower 
     game,
     /const tryTriggerAffinityFusion = \(\) =>[\s\S]*runOrbiAcquiredRef\.current \+= 1/,
   );
-  assert.match(game, /fotonThreatDirectionRef\.current,\s*runOrbiAcquiredRef\.current,\s*\);/);
+  assert.match(game, /fotonThreatDirectionRef\.current,\s*runOrbiAcquiredRef\.current,\s*energyThrusterPoseRef\.current\.bankRadians,\s*\);/);
   assert.doesNotMatch(halo, /normalizeCount\(swarmMemberCount\) - 1/);
 });
 

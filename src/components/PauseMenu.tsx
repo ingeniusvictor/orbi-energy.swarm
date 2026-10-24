@@ -9,7 +9,11 @@ interface PauseMenuProps {
   onExitToMenu: () => void;
   onEnterPhotoMode: () => void;
   audioMuted: boolean;
+  musicEnabled: boolean;
+  soundEffectsEnabled: boolean;
   onToggleMute: () => void;
+  onToggleMusic: () => void;
+  onToggleEffects: () => void;
   screenShakeMode: "FULL" | "REDUCED" | "OFF";
   onSetScreenShakeMode: (mode: "FULL" | "REDUCED" | "OFF") => void;
   flashIntensity: "FULL" | "REDUCED";
@@ -24,7 +28,11 @@ export const PauseMenu: React.FC<PauseMenuProps> = ({
   onExitToMenu,
   onEnterPhotoMode,
   audioMuted,
+  musicEnabled,
+  soundEffectsEnabled,
   onToggleMute,
+  onToggleMusic,
+  onToggleEffects,
   screenShakeMode,
   onSetScreenShakeMode,
   flashIntensity,
@@ -268,6 +276,23 @@ export const PauseMenu: React.FC<PauseMenuProps> = ({
                 </div>
               </div>
               
+              {/* UX12: audio category controls work independently of global mute. */}
+              <div className="grid grid-cols-2 gap-2" data-testid="orbi-pause-audio-settings">
+                <button type="button" onClick={onToggleMusic}
+                  data-testid="orbi-pause-music" aria-pressed={musicEnabled}
+                  className="min-h-[40px] rounded border border-cyan-500/40 bg-slate-950/70 px-2 py-1 text-[10px] text-cyan-100">
+                  {language === "es" ? "MÚSICA" : "MUSIC"} · {musicEnabled ? "ON" : "OFF"}
+                </button>
+                <button type="button" onClick={onToggleEffects}
+                  data-testid="orbi-pause-effects" aria-pressed={soundEffectsEnabled}
+                  className="min-h-[40px] rounded border border-amber-500/40 bg-slate-950/70 px-2 py-1 text-[10px] text-amber-100">
+                  {language === "es" ? "EFECTOS" : "EFFECTS"} · {soundEffectsEnabled ? "ON" : "OFF"}
+                </button>
+              </div>
+              <div className="text-[9px] text-slate-400">{language === "es"
+                ? "AUDIO del menú de pausa silencia ambos grupos."
+                : "Pause menu AUDIO mutes both groups."}</div>
+
               {/* SCREEN SHAKE */}
               <div className="space-y-1.5">
                 <label className="text-[10px] text-slate-400 block tracking-wider uppercase">{t("settings.screenShake")}</label>

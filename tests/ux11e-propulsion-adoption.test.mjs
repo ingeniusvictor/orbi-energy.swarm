@@ -40,9 +40,12 @@ test("UX11-E touch and keyboard controls are real, bilingual, accessible and ind
   assert.match(hud,/data-testid="orbi-dash-action-desktop"/);
   assert.match(hud,/dashCooldownRemainingMs/);
   assert.match(touch,/data-testid="orbi-touch-dash"/);
-  assert.match(touch,/onPointerDown=\{event => event.stopPropagation\(\)\}/);
+  assert.match(touch,/data-testid="orbi-touch-overdrive"/);
+  assert.match(touch,/event\.pointerType !== "mouse"/);
+  assert.match(touch,/event\.preventDefault\(\)/);
+  assert.match(touch,/if \(!disabled && dashReady\) onDash\(\)/);
+  assert.match(touch,/if \(!disabled && overdriveReady\) onOverdrive\(\)/);
   assert.match(touch,/disabled=\{disabled \|\| !dashReady\}/);
-  assert.match(touch,/onClick=\{event => \{ event.stopPropagation\(\); onDash\(\); \}\}/);
   assert.match(touch,/language === "es"/);
   assert.match(css,/safe-area-inset-right/);
   assert.match(css,/touch-action:manipulation/);

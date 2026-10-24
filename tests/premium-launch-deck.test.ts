@@ -106,10 +106,11 @@ test("persistent progression surfaces remain available", () => {
 
 test("visible product version matches canonical beta metadata", () => {
   assert.match(start, /PUBLIC BETA v0\.2\.0-beta\.1/);
-  assert.match(
-    game,
-    /ORBI ENERGY SWARM &bull; v0\.2\.0-beta\.1/,
-  );
+  // UX12 removes the redundant version/creator watermark from live combat.
+  // The canonical beta version remains visible on the title screen.
+  assert.match(game, /data-testid="orbi-game-brand"/);
+  assert.match(game, /alt="ORBI ENERGY SWARM"/);
+  assert.doesNotMatch(game, /ORBI ENERGY SWARM &bull; v0\.2\.0-beta\.1/);
   assert.doesNotMatch(
     start + game,
     /v0\.2\.6b-bilingual-localization/,

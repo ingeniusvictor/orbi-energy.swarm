@@ -1,0 +1,129 @@
+/* UX12 — joystick-safe, nonredundant combat cockpit.
+   No changes to the approved welcome / command-center layers. */
+.orbi-game-root[data-immersive-landscape="true"][data-touch-controls="recommended"]
+  .orbi-immersive-actions .orbi-dash-action,
+.orbi-game-root[data-immersive-landscape="true"][data-touch-controls="recommended"]
+  .orbi-immersive-actions .orbi-overdrive-action {display:none!important;}
+
+.orbi-touch-abilities {
+  position:absolute;
+  right:max(12px,env(safe-area-inset-right));
+  bottom:calc(max(10px,env(safe-area-inset-bottom)) + 66px);
+  width:168px;
+  max-width:calc(100vw - 24px);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:8px;z-index:4;pointer-events:none;touch-action:none;
+}
+.orbi-touch-abilities>.orbi-touch-dash {position:relative;right:auto;bottom:auto;z-index:auto;}
+.orbi-touch-skill {
+  pointer-events:auto;touch-action:none;
+  width:60px;height:60px;min-width:54px;min-height:54px;
+  border-radius:50%;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:0;isolation:isolate;user-select:none;-webkit-user-select:none;
+  color:#dff8ff;font:900 10px/1.02 "Space Grotesk",sans-serif;
+  border:2px solid rgba(103,232,249,.72);
+  background:radial-gradient(circle at 40% 21%,rgba(23,122,165,.76),rgba(4,15,39,.97));
+  box-shadow:0 0 18px rgba(44,218,240,.24),inset 0 0 16px rgba(42,195,224,.14);
+}
+.orbi-touch-skill svg {height:21px;width:21px;color:#e6f7ff;}
+.orbi-touch-skill span {font-size:9px;color:#b4e5ed;line-height:1.18;}
+.orbi-touch-skill strong {font-size:10px;letter-spacing:.04em;}
+.orbi-touch-overdrive {border-color:rgba(251,196,75,.77);color:#ffe4a4;background:radial-gradient(circle at 45% 25%,rgba(182,106,28,.68),rgba(32,18,29,.95));box-shadow:0 0 18px rgba(247,173,50,.2),inset 0 0 11px rgba(240,145,41,.14);}
+.orbi-touch-overdrive svg {color:#ffe18d;}
+.orbi-touch-skill[data-active="true"] {border-color:#fff1a5;box-shadow:0 0 19px rgba(255,216,115,.34);}
+.orbi-touch-skill:disabled {opacity:.5;filter:saturate(.55);}
+.orbi-touch-skill:focus-visible {outline:2px solid #fff0b3;outline-offset:3px;}
+.orbi-touch-skill:active:not(:disabled) {transform:scale(.94);}
+/* Never intercept the left joystick: the transparent dock itself has no pointer surface. */
+.orbi-touch-overlay .orbi-analog-joystick {z-index:3;}
+/* Premium game brand: the author is still credited in the About screen, not over combat. */
+.orbi-brand-footer img.orbi-ux12-hud-logo {
+  display:block;object-fit:contain;
+  width:clamp(135px,16vw,212px);height:42px;
+  filter:drop-shadow(0 2px 8px rgba(7,42,78,.5));
+}
+.orbi-game-root[data-immersive-landscape="true"] .orbi-brand-footer {
+  position:absolute;top:0;left:50%;transform:translateX(-50%);
+  z-index:18;pointer-events:none;padding:0;margin:0!important;
+  opacity:.85;display:flex;justify-content:center;align-items:center;
+}
+@media (orientation:landscape) and (max-height:520px){
+  .orbi-touch-abilities {bottom:calc(max(8px,env(safe-area-inset-bottom)) + 60px);gap:6px;}
+  .orbi-touch-skill {width:52px;height:52px;min-width:52px;min-height:52px;}
+  .orbi-touch-skill svg {width:18px;height:18px;}
+  .orbi-touch-skill strong {font-size:9px;}
+  .orbi-touch-skill span {font-size:8px;}
+  .orbi-game-root[data-immersive-landscape="true"] .orbi-brand-footer img.orbi-ux12-hud-logo {height:36px;width:160px;}
+}
+@media (orientation:landscape) and (max-width:670px){
+  .orbi-touch-abilities {width:146px;}
+  .orbi-game-root[data-immersive-landscape="true"] .orbi-brand-footer {opacity:.68;}
+}
+@media (prefers-reduced-motion:reduce){
+  .orbi-touch-skill {transition:none!important;animation:none!important;}
+}
+
+
+.orbi-premium-entry[data-mobile-layer="DETAIL"][data-mobile-tab="SETTINGS"][data-mobile-section="PLAY"]>.orbi-start-deck {display:none!important;}
+/* UX12 native Android Command Center settings: the previous generic INFO strip
+   was 16dvh and could not display real controls. Scope to SETTINGS only. */
+.orbi-premium-entry[data-mobile-layer="DETAIL"][data-mobile-tab="SETTINGS"][data-mobile-section="PLAY"]
+  >.orbi-mobile-launch.orbi-ux10c.orbi-ux09 {
+  height:100%!important;max-height:100dvh!important;min-height:0!important;
+  flex:1 1 auto!important;overflow:hidden!important;
+}
+.orbi-premium-entry[data-mobile-layer="DETAIL"][data-mobile-tab="SETTINGS"][data-mobile-section="PLAY"]
+  .orbi-ux10c-detail {
+  flex:1 1 auto!important;height:100%!important;min-height:0!important;
+  padding:clamp(8px,2vh,22px) clamp(14px,2vw,32px)!important;
+}
+.orbi-ux12-launch-audio {
+  flex:1 1 auto;min-height:0;
+  width:100%;
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  align-items:center;
+  justify-items:stretch;
+  gap:clamp(7px,1.25vw,20px);
+}
+.orbi-ux12-launch-audio>button {
+  min-width:0;min-height:80px;height:min(42vh,185px);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:clamp(4px,1vh,13px);padding:clamp(8px,1.3vw,18px);
+  text-align:center;
+  border:1px solid rgba(126,234,255,.45);
+  border-radius:15px;
+  color:#dafaff;
+  background:radial-gradient(ellipse at 50% 12%,rgba(19,113,147,.35),transparent 74%),
+    linear-gradient(135deg,rgba(5,31,54,.97),rgba(1,10,27,.95));
+  box-shadow:0 14px 28px rgba(0,0,0,.36),inset 0 0 20px rgba(26,137,176,.08);
+  touch-action:manipulation;
+}
+.orbi-ux12-launch-audio>button[aria-pressed="true"] {
+  border-color:#fbd482;
+  box-shadow:0 0 20px rgba(248,197,94,.15),inset 0 0 20px rgba(244,199,93,.08);
+}
+.orbi-ux12-launch-audio>button strong {font:900 clamp(10px,1.3vw,19px)/1.2 "Space Grotesk",sans-serif;letter-spacing:.055em;}
+.orbi-ux12-launch-audio>button span {color:#9bcad9;font:650 clamp(9px,.92vw,14px)/1.3 "Space Grotesk",sans-serif;}
+.orbi-ux12-launch-audio>button b {
+  padding:5px 14px;border:1px solid currentColor;border-radius:30px;
+  color:#f6da91;background:rgba(246,201,97,.1);font:900 12px monospace;
+}
+.orbi-ux12-launch-audio>button[aria-pressed="false"] b {color:#839ba9;background:rgba(48,74,96,.15);}
+.orbi-ux12-launch-audio>button:focus-visible {outline:3px solid #fff2a8;outline-offset:2px;}
+@media (orientation:landscape) and (max-height:520px){
+  .orbi-ux12-launch-audio>button {min-height:68px;height:min(39vh,140px);padding:7px;}
+  .orbi-ux12-launch-audio>button strong {font-size:clamp(10px,1.5vw,15px);}
+  .orbi-ux12-launch-audio>button span {font-size:10px;}
+}
+@media (orientation:portrait){
+  .orbi-ux12-launch-audio {grid-template-columns:1fr;align-content:start;overflow-y:auto;}
+  .orbi-ux12-launch-audio>button {min-height:72px;height:auto;padding:12px;}
+}
+
+/* Actual physical Android UX03: campaign and Score Attack must offer ≥44px hit targets. */
+.orbi-game-root .orbi-ux12-hud-logo {pointer-events:none;}
+@media (orientation:landscape) and (max-height:520px) {
+  .orbi-ux10c[data-layer="DETAIL"] .orbi-ux10c-mode-start {min-height:44px!important;flex-shrink:0;}
+}
