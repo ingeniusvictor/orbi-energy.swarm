@@ -1,5 +1,5 @@
 import React from "react";
-import { Shield, Award, Users, Volume2, VolumeX, Pause, Play, Zap, Maximize2, Minimize2 } from "lucide-react";
+import { Shield, Award, Users, Volume2, VolumeX, Pause, Play, Zap, Maximize2, Minimize2, Target, Package, X, Coins, Radar, Activity } from "lucide-react";
 import { useGameTranslation, formatNumber } from "../i18n";
 import { getCampaignObjective } from "../game/campaignGuide";
 import type { ResonanceTier } from "../game/combatResonance";
@@ -223,24 +223,81 @@ export const GameHud: React.FC<GameHudProps> = ({
           <button type="button" className="orbi-immersive-backdrop"
             aria-label={language === "es" ? "Cerrar Estado" : "Close status"}
             onClick={() => onMobilePanelChange?.("closed")} />
+          <aside className="orbi-premium-pause-emblem" aria-hidden="true">
+            <span className="orbi-premium-pause-disc"><Pause size={45} fill="currentColor" /></span>
+            <strong>{language === "es" ? "PAUSADO" : "PAUSED"}</strong>
+            <small>ORBI ENERGY SWARM</small>
+          </aside>
           <div className="orbi-immersive-panel-heading" id="orbi-mobile-status-panel"
-            role="dialog" aria-label={language === "es" ? "Panel de Estado" : "Status panel"}>
+            role="dialog" aria-label={language === "es" ? "Panel de Estado" : "Status panel"}
+            aria-describedby="orbi-mobile-pause-caption">
+            <p id="orbi-mobile-pause-caption" className="orbi-premium-panel-paused">
+              <Pause size={12} aria-hidden="true" /> {language === "es" ? "SIMULACIÓN PAUSADA" : "SIMULATION PAUSED"}
+            </p>
             <div className="orbi-immersive-panel-tabs" role="group" aria-label="Paneles">
               {(["estado", "tactica", "equipo"] as const).map(panel => (
                 <button key={panel} type="button" aria-pressed={mobilePanel === panel}
                   onClick={() => onMobilePanelChange?.(panel)}>
+                  {panel === "estado" ? <Shield size={15} aria-hidden="true" />
+                    : panel === "tactica" ? <Target size={15} aria-hidden="true" />
+                    : <Package size={15} aria-hidden="true" />}
                   {panel === "estado" ? (language === "es" ? "Estado" : "Status")
                     : panel === "tactica" ? (language === "es" ? "Táctica" : "Tactics")
                     : (language === "es" ? "Equipo" : "Team")}
                 </button>
               ))}
               <button type="button" aria-label={language === "es" ? "Cerrar panel" : "Close panel"}
-                onClick={() => onMobilePanelChange?.("closed")}>×</button>
+                onClick={() => onMobilePanelChange?.("closed")}><X size={18} aria-hidden="true"/></button>
             </div>
           </div>
         </>
       )}
       <div className="orbi-hud-detail-grid" data-mobile-panel={mobilePanel}>
+      {immersive && mobilePanel === "estado" && (
+        <section className="orbi-premium-status" aria-label={language === "es" ? "Informe táctico de la partida" : "Live run tactical report"}>
+          <div className="orbi-premium-status-kicker">
+            <Activity size={15} aria-hidden="true"/>
+            <span>{language === "es" ? "TELEMETRÍA DEL NÚCLEO" : "CORE TELEMETRY"}</span>
+            <b>{language === "es" ? "EN TIEMPO REAL · CONGELADA" : "LIVE SNAPSHOT · FROZEN"}</b>
+          </div>
+          <div className="orbi-premium-status-top">
+            <div className="orbi-premium-status-core">
+              <div className="orbi-premium-status-energy" aria-hidden="true"><i/><i/><span/></div>
+              <div className="orbi-premium-status-core-label"><strong>ENERGY</strong><span>{language === "es" ? "NÚCLEO NEUTRAL" : "NEUTRAL CORE"}</span></div>
+            </div>
+            <div className="orbi-premium-status-shield">
+              <h3><Shield size={15} aria-hidden="true"/>{t("hud.shield")}</h3>
+              <strong>{Math.round(Math.max(0,Math.min(100,shieldPercent)))}%</strong>
+              <div className="orbi-premium-status-meter" role="progressbar" aria-label={t("hud.shield")}
+                aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(Math.max(0,Math.min(100,shieldPercent)))}>
+                <span style={{width:`${Math.max(0,Math.min(100,shieldPercent))}%`}}/>
+              </div>
+              <p>{language === "es" ? "Integridad de escudo durante esta partida" : "Shield integrity in this run"}</p>
+            </div>
+            <div className="orbi-premium-status-wave">
+              <h3><Radar size={15} aria-hidden="true"/>{language === "es" ? "SECTOR ACTUAL" : "CURRENT SECTOR"}</h3>
+              <strong>{scoreAttackActive ? "SCORE ATTACK" : `W${currentWave}`}</strong>
+              <p>{getLocalizedWaveDetails()}</p>
+              <div className="orbi-premium-status-objective"><b>{language === "es" ? "OBJETIVO" : "OBJECTIVE"}</b><span>{activeObjective || (language === "es" ? "Supera la oleada" : "Clear the wave")}</span></div>
+            </div>
+          </div>
+          <div className="orbi-premium-status-counters">
+            <article><Users size={22} aria-hidden="true"/><div><span>{t("hud.swarm")}</span><strong>{swarmSize}</strong><small>{language === "es" ? "ORBI ACTIVOS" : "ACTIVE ORBIS"}</small></div></article>
+            <article><Award size={22} aria-hidden="true"/><div><span>{t("hud.score")}</span><strong>{formatNumber(score)}</strong></div></article>
+            <article><Coins size={22} aria-hidden="true"/><div><span>{language === "es" ? "CRÉDITOS" : "CREDITS"}</span><strong>$ {formatNumber(nanoCredits)}</strong></div></article>
+          </div>
+          <div className="orbi-premium-status-footer">
+            <h3>{language === "es" ? "INDICADORES TÁCTICOS" : "TACTICAL INDICATORS"}</h3>
+            <div className="orbi-premium-status-indicators">
+              <div><Activity size={16} aria-hidden="true"/><span>{language === "es" ? "RESONANCIA" : "RESONANCE"}</span><strong>{Math.round(combatResonance)}%</strong></div>
+              <div><Zap size={16} aria-hidden="true"/><span>OVERDRIVE</span><strong>{overdriveStatus}</strong></div>
+              <div><Target size={16} aria-hidden="true"/><span>{language === "es" ? "CADENA" : "CHAIN"}</span><strong>{combatChain} · ×{combatScoreMultiplier.toFixed(2)}</strong></div>
+              <div>{audioMuted ? <VolumeX size={16} aria-hidden="true"/> : <Volume2 size={16} aria-hidden="true"/>}
+                <span>{language === "es" ? "AUDIO" : "SOUND"}</span><strong>{audioMuted ? t("hud.muted") : t("hud.unmuted")}</strong></div>
+            </div>
+          </div>
+        </section>
+      )}
       {/* 1. HEALTH SHIELD BAR */}
       <div className="orbi-hud-shield flex items-center gap-2 max-w-[220px]">
         <span className="flex items-center gap-1 text-slate-400 font-bold shrink-0 uppercase">

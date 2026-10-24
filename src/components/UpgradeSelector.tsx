@@ -19,6 +19,7 @@ export const UpgradeSelector: React.FC<UpgradeSelectorProps> = ({
 }) => {
   const { language, t } = useGameTranslation();
   const dialogRef = useRef<HTMLDivElement>(null);
+  const optionCount = choices.length;
 
   useEffect(() => {
     const firstEnabledControl =
@@ -91,13 +92,13 @@ export const UpgradeSelector: React.FC<UpgradeSelectorProps> = ({
           </h2>
           <p id="upgrade-selector-description" className="text-xs md:text-sm text-slate-400 max-w-lg mx-auto">
             {language === "es"
-              ? "Selecciona una mejora táctica para potenciar a FOTON y tu enjambre. Estas modificaciones duran solo en la partida actual."
-              : "Choose a tactical retrofit to enhance FOTON and your swarm for the remaining sectors. These upgrades last for this run only."}
+              ? "Selecciona una mejora para ENERGY y su enjambre. Solo dura esta partida."
+              : "Choose an upgrade for ENERGY and its swarm. Active for this run only."}
           </p>
         </div>
 
         {/* Upgrade Grid */}
-        <div className="orbi-upgrade-choices grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 pt-2">
+        <div className="orbi-upgrade-choices grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 pt-2" data-option-count={optionCount}>
           {choices.map((upgrade) => {
             const currentStacks = activeRunUpgrades[upgrade.id] || 0;
             const isMaxed = currentStacks >= upgrade.maxStacks;
@@ -111,6 +112,7 @@ export const UpgradeSelector: React.FC<UpgradeSelectorProps> = ({
             return (
               <button
                 key={upgrade.id}
+                data-orbi-category={upgrade.category}
                 disabled={isMaxed}
                 onClick={() => onSelect(upgrade)}
                 className={`orbi-upgrade-choice relative group flex flex-col items-center text-center p-5 rounded-xl border text-white transition-all duration-300 ${
