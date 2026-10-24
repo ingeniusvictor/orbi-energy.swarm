@@ -2022,6 +2022,7 @@ export const EnergySwarmGame: React.FC = () => {
 
   // --- GAIA NINE-ENERGY SYNTHESIS PROGRESSION ---
   const trackGaiaEnergyAcquisition = (energyId: OrbiEnergyId) => {
+    const previousGaiaLevel = gaiaEvolutionRef.current.gaiaLevel;
     const update = registerGaiaEnergy(
       gaiaEvolutionRef.current,
       energyId,
@@ -2123,7 +2124,9 @@ export const EnergySwarmGame: React.FC = () => {
     addFloatingText(
       isNewGaia
         ? "GAIA SYNTHESIS COMPLETE"
-        : `GAIA ASCENSION · L${update.state.gaiaLevel}`,
+        : update.state.gaiaLevel > previousGaiaLevel
+          ? `GAIA ASCENSION · E${update.state.gaiaLevel}`
+          : `GAIA ESSENCE · ${update.state.completedCycles}/29`,
       playerPosRef.current.x,
       playerPosRef.current.y - 52,
       gaiaDefinition.color,
@@ -2132,7 +2135,9 @@ export const EnergySwarmGame: React.FC = () => {
       "SYSTEM",
       isNewGaia
         ? "GAIA DESPERTADA: las nueve energías coleccionables han entrado en síntesis. Unidad atacante/defensora enlazada."
-        : `GAIA EVOLUCIONA A NIVEL ${update.state.gaiaLevel}: nueva síntesis completa de las nueve energías coleccionables.`,
+        : update.state.gaiaLevel > previousGaiaLevel
+          ? `GAIA EVOLUCIONA A E${update.state.gaiaLevel}: síntesis de nueve energías.`
+          : `GAIA guarda una esencia adicional: ciclo ${update.state.completedCycles}. Nivel actual E${update.state.gaiaLevel} (máximo E8).`,
     );
   };
 
