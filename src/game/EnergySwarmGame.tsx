@@ -2076,7 +2076,7 @@ export const EnergySwarmGame: React.FC = () => {
     const next = !audioMuted;
     setAudioMuted(next);
     setMuteState(next);
-    updateStatsAndSave({ ...statsRef.current, audioMuted: next });
+    updateStatsAndSave({ ...(statsRef.current ?? stats), audioMuted: next });
     if (!next) {
       startBgm(bossActiveRef.current ? "BOSS" : waveActiveRef.current ? "HIGH_INTENSITY" : "EXPLORATION");
       if(!isPlaying) stopBgm();
@@ -2084,15 +2084,15 @@ export const EnergySwarmGame: React.FC = () => {
     playClickSound();
   };
   const toggleMusic = () => {
-    const enabled = statsRef.current.musicEnabled === false;
+    const enabled = statsRef.current?.musicEnabled === false;
     setMusicEnabled(enabled);
-    updateStatsAndSave({ ...statsRef.current, musicEnabled: enabled });
+    updateStatsAndSave({ ...(statsRef.current ?? stats), musicEnabled: enabled });
     if(enabled && !audioMuted) resumeBackgroundMusic();
   };
   const toggleEffects = () => {
-    const enabled = statsRef.current.soundEffectsEnabled === false;
+    const enabled = statsRef.current?.soundEffectsEnabled === false;
     setSoundEffectsEnabled(enabled);
-    updateStatsAndSave({ ...statsRef.current, soundEffectsEnabled: enabled });
+    updateStatsAndSave({ ...(statsRef.current ?? stats), soundEffectsEnabled: enabled });
   };
 
   // --- CANONICAL ORBI ENERGY RECRUITMENT CYCLE ---
