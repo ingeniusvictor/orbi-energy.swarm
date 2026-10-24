@@ -24,6 +24,15 @@
     linear-gradient(95deg,rgba(2,6,20,.10),rgba(2,8,27,.34) 41%,rgba(2,8,25,.79) 100%),
     linear-gradient(0deg,rgba(1,6,19,.62),transparent 27%,rgba(1,6,19,.24));
 }
+/* Smooth the handoff between the approved scenic character crop and the
+   text-free wide-world illustration. No screenshot UI is exposed. */
+.orbi-ux10c[data-layer="WELCOME"] .orbi-ux10c-scene::after {
+  background:
+    linear-gradient(90deg,transparent 32%,rgba(2,9,22,.8) 49%,rgba(2,9,22,.75) 56%,transparent 72%),
+    linear-gradient(95deg,rgba(2,6,20,.1),rgba(2,8,27,.34) 41%,rgba(2,8,25,.79) 100%),
+    linear-gradient(0deg,rgba(1,6,19,.62),transparent 27%,rgba(1,6,19,.24));
+}
+
 .orbi-ux10c[data-layer="HUB"] .orbi-ux10c-scene::after,
 .orbi-ux10c[data-layer="DETAIL"] .orbi-ux10c-scene::after{
   background:linear-gradient(120deg,rgba(1,8,24,.81),rgba(2,11,30,.57) 44%,rgba(3,13,34,.79)),
