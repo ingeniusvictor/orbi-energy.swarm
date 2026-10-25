@@ -1162,6 +1162,30 @@ export const EnergySwarmGame: React.FC = () => {
       : `CAMPAIGN:${currentWaveRef.current}`;
   };
 
+  // UX14-B: real target scan only on activation; no target, no cost.
+  const handleConvergenceActivation = () => {
+    if (!isPlaying || isGameOver || isPausedRef.current || isPhotoMode ||
+        isUpgradeSelectionOpenRef.current || bossIntroTimeRef.current !== null ||
+        phaseTransitionTimerRef.current > 0 ||
+        bossDefeatedSequenceActiveRef.current || architectQaBossRef.current !== null ||
+        (!waveActiveRef.current && !bossActiveRef.current)) return false;
+    const aim = selectConvergenceTargets(playerPosRef.current, enemiesRef.current);
+    const nowMs = timeElapsedRef.current;
+    const next = activateConvergence(convergenceRef.current, {
+      nowMs, waveKey: getConvergenceWaveKey(), orbiCount: swarmRef.current.length,
+      resonance: combatResonanceRef.current.resonance,
+      overdriveActive: projectCombatOverdrive(combatOverdriveRef.current, nowMs, true).active,
+      gameplayActive: true, targetAvailable: Boolean(aim?.targets.length),
+    });
+    if (!next) return false;
+    convergenceRef.current = next;
+    combatResonanceRef.current = { ...combatResonanceRef.current, resonance: 0 };
+    setConvergenceView(projectConvergence(next, nowMs, getConvergenceWaveKey(),
+      swarmRef.current.length, 0, false, true, true));
+    playOrbiConvergenceSound("CHARGE");
+    return true;
+  };
+
   // Dash's original physics is untouched; do not stack it over channeling.
   const handleDashActivation = () => {
     if (isConvergenceChanneling(convergenceRef.current)) return false;
@@ -1252,35 +1276,6 @@ export const EnergySwarmGame: React.FC = () => {
       resonance: combatResonanceRef.current.resonance,
       ...consumedResonanceProjection,
     });
-    return true;
-  };
-
-  // UX14-B: real target scan only on activation; no target, no cost.
-  const handleConvergenceActivation = () => {
-    if (!isPlaying || isGameOver || isPausedRef.current || isPhotoMode ||
-        isUpgradeSelectionOpenRef.current || bossIntroTimeRef.current !== null ||
-        phaseTransitionTimerRef.current > 0 ||
-        bossDefeatedSequenceActiveRef.current || architectQaBossRef.current !== null ||
-        (!waveActiveRef.current && !bossActiveRef.current)) return false;
-    const aim = selectConvergenceTargets(playerPosRef.current, enemiesRef.current);
-    const nowMs = timeElapsedRef.current;
-    const next = activateConvergence(convergenceRef.current, {
-      nowMs, waveKey: getConvergenceWaveKey(), orbiCount: swarmRef.current.length,
-      resonance: combatResonanceRef.current.resonance,
-      overdriveActive: projectCombatOverdrive(combatOverdriveRef.current, nowMs, true).active,
-      gameplayActive: true, targetAvailable: Boolean(aim?.targets.length),
-    });
-    if (!next) return false;
-    convergenceRef.current = next;
-    combatResonanceRef.current = { ...combatResonanceRef.current, resonance: 0 };
-    setCombatResonanceView({
-      chain: combatResonanceRef.current.chain,
-      resonance: combatResonanceRef.current.resonance,
-      ...projectCombatResonance(combatResonanceRef.current),
-    });
-    setConvergenceView(projectConvergence(next, nowMs, getConvergenceWaveKey(),
-      swarmRef.current.length, 0, false, true, true));
-    playOrbiConvergenceSound("CHARGE");
     return true;
   };
 
@@ -6651,8 +6646,7 @@ export const EnergySwarmGame: React.FC = () => {
     Boolean(enemy.evolvedVariantId) ||
     enemy.milestoneKind === "MINIBOSS";
 
-  const registerCombatDefeat = (enemy: Enemy, affinity?: OrbiAffinity,
-    suppressResonanceGain = false) => {
+  const registerCombatDefeat = (enemy: Enemy, affinity?: OrbiAffinity) => {
     const commandLinkBreakIntent = enemy.enemyFormation
       ? resolveLiveCommandLinkBreakIntent(enemy.enemyFormation)
       : null;
@@ -6670,10 +6664,7 @@ export const EnergySwarmGame: React.FC = () => {
         isBoss: enemy.isBoss,
       },
     );
-    // Beam kills still score once, but cannot refill spent resonance.
-    combatResonanceRef.current = suppressResonanceGain
-      ? { ...resolution.state, resonance: combatResonanceRef.current.resonance }
-      : resolution.state;
+    combatResonanceRef.current = resolution.state;
     scoreRef.current += resolution.awardedScore;
   };
 
@@ -6827,8 +6818,6 @@ export const EnergySwarmGame: React.FC = () => {
           (enemy) => !enemy.isDead &&
             (!proj.convergenceTargetId || enemy.id === proj.convergenceTargetId),
         );
-        // A charged hit cannot drift to a different enemy or survive a frame.
-        if (proj.convergenceTargetId) proj.life = 0;
         const enemy = collision.item;
 
         if (enemy && collision.entry) {
@@ -7141,7 +7130,16 @@ export const EnergySwarmGame: React.FC = () => {
               ) {
                 persistInfiniteMilestoneDefeat(enemy);
               }
-              registerCombatDefeat(enemy, proj.affinity, Boolean(proj.convergenceTargetId));
+              const resonanceBeforeConvergenceDefeat = combatResonanceRef.current.resonance;
+              registerCombatDefeat(enemy, proj.affinity);
+              // Restore ONLY resonance after the authoritative kill.
+              // Score, chain, drops, formations and boss outcomes stay unchanged.
+              if (proj.convergenceTargetId) {
+                combatResonanceRef.current = {
+                  ...combatResonanceRef.current,
+                  resonance: resonanceBeforeConvergenceDefeat,
+                };
+              }
               const commandLinkPulseIntent = enemy.enemyFormation
                 ? resolveLiveCommandLinkPulseIntent(
                     enemy.enemyFormation,
