@@ -647,6 +647,9 @@ async function runRouteCombatBridgeQa(name,width,height,touch){
     // Real input motion after Dash still reaches ENERGY in physical coordinates.
     const initialY=Number(await lab.getAttribute("data-player-local-y"));
     if(touch){
+      // The Dash button sits below the stage on short mobile screens.
+      // Bring the canvas back into view before issuing native CDP touch.
+      await page.getByTestId("ux15-physical-canvas").scrollIntoViewIfNeeded();
       const bounds=await page.getByTestId("ux15-physical-canvas").boundingBox();
       check(Boolean(bounds),name+": missing touch canvas");
       const cdp=await context.newCDPSession(page);
