@@ -85,6 +85,7 @@ export interface PhysicalRouteQaState {
   readonly convergenceQa:RouteConvergenceQaState|null;
   readonly wave1Qa:RouteWave1QaState|null;
   readonly wave2Qa:RouteWave2QaState|null;
+  readonly eliteQaEnabled:boolean;
   readonly rebases: number;
   readonly physicsTicks: number;
 }
@@ -105,7 +106,10 @@ export function createPhysicalRouteQaState(
   enableConvergenceQa = false,
   enableWave1Qa = false,
   enableWave2Qa = false,
+  enableEliteQa = false,
 ): PhysicalRouteQaState {
+  if(enableEliteQa&&!enableWave2Qa)
+    throw new Error("Physical elite QA requires C3B-8 Wave2");
   if(enableWave2Qa&&!enableWave1Qa)
     throw new Error("Physical Parasite Drift requires C3B-7 wave1");
   if(enableWave1Qa&&!enableConvergenceQa)
@@ -163,6 +167,7 @@ export function createPhysicalRouteQaState(
     convergenceQa:enableConvergenceQa?createRouteConvergenceQaState():null,
     wave1Qa:enableWave1Qa?createRouteWave1QaState():null,
     wave2Qa:enableWave2Qa?createRouteWave2QaState():null,
+    eliteQaEnabled:enableEliteQa,
     rebases: 0,
     physicsTicks: 0,
   };
@@ -205,6 +210,7 @@ export function stepPhysicalRouteQa(
       currentWaveKey,
       true,state.bridge?.shield??0,
       state.wave2Qa!==null&&state.frame.cursor.simulatedMs>=ROUTE_WAVE2_START_MS,
+      state.eliteQaEnabled,
     );
     convergenceQa=admitted.convergenceQa;
     activatedOverdrive=admitted.overdriveQa;
@@ -265,6 +271,7 @@ export function stepPhysicalRouteQa(
           routeConvergenceWaveKey(frame.cursor.segmentOrdinal),
       bridge?.shield??0,
       state.wave2Qa!==null&&frame.cursor.simulatedMs>=ROUTE_WAVE2_START_MS,
+      state.eliteQaEnabled,
     );
     convergenceQa=resolved.convergenceQa;
     encounter=resolved.encounter;
@@ -275,6 +282,7 @@ export function stepPhysicalRouteQa(
       bridge!==null,weapons!==null,state.impactFxEnabled,
       convergenceQa!==null,state.wave1Qa!==null,
       state.wave2Qa!==null,state.frame.originOffsetX,
+      state.eliteQaEnabled,
     );
     encounter=next.encounter;
     dynamic=next.dynamic;
@@ -300,7 +308,7 @@ export function stepPhysicalRouteQa(
   let wave2Qa=state.wave2Qa;
   if(wave2Qa){
     const paced=stepRouteWave2Qa(wave2Qa,encounter,player,camera,viewport,
-      frame.cursor.simulatedMs);
+      frame.cursor.simulatedMs,state.eliteQaEnabled);
     wave2Qa=paced.wave;
     encounter=paced.encounter;
   }
@@ -364,6 +372,7 @@ export function stepPhysicalRouteQa(
     convergenceQa,
     wave1Qa,
     wave2Qa,
+    eliteQaEnabled:state.eliteQaEnabled,
     rebases,
     physicsTicks: state.physicsTicks + 1,
   };

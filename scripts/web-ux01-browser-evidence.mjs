@@ -457,10 +457,24 @@ async function runPhysicalRouteQa(name,width,height,touch){
       const touchY=bounds.y+bounds.height*.57;
       await cdp.send("Input.dispatchTouchEvent",{type:"touchStart",
         touchPoints:[{x:startX,y:touchY}]});
+      await page.waitForTimeout(140);
+      await cdp.send("Input.dispatchTouchEvent",{type:"touchMove",
+        touchPoints:[{x:startX+45,y:touchY-35}]});
+      await page.waitForTimeout(130);
       await cdp.send("Input.dispatchTouchEvent",{type:"touchMove",
         touchPoints:[{x:startX+90,y:touchY-80}]});
-      await page.waitForTimeout(520);
+      await page.waitForTimeout(650);
       await cdp.send("Input.dispatchTouchEvent",{type:"touchEnd",touchPoints:[]});
+      if(Number(await lab.getAttribute("data-player-local-y"))>=startY-15){
+        const altX=bounds.x+bounds.width*.4,altY=bounds.y+bounds.height*.8;
+        await cdp.send("Input.dispatchTouchEvent",{type:"touchStart",
+          touchPoints:[{x:altX,y:altY}]});
+        await page.waitForTimeout(150);
+        await cdp.send("Input.dispatchTouchEvent",{type:"touchMove",
+          touchPoints:[{x:altX+55,y:altY-65}]});
+        await page.waitForTimeout(730);
+        await cdp.send("Input.dispatchTouchEvent",{type:"touchEnd",touchPoints:[]});
+      }
       await cdp.detach();
     }else{
       await page.keyboard.down("w");
@@ -1239,6 +1253,94 @@ async function runPhysicalParasiteDriftQa(name,width,height,touch){
  }finally{await context.close();}
 }
 
+/** C3B9: canonical random-elite stat scale under explicit isolated QA roll. */
+async function runPhysicalEliteQa(name,width,height,touch){
+ const context=await browser.newContext({viewport:{width,height},
+   isMobile:touch,hasTouch:touch,deviceScaleFactor:touch?2:1,
+   reducedMotion:"no-preference",serviceWorkers:"block"});
+ const page=await context.newPage();
+ page.on("pageerror",e=>diagnostics.push(name+": "+String(e)));
+ page.on("console",msg=>{if(msg.type()==="error")diagnostics.push(name+": "+msg.text());});
+ try{
+  await page.goto(url+"/?ux15-physical-qa=1&ux15-c3b=1&ux15-c3b2=1&ux15-c3b3=1&ux15-c3b4=1&ux15-c3b5=1&ux15-c3b6=1&ux15-c3b7=1&ux15-c3b8=1&ux15-c3b9=1",
+    {waitUntil:"domcontentloaded",timeout:30000});
+  const lab=page.getByTestId("ux15-physical-qa");
+  await lab.waitFor({state:"visible",timeout:15000});
+  check(await lab.getAttribute("data-qa-mode")==="PHYSICAL_ROUTE_C3B9_QA",
+    name+": random-elite QA gate missing");
+  check(await page.locator(".orbi-game-root").count()===0,
+    name+": live gameplay mixed into isolated elite");
+  check(await lab.getAttribute("data-c3b9-wave3-name")==="Drone Lock",
+    name+": canonical next-wave descriptor preflight absent");
+  check(Number(await lab.getAttribute("data-c3b9-elite-rolls"))===0,
+    name+": random-elite roll made before Wave2");
+  await page.getByTestId("ux15-c3b8-skip-wave1").click({timeout:30000});
+  await page.waitForFunction(()=>Number(document.querySelector(
+    '[data-testid="ux15-physical-qa"]')?.dataset.c3b9EliteRolls)>=7,
+    null,{timeout:16000});
+  check(await lab.getAttribute("data-c3b8-wave-status")==="ACTIVE",
+    name+": Wave2 not physically active");
+  const rolls=Number(await lab.getAttribute("data-c3b9-elite-rolls"));
+  const elites=Number(await lab.getAttribute("data-c3b9-elite-spawned"));
+  check(rolls>=7&&rolls<=18,name+": incorrect QA elite roll cadence");
+  check(elites===1,name+": expected exactly the controlled ordinal-6 elite");
+  check(Number(await lab.getAttribute("data-c3b8-wave-elite-uncertified"))===0,
+    name+": previous uncatalogued elite suppression still active");
+  check(Number(await lab.getAttribute("data-c3b8-wave-active"))<=12,
+    name+": physical simultaneous cap exceeded");
+  check(Number(await lab.getAttribute("data-c3b-spawned"))===0,
+    name+": generic QA fake spawn incorrectly enabled");
+  const startY=Number(await lab.getAttribute("data-player-local-y"));
+  if(touch){
+    await page.getByTestId("ux15-physical-canvas").scrollIntoViewIfNeeded();
+    const rect=await page.getByTestId("ux15-physical-canvas").boundingBox();
+    check(Boolean(rect),name+": canvas missing");
+    const cdp=await context.newCDPSession(page);
+    const x=rect.x+rect.width*.35,y=rect.y+rect.height*.8;
+    await cdp.send("Input.dispatchTouchEvent",{type:"touchStart",touchPoints:[{x,y}]});
+    await page.waitForTimeout(160);
+    await cdp.send("Input.dispatchTouchEvent",{type:"touchMove",touchPoints:[{x:x+45,y:y-65}]});
+    await page.waitForTimeout(650);
+    await cdp.send("Input.dispatchTouchEvent",{type:"touchEnd",touchPoints:[]});
+    if(Number(await lab.getAttribute("data-player-local-y"))>=startY-12){
+      const xx=rect.x+rect.width*.45,yy=rect.y+rect.height*.75;
+      await cdp.send("Input.dispatchTouchEvent",{type:"touchStart",touchPoints:[{x:xx,y:yy}]});
+      await page.waitForTimeout(150);
+      await cdp.send("Input.dispatchTouchEvent",{type:"touchMove",touchPoints:[{x:xx+45,y:yy-75}]});
+      await page.waitForTimeout(750);
+      await cdp.send("Input.dispatchTouchEvent",{type:"touchEnd",touchPoints:[]});
+    }
+    await cdp.detach();
+  }else{
+    await page.keyboard.down("w");
+    await page.waitForTimeout(650);
+    await page.keyboard.up("w");
+  }
+  await page.waitForFunction(y=>Number(document.querySelector(
+    '[data-testid="ux15-physical-qa"]')?.dataset.playerLocalY)<y-12,
+    startY,{timeout:8000});
+  await shot(page,name+"-wave2-elites");
+  await page.getByTestId("ux15-physical-pause").click();
+  await page.waitForTimeout(400);
+  const frozen={ticks:await lab.getAttribute("data-physics-ticks"),
+    rolls:await lab.getAttribute("data-c3b9-elite-rolls")};
+  await page.waitForTimeout(550);
+  check(frozen.ticks===await lab.getAttribute("data-physics-ticks"),
+    name+": elite physical ticks continued during pause");
+  check(frozen.rolls===await lab.getAttribute("data-c3b9-elite-rolls"),
+    name+": random elite roll continued during pause");
+  await page.getByTestId("ux15-physical-reset").click({timeout:10000});
+  check(Number(await lab.getAttribute("data-c3b9-elite-rolls"))===0,
+    name+": reset failed to clear elite counter");
+  check(Number(await lab.getAttribute("data-c3b9-elite-spawned"))===0,
+    name+": reset failed to clear elites");
+  check(await lab.getAttribute("data-c3b8-wave-status")==="PENDING",
+    name+": Wave2 did not reset to Wave1");
+  evidence.cases.push({name,pass:true,ux15c3b9:true,rolls,elites,
+    wave3Certified:false,input:touch?"native-touch":"keyboard"});
+ }finally{await context.close();}
+}
+
 await mkdir(output,{recursive:true});
 try {
   await startServer();
@@ -1273,6 +1375,8 @@ try {
   await runRouteCampaignWave1Qa("ux15c3b7-wave1-mobile-844x390",844,390,true);
   await runPhysicalParasiteDriftQa("ux15c3b8-wave2-desktop-1440x900",1440,900,false);
   await runPhysicalParasiteDriftQa("ux15c3b8-wave2-mobile-844x390",844,390,true);
+  await runPhysicalEliteQa("ux15c3b9-elite-desktop-1440x900",1440,900,false);
+  await runPhysicalEliteQa("ux15c3b9-elite-mobile-844x390",844,390,true);
 }catch(error){evidence.failures.push({message:String(error),stack:error?.stack||""});process.exitCode=1;}
 finally{
   evidence.errors=diagnostics;

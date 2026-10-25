@@ -30,6 +30,7 @@ import { projectCombatOverdrivePresentation } from "../game/combatOverdrivePrese
 import { countRouteWave1Active,projectRouteWave1RemainingMs } from "../game/routeWave1Qa";
 import { countWave2Live,routeWave2RemainingMs,ROUTE_WAVE2_START_MS,
  } from "../game/routeWave2Qa";
+import { inspectRouteWave3PreflightQa,isRouteWave2EliteQaEnemy } from "../game/routeWave2EliteQa";
 import "../styles/ux15RouteQa.css";
 
 type QaTelemetry = {
@@ -58,6 +59,8 @@ type QaTelemetry = {
   wave2Status:string;wave2Spawned:number;wave2Parasites:number;wave2Active:number;
   wave2Budget:number;wave2ConcurrentCap:number;wave2RemainingMs:number;
   wave2EliteHolds:number;wave2CapHolds:number;wave2SafetyHolds:number;
+  eliteQaRolls:number;eliteQaSpawned:number;eliteQaActive:number;
+  dronePreflightName:string;dronePreflightBudget:number;
 };
 const initialTelemetry = (): QaTelemetry => ({
   distance: 0, ordinal: 0, playerX: 800, playerY: 480,
@@ -82,6 +85,8 @@ const initialTelemetry = (): QaTelemetry => ({
   wave2Status:"DISABLED",wave2Spawned:0,wave2Parasites:0,wave2Active:0,
   wave2Budget:0,wave2ConcurrentCap:0,wave2RemainingMs:0,
   wave2EliteHolds:0,wave2CapHolds:0,wave2SafetyHolds:0,
+  eliteQaRolls:0,eliteQaSpawned:0,eliteQaActive:0,
+  dronePreflightName:"",dronePreflightBudget:0,
 });
 const routeParams=typeof window !== "undefined"
   ? new URLSearchParams(window.location.search):new URLSearchParams();
@@ -93,6 +98,7 @@ const c3b5Enabled=c3b4Enabled && routeParams.get("ux15-c3b5")==="1";
 const c3b6Enabled=c3b5Enabled && routeParams.get("ux15-c3b6")==="1";
 const c3b7Enabled=c3b6Enabled && routeParams.get("ux15-c3b7")==="1";
 const c3b8Enabled=c3b7Enabled && routeParams.get("ux15-c3b8")==="1";
+const c3b9Enabled=c3b8Enabled && routeParams.get("ux15-c3b9")==="1";
 const arrowKeys = new Set(["w","a","s","d","arrowup","arrowdown","arrowleft","arrowright"]);
 
 /**
@@ -105,7 +111,7 @@ const arrowKeys = new Set(["w","a","s","d","arrowup","arrowdown","arrowleft","ar
 export default function PhysicalRouteQa() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const viewportRef = useRef<RoutePhysicalViewport>({ width: 800, height: 480, zoom: 1 });
-  const stateRef = useRef<PhysicalRouteQaState>(createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled,c3b2Enabled,c3b3Enabled,c3b4Enabled,c3b5Enabled,c3b6Enabled,c3b7Enabled,c3b8Enabled));
+  const stateRef = useRef<PhysicalRouteQaState>(createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled,c3b2Enabled,c3b3Enabled,c3b4Enabled,c3b5Enabled,c3b6Enabled,c3b7Enabled,c3b8Enabled,c3b9Enabled));
   const controlsRef = useRef(new Set<string>());
   const dashRequestedRef=useRef(false);
   const overdriveRequestedRef=useRef(false);
@@ -133,6 +139,12 @@ export default function PhysicalRouteQa() {
         s.bridge?.shield??0,
       ):null;
     setTelemetry({
+      eliteQaRolls:s.wave2Qa?.qaEliteRolls??0,
+      eliteQaSpawned:s.wave2Qa?.qaEliteSpawned??0,
+      eliteQaActive:c3b9Enabled?s.encounter.enemies.filter(e=>
+        isRouteWave2EliteQaEnemy(e)&&!e.isDead&&e.health>0).length:0,
+      dronePreflightName:c3b9Enabled?inspectRouteWave3PreflightQa().name:"",
+      dronePreflightBudget:c3b9Enabled?inspectRouteWave3PreflightQa().budget:0,
       wave2Status:s.wave2Qa?.status??"DISABLED",
       wave2Spawned:s.wave2Qa?.spawned??0,
       wave2Parasites:s.wave2Qa?.spawnedParasites??0,
@@ -323,7 +335,9 @@ export default function PhysicalRouteQa() {
       ctx.fillStyle="rgba(3,16,30,.78)";
       ctx.fillRect(12,11,330,32);
       ctx.fillStyle="#8ff5ec";
-      ctx.fillText(c3b8Enabled
+      ctx.fillText(c3b9Enabled
+        ? "C3B-9 · ELITE WAVE 2 · DRONE LOCK PREFLIGHT"
+        :c3b8Enabled
         ? "C3B-8 · PARASITE DRIFT · WAVE 2 PHYSICAL QA"
         :c3b7Enabled
         ? "C3B-7 · SCOUT SIGNAL · WAVE 1 PHYSICAL QA"
@@ -352,7 +366,7 @@ export default function PhysicalRouteQa() {
         Math.round(480*availableWidth/Math.max(1,stageHeight))));
       viewportRef.current={width:logicalWidth,height:480,zoom:1};
       if(stateRef.current.physicsTicks===0) {
-        stateRef.current=createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled,c3b2Enabled,c3b3Enabled,c3b4Enabled,c3b5Enabled,c3b6Enabled,c3b7Enabled,c3b8Enabled);
+        stateRef.current=createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled,c3b2Enabled,c3b3Enabled,c3b4Enabled,c3b5Enabled,c3b6Enabled,c3b7Enabled,c3b8Enabled,c3b9Enabled);
       }
       canvas.dataset.logicalWidth=String(logicalWidth);
       canvas.dataset.logicalHeight="480";
@@ -444,7 +458,7 @@ export default function PhysicalRouteQa() {
   },[]);
 
   const reset=()=>{
-    stateRef.current=createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled,c3b2Enabled,c3b3Enabled,c3b4Enabled,c3b5Enabled,c3b6Enabled,c3b7Enabled,c3b8Enabled);
+    stateRef.current=createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled,c3b2Enabled,c3b3Enabled,c3b4Enabled,c3b5Enabled,c3b6Enabled,c3b7Enabled,c3b8Enabled,c3b9Enabled);
     controlsRef.current.clear();
     pointerRef.current=null;
     dashRequestedRef.current=false;
@@ -469,10 +483,10 @@ export default function PhysicalRouteQa() {
   // never changes public campaign progression, RNG or account records.
   const advanceToWave2Qa=()=>{
     if(!c3b8Enabled||!runningRef.current)return;
-    const target=ROUTE_WAVE2_START_MS+2_000;
+    const target=c3b9Enabled?ROUTE_WAVE2_START_MS+18_000:ROUTE_WAVE2_START_MS+2_000;
     const gates={playing:true,paused:false,hidden:false,modalOpen:false,
       upgradeOpen:false,hitstop:false};
-    for(let i=0;i<800&&stateRef.current.frame.cursor.simulatedMs<target;i++){
+    for(let i=0;i<1200&&stateRef.current.frame.cursor.simulatedMs<target;i++){
       stateRef.current=stepPhysicalRouteQa(stateRef.current,50,{x:0,y:0},
         viewportRef.current,gates);
     }
@@ -485,7 +499,12 @@ export default function PhysicalRouteQa() {
   };
   return (
     <main className="ux15-route-qa ux15-physical-qa" data-testid="ux15-physical-qa"
-      data-qa-mode={c3b8Enabled?"PHYSICAL_ROUTE_C3B8_QA":c3b7Enabled?"PHYSICAL_ROUTE_C3B7_QA":c3b6Enabled?"PHYSICAL_ROUTE_C3B6_QA":c3b5Enabled?"PHYSICAL_ROUTE_C3B5_QA":c3b4Enabled?"PHYSICAL_ROUTE_C3B4_QA":c3b3Enabled?"PHYSICAL_ROUTE_C3B3_QA":c3b2Enabled?"PHYSICAL_ROUTE_C3B2_QA":c3bPreviewEnabled?"PHYSICAL_ROUTE_C3B1_QA":"PHYSICAL_ROUTE_ISOLATED"}
+      data-qa-mode={c3b9Enabled?"PHYSICAL_ROUTE_C3B9_QA":c3b8Enabled?"PHYSICAL_ROUTE_C3B8_QA":c3b7Enabled?"PHYSICAL_ROUTE_C3B7_QA":c3b6Enabled?"PHYSICAL_ROUTE_C3B6_QA":c3b5Enabled?"PHYSICAL_ROUTE_C3B5_QA":c3b4Enabled?"PHYSICAL_ROUTE_C3B4_QA":c3b3Enabled?"PHYSICAL_ROUTE_C3B3_QA":c3b2Enabled?"PHYSICAL_ROUTE_C3B2_QA":c3bPreviewEnabled?"PHYSICAL_ROUTE_C3B1_QA":"PHYSICAL_ROUTE_ISOLATED"}
+      data-c3b9-elite-rolls={telemetry.eliteQaRolls}
+      data-c3b9-elite-spawned={telemetry.eliteQaSpawned}
+      data-c3b9-elite-active={telemetry.eliteQaActive}
+      data-c3b9-wave3-name={telemetry.dronePreflightName}
+      data-c3b9-wave3-budget={telemetry.dronePreflightBudget}
       data-c3b8-wave-status={telemetry.wave2Status}
       data-c3b8-wave-spawned={telemetry.wave2Spawned}
       data-c3b8-wave-parasites={telemetry.wave2Parasites}
@@ -563,10 +582,12 @@ export default function PhysicalRouteQa() {
       data-glb-status={telemetry.glb}>
       <header className="ux15-route-qa__header">
         <div>
-          <span className="ux15-route-qa__eyebrow">ORBI ENERGY SWARM · {c3b8Enabled?"UX15-C3B-8":c3b7Enabled?"UX15-C3B-7":c3b6Enabled?"UX15-C3B-6":c3b5Enabled?"UX15-C3B-5":c3b4Enabled?"UX15-C3B-4":c3b3Enabled?"UX15-C3B-3":c3b2Enabled?"UX15-C3B-2":c3bPreviewEnabled?"UX15-C3B-1":"UX15-C3A-3"}</span>
+          <span className="ux15-route-qa__eyebrow">ORBI ENERGY SWARM · {c3b9Enabled?"UX15-C3B-9":c3b8Enabled?"UX15-C3B-8":c3b7Enabled?"UX15-C3B-7":c3b6Enabled?"UX15-C3B-6":c3b5Enabled?"UX15-C3B-5":c3b4Enabled?"UX15-C3B-4":c3b3Enabled?"UX15-C3B-3":c3b2Enabled?"UX15-C3B-2":c3bPreviewEnabled?"UX15-C3B-1":"UX15-C3A-3"}</span>
           <h1>{locale==="es"?"LABORATORIO DE TRAVESÍA FÍSICA":"PHYSICAL TRAVERSAL LAB"}</h1>
           <p>{locale==="es"
-            ?(c3b8Enabled
+            ?(c3b9Enabled
+              ?"Oleada 2: élites aleatorios con estadísticas originales y tiradas QA repetibles. Drone Lock preparada, sin activar drones."
+              :c3b8Enabled
               ?"Oleada 2 Parasite Drift con PARASITE físicos y surge ×1,4. Versión QA sin élites, recompensas ni Wave 3."
               :c3b7Enabled
               ?"Oleada 1 Scout Signal: ritmo y presupuesto oficiales, apariciones físicas fuera de cámara y bloqueo seguro de oleadas no certificadas."
@@ -583,7 +604,9 @@ export default function PhysicalRouteQa() {
               :c3bPreviewEnabled
               ?"Encuentro físico QA: enemigos aparecen fuera de cámara, persiguen a ENERGY y reciben impactos. Sin recompensas ni combate de campaña."
               :"ENERGY, cámara y 30 ORBI recorren ASTERIA junto a enemigos, balas y recursos controlados. Sin daño ni recompensas.")
-            :(c3b8Enabled
+            :(c3b9Enabled
+              ?"Wave 2 random elites with original stat scaling and deterministic QA samples. Drone Lock reviewed but no drone spawns."
+              :c3b8Enabled
               ?"Parasite Drift wave 2 with physical PARASITE and 1.4× speed surge. QA only: no elites, rewards or wave 3."
               :c3b7Enabled
               ?"Scout Signal wave 1: official pacing and budget, physical off-screen spawns and fail-closed transition to uncertified waves."
@@ -622,13 +645,19 @@ export default function PhysicalRouteQa() {
         <div><span>{locale==="es"?"Cámara · X":"Camera · X"}</span><strong>{Math.round(telemetry.cameraX)} u</strong></div>
         <div><span>{locale==="es"?"Segmento":"Segment"}</span><strong>{telemetry.ordinal+1}</strong></div>
         <div><span>Origin epoch</span><strong>{telemetry.originEpoch}</strong></div>
+        {c3b9Enabled && <>
+          <div><span>Probabilidad élite canónica</span><strong>5 % (tirada determinista QA)</strong></div>
+          <div><span>Tiradas / élites generados</span><strong>{telemetry.eliteQaRolls} / {telemetry.eliteQaSpawned}</strong></div>
+          <div><span>Élites vivos</span><strong>{telemetry.eliteQaActive}</strong></div>
+          <div><span>Próxima oleada</span><strong>{telemetry.dronePreflightName} · {telemetry.dronePreflightBudget} presupuesto · BLOQUEADA</strong></div>
+        </>}
         {c3b8Enabled && <>
           <div><span>Parasite Drift · Wave 2</span><strong>{telemetry.wave2Status}</strong></div>
           <div><span>Enemigos / presupuesto</span><strong>{telemetry.wave2Spawned} / {telemetry.wave2Budget}</strong></div>
           <div><span>PARASITE / activos</span><strong>{telemetry.wave2Parasites} / {telemetry.wave2Active}</strong></div>
           <div><span>Concurrencia permitida</span><strong>Máx. {telemetry.wave2ConcurrentCap}</strong></div>
           <div><span>Tiempo Wave 2</span><strong>{(telemetry.wave2RemainingMs/1000).toFixed(1)} s</strong></div>
-          <div><span>Élites sin certificar (QA)</span><strong>{telemetry.wave2EliteHolds}</strong></div>
+          {!c3b9Enabled&&<div><span>Élites sin certificar (QA)</span><strong>{telemetry.wave2EliteHolds}</strong></div>}
           <div><span>Wave 3</span><strong>{telemetry.wave2Status==="GATED_WAVE3"?"BLOQUEADA QA":"PENDIENTE"}</strong></div>
         </>}
         {c3b7Enabled && <>
@@ -693,7 +722,7 @@ export default function PhysicalRouteQa() {
           {c3b8Enabled && <button type="button"
             data-testid="ux15-c3b8-skip-wave1"
             onClick={advanceToWave2Qa}>
-            {locale==="es"?"Simular hasta Wave 2 (QA)":"Simulate until Wave 2 (QA)"}
+            {c3b9Enabled?(locale==="es"?"Simular élites Wave 2 (QA)":"Simulate Wave 2 elites (QA)"):(locale==="es"?"Simular hasta Wave 2 (QA)":"Simulate until Wave 2 (QA)")}
           </button>}
           {c3b6Enabled && <button type="button"
             data-testid="ux15-c3b6-convergence"

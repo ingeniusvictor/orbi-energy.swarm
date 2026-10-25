@@ -7,6 +7,7 @@ import type { RouteLocalPoint } from "./physicalRouteSpace";
 import type { RoutePhysicalCamera,RoutePhysicalViewport } from "./routePhysicalCamera";
 import type { RouteQaEncounter } from "./routePhysicalQaEncounter";
 import { EnemyType,type Enemy } from "./types";
+import { adoptWave2EliteQa,isRouteWave2EliteQaEnemy } from "./routeWave2EliteQa";
 
 /** Phase-one certification for ordinary CRAWLER/PARASITE only.
  * The production 5% elite roll and cosmetic intermission remain unlicensed:
@@ -28,13 +29,15 @@ export interface RouteWave2QaState {
  readonly heldForSafety:number;
  readonly nextSpawnAtMs:number;
  readonly uncertifiedEliteRollsSuppressed:number;
+ readonly qaEliteRolls:number;
+ readonly qaEliteSpawned:number;
 }
 export const createRouteWave2QaState=():RouteWave2QaState=>({
  descriptor:createCampaignRuntimeWaveDescriptor(2),
  waveKey:ROUTE_WAVE2_QA_KEY,status:"PENDING",
  spawned:0,spawnedParasites:0,heldForCap:0,heldForSafety:0,
  nextSpawnAtMs:ROUTE_WAVE2_START_MS+110*ROUTE_WAVE1_LEGACY_FRAME_MS,
- uncertifiedEliteRollsSuppressed:0,
+ uncertifiedEliteRollsSuppressed:0,qaEliteRolls:0,qaEliteSpawned:0,
 });
 export const routeWave2DurationMs=(wave:RouteWave2QaState):number=>{
  const policy=wave.descriptor.completionPolicy;
@@ -51,6 +54,7 @@ export const countWave2Live=(encounter:RouteQaEncounter)=>
 
 export const isRouteWave2OrdinaryEnemy=(e:Enemy)=>
  !e.isBoss&&!e.evolvedVariantId&&!e.enemyFormation&&
+ !isRouteWave2EliteQaEnemy(e)&&
  (e.type===EnemyType.CRAWLER||e.type===EnemyType.PARASITE);
 
 /** Real base PARASITE speed 1.8/frame, PARASITE_SPEED_SURGE ×1.4,
@@ -87,6 +91,7 @@ export function stepRouteWave2Qa(
  encounter:RouteQaEncounter,
  player:RouteLocalPoint,camera:RoutePhysicalCamera,
  viewport:RoutePhysicalViewport,nowMs:number,
+ enableEliteQa=false,
 ):{wave:RouteWave2QaState;encounter:RouteQaEncounter}{
  if(!Number.isFinite(nowMs)||nowMs<0)throw new RangeError("Invalid Wave2 clock");
  const d=previous.descriptor;
@@ -101,7 +106,8 @@ export function stepRouteWave2Qa(
    d.milestone!==null||d.completionPolicy.type!=="TIMEBOX"||
    encounter.boss!==null||encounter.architectQaBoss!==null||
    encounter.hazardZones.length>0||
-   encounter.enemies.some(e=>!isRouteWave2OrdinaryEnemy(e))){
+   encounter.enemies.some(e=>!isRouteWave2OrdinaryEnemy(e)&&
+     !(enableEliteQa&&isRouteWave2EliteQaEnemy(e)))){
    throw new Error("Uncertified Wave2 descriptor/enemy/hazard");
  }
  if(previous.status==="GATED_WAVE3")return {wave:previous,encounter};
@@ -127,11 +133,18 @@ export function stepRouteWave2Qa(
  const type=d.spawn.enemyComposition[ordinal%d.spawn.enemyComposition.length];
  if(type!==EnemyType.CRAWLER&&type!==EnemyType.PARASITE)
    throw new Error("Uncertified Wave2 enemy roll");
- const enemy=makeRouteWave2Enemy(type,ordinal,point,d);
+ const ordinary=makeRouteWave2Enemy(type,ordinal,point,d);
+ const projected=enableEliteQa
+   ?adoptWave2EliteQa(ordinary,ordinal,d.spawn.eliteChance)
+   :null;
+ const enemy=projected?.enemy??ordinary;
  wave={...wave,spawned:ordinal+1,
+   qaEliteRolls:wave.qaEliteRolls+(projected?1:0),
+   qaEliteSpawned:wave.qaEliteSpawned+(projected?.elite?1:0),
    spawnedParasites:wave.spawnedParasites+(type===EnemyType.PARASITE?1:0),
    // Each QA composition draw skips the uncertified elite probability.
-   uncertifiedEliteRollsSuppressed:wave.uncertifiedEliteRollsSuppressed+1,
+   uncertifiedEliteRollsSuppressed:wave.uncertifiedEliteRollsSuppressed+
+     (enableEliteQa?0:1),
    nextSpawnAtMs:Math.max(nowMs,wave.nextSpawnAtMs)+
      d.spawn.spawnIntervalFrames*ROUTE_WAVE1_LEGACY_FRAME_MS};
  return {wave,encounter:{...encounter,enemies:[...encounter.enemies,enemy]}};
@@ -142,9 +155,11 @@ export function stepRouteWave2Qa(
  * 512-unit floating-origin rebase cannot rotate the sine unexpectedly. */
 export function projectRouteParasiteMotion(
  enemy:Enemy,player:RouteLocalPoint,deltaMs:number,nowMs:number,
- worldOriginOffsetX:number,slowFactor:number,
+ worldOriginOffsetX:number,slowFactor:number,enableEliteQa=false,
 ):RouteLocalPoint{
- if(enemy.type!==EnemyType.PARASITE||!isRouteWave2OrdinaryEnemy(enemy)||
+ if(enemy.type!==EnemyType.PARASITE||
+   !(isRouteWave2OrdinaryEnemy(enemy)||
+     (enableEliteQa&&isRouteWave2EliteQaEnemy(enemy)))||
    [enemy.x,enemy.y,player.x,player.y,deltaMs,nowMs,worldOriginOffsetX,slowFactor]
      .some(x=>!Number.isFinite(x))||deltaMs<0||deltaMs>50||slowFactor<0)
    throw new RangeError("Invalid physical PARASITE movement");
