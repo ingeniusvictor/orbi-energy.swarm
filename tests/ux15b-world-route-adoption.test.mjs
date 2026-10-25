@@ -15,7 +15,13 @@ test("UX15-B QA is explicit lazy route, normal game preserves its existing root"
   assert.match(app,/get\("ux15-route-qa"\) === "1"/);
   assert.match(app,/if \(isWorldRouteQa\)/);
   assert.match(app,/<EnergySwarmGame \/>/);
-  assert.doesNotMatch(engine,/WorldRouteQaPreview|worldRouteCore|worldRouteClock|worldRoutePreviewRenderer/);
+  // UX15-C1 intentionally imports the route renderer into live gameplay, but
+  // only for explicit ASTERIA Campaign 1–2 opt-in: preview never mounts here.
+  assert.doesNotMatch(engine,/WorldRouteQaPreview/);
+  assert.match(engine,/get\("ux15-world"\) === "asteria"/);
+  assert.match(engine,/const asteriaCombatVisualActive = asteriaLiveQaRequested/);
+  assert.match(engine,/currentWaveRef\.current <= 2/);
+  assert.match(engine,/backgroundRenderer\.render\(/);
 });
 
 test("UX15-B viewport is a QA-only canvas: no gameplay claims, combat overlays or fake enemies",()=>{

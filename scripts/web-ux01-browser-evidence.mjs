@@ -333,6 +333,59 @@ async function runRouteQa(name,width,height,touch){
   }finally{await context.close();}
 }
 
+/** UX15-C1: genuine production-bundle combat, NOT the isolated route lab. */
+async function runAsteriaCombat(name,width,height,touch){
+  const context=await browser.newContext({viewport:{width,height},
+    isMobile:touch,hasTouch:touch,deviceScaleFactor:touch?2:1,
+    reducedMotion:"reduce",serviceWorkers:"block"});
+  const page=await context.newPage();
+  page.on("pageerror",e=>diagnostics.push(name+": "+String(e)));
+  page.on("console",msg=>{if(msg.type()==="error")diagnostics.push(name+": "+msg.text());});
+  try{
+    await page.clock.install({time:new Date("2026-10-25T10:00:00Z")});
+    await page.goto(url+"/?ux15-world=asteria",{waitUntil:"domcontentloaded",timeout:30000});
+    const mobileEnter=page.getByTestId("orbi-mobile-enter");
+    if(await mobileEnter.isVisible()){
+      await mobileEnter.click();
+      await page.getByTestId("orbi-mobile-menu-main-play").click();
+      await page.getByTestId("orbi-mobile-campaign").click();
+    } else {
+      const start=page.locator('[data-primary-start-cta="true"]');
+      await start.waitFor({state:"visible",timeout:30000});
+      await start.click();
+    }
+    const canvas=page.locator("#game-canvas");
+    check(await canvas.isVisible(),name+": real gameplay Canvas missing");
+    check((await page.getByTestId("ux15-route-qa").count())===0,
+      name+": isolated route laboratory impersonated a game");
+    await page.clock.runFor(6200);
+    await page.waitForFunction(()=>Number(document.querySelector(
+      '#game-canvas')?.dataset.ux15RouteDistance)>10,{timeout:5000});
+    const begin=Number(await canvas.getAttribute("data-ux15-route-distance"));
+    check(await canvas.getAttribute("data-ux15-world")==="ASTERIA_ORBITAL",
+      name+": opt-in live battle did not render ASTERIA");
+    check(await canvas.getAttribute("data-ux15-live-combat")==="true",
+      name+": only preview background rendered, no live combat contract");
+    check(begin>10,name+": route is not scrolling within real combat");
+    check(await page.locator(".orbi-game-root").isVisible(),
+      name+": real EnergySwarmGame root missing");
+    await shot(page,name+"-asteria-live-combat");
+
+    const estado=page.getByTestId("orbi-estado-button");
+    await estado.click();
+    await page.clock.runFor(500);
+    const paused=Number(await canvas.getAttribute("data-ux15-route-distance"));
+    await page.clock.runFor(800);
+    check(Number(await canvas.getAttribute("data-ux15-route-distance"))===paused,
+      name+": world continues while Estado opens and pauses combat");
+    check(await page.getByTestId("orbi-ux11d-energy-preview").isVisible(),
+      name+": authentic ENERGY status module missing in ASTERIA mode");
+
+    evidence.cases.push({name,pass:true,ux15c1:true,
+      liveCombat:true,scrollDistance:begin,pausedDistance:paused});
+  }finally{await context.close();}
+}
+
 await mkdir(output,{recursive:true});
 try {
   await startServer();
@@ -347,6 +400,8 @@ try {
     "No real GLB rendered in any Chromium viewport; fallback is not UX14-C acceptance");
   await runRouteQa("ux15b-route-desktop-1440x900",1440,900,false);
   await runRouteQa("ux15b-route-mobile-844x390",844,390,true);
+  await runAsteriaCombat("ux15c1-real-game-desktop-1440x900",1440,900,false);
+  await runAsteriaCombat("ux15c1-real-game-mobile-844x390",844,390,true);
 }catch(error){evidence.failures.push({message:String(error),stack:error?.stack||""});process.exitCode=1;}
 finally{
   evidence.errors=diagnostics;

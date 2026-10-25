@@ -28,6 +28,7 @@ const drawSection = (
   ctx: CanvasRenderingContext2D,
   x: number, right: number,
   kind: string, accent: string, variant: number, W: number,
+  showLabels: boolean,
 ) => {
   const width = right - x;
   if (right < -40 || x > W + 40 || width <= 0) return;
@@ -96,7 +97,7 @@ const drawSection = (
     ctx.fillRect(sx, 344, 27, 2);
   }
   ctx.globalAlpha = .9;
-  if (x > -30 && x < W + 30) {
+  if (showLabels && x > -30 && x < W + 30) {
     ctx.strokeStyle = accent; ctx.lineWidth = 2;
     ctx.beginPath();ctx.moveTo(x, 160);ctx.lineTo(x, 393);ctx.stroke();
     ctx.fillStyle = "#a9d3e4";ctx.font = "10px monospace";
@@ -112,6 +113,7 @@ const drawSection = (
 export function drawWorldRouteQaScene(
   ctx: CanvasRenderingContext2D, cursor: RouteCursor,
   player: RoutePreviewPlayer, logicalWidth = 800,
+  showQaMarker = true,
 ): void {
   const W = logicalWidth;
   if (!Number.isFinite(W) || W < 800 || W > 2400) throw new RangeError("Invalid panoramic QA width");
@@ -157,10 +159,12 @@ export function drawWorldRouteQaScene(
     const start = cam.anchorScreenX + visible.startRelative;
     const end = cam.anchorScreenX + visible.endRelative;
     drawSection(ctx, start, end,
-      visible.segment.kind, visible.segment.accent, visible.segment.decorationVariant, W);
+      visible.segment.kind, visible.segment.accent, visible.segment.decorationVariant, W, showQaMarker);
   }
 
-  // Energy is a gold instrumentation marker only: no simulated attacks/ORBIs.
+  // Engineering preview only: the real battle renders the authentic 3D ENERGY
+  // after this background. Never draw a duplicate gold surrogate in gameplay.
+  if (showQaMarker) {
   const x = cam.playerScreenX, y = cam.playerScreenY;
   ctx.save();
   ctx.shadowBlur = 24;ctx.shadowColor = "#fbbf24";
@@ -173,8 +177,10 @@ export function drawWorldRouteQaScene(
   ctx.strokeStyle = "rgba(240,236,180,.63)";
   ctx.beginPath();ctx.arc(x, y, 26, -.55, .55);ctx.stroke();
   ctx.restore();
+  }
 
   // QA coordinate guides never turn into active collision/attack systems.
+  if (showQaMarker) {
   ctx.strokeStyle = "rgba(62,221,255,.22)";ctx.lineWidth = 1;
   ctx.setLineDash([6,9]);
   ctx.beginPath();ctx.moveTo(0, 240);ctx.lineTo(W, 240);ctx.stroke();
@@ -182,5 +188,6 @@ export function drawWorldRouteQaScene(
   ctx.fillStyle = "rgba(3,16,36,.55)";ctx.fillRect(11,11,205,26);
   ctx.fillStyle = "#c7e9f4";ctx.font = "bold 13px monospace";
   ctx.fillText("ASTERIA · ROUTE QA", 21, 29);
+  }
   ctx.restore();
 }
