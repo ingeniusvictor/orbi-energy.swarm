@@ -397,6 +397,114 @@ async function runAsteriaCombat(name,width,height,touch){
   }finally{await context.close();}
 }
 
+/** UX15-C3A-2: isolated PHYSICAL player/camera, not the legacy gameplay.
+ * Ground acceptance in real simulation-owned player, camera and origin epoch.
+ */
+async function runPhysicalRouteQa(name,width,height,touch){
+  const context=await browser.newContext({viewport:{width,height},
+    isMobile:touch,hasTouch:touch,deviceScaleFactor:touch?2:1,
+    reducedMotion:"no-preference",serviceWorkers:"block"});
+  const page=await context.newPage();
+  page.on("pageerror",e=>diagnostics.push(name+": "+String(e)));
+  page.on("console",msg=>{if(msg.type()==="error")diagnostics.push(name+": "+msg.text());});
+  try {
+    await page.goto(url+"/?ux15-physical-qa=1",
+      {waitUntil:"domcontentloaded",timeout:30000});
+    const lab=page.getByTestId("ux15-physical-qa");
+    await lab.waitFor({state:"visible",timeout:15000});
+    check(await lab.getAttribute("data-qa-mode")==="PHYSICAL_ROUTE_ISOLATED",
+      name+": incorrect isolated physics QA mode");
+    check(await page.getByTestId("ux15-physical-canvas").isVisible(),
+      name+": real physical QA Canvas missing");
+    check((await page.locator(".orbi-game-root").count())===0,
+      name+": production campaign instantiated by QA entry");
+    check((await page.getByTestId("ux15-route-qa").count())===0,
+      name+": legacy 2.5D fake marker instantiated instead of physical QA");
+    await page.waitForFunction(()=>Number(document.querySelector(
+      '[data-testid="ux15-physical-qa"]')?.dataset.physicsTicks)>15,
+      null,{timeout:8000});
+    const firstX=Number(await lab.getAttribute("data-player-local-x"));
+    const firstCamera=Number(await lab.getAttribute("data-camera-local-x"));
+    await page.waitForTimeout(900);
+    await page.waitForFunction((x)=>Number(document.querySelector(
+      '[data-testid="ux15-physical-qa"]')?.dataset.playerLocalX)>x+17,
+      firstX,{timeout:4000});
+    const progressedX=Number(await lab.getAttribute("data-player-local-x"));
+    const progressedCamera=Number(await lab.getAttribute("data-camera-local-x"));
+    const distance=Number(await lab.getAttribute("data-route-distance"));
+    check(progressedX>firstX+17,name+": ENERGY did not auto-travel in physical local X");
+    check(progressedCamera>firstCamera+12,name+": physical camera failed to follow ENERGY");
+    check(distance>20,name+": route cursor did not travel");
+    const startY=Number(await lab.getAttribute("data-player-local-y"));
+
+    if(touch){
+      const bounds=await page.getByTestId("ux15-physical-canvas").boundingBox();
+      check(Boolean(bounds),name+": canvas lacks touch dimensions");
+      const cdp=await context.newCDPSession(page);
+      const startX=bounds.x+bounds.width*.60;
+      const touchY=bounds.y+bounds.height*.57;
+      await cdp.send("Input.dispatchTouchEvent",{type:"touchStart",
+        touchPoints:[{x:startX,y:touchY}]});
+      await cdp.send("Input.dispatchTouchEvent",{type:"touchMove",
+        touchPoints:[{x:startX+90,y:touchY-80}]});
+      await page.waitForTimeout(520);
+      await cdp.send("Input.dispatchTouchEvent",{type:"touchEnd",touchPoints:[]});
+      await cdp.detach();
+    }else{
+      await page.keyboard.down("w");
+      await page.waitForTimeout(520);
+      await page.keyboard.up("w");
+    }
+    await page.waitForFunction((y)=>Number(document.querySelector(
+      '[data-testid="ux15-physical-qa"]')?.dataset.playerLocalY)<y-15,
+      startY,{timeout:4000});
+    await shot(page,name+"-real-physical-traversal");
+
+    // Pausing freezes EVERY simulated owner, not merely the panorama.
+    await page.getByTestId("ux15-physical-pause").click();
+    await page.waitForTimeout(430);
+    const beforePause={
+      x:await lab.getAttribute("data-player-local-x"),
+      cam:await lab.getAttribute("data-camera-local-x"),
+      route:await lab.getAttribute("data-route-distance"),
+      ticks:await lab.getAttribute("data-physics-ticks"),
+    };
+    await page.waitForTimeout(470);
+    check(await lab.getAttribute("data-player-local-x")===beforePause.x,
+      name+": physical ENERGY continues while paused");
+    check(await lab.getAttribute("data-camera-local-x")===beforePause.cam,
+      name+": physical camera continues while paused");
+    check(await lab.getAttribute("data-route-distance")===beforePause.route,
+      name+": route distance continues while paused");
+    check(await lab.getAttribute("data-physics-ticks")===beforePause.ticks,
+      name+": physical ticks continue while paused");
+
+    await page.getByTestId("ux15-physical-pause").click();
+    if(!touch){
+      // Force a real rebase, and verify the logical route still advances while
+      // the PHYSICAL local player is recentered.
+      await page.keyboard.down("d");
+      await page.waitForFunction(()=>Number(document.querySelector(
+        '[data-testid="ux15-physical-qa"]')?.dataset.originEpoch)>=1,
+        null,{timeout:9000});
+      await page.keyboard.up("d");
+      check(Number(await lab.getAttribute("data-rebase-count"))>=1,
+        name+": physical floating origin did not rebase");
+    }
+    await page.getByTestId("ux15-physical-reset").click();
+    check(Number(await lab.getAttribute("data-route-distance"))===0,
+      name+": QA reset did not clear real route cursor");
+    check(Number(await lab.getAttribute("data-origin-epoch"))===0,
+      name+": QA reset did not clear origin epoch");
+    check(Number(await lab.getAttribute("data-player-local-x"))===800,
+      name+": QA reset did not restore physical ENERGY position");
+    evidence.cases.push({name,pass:true,ux15c3a2:true,
+      truePhysicalTravel:true,movedX:progressedX-firstX,
+      movedCamera:progressedCamera-firstCamera,routeDistance:distance,
+      input:touch?"native-touch":"keyboard"});
+  }finally{await context.close();}
+}
+
 await mkdir(output,{recursive:true});
 try {
   await startServer();
@@ -413,6 +521,8 @@ try {
   await runRouteQa("ux15b-route-mobile-844x390",844,390,true);
   await runAsteriaCombat("ux15c1-real-game-desktop-1440x900",1440,900,false);
   await runAsteriaCombat("ux15c1-real-game-mobile-844x390",844,390,true);
+  await runPhysicalRouteQa("ux15c3a2-physical-desktop-1440x900",1440,900,false);
+  await runPhysicalRouteQa("ux15c3a2-physical-mobile-844x390",844,390,true);
 }catch(error){evidence.failures.push({message:String(error),stack:error?.stack||""});process.exitCode=1;}
 finally{
   evidence.errors=diagnostics;
