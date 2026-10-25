@@ -54,3 +54,25 @@
   .ux15-route-qa__actions button,.ux15-route-qa__actions a{min-height:30px;padding:5px 8px}
 }
 @media(prefers-reduced-motion:reduce){.ux15-route-qa *{animation:none!important;transition:none!important}}
+
+/* UX15-C3A-2: six bounded physical QA readouts. The default game HUD is
+   intentionally untouched; this style only applies to the lazy QA route. */
+.ux15-physical-qa__telemetry{
+  grid-template-columns:repeat(6,minmax(0,1fr));
+}
+.ux15-physical-qa__telemetry strong{
+  font-variant-numeric:tabular-nums;
+}
+@media(max-width:760px){
+  .ux15-physical-qa__telemetry{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+  }
+}
+@media(orientation:landscape) and (max-height:440px){
+  .ux15-physical-qa__telemetry{
+    grid-template-columns:repeat(6,minmax(0,1fr));
+    gap:4px;
+  }
+  .ux15-physical-qa__telemetry>div{padding:3px 5px}
+  .ux15-physical-qa__telemetry strong{font-size:9px}
+}
