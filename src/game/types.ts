@@ -250,6 +250,8 @@ export interface Projectile {
   // Passive, mutable in-memory metadata for already-resolved legacy player hits.
   collisionTraceObservedLegacyHitFrame?: number;
   collisionTraceObservedLegacyHitKind?: "LEGACY_SHIELD_NODE" | "LEGACY_ENEMY";
+  /** UX14-B: one-frame beam impact, explicitly bound to one live target ID. */
+  convergenceTargetId?: string;
   affinity?: OrbiAffinity;
   energyId?: OrbiEnergyId;
   attackSignature?: OrbiAttackSignature;
