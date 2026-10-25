@@ -343,18 +343,20 @@ async function runAsteriaCombat(name,width,height,touch){
   page.on("console",msg=>{if(msg.type()==="error")diagnostics.push(name+": "+msg.text());});
   try{
     await page.clock.install({time:new Date("2026-10-25T10:00:00Z")});
-    await page.goto(url+"/?ux15-world=asteria",{waitUntil:"domcontentloaded",timeout:30000});
+    await page.goto(url+"/",{waitUntil:"domcontentloaded",timeout:30000});
     const mobileEnter=page.getByTestId("orbi-mobile-enter");
     if(await mobileEnter.isVisible()){
       await mobileEnter.click();
       await page.getByTestId("orbi-mobile-menu-main-play").click();
-      await page.getByTestId("orbi-mobile-campaign").click();
+      await page.getByTestId("orbi-mobile-world-route").click();
     } else {
-      const start=page.locator('[data-primary-start-cta="true"]');
-      await start.waitFor({state:"visible",timeout:30000});
-      await start.click();
+      const route=page.locator('[data-world-route-start-cta="true"]');
+      await route.waitFor({state:"visible",timeout:30000});
+      await route.click();
     }
     const canvas=page.locator("#game-canvas");
+    check(await page.locator('[data-selected-game-mode="WORLD_ROUTE"]').count()===1,
+      name+": World Traversal selection did not become the active run mode");
     check(await canvas.isVisible(),name+": real gameplay Canvas missing");
     check((await page.getByTestId("ux15-route-qa").count())===0,
       name+": isolated route laboratory impersonated a game");
