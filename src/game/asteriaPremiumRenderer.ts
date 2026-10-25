@@ -76,28 +76,94 @@ export function getAsteriaPremiumAssetStatus(
 }
 
 /**
- * Draws a full-height background at uniform scale, preserving equal world
- * units in X and Y. Wide panoramas crop horizontally when W < 1440 and
- * use uniform cover scaling when W > 1440; never stretch a 3:1 image.
+ * UX15 one-way premium parallax contract. Earlier ping-pong panning reversed
+ * the background after the last cropped pixel, even though ENERGY continued
+ * moving right. A continuous, overlapped strip never reverses.
  */
-function paintPanorama(
-  ctx: CanvasRenderingContext2D,
-  image: HTMLImageElement,
+export const ASTERIA_PREMIUM_PARALLAX = 0.12;
+export const ASTERIA_PREMIUM_BLEND_SLICES = 16;
+export interface AsteriaPanoramaStrip {
+  readonly width: number;
+  readonly height: number;
+  readonly overlap: number;
+  readonly stride: number;
+  readonly phase: number;
+  readonly tileOrdinal: number;
+  readonly initialX: number;
+  readonly tileCount: number;
+}
+
+export function projectAsteriaPanoramaStrip(
+  naturalWidth: number,
+  naturalHeight: number,
   logicalWidth: number,
   travel: number,
-): void {
-  const logicalHeight = 480;
-  const naturalWidth = image.naturalWidth;
-  const naturalHeight = image.naturalHeight;
-  const scale = Math.max(logicalWidth / naturalWidth, logicalHeight / naturalHeight);
-  const width = naturalWidth * scale;
-  const height = naturalHeight * scale;
-  const maxPan = Math.max(0, width - logicalWidth);
-  const path = maxPan > 0 ? (travel * 0.12) % (2 * maxPan) : 0;
-  const x = maxPan > 0 ? -(path <= maxPan ? path : 2 * maxPan - path) : 0;
-  // Keep central original route visible by centering any vertical crop.
-  const y = -(height - logicalHeight) * 0.5;
-  ctx.drawImage(image, x, y, width, height);
+): AsteriaPanoramaStrip {
+  if (![naturalWidth,naturalHeight,logicalWidth,travel].every(Number.isFinite) ||
+      naturalWidth<=0||naturalHeight<=0||logicalWidth<800||
+      logicalWidth>2400||travel<0)
+    throw new RangeError("Invalid ASTERIA panorama strip");
+  const scale=Math.max(logicalWidth/naturalWidth,480/naturalHeight);
+  const width=naturalWidth*scale,height=naturalHeight*scale;
+  // A short shared region hides the non-identical WebP left/right edges.
+  const overlap=Math.min(96,Math.max(48,width*.07));
+  const stride=width-overlap;
+  const distance=travel*ASTERIA_PREMIUM_PARALLAX;
+  if(!Number.isFinite(distance)||stride<=0)
+    throw new RangeError("Unrepresentable ASTERIA panorama distance");
+  const tileOrdinal=Math.floor(distance/stride);
+  const phase=distance%stride;
+  const tileCount=Math.ceil((logicalWidth+phase)/stride)+1;
+  return {width,height,overlap,stride,phase,tileOrdinal,
+    initialX:phase===0?0:-phase,tileCount};
+}
+
+/**
+ * Every tile enters from the RIGHT and moves LEFT. The image edges need not
+ * be intrinsically tileable: the 96px overlap is alpha-blended using bounded
+ * vertical strips. Reusing one decoded WebP preserves the existing asset
+ * budget and requires no second canvas/WebGL context or texture allocation.
+ */
+export function paintAsteriaPanorama(
+  ctx:CanvasRenderingContext2D,
+  image:HTMLImageElement,
+  logicalWidth:number,
+  travel:number,
+):void {
+  const geometry=projectAsteriaPanoramaStrip(
+    image.naturalWidth,image.naturalHeight,logicalWidth,travel);
+  const {width,height,overlap,stride,initialX,tileCount}=geometry;
+  const y=-(height-480)*.5;
+  const nativeOverlap=overlap*image.naturalWidth/width;
+  ctx.save();
+  const parentAlpha=ctx.globalAlpha;
+  // The tile on the LEFT must also participate at the wrap seam: its
+  // rightmost 96px remain behind the entering tile after phase rolls to zero.
+  // Otherwise the far-left edge would pop from the previous right edge to
+  // the new left edge for one frame.
+  for(let index=-1;index<tileCount;index++){
+    const x=initialX+index*stride;
+    if(x>=logicalWidth||x+width<=0)continue;
+    if(index===-1){
+      ctx.drawImage(image,x,y,width,height);
+      continue;
+    }
+    // At each repeat boundary, fade the entering image in over the
+    // previous tile's ending pixels. The internal panorama NEVER pans right.
+    const sliceWidth=overlap/ASTERIA_PREMIUM_BLEND_SLICES;
+    for(let slice=0;slice<ASTERIA_PREMIUM_BLEND_SLICES;slice++){
+      const start=slice*sliceWidth;
+      const sourceX=start*image.naturalWidth/width;
+      const sourceW=sliceWidth*image.naturalWidth/width;
+      ctx.globalAlpha=parentAlpha*(slice+.5)/ASTERIA_PREMIUM_BLEND_SLICES;
+      ctx.drawImage(image,sourceX,0,sourceW,image.naturalHeight,
+        x+start,y,sliceWidth,height);
+    }
+    ctx.globalAlpha=parentAlpha;
+    ctx.drawImage(image,nativeOverlap,0,image.naturalWidth-nativeOverlap,
+      image.naturalHeight,x+overlap,y,width-overlap,height);
+  }
+  ctx.restore();
 }
 
 /**
@@ -129,10 +195,10 @@ export function drawAsteriaPremiumWorld(
   // flash black or draw a half-decoded texture during a sector transition.
   ctx.save();
   const distance = projectRouteDistance(cursor);
-  paintPanorama(ctx, currentAsset.image, logicalWidth, distance);
+  paintAsteriaPanorama(ctx, currentAsset.image, logicalWidth, distance);
   if (fade > 0 && nextScene.file !== scene.file && nextAsset?.status === "ready") {
     ctx.globalAlpha = fade;
-    paintPanorama(ctx, nextAsset.image, logicalWidth, distance);
+    paintAsteriaPanorama(ctx, nextAsset.image, logicalWidth, distance);
     ctx.globalAlpha = 1;
   }
 
