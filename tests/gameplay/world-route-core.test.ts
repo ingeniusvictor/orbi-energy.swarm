@@ -46,8 +46,8 @@ test("UX15-B: segment window geometry connects exactly and unloads previous segm
     const visible=getRouteWindow(cur);
     assert.ok(visible.length>=3&&visible.length<=4);
     for(let i=0;i<visible.length-1;i++)
-      assert.equal(visible[i].endRelative,visible[i+1].startRelative);
-    assert.equal(visible.find(s=>s.segment.ordinal===ordinal)?.startRelative,-cur.offset);
+      assert.ok(Math.abs(visible[i].endRelative-visible[i+1].startRelative)<1e-8);
+    assert.ok(Math.abs((visible.find(s=>s.segment.ordinal===ordinal)?.startRelative??NaN)+cur.offset)<1e-8);
     assert.ok(visible.every(x=>x.segment.ordinal>=ordinal-1&&x.segment.ordinal<=ordinal+2));
   }
 });
@@ -106,8 +106,8 @@ test("UX15-B: preview camera preserves XY freedom with same units in both axes, 
   for(const width of [800,1100,1600]){
     for(const zoom of [.7,1,1.08]){
       const cam=projectRoutePreviewCamera({manualX:40,y:275},{width,height:480,zoom});
-      assert.equal(cam.playerScreenX-cam.anchorScreenX,40*zoom);
-      assert.equal(cam.playerScreenY-240,35*zoom);
+      assert.ok(Math.abs(cam.playerScreenX-cam.anchorScreenX-40*zoom)<1e-8);
+      assert.ok(Math.abs(cam.playerScreenY-240-35*zoom)<1e-8);
       assert.ok(cam.visibleWorldRight>0&&cam.visibleWorldLeft<0);
     }
   }
