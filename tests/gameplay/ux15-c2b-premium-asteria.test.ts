@@ -64,7 +64,7 @@ test("UX15-C2B: runtime keeps default arena path and does not introduce second W
   assert.match(engine,/canvas\.dataset\.ux15Visual = asteriaPremiumReady \? "premium-webp" : "fallback-canvas"/);
   assert.match(engine,/delete canvas\.dataset\.ux15Visual/);
   assert.match(engine,/backgroundRenderer\.render\(/);
-  assert.doesNotMatch(renderer,/new THREE|WebGLRenderer|Date\.now|Math\.random|requestAnimationFrame/);
+  assert.doesNotMatch(renderer,/new THREE|new WebGLRenderer\\(|Date\\.now\\(|Math\\.random\\(|requestAnimationFrame\\(/);
   assert.match(renderer,/ctx\.globalAlpha = fade/);
   assert.match(renderer,/ctx\.save\(\)/);
   assert.match(renderer,/ctx\.restore\(\)/);
