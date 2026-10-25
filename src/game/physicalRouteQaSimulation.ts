@@ -12,6 +12,15 @@ import {
   type RoutePhysicalViewport,
 } from "./routePhysicalCamera";
 import { createRouteCursor } from "./worldRouteCore";
+import {
+  advanceRouteConvergenceQa,
+  beginRouteConvergenceQa,
+  createRouteConvergenceQaState,
+  registerRouteConvergenceHits,
+  routeConvergenceWaveKey,
+  type RouteConvergenceQaState,
+} from "./routeConvergenceQa";
+import { isConvergenceChanneling } from "./orbiConvergence";
 import { rebaseRouteCoordinateOwners } from "./routeCoordinateOwners";
 import {
   beginRouteOverdriveQa,createRouteOverdriveQaState,
@@ -63,6 +72,7 @@ export interface PhysicalRouteQaState {
   readonly weapons: RouteOrbiWeaponsQaState | null;
   readonly impactFxEnabled:boolean;
   readonly overdriveQa:RouteOverdriveQaState|null;
+  readonly convergenceQa:RouteConvergenceQaState|null;
   readonly rebases: number;
   readonly physicsTicks: number;
 }
@@ -80,7 +90,10 @@ export function createPhysicalRouteQaState(
   enableOrbiWeaponsQa = false,
   enableImpactFxQa = false,
   enableOverdriveQa = false,
+  enableConvergenceQa = false,
 ): PhysicalRouteQaState {
+  if(enableConvergenceQa&&!enableOverdriveQa)
+    throw new Error("Physical Convergence QA requires C3B-5 Overdrive bridge");
   if(enableOverdriveQa&&!enableImpactFxQa)
     throw new Error("Physical Overdrive QA requires C3B-4 impact effects");
   if(enableImpactFxQa&&!enableOrbiWeaponsQa)
@@ -126,6 +139,7 @@ export function createPhysicalRouteQaState(
     weapons:enableOrbiWeaponsQa?createRouteOrbiWeaponsQaState():null,
     impactFxEnabled:enableImpactFxQa,
     overdriveQa:enableOverdriveQa?createRouteOverdriveQaState():null,
+    convergenceQa:enableConvergenceQa?createRouteConvergenceQaState():null,
     rebases: 0,
     physicsTicks: 0,
   };
@@ -140,6 +154,7 @@ export function stepPhysicalRouteQa(
   dashRequested=false,
   overdriveRequested=false,
   chargeQaRequested=false,
+  convergenceRequested=false,
 ): PhysicalRouteQaState {
   if (!Number.isFinite(deltaMs) || deltaMs < 0 ||
       !Number.isFinite(manualInput.x) || !Number.isFinite(manualInput.y)) {
@@ -155,25 +170,40 @@ export function stepPhysicalRouteQa(
     gates,
   );
   const advancement = advancePhysicalRouteFrame(state.frame,nextCursor);
-
+  let convergenceQa=state.convergenceQa;
+  let activatedOverdrive=state.overdriveQa;
+  if(convergenceQa&&activatedOverdrive&&convergenceRequested){
+    const admitted=beginRouteConvergenceQa(
+      convergenceQa,activatedOverdrive,state.encounter,state.player,
+      state.frame.cursor.simulatedMs,
+      routeConvergenceWaveKey(state.frame.cursor.segmentOrdinal),
+      true,state.bridge?.shield??0,
+    );
+    convergenceQa=admitted.convergenceQa;
+    activatedOverdrive=admitted.overdriveQa;
+  }
+  const channeling=convergenceQa!==null &&
+    isConvergenceChanneling(convergenceQa.convergence);
   // Manual input is a real addition to physical position; the scenery does
   // NOT impersonate it. Diagonal normalization prevents speed exploits.
   const length = Math.hypot(manualInput.x,manualInput.y);
   const norm = length > 1 ? 1 / length : 1;
-  const manualDx = manualInput.x * norm * ROUTE_PHYSICAL_QA_MANUAL_SPEED * dt / 1000;
-  const manualDy = manualInput.y * norm * ROUTE_PHYSICAL_QA_MANUAL_SPEED * dt / 1000;
+  // Production Convergence channels at 70% normal manual speed.
+  const movementFactor=channeling?.70:1;
+  const manualDx = manualInput.x * norm * ROUTE_PHYSICAL_QA_MANUAL_SPEED * movementFactor * dt / 1000;
+  const manualDy = manualInput.y * norm * ROUTE_PHYSICAL_QA_MANUAL_SPEED * movementFactor * dt / 1000;
   let bridge=state.bridge;
   let dashDisplacement:{x:number;y:number}|null=null;
   if(bridge){
     const direction=resolveRouteDashDirection(manualInput,bridge.lastDashDirection);
-    const stateDash=dashRequested
+    const stateDash=dashRequested&&!channeling
       ? activatePropulsionDash(bridge.dash,state.frame.cursor.simulatedMs,direction).state
       : bridge.dash;
     const dashStep=stepRoutePropulsionDash(
       stateDash,nextCursor.simulatedMs,dt,state.player,
       {height:960,radius:ROUTE_PHYSICAL_QA_VERTICAL_MARGIN},
     );
-    if(dashStep.activeDuringFrame){
+    if(dashStep.activeDuringFrame&&!channeling){
       dashDisplacement={
         x:dashStep.position.x-state.player.x,
         y:dashStep.position.y-state.player.y,
@@ -195,17 +225,32 @@ export function stepPhysicalRouteQa(
   let encounter = stepRouteQaEncounter(state.encounter, player);
   let dynamic=state.dynamic;
   let weapons=state.weapons;
-  let overdriveQa=state.overdriveQa
-    ?beginRouteOverdriveQa(state.overdriveQa,
-      frame.cursor.simulatedMs,overdriveRequested,chargeQaRequested)
+  let overdriveQa=activatedOverdrive
+    ?beginRouteOverdriveQa(activatedOverdrive,
+      frame.cursor.simulatedMs,overdriveRequested&&!channeling,
+      chargeQaRequested)
     :null;
+  if(convergenceQa&&overdriveQa){
+    const resolved=advanceRouteConvergenceQa(
+      convergenceQa,encounter,player,frame.cursor.simulatedMs,
+      routeConvergenceWaveKey(frame.cursor.segmentOrdinal),
+      bridge?.shield??0,
+    );
+    convergenceQa=resolved.convergenceQa;
+    encounter=resolved.encounter;
+  }
   if(dynamic){
     const next=stepRouteDynamicQaEncounter(
       encounter,dynamic,player,camera,viewport,dt,frame.cursor.simulatedMs,
-      bridge!==null,weapons!==null,state.impactFxEnabled,
+      bridge!==null,weapons!==null,state.impactFxEnabled,convergenceQa!==null,
     );
     encounter=next.encounter;
     dynamic=next.dynamic;
+    if(convergenceQa){
+      convergenceQa=registerRouteConvergenceHits(
+        convergenceQa,next.convergenceHits,next.convergenceKills,
+      );
+    }
     if(overdriveQa){
       // Only confirmed kills, not speculative enemy proximity or drops,
       // can fill real resonance via the canonical resonance authority.
@@ -240,12 +285,24 @@ export function stepPhysicalRouteQa(
     // C3A-3: one atomic rebase for all controlled encounter owners.
     // Clone first: previous simulation snapshots remain immutable to tests/UI.
     encounter = structuredClone(encounter);
+    // The physical beam trail is an EXTRA X-coordinate owner. Register a
+    // clone as part of the very SAME atomic transaction rather than shifting
+    // visual effects later with a second independent coordinate calculation.
+    const beamTrail=convergenceQa?.convergence.trail
+      ?{...convergenceQa.convergence.trail}:null;
     const transaction = rebaseRouteCoordinateOwners({
       ...encounter, frame, player, camera,
+      extraWorldAnchors:beamTrail
+        ?[...encounter.extraWorldAnchors,beamTrail]
+        :encounter.extraWorldAnchors,
     },deltaX,{
       phase:"TICK_BOUNDARY",unresolvedBossPhase:false,unregisteredWorldOwners:false,
     });
     frame = transaction.frame;
+    if(beamTrail&&convergenceQa){
+      convergenceQa={...convergenceQa,
+        convergence:{...convergenceQa.convergence,trail:beamTrail}};
+    }
     rebases++;
   }
   return {
@@ -258,6 +315,7 @@ export function stepPhysicalRouteQa(
     weapons,
     impactFxEnabled:state.impactFxEnabled,
     overdriveQa,
+    convergenceQa,
     rebases,
     physicsTicks: state.physicsTicks + 1,
   };
