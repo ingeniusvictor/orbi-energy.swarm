@@ -9,7 +9,7 @@ const port = 4192;
 const url = "http://127.0.0.1:" + port;
 const output = process.env.ORBI_WEB_UX01_OUTPUT || "artifacts/web-ux01";
 const evidence = { type: "REAL_WEB_IMMERSIVE_CHROMIUM", cases: [],
-  screenshots: [], failures: [], errors: [], physicalAndroidDevice: false };
+  screenshots: [], glbStatuses: [], failures: [], errors: [], physicalAndroidDevice: false };
 const diagnostics = [];
 const check = (value, description) => { if (!value) throw Error(description); };
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -121,6 +121,13 @@ async function run(name,width,height,coarse,immersive,webImmersive) {
         return el && ["READY","FALLBACK"].includes(el.getAttribute("data-3d-status"));
       },{timeout:10000});
       const status=await energyPreview.getAttribute("data-3d-status");
+      const hasHeroCanvas=(await energyPreview.locator(".orbi-ux11d-webgl-canvas").count())>0;
+      const glbFallbackReason=await energyPreview.getAttribute("data-fallback-reason");
+      evidence.glbStatuses.push({name,status,hasHeroCanvas,glbFallbackReason});
+      // A browser with WebGL must render a real GLB rather than silently
+      // accepting the flat fallback.
+      check(status==="READY" || (!hasHeroCanvas && glbFallbackReason==="webgl-unavailable"),
+        name+": canonical GLB failed despite WebGL canvas: "+glbFallbackReason);
       if(status==="READY"){
         check(await energyPreview.getAttribute("data-model-source")==="canonical-glb",
           name+": authentic gameplay GLB not mounted in Estado");
@@ -268,12 +275,14 @@ await mkdir(output,{recursive:true});
 try {
   await startServer();
   browser=await chromium.launch({headless:true,args:["--disable-dev-shm-usage",
-    "--use-gl=angle","--use-angle=swiftshader"]});
+    "--use-gl=angle","--use-angle=swiftshader","--enable-unsafe-swiftshader"]});
   await run("desktop-1440x900",1440,900,false,true,true);
   await run("desktop-1920x1080",1920,1080,false,true,true);
   await run("laptop-1366x768",1366,768,false,true,true);
   await run("mobile-touch-844x390",844,390,true,true,false);
   await run("portrait-touch-390x844",390,844,true,false,false);
+  check(evidence.glbStatuses.some(entry=>entry.status==="READY"),
+    "No real GLB rendered in any Chromium viewport; fallback is not UX14-C acceptance");
 }catch(error){evidence.failures.push({message:String(error),stack:error?.stack||""});process.exitCode=1;}
 finally{
   evidence.errors=diagnostics;
