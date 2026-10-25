@@ -130,6 +130,7 @@ export function stepRouteDynamicQaEncounter(
   viewport:RoutePhysicalViewport,
   deltaMs:number,
   simulatedMs:number,
+  combatBridgeEnabled=false,
 ):{encounter:RouteQaEncounter; dynamic:RouteDynamicQaState} {
   if (![deltaMs,simulatedMs,player.x,player.y].every(Number.isFinite) ||
       deltaMs<0 || deltaMs>50+1e-7 || simulatedMs<0)
@@ -166,7 +167,10 @@ export function stepRouteDynamicQaEncounter(
     const dx=player.x-enemy.x,dy=player.y-enemy.y;
     const length=Math.hypot(dx,dy);
     if(length>0.01){
-      const advance=Math.min(enemy.speed*dt,Math.max(0,length-55));
+      // C3B-1 visual QA held enemies at 55 units, never touching ENERGY.
+      // Opt-in C3B-2 allows actual physical contact with the QA shield.
+      const stopDistance=combatBridgeEnabled?24:55;
+      const advance=Math.min(enemy.speed*dt,Math.max(0,length-stopDistance));
       enemy.x+=advance*dx/length;enemy.y+=advance*dy/length;
     }
   }

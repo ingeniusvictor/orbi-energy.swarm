@@ -82,6 +82,57 @@ export const activatePropulsionDash = (
   };
 };
 
+/** Shared legacy/physical active-frame calculation; never uses wall time. */
+const dashActiveFrameMs = (
+  state: PropulsionDashState, frameEndMs: number, frameDeltaMs: number,
+): number => {
+  const start = state.activatedAtMs;
+  return start === null ? 0 : Math.max(
+    0,
+    Math.min(frameEndMs, state.activeUntilMs) -
+      Math.max(frameEndMs - frameDeltaMs, start),
+  );
+};
+
+/**
+ * UX15-C3B-2: exactly the existing Dash speed, duration and cooldown
+ * but without the old WORLD_WIDTH=1600 X clamp. Retain certified vertical
+ * boundaries and radius. The caller is responsible for normal gameplay
+ * gates and adding physical route autoscroll separately.
+ *
+ * Legacy stepPropulsionDash remains unchanged for all existing modes.
+ */
+export const stepRoutePropulsionDash = (
+  state: PropulsionDashState,
+  frameEndMs: number,
+  frameDeltaMs: number,
+  position: DashVector,
+  verticalBounds: {height:number; radius:number},
+): DashStep => {
+  assertTime(frameEndMs);
+  if (!Number.isFinite(frameDeltaMs) || frameDeltaMs<0 ||
+      !Number.isFinite(position.x) || !Number.isFinite(position.y) ||
+      !Number.isFinite(verticalBounds.height) ||
+      !Number.isFinite(verticalBounds.radius) ||
+      verticalBounds.radius<0 ||
+      verticalBounds.height<verticalBounds.radius*2) {
+    throw new Error("Invalid route Dash step geometry or delta.");
+  }
+  const activeMs=dashActiveFrameMs(state,frameEndMs,frameDeltaMs);
+  const nextX=position.x+state.direction.x*activeMs*DASH_SPEED_UNITS_PER_MS;
+  const nextY=Math.max(verticalBounds.radius,Math.min(
+    verticalBounds.height-verticalBounds.radius,
+    position.y+state.direction.y*activeMs*DASH_SPEED_UNITS_PER_MS,
+  ));
+  if (!Number.isFinite(nextX)||!Number.isFinite(nextY))
+    throw new RangeError("Invalid route Dash displacement");
+  return {
+    position:{x:nextX,y:nextY},
+    moved:Math.hypot(nextX-position.x,nextY-position.y),
+    activeDuringFrame:activeMs>0,
+  };
+};
+
 /** Sweep displacement only through the active portion of this physics frame;
  * never teleport across pauses, frame skips or world boundaries. */
 export const stepPropulsionDash = (
@@ -99,12 +150,7 @@ export const stepPropulsionDash = (
       bounds.width < bounds.radius * 2 || bounds.height < bounds.radius * 2) {
     throw new Error("Invalid dash step geometry or delta.");
   }
-  const start = state.activatedAtMs;
-  const activeMs = start === null ? 0 : Math.max(
-    0,
-    Math.min(frameEndMs, state.activeUntilMs) -
-      Math.max(frameEndMs - frameDeltaMs, start),
-  );
+  const activeMs = dashActiveFrameMs(state,frameEndMs,frameDeltaMs);
   const nextX = Math.max(bounds.radius, Math.min(
     bounds.width - bounds.radius,
     position.x + state.direction.x * activeMs * DASH_SPEED_UNITS_PER_MS,

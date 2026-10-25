@@ -606,6 +606,94 @@ async function runDynamicRouteQa(name,width,height,touch){
   }finally{await context.close();}
 }
 
+/** C3B2 physical Dash and shared live spatial-index QA, with native mobile touch. */
+async function runRouteCombatBridgeQa(name,width,height,touch){
+  const context=await browser.newContext({viewport:{width,height},
+    isMobile:touch,hasTouch:touch,deviceScaleFactor:touch?2:1,
+    reducedMotion:"no-preference",serviceWorkers:"block"});
+  const page=await context.newPage();
+  page.on("pageerror",e=>diagnostics.push(name+": "+String(e)));
+  page.on("console",msg=>{if(msg.type()==="error")diagnostics.push(name+": "+msg.text());});
+  try{
+    await page.goto(url+"/?ux15-physical-qa=1&ux15-c3b=1&ux15-c3b2=1",
+      {waitUntil:"domcontentloaded",timeout:30000});
+    const lab=page.getByTestId("ux15-physical-qa");
+    await lab.waitFor({state:"visible",timeout:15000});
+    check(await lab.getAttribute("data-qa-mode")==="PHYSICAL_ROUTE_C3B2_QA",
+      name+": C3B2 must activate only with both QA flags");
+    check(Number(await lab.getAttribute("data-c3b2-shield"))===100,
+      name+": QA shield initial state incorrect");
+    check(Number(await lab.getAttribute("data-c3b2-dash-activated-at"))===-1,
+      name+": Dash should not activate automatically");
+    check(await page.locator(".orbi-game-root").count()===0,
+      name+": public gameplay engine leaked into bridge QA");
+    await page.waitForFunction(()=>Number(document.querySelector(
+      '[data-testid="ux15-physical-qa"]')?.dataset.c3b2SpatialEnemies)>=1,
+      null,{timeout:touch?22000:12000});
+    const startedAt=Number(await lab.getAttribute("data-c3b2-dash-activated-at"));
+    check(startedAt===-1,name+": Dash activated before explicit input");
+    if(touch){
+      await page.getByTestId("ux15-c3b2-dash").click();
+    }else{
+      await page.keyboard.press("Space");
+    }
+    await page.waitForFunction(()=>Number(document.querySelector(
+      '[data-testid="ux15-physical-qa"]')?.dataset.c3b2DashActivatedAt)>=0,
+      null,{timeout:touch?9000:5000});
+    check(Number(await lab.getAttribute("data-c3b2-dash-cooldown-ms"))>1000,
+      name+": canonical Dash cooldown missing");
+    check(Number(await lab.getAttribute("data-c3b2-spatial-enemies"))<=12,
+      name+": spatial-index enemy cap bypassed");
+    // Real input motion after Dash still reaches ENERGY in physical coordinates.
+    const initialY=Number(await lab.getAttribute("data-player-local-y"));
+    if(touch){
+      // The Dash button sits below the stage on short mobile screens.
+      // Bring the canvas back into view before issuing native CDP touch.
+      await page.getByTestId("ux15-physical-canvas").scrollIntoViewIfNeeded();
+      const bounds=await page.getByTestId("ux15-physical-canvas").boundingBox();
+      check(Boolean(bounds),name+": missing touch canvas");
+      const cdp=await context.newCDPSession(page);
+      const x=bounds.x+bounds.width*.5,y=bounds.y+bounds.height*.7;
+      await cdp.send("Input.dispatchTouchEvent",{type:"touchStart",touchPoints:[{x,y}]});
+      await cdp.send("Input.dispatchTouchEvent",{type:"touchMove",touchPoints:[{x:x+90,y:y-120}]});
+      await page.waitForTimeout(650);
+      await cdp.send("Input.dispatchTouchEvent",{type:"touchEnd",touchPoints:[]});
+      await cdp.detach();
+    }else{
+      await page.keyboard.down("w");
+      await page.waitForTimeout(650);
+      await page.keyboard.up("w");
+    }
+    await page.waitForFunction(y=>Number(document.querySelector(
+      '[data-testid="ux15-physical-qa"]')?.dataset.playerLocalY)<y-12,
+      initialY,{timeout:6000});
+    await shot(page,name+"-dash-spatial-qa");
+    await page.getByTestId("ux15-physical-pause").click();
+    await page.waitForTimeout(450);
+    const paused={
+      ticks:await lab.getAttribute("data-physics-ticks"),
+      dash:await lab.getAttribute("data-c3b2-dash-cooldown-ms"),
+      shield:await lab.getAttribute("data-c3b2-shield"),
+    };
+    await page.waitForTimeout(650);
+    check(paused.ticks===await lab.getAttribute("data-physics-ticks"),
+      name+": physical ticks advanced during pause");
+    check(paused.dash===await lab.getAttribute("data-c3b2-dash-cooldown-ms"),
+      name+": Dash cooldown advanced during pause");
+    check(paused.shield===await lab.getAttribute("data-c3b2-shield"),
+      name+": QA shield changed during pause");
+    await page.getByTestId("ux15-physical-reset").click();
+    check(Number(await lab.getAttribute("data-c3b2-dash-activated-at"))===-1,
+      name+": reset failed to clear Dash state");
+    check(Number(await lab.getAttribute("data-c3b2-shield"))===100,
+      name+": reset failed to clear QA shield");
+    evidence.cases.push({
+      name,pass:true,ux15c3b2:true,realDashCore:true,
+      spatialIndex:true,input:touch?"native-touch":"keyboard",
+    });
+  }finally{await context.close();}
+}
+
 await mkdir(output,{recursive:true});
 try {
   await startServer();
@@ -626,6 +714,8 @@ try {
   await runPhysicalRouteQa("ux15c3a2-physical-mobile-844x390",844,390,true);
   await runDynamicRouteQa("ux15c3b1-dynamic-desktop-1440x900",1440,900,false);
   await runDynamicRouteQa("ux15c3b1-dynamic-mobile-844x390",844,390,true);
+  await runRouteCombatBridgeQa("ux15c3b2-bridge-desktop-1440x900",1440,900,false);
+  await runRouteCombatBridgeQa("ux15c3b2-bridge-mobile-844x390",844,390,true);
 }catch(error){evidence.failures.push({message:String(error),stack:error?.stack||""});process.exitCode=1;}
 finally{
   evidence.errors=diagnostics;

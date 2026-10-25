@@ -22,6 +22,7 @@ import {
 } from "../game/fotonGameplay3DRenderer";
 import { QualityPreset } from "../game/types";
 import { projectRouteDistance } from "../game/worldRouteCore";
+import { projectPropulsionDash } from "../game/propulsionDash";
 import "../styles/ux15RouteQa.css";
 
 type QaTelemetry = {
@@ -31,15 +32,21 @@ type QaTelemetry = {
   orbiX: number; enemyX: number; shotX: number; resourceX: number;
   spawned: number; culled: number; activeEnemies: number;
   hits: number; destroyed: number; pickups: number; activeShots: number;
+  shield: number; contactHits: number; indexedEnemies:number;
+  dashActivatedAtMs:number; dashCooldownMs:number; nearestEnemyDistance:number;
 };
 const initialTelemetry = (): QaTelemetry => ({
   distance: 0, ordinal: 0, playerX: 800, playerY: 480,
   cameraX: 464, originEpoch: 0, originOffsetX: 0, rebases: 0, physicsTicks: 0, glb: "LOADING",
   orbiX: 0, enemyX: 0, shotX: 0, resourceX: 0,
   spawned:0,culled:0,activeEnemies:0,hits:0,destroyed:0,pickups:0,activeShots:0,
+  shield:100,contactHits:0,indexedEnemies:0,dashActivatedAtMs:-1,
+  dashCooldownMs:0,nearestEnemyDistance:-1,
 });
-const c3bPreviewEnabled = typeof window !== "undefined" &&
-  new URLSearchParams(window.location.search).get("ux15-c3b") === "1";
+const routeParams=typeof window !== "undefined"
+  ? new URLSearchParams(window.location.search):new URLSearchParams();
+const c3bPreviewEnabled=routeParams.get("ux15-c3b")==="1";
+const c3b2Enabled=c3bPreviewEnabled && routeParams.get("ux15-c3b2")==="1";
 const arrowKeys = new Set(["w","a","s","d","arrowup","arrowdown","arrowleft","arrowright"]);
 
 /**
@@ -52,8 +59,9 @@ const arrowKeys = new Set(["w","a","s","d","arrowup","arrowdown","arrowleft","ar
 export default function PhysicalRouteQa() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const viewportRef = useRef<RoutePhysicalViewport>({ width: 800, height: 480, zoom: 1 });
-  const stateRef = useRef<PhysicalRouteQaState>(createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled));
+  const stateRef = useRef<PhysicalRouteQaState>(createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled,c3b2Enabled));
   const controlsRef = useRef(new Set<string>());
+  const dashRequestedRef=useRef(false);
   const pointerRef = useRef<{ id:number; startX:number; startY:number; x:number; y:number } | null>(null);
   const runningRef = useRef(true);
   const drawRef = useRef<() => void>(() => {});
@@ -83,6 +91,14 @@ export default function PhysicalRouteQa() {
       destroyed:s.dynamic?.destroyed??0,
       pickups:s.dynamic?.pickups??0,
       activeShots:s.encounter.projectiles.length,
+      shield:s.bridge?.shield??100,
+      contactHits:s.bridge?.contactHits??0,
+      indexedEnemies:s.bridge?.spatialEnemyCount??0,
+      dashActivatedAtMs:s.bridge?.dash.activatedAtMs??-1,
+      dashCooldownMs:s.bridge
+        ?projectPropulsionDash(s.bridge.dash,s.frame.cursor.simulatedMs).cooldownRemainingMs
+        :0,
+      nearestEnemyDistance:s.bridge?.nearestDistance??-1,
     });
   };
 
@@ -146,7 +162,7 @@ export default function PhysicalRouteQa() {
       drawSwarmRoster(ctx,s.encounter.swarm,s.frame.cursor.simulatedMs);
       drawFoton(ctx,s.player,0,s.frame.cursor.simulatedMs,
         {x:s.player.x+120,y:s.player.y},
-        false,undefined,1,QualityPreset.MEDIUM,false,
+        false,undefined,(s.bridge?.shield??100)/100,QualityPreset.MEDIUM,false,
         {x:-1,y:0},0,0);
       ctx.restore();
 
@@ -155,7 +171,9 @@ export default function PhysicalRouteQa() {
       ctx.fillStyle="rgba(3,16,30,.78)";
       ctx.fillRect(12,11,330,32);
       ctx.fillStyle="#8ff5ec";
-      ctx.fillText(c3bPreviewEnabled
+      ctx.fillText(c3b2Enabled
+        ? "C3B-2 · DASH + CONTACT · QA SHIELD"
+        :c3bPreviewEnabled
         ? "C3B-1 · ROUTE ENCOUNTER QA · NO LIVE REWARDS"
         : "PHYSICAL QA · CONTROLLED ACTORS · NO DAMAGE",22,32);
       ctx.restore();
@@ -170,7 +188,7 @@ export default function PhysicalRouteQa() {
         Math.round(480*availableWidth/Math.max(1,stageHeight))));
       viewportRef.current={width:logicalWidth,height:480,zoom:1};
       if(stateRef.current.physicsTicks===0) {
-        stateRef.current=createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled);
+        stateRef.current=createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled,c3b2Enabled);
       }
       canvas.dataset.logicalWidth=String(logicalWidth);
       canvas.dataset.logicalHeight="480";
@@ -181,10 +199,14 @@ export default function PhysicalRouteQa() {
     };
     const keyDown=(e:KeyboardEvent)=>{
       const k=e.key.toLowerCase();
+      if(c3b2Enabled && (e.code==="Space" || k===" ")){
+        e.preventDefault();
+        if(!e.repeat)dashRequestedRef.current=true;
+      }
       if(arrowKeys.has(k)){e.preventDefault();controlsRef.current.add(k);}
     };
     const keyUp=(e:KeyboardEvent)=>controlsRef.current.delete(e.key.toLowerCase());
-    const clearInput=()=>{controlsRef.current.clear();pointerRef.current=null;};
+    const clearInput=()=>{controlsRef.current.clear();pointerRef.current=null;dashRequestedRef.current=false;};
     const onVisibility=()=>{last=0;if(document.hidden)clearInput();};
     const tick=(now:number)=>{
       if(disposed)return;
@@ -197,12 +219,19 @@ export default function PhysicalRouteQa() {
       if(controlsRef.current.has("w")||controlsRef.current.has("arrowup"))y--;
       if(controlsRef.current.has("s")||controlsRef.current.has("arrowdown"))y++;
       if(pointerRef.current){x+=pointerRef.current.x;y+=pointerRef.current.y;}
-      stateRef.current=stepPhysicalRouteQa(stateRef.current,dt,{x,y},viewportRef.current,{
+      const gates={
         playing:!prefersReduce,
         paused:!runningRef.current,
         hidden:document.hidden,
         modalOpen:false,upgradeOpen:false,hitstop:false,
-      });
+      };
+      stateRef.current=stepPhysicalRouteQa(
+        stateRef.current,dt,{x,y},viewportRef.current,
+        gates,c3b2Enabled && dashRequestedRef.current,
+      );
+      if(dt>0 && gates.playing && !gates.paused && !gates.hidden){
+        dashRequestedRef.current=false;
+      }
       if(now-lastPaint>=1000/30){
         lastPaint=now;
         draw();
@@ -232,9 +261,10 @@ export default function PhysicalRouteQa() {
   },[]);
 
   const reset=()=>{
-    stateRef.current=createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled);
+    stateRef.current=createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled,c3b2Enabled);
     controlsRef.current.clear();
     pointerRef.current=null;
+    dashRequestedRef.current=false;
     drawRef.current();
     publishTelemetry();
   };
@@ -256,7 +286,13 @@ export default function PhysicalRouteQa() {
   };
   return (
     <main className="ux15-route-qa ux15-physical-qa" data-testid="ux15-physical-qa"
-      data-qa-mode={c3bPreviewEnabled?"PHYSICAL_ROUTE_C3B1_QA":"PHYSICAL_ROUTE_ISOLATED"}
+      data-qa-mode={c3b2Enabled?"PHYSICAL_ROUTE_C3B2_QA":c3bPreviewEnabled?"PHYSICAL_ROUTE_C3B1_QA":"PHYSICAL_ROUTE_ISOLATED"}
+      data-c3b2-shield={telemetry.shield}
+      data-c3b2-contact-hits={telemetry.contactHits}
+      data-c3b2-spatial-enemies={telemetry.indexedEnemies}
+      data-c3b2-dash-activated-at={telemetry.dashActivatedAtMs}
+      data-c3b2-dash-cooldown-ms={Math.round(telemetry.dashCooldownMs)}
+      data-c3b2-nearest-enemy={telemetry.nearestEnemyDistance.toFixed(2)}
       data-c3b-spawned={telemetry.spawned}
       data-c3b-culled={telemetry.culled}
       data-c3b-active-enemies={telemetry.activeEnemies}
@@ -279,13 +315,17 @@ export default function PhysicalRouteQa() {
       data-glb-status={telemetry.glb}>
       <header className="ux15-route-qa__header">
         <div>
-          <span className="ux15-route-qa__eyebrow">ORBI ENERGY SWARM · {c3bPreviewEnabled?"UX15-C3B-1":"UX15-C3A-3"}</span>
+          <span className="ux15-route-qa__eyebrow">ORBI ENERGY SWARM · {c3b2Enabled?"UX15-C3B-2":c3bPreviewEnabled?"UX15-C3B-1":"UX15-C3A-3"}</span>
           <h1>{locale==="es"?"LABORATORIO DE TRAVESÍA FÍSICA":"PHYSICAL TRAVERSAL LAB"}</h1>
           <p>{locale==="es"
-            ?(c3bPreviewEnabled
+            ?(c3b2Enabled
+              ?"Puente físico QA: Dash auténtico sin paredes horizontales y detección de contacto con índice espacial real. Sin pérdida de estadísticas ni recompensas."
+              :c3bPreviewEnabled
               ?"Encuentro físico QA: enemigos aparecen fuera de cámara, persiguen a ENERGY y reciben impactos. Sin recompensas ni combate de campaña."
               :"ENERGY, cámara y 30 ORBI recorren ASTERIA junto a enemigos, balas y recursos controlados. Sin daño ni recompensas.")
-            :(c3bPreviewEnabled
+            :(c3b2Enabled
+              ?"Physical QA bridge: canonical Dash with no horizontal wall and shared spatial contact detection. No game stats or rewards."
+              :c3bPreviewEnabled
               ?"Physical encounter QA: enemies spawn outside camera, pursue ENERGY and receive test hits. No campaign rewards or combat."
               :"ENERGY, camera and 30 ORBI travel with controlled enemies, shots and resources. No damage or rewards.")}</p>
         </div>
@@ -302,7 +342,7 @@ export default function PhysicalRouteQa() {
           aria-label={locale==="es"?"Travesía física QA de ENERGY sin combate":"Physical ENERGY route QA without combat"}
           onPointerDown={onPointerDown} onPointerMove={onPointerMove}
           onPointerUp={onPointerUp} onPointerCancel={onPointerUp}/>
-        <div className="ux15-route-qa__flag">PHYSICAL QA · NO COMBAT</div>
+        <div className="ux15-route-qa__flag">{c3b2Enabled?"C3B2 · TEST COMBAT · NO LIVE REWARDS":"PHYSICAL QA · NO COMBAT"}</div>
       </div>
       <section className="ux15-route-qa__telemetry ux15-physical-qa__telemetry" aria-label="Physical route telemetry">
         <div><span>{locale==="es"?"Distancia de ruta":"Route distance"}</span><strong>{Math.floor(telemetry.distance).toLocaleString(locale)} u</strong></div>
@@ -310,6 +350,11 @@ export default function PhysicalRouteQa() {
         <div><span>{locale==="es"?"Cámara · X":"Camera · X"}</span><strong>{Math.round(telemetry.cameraX)} u</strong></div>
         <div><span>{locale==="es"?"Segmento":"Segment"}</span><strong>{telemetry.ordinal+1}</strong></div>
         <div><span>Origin epoch</span><strong>{telemetry.originEpoch}</strong></div>
+        {c3b2Enabled && <>
+          <div><span>Escudo QA</span><strong>{telemetry.shield} / 100</strong></div>
+          <div><span>Contactos / indexados</span><strong>{telemetry.contactHits} / {telemetry.indexedEnemies}</strong></div>
+          <div><span>Dash cooldown</span><strong>{(telemetry.dashCooldownMs/1000).toFixed(1)} s</strong></div>
+        </>}
         {c3bPreviewEnabled && <>
           <div><span>Spawn / Cull</span><strong>{telemetry.spawned} / {telemetry.culled}</strong></div>
           <div><span>Enemigos activos</span><strong>{telemetry.activeEnemies}</strong></div>
@@ -330,6 +375,11 @@ export default function PhysicalRouteQa() {
             setRunning(runningRef.current);
             publishTelemetry();
           }}>{running?(locale==="es"?"Pausar":"Pause"):(locale==="es"?"Reanudar":"Resume")}</button>
+          {c3b2Enabled && <button type="button"
+            data-testid="ux15-c3b2-dash"
+            onClick={()=>{if(runningRef.current)dashRequestedRef.current=true;}}>
+            {locale==="es"?"Dash (espacio)":"Dash (Space)"}
+          </button>}
           <button type="button" data-testid="ux15-physical-reset" onClick={reset}>
             {locale==="es"?"Reiniciar":"Reset"}
           </button>
