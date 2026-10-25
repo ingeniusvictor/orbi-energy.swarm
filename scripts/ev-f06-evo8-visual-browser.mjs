@@ -140,6 +140,82 @@ async function caseDelta(w,h,dpr) {
  finally{await context.close();}
 }
 
+
+/** UX13 synthetic encounter visual test: real WebP bytes through actual Canvas
+ * enemy renderer and effects, NOT live wave combat or physical Android QA. */
+async function casePremiumEnemies(w,h,dpr){
+ const name="premium-enemies-"+w+"x"+h+"-dpr"+dpr;
+ const context=await browser.newContext({viewport:{width:w,height:h},deviceScaleFactor:dpr,isMobile:w<1000,hasTouch:w<1000,serviceWorkers:"block",reducedMotion:"reduce"});
+ const page=await context.newPage(),errors=[];
+ page.on("pageerror",e=>errors.push(String(e)));
+ try {
+   await page.goto(origin,{waitUntil:"domcontentloaded",timeout:40000});
+   const result=await page.evaluate(async ({w,h})=>{
+      const {drawEnemiesList}=await import("/src/game/EnergySwarmCanvas.tsx");
+      const {EnemyType}=await import("/src/game/types.ts");
+      const {projectFlashAccessibility}=await import("/src/game/flashAccessibility.ts");
+      const {
+        prewarmPremiumEnemySprites, getPremiumEnemySpriteState,resolvePremiumEnemySpriteUrl,
+      }=await import("/src/game/premiumEnemySprites.ts");
+      const types=[EnemyType.BLACKOUT_ELITE,EnemyType.DISRUPTOR,EnemyType.BOSS_DEVOURER];
+      for(const id of types){
+        const url=resolvePremiumEnemySpriteUrl(id);
+        if(!url)throw Error("No sprite route "+id);
+        const response=await fetch(url);
+        if(!response.ok || !(response.headers.get("content-type")||"").includes("image/webp"))
+          throw Error("WebP unavailable "+id+": "+response.status);
+      }
+      prewarmPremiumEnemySprites("/");
+      for(let attempt=0;attempt<120;attempt++){
+        if(types.every(id=>getPremiumEnemySpriteState(id)==="ready"))break;
+        if(types.some(id=>getPremiumEnemySpriteState(id)==="error"))throw Error("Image decode failed");
+        await new Promise(resolve=>setTimeout(resolve,30));
+      }
+      if(!types.every(id=>getPremiumEnemySpriteState(id)==="ready"))throw Error("WebP prewarm timed out");
+      const canvas=document.createElement("canvas");canvas.id="premium-enemies-proof";canvas.width=w;canvas.height=h;
+      Object.assign(canvas.style,{position:"fixed",inset:"0",zIndex:"2147483000",width:w+"px",height:h+"px"});
+      document.body.append(canvas);
+      const ctx=canvas.getContext("2d");
+      if(!ctx)throw Error("missing canvas");
+      ctx.fillStyle="#04091a";ctx.fillRect(0,0,w,h);
+      ctx.fillStyle="#b4e9f5";ctx.font="bold "+(w<1000?11:19)+"px monospace";
+      ctx.fillText("UX13 · TRES WEBP REALES · MISMO MOTOR DE COMBATE",9,24);
+      ctx.font="bold "+(w<1000?8:12)+"px monospace";
+      ctx.fillText("PREVIEW SINTÉTICA — NO ES UNA PARTIDA REAL",9,40);
+      const vertical=w<h;
+      const labels=["BLINDADO","DISRUPTOR DE GRAVEDAD","JEFE SWARM"];
+      const positions=types.map((_,i)=>vertical
+        ? {x:w/2,y:115+(h-150)*(i+.5)/3}
+        : {x:w*(i+.5)/3,y:h*.58});
+      const enemies=types.map((type,i)=>({
+        id:"ux13-proof-"+i,type,x:positions[i].x,y:positions[i].y,
+        vx:.3,vy:.8,health:i===2?750:23,maxHealth:i===2?950:45,
+        size:i===2?(vertical?34:52):(vertical?17:20),speed:0,color:i===1?"#9b5ff6":"#ef4444",
+        shootCooldown:i===1?35:70,pulseCooldown:0,contactDamageCooldown:0,
+        flashTicks:0,isDead:false,isBoss:i===2,chargeTimer:i===0?44:0,
+      }));
+      const imageDraws=[];
+      const drawImage=ctx.drawImage.bind(ctx);
+      ctx.drawImage=(...args)=>{imageDraws.push({width:args[3],height:args[4]});drawImage(...args);};
+      drawEnemiesList(ctx,enemies,1333,{x:w*.52,y:h*.6},projectFlashAccessibility("REDUCED"));
+      if(imageDraws.length!==3)throw Error("Expected 3 actual premium WebP bodies, rendered "+imageDraws.length);
+      ctx.save();ctx.textAlign="center";ctx.font="bold "+(w<1000?9:16)+"px monospace";
+      labels.forEach((label,i)=>{ctx.fillStyle=i===1?"#d8b4fe":"#fbd38d";
+        const below=positions[i].y+enemies[i].size*(i===2?1.9:2.3);
+        ctx.fillText(label,positions[i].x,Math.min(h-20,below));});
+      ctx.restore();
+      return {count:types.length,imageDraws,labels,source:"3 decoded local WebP, Canvas2D real renderer"};
+   },{w,h});
+   const path=join(folder,name+".png");
+   await page.locator("#premium-enemies-proof").screenshot({path});
+   const bytes=(await stat(path)).size;
+   if(bytes<9000)throw Error("Blank premium enemies screenshot "+name);
+   if(errors.length)throw Error("JS errors "+errors.join("; "));
+   report.cases.push({name,success:true,bytes,...result});
+ }catch(error){report.failures.push({name,error:String(error)});report.cases.push({name,success:false});}
+ finally{await context.close();}
+}
+
 await mkdir(folder,{recursive:true});
 try{
  server=spawn(process.execPath,["node_modules/vite/bin/vite.js","--host","127.0.0.1","--port",String(port),"--strictPort"],{stdio:"ignore"});
@@ -151,6 +227,7 @@ try{
  await caseRender(1440,240,1,"hydro");
  for(const [w,h,dpr] of [[740,360,1],[844,390,1],[915,412,1],[768,346,2],[390,844,1]])await caseRender(w,h,dpr,"final");
  for(const [w,h,dpr] of [[740,360,1],[844,390,1],[915,412,1],[768,346,2],[390,844,1]])await caseDelta(w,h,dpr);
+ for(const [w,h,dpr] of [[1280,720,1],[844,390,2],[390,844,2]])await casePremiumEnemies(w,h,dpr);
 }catch(e){report.failures.push({name:"setup",error:String(e)})}
 finally{
  if(browser)await browser.close();
