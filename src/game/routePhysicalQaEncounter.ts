@@ -5,7 +5,15 @@ import { EnemyType, OrbiType, ParticleType, type Enemy, type OrbiMember, type Pa
 /** A bounded, fixed QA encounter: real game entity shapes, NO combat authority.
  * No spawn director, damage, loot claiming, boss phases or scoring are run here.
  * Rebase is tested on the same object fields the live engine owns. */
-export type RouteQaEncounter = Omit<RouteCoordinateOwners, "frame" | "player" | "camera">;
+export type RouteQaEncounter = Omit<
+  RouteCoordinateOwners,
+  "frame" | "player" | "camera" | "swarm" | "enemies" | "projectiles" | "resources"
+> & {
+  swarm: OrbiMember[];
+  enemies: Enemy[];
+  projectiles: Projectile[];
+  resources: Resource[];
+};
 
 export const qaOrbiOffset = (index: number): RouteMutablePoint => {
   const ring = Math.floor(index / 10);
