@@ -23,6 +23,8 @@ import {
 import { QualityPreset } from "../game/types";
 import { projectRouteDistance } from "../game/worldRouteCore";
 import { projectPropulsionDash } from "../game/propulsionDash";
+import { projectRouteOverdriveQa } from "../game/routeOverdriveQa";
+import { projectCombatOverdrivePresentation } from "../game/combatOverdrivePresentation";
 import "../styles/ux15RouteQa.css";
 
 type QaTelemetry = {
@@ -36,6 +38,10 @@ type QaTelemetry = {
   dashActivatedAtMs:number; dashCooldownMs:number; nearestEnemyDistance:number;
   orbiShots:number; orbiEchoes:number; orbiTargets:number; orbiSupport:number;
   splashHits:number; slows:number; pushes:number; pulls:number; areaKills:number;
+  resonance:number; chain:number; overdriveActive:boolean;
+  overdriveRemainingMs:number; overdriveMultiplier:number;
+  overdriveReady:boolean; overdriveLockMs:number;
+  overdriveActivations:number; qaCharges:number;creditedDefeats:number;damageBreaks:number;
 };
 const initialTelemetry = (): QaTelemetry => ({
   distance: 0, ordinal: 0, playerX: 800, playerY: 480,
@@ -46,6 +52,9 @@ const initialTelemetry = (): QaTelemetry => ({
   dashCooldownMs:0,nearestEnemyDistance:-1,
   orbiShots:0,orbiEchoes:0,orbiTargets:0,orbiSupport:0,
   splashHits:0,slows:0,pushes:0,pulls:0,areaKills:0,
+  resonance:0,chain:0,overdriveActive:false,overdriveRemainingMs:0,
+  overdriveMultiplier:1,overdriveReady:false,overdriveLockMs:0,
+  overdriveActivations:0,qaCharges:0,creditedDefeats:0,damageBreaks:0,
 });
 const routeParams=typeof window !== "undefined"
   ? new URLSearchParams(window.location.search):new URLSearchParams();
@@ -53,6 +62,7 @@ const c3bPreviewEnabled=routeParams.get("ux15-c3b")==="1";
 const c3b2Enabled=c3bPreviewEnabled && routeParams.get("ux15-c3b2")==="1";
 const c3b3Enabled=c3b2Enabled && routeParams.get("ux15-c3b3")==="1";
 const c3b4Enabled=c3b3Enabled && routeParams.get("ux15-c3b4")==="1";
+const c3b5Enabled=c3b4Enabled && routeParams.get("ux15-c3b5")==="1";
 const arrowKeys = new Set(["w","a","s","d","arrowup","arrowdown","arrowleft","arrowright"]);
 
 /**
@@ -65,9 +75,11 @@ const arrowKeys = new Set(["w","a","s","d","arrowup","arrowdown","arrowleft","ar
 export default function PhysicalRouteQa() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const viewportRef = useRef<RoutePhysicalViewport>({ width: 800, height: 480, zoom: 1 });
-  const stateRef = useRef<PhysicalRouteQaState>(createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled,c3b2Enabled,c3b3Enabled,c3b4Enabled));
+  const stateRef = useRef<PhysicalRouteQaState>(createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled,c3b2Enabled,c3b3Enabled,c3b4Enabled,c3b5Enabled));
   const controlsRef = useRef(new Set<string>());
   const dashRequestedRef=useRef(false);
+  const overdriveRequestedRef=useRef(false);
+  const chargeQaRequestedRef=useRef(false);
   const pointerRef = useRef<{ id:number; startX:number; startY:number; x:number; y:number } | null>(null);
   const runningRef = useRef(true);
   const drawRef = useRef<() => void>(() => {});
@@ -78,7 +90,20 @@ export default function PhysicalRouteQa() {
 
   const publishTelemetry = () => {
     const s=stateRef.current;
+    const projection=s.overdriveQa?projectRouteOverdriveQa(
+      s.overdriveQa,s.frame.cursor.simulatedMs):null;
     setTelemetry({
+      resonance:projection?.resonance??0,
+      chain:projection?.chain??0,
+      overdriveActive:projection?.active??false,
+      overdriveRemainingMs:projection?.remainingMs??0,
+      overdriveMultiplier:projection?.damageMultiplier??1,
+      overdriveReady:projection?.canActivate??false,
+      overdriveLockMs:projection?.reentryRemainingMs??0,
+      overdriveActivations:s.overdriveQa?.activations??0,
+      qaCharges:s.overdriveQa?.debugCharges??0,
+      creditedDefeats:s.overdriveQa?.creditedDefeats??0,
+      damageBreaks:s.overdriveQa?.damageBreaks??0,
       distance:projectRouteDistance(s.frame.cursor),
       ordinal:s.frame.cursor.segmentOrdinal,
       playerX:s.player.x, playerY:s.player.y,
@@ -189,6 +214,25 @@ export default function PhysicalRouteQa() {
       }
       drawProjectilesList(ctx,s.encounter.projectiles);
       drawSwarmRoster(ctx,s.encounter.swarm,s.frame.cursor.simulatedMs);
+      if(c3b5Enabled && s.overdriveQa){
+        const status=projectRouteOverdriveQa(s.overdriveQa,s.frame.cursor.simulatedMs);
+        const fx=projectCombatOverdrivePresentation({
+          active:status.active,
+          remainingRatio:status.remainingMs/8000,
+          qualityPreset:QualityPreset.MEDIUM,
+        });
+        if(fx.active){
+          ctx.save();
+          ctx.strokeStyle=`rgba(110,228,255,${fx.swarmHaloAlpha})`;
+          ctx.lineWidth=2.5;
+          for(let i=0;i<fx.ringCount;i++){
+            ctx.beginPath();
+            ctx.arc(s.player.x,s.player.y,44+i*13,0,Math.PI*2);
+            ctx.stroke();
+          }
+          ctx.restore();
+        }
+      }
       drawFoton(ctx,s.player,0,s.frame.cursor.simulatedMs,
         {x:s.player.x+120,y:s.player.y},
         false,undefined,(s.bridge?.shield??100)/100,QualityPreset.MEDIUM,false,
@@ -200,7 +244,9 @@ export default function PhysicalRouteQa() {
       ctx.fillStyle="rgba(3,16,30,.78)";
       ctx.fillRect(12,11,330,32);
       ctx.fillStyle="#8ff5ec";
-      ctx.fillText(c3b4Enabled
+      ctx.fillText(c3b5Enabled
+        ? "C3B-5 · COMBAT RESONANCE + OVERDRIVE QA"
+        :c3b4Enabled
         ? "C3B-4 · AREA / SLOW / PUSH / MAGNET QA"
         :c3b3Enabled
         ? "C3B-3 · 10 CANONICAL ORBI ATTACK PROFILES"
@@ -221,7 +267,7 @@ export default function PhysicalRouteQa() {
         Math.round(480*availableWidth/Math.max(1,stageHeight))));
       viewportRef.current={width:logicalWidth,height:480,zoom:1};
       if(stateRef.current.physicsTicks===0) {
-        stateRef.current=createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled,c3b2Enabled,c3b3Enabled,c3b4Enabled);
+        stateRef.current=createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled,c3b2Enabled,c3b3Enabled,c3b4Enabled,c3b5Enabled);
       }
       canvas.dataset.logicalWidth=String(logicalWidth);
       canvas.dataset.logicalHeight="480";
@@ -236,10 +282,18 @@ export default function PhysicalRouteQa() {
         e.preventDefault();
         if(!e.repeat)dashRequestedRef.current=true;
       }
+      if(c3b5Enabled&&k==="o"){
+        e.preventDefault();
+        if(!e.repeat)overdriveRequestedRef.current=true;
+      }
       if(arrowKeys.has(k)){e.preventDefault();controlsRef.current.add(k);}
     };
     const keyUp=(e:KeyboardEvent)=>controlsRef.current.delete(e.key.toLowerCase());
-    const clearInput=()=>{controlsRef.current.clear();pointerRef.current=null;dashRequestedRef.current=false;};
+    const clearInput=()=>{
+      controlsRef.current.clear();pointerRef.current=null;
+      dashRequestedRef.current=false;overdriveRequestedRef.current=false;
+      chargeQaRequestedRef.current=false;
+    };
     const onVisibility=()=>{last=0;if(document.hidden)clearInput();};
     const tick=(now:number)=>{
       if(disposed)return;
@@ -261,9 +315,13 @@ export default function PhysicalRouteQa() {
       stateRef.current=stepPhysicalRouteQa(
         stateRef.current,dt,{x,y},viewportRef.current,
         gates,c3b2Enabled && dashRequestedRef.current,
+        c3b5Enabled && overdriveRequestedRef.current,
+        c3b5Enabled && chargeQaRequestedRef.current,
       );
       if(dt>0 && gates.playing && !gates.paused && !gates.hidden){
         dashRequestedRef.current=false;
+        overdriveRequestedRef.current=false;
+        chargeQaRequestedRef.current=false;
       }
       if(now-lastPaint>=1000/30){
         lastPaint=now;
@@ -294,10 +352,12 @@ export default function PhysicalRouteQa() {
   },[]);
 
   const reset=()=>{
-    stateRef.current=createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled,c3b2Enabled,c3b3Enabled,c3b4Enabled);
+    stateRef.current=createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled,c3b2Enabled,c3b3Enabled,c3b4Enabled,c3b5Enabled);
     controlsRef.current.clear();
     pointerRef.current=null;
     dashRequestedRef.current=false;
+    overdriveRequestedRef.current=false;
+    chargeQaRequestedRef.current=false;
     drawRef.current();
     publishTelemetry();
   };
@@ -319,7 +379,18 @@ export default function PhysicalRouteQa() {
   };
   return (
     <main className="ux15-route-qa ux15-physical-qa" data-testid="ux15-physical-qa"
-      data-qa-mode={c3b4Enabled?"PHYSICAL_ROUTE_C3B4_QA":c3b3Enabled?"PHYSICAL_ROUTE_C3B3_QA":c3b2Enabled?"PHYSICAL_ROUTE_C3B2_QA":c3bPreviewEnabled?"PHYSICAL_ROUTE_C3B1_QA":"PHYSICAL_ROUTE_ISOLATED"}
+      data-qa-mode={c3b5Enabled?"PHYSICAL_ROUTE_C3B5_QA":c3b4Enabled?"PHYSICAL_ROUTE_C3B4_QA":c3b3Enabled?"PHYSICAL_ROUTE_C3B3_QA":c3b2Enabled?"PHYSICAL_ROUTE_C3B2_QA":c3bPreviewEnabled?"PHYSICAL_ROUTE_C3B1_QA":"PHYSICAL_ROUTE_ISOLATED"}
+      data-c3b5-resonance={telemetry.resonance}
+      data-c3b5-chain={telemetry.chain}
+      data-c3b5-overdrive-active={String(telemetry.overdriveActive)}
+      data-c3b5-overdrive-remaining-ms={Math.round(telemetry.overdriveRemainingMs)}
+      data-c3b5-damage-multiplier={telemetry.overdriveMultiplier}
+      data-c3b5-ready={String(telemetry.overdriveReady)}
+      data-c3b5-reentry-lock-ms={Math.round(telemetry.overdriveLockMs)}
+      data-c3b5-activations={telemetry.overdriveActivations}
+      data-c3b5-debug-charges={telemetry.qaCharges}
+      data-c3b5-credited-defeats={telemetry.creditedDefeats}
+      data-c3b5-damage-breaks={telemetry.damageBreaks}
       data-c3b4-splash-hits={telemetry.splashHits}
       data-c3b4-slows={telemetry.slows}
       data-c3b4-pushes={telemetry.pushes}
@@ -357,10 +428,12 @@ export default function PhysicalRouteQa() {
       data-glb-status={telemetry.glb}>
       <header className="ux15-route-qa__header">
         <div>
-          <span className="ux15-route-qa__eyebrow">ORBI ENERGY SWARM · {c3b4Enabled?"UX15-C3B-4":c3b3Enabled?"UX15-C3B-3":c3b2Enabled?"UX15-C3B-2":c3bPreviewEnabled?"UX15-C3B-1":"UX15-C3A-3"}</span>
+          <span className="ux15-route-qa__eyebrow">ORBI ENERGY SWARM · {c3b5Enabled?"UX15-C3B-5":c3b4Enabled?"UX15-C3B-4":c3b3Enabled?"UX15-C3B-3":c3b2Enabled?"UX15-C3B-2":c3bPreviewEnabled?"UX15-C3B-1":"UX15-C3A-3"}</span>
           <h1>{locale==="es"?"LABORATORIO DE TRAVESÍA FÍSICA":"PHYSICAL TRAVERSAL LAB"}</h1>
           <p>{locale==="es"
-            ?(c3b4Enabled
+            ?(c3b5Enabled
+              ?"Resonancia y Overdrive reales en QA: derrota enemigos para cargar, activa con O. Carga QA opcional sin puntuación ni progreso."
+              :c3b4Enabled
               ?"Impactos ORBI físicos: explosiones, ralentización, empuje y magnetismo. Prototipo aislado, sin premios de campaña."
               :c3b3Enabled
               ?"ORBI canónicos con diez perfiles de ataque y selección espacial real de objetivos. Disparos experimentales y sin recompensas de partida."
@@ -369,7 +442,9 @@ export default function PhysicalRouteQa() {
               :c3bPreviewEnabled
               ?"Encuentro físico QA: enemigos aparecen fuera de cámara, persiguen a ENERGY y reciben impactos. Sin recompensas ni combate de campaña."
               :"ENERGY, cámara y 30 ORBI recorren ASTERIA junto a enemigos, balas y recursos controlados. Sin daño ni recompensas.")
-            :(c3b4Enabled
+            :(c3b5Enabled
+              ?"Real resonance and Overdrive QA: defeat enemies to charge, press O to activate. Optional QA charge without score or progress."
+              :c3b4Enabled
               ?"Physical ORBI impact QA: splash damage, slowing, pushback and magnetism. Isolated prototype; no campaign rewards."
               :c3b3Enabled
               ?"Canonical ORBI with ten real attack profiles and spatial enemy targeting. Experimental shots; no live rewards."
@@ -400,6 +475,14 @@ export default function PhysicalRouteQa() {
         <div><span>{locale==="es"?"Cámara · X":"Camera · X"}</span><strong>{Math.round(telemetry.cameraX)} u</strong></div>
         <div><span>{locale==="es"?"Segmento":"Segment"}</span><strong>{telemetry.ordinal+1}</strong></div>
         <div><span>Origin epoch</span><strong>{telemetry.originEpoch}</strong></div>
+        {c3b5Enabled && <>
+          <div><span>Resonancia / cadena</span><strong>{telemetry.resonance} / {telemetry.chain}</strong></div>
+          <div><span>Overdrive QA</span><strong>{telemetry.overdriveActive?"ACTIVO":telemetry.overdriveReady?"LISTO":"CARGANDO"}</strong></div>
+          <div><span>Tiempo restante</span><strong>{(telemetry.overdriveRemainingMs/1000).toFixed(1)} s</strong></div>
+          <div><span>Daño / activaciones</span><strong>×{telemetry.overdriveMultiplier.toFixed(1)} / {telemetry.overdriveActivations}</strong></div>
+          <div><span>Derrotas / penalizaciones</span><strong>{telemetry.creditedDefeats} / {telemetry.damageBreaks}</strong></div>
+          <div><span>Cargas manuales QA</span><strong>{telemetry.qaCharges}</strong></div>
+        </>}
         {c3b4Enabled && <>
           <div><span>Daño de área</span><strong>{telemetry.splashHits} impactos</strong></div>
           <div><span>Ralentizaciones</span><strong>{telemetry.slows}</strong></div>
@@ -437,6 +520,16 @@ export default function PhysicalRouteQa() {
             setRunning(runningRef.current);
             publishTelemetry();
           }}>{running?(locale==="es"?"Pausar":"Pause"):(locale==="es"?"Reanudar":"Resume")}</button>
+          {c3b5Enabled && <>
+            <button type="button" data-testid="ux15-c3b5-charge"
+              onClick={()=>{if(runningRef.current)chargeQaRequestedRef.current=true;}}>
+              {locale==="es"?"Cargar resonancia (QA)":"Charge resonance (QA)"}
+            </button>
+            <button type="button" data-testid="ux15-c3b5-overdrive"
+              onClick={()=>{if(runningRef.current)overdriveRequestedRef.current=true;}}>
+              {locale==="es"?"Overdrive (O)":"Overdrive (O)"}
+            </button>
+          </>}
           {c3b2Enabled && <button type="button"
             data-testid="ux15-c3b2-dash"
             onClick={()=>{if(runningRef.current)dashRequestedRef.current=true;}}>
