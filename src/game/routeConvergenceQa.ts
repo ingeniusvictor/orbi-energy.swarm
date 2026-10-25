@@ -1,7 +1,6 @@
 import {
   activateConvergence,
   cancelConvergence,
-  CONVERGENCE_CHANNEL_MS,
   CONVERGENCE_MAX_HITS,
   convergenceHitDamage,
   createConvergenceState,
