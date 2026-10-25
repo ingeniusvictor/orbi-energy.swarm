@@ -115,7 +115,7 @@ export function projectAsteriaPanoramaStrip(
   const phase=distance%stride;
   const tileCount=Math.ceil((logicalWidth+phase)/stride)+1;
   return {width,height,overlap,stride,phase,tileOrdinal,
-    initialX:-phase,tileCount};
+    initialX:phase===0?0:-phase,tileCount};
 }
 
 /**
