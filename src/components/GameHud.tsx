@@ -6,6 +6,7 @@ import { getCampaignObjective } from "../game/campaignGuide";
 import type { ResonanceTier } from "../game/combatResonance";
 import type { ScoreAttackLiveEngineStartMode } from "../game/scoreAttackLiveEngineLifecycle";
 import { SCORE_ATTACK_DURATION_MS } from "../game/scoreAttackTimeboxProjection";
+import { projectShieldThreat } from "../game/shieldThreatPresentation";
 
 interface GameHudProps {
   presentationMode: ScoreAttackLiveEngineStartMode;
@@ -98,17 +99,14 @@ export const GameHud: React.FC<GameHudProps> = ({
     ? (language === "es" ? "MAXIMIZA LA PUNTUACIÓN" : "MAXIMIZE SCORE")
     : campaignObjective;
 
-  // Shield Color Selector
-  const shieldPercent = (shield / shieldMax) * 100;
-  let shieldColorClass = "bg-emerald-500 shadow-[0_0_8px_#10b981]";
-  let shieldTextColor = "text-emerald-400";
-  if (shieldPercent < 30) {
-    shieldColorClass = "bg-rose-600 shadow-[0_0_12px_#ef4444] animate-pulse";
-    shieldTextColor = "text-rose-400 font-bold";
-  } else if (shieldPercent < 60) {
-    shieldColorClass = "bg-amber-500 shadow-[0_0_8px_#f59e0b]";
-    shieldTextColor = "text-amber-400";
-  }
+  // One four-stage palette shared by compact HUD, immersive HUD and Status.
+  const shieldThreat = projectShieldThreat(shield, shieldMax);
+  const shieldPercent = shieldThreat.percent;
+  const shieldFillStyle = {
+    width: `${shieldPercent}%`,
+    backgroundColor: shieldThreat.fill,
+    boxShadow: `0 0 10px ${shieldThreat.glow}`,
+  };
 
   // Population Milestones helper
   const getMilestoneClass = (size: number) => {
@@ -204,9 +202,9 @@ export const GameHud: React.FC<GameHudProps> = ({
               aria-label={language === "es" ? "Escudo" : "Shield"}
               aria-valuemin={0} aria-valuemax={100}
               aria-valuenow={Math.round(Math.max(0, Math.min(100, shieldPercent)))}>
-              <span style={{ width: `${Math.max(0, Math.min(100, shieldPercent))}%` }} />
+              <span data-shield-band={shieldThreat.band} style={shieldFillStyle} />
             </div>
-            <span>{Math.round(shieldPercent)}%</span>
+            <span style={{ color: shieldThreat.text }}>{Math.round(shieldPercent)}%</span>
             <strong>{isWaveBreak ? `PREP ${waveBreakTimeLeft}s` : `W${currentWave}`}</strong>
           </div>
           <div className="orbi-immersive-actions">
@@ -307,10 +305,10 @@ export const GameHud: React.FC<GameHudProps> = ({
             </div>
             <div className="orbi-premium-status-shield">
               <h3><Shield size={15} aria-hidden="true"/>{t("hud.shield")}</h3>
-              <strong>{Math.round(Math.max(0,Math.min(100,shieldPercent)))}%</strong>
+              <strong data-shield-band={shieldThreat.band} style={{ color: shieldThreat.text }}>{Math.round(shieldPercent)}%</strong>
               <div className="orbi-premium-status-meter" role="progressbar" aria-label={t("hud.shield")}
                 aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(Math.max(0,Math.min(100,shieldPercent)))}>
-                <span style={{width:`${Math.max(0,Math.min(100,shieldPercent))}%`}}/>
+                <span data-shield-band={shieldThreat.band} style={shieldFillStyle}/>
               </div>
               <p>{language === "es" ? "Integridad de escudo durante esta partida" : "Shield integrity in this run"}</p>
             </div>
@@ -378,11 +376,12 @@ export const GameHud: React.FC<GameHudProps> = ({
           aria-valuetext={`${Math.round(Math.max(0, Math.min(100, shieldPercent)))}%`}
         >
           <div
-            className={`h-full rounded transition-all duration-150 ${shieldColorClass}`}
-            style={{ width: `${Math.max(0, Math.min(100, shieldPercent))}%` }}
+            className="h-full rounded transition-all duration-150"
+            data-shield-band={shieldThreat.band}
+            style={shieldFillStyle}
           />
         </div>
-        <span className={`${shieldTextColor} shrink-0 text-[10px] font-bold`}>{Math.round(shield)}%</span>
+        <span className="shrink-0 text-[10px] font-bold" style={{color:shieldThreat.text}}>{Math.round(shieldPercent)}%</span>
       </div>
 
       {/* 2. WAVE LEVEL / BREAK */}
