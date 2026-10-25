@@ -9,6 +9,9 @@ import {
 } from "./types";
 
 import { projectPanoramicCanvasViewport } from "./panoramicCanvasViewport";
+import { createRouteCursor, projectRouteDistance } from "./worldRouteCore";
+import { stepRouteClock, ROUTE_QA_SPEED_UNITS_PER_SECOND } from "./worldRouteClock";
+import { drawWorldRouteQaScene } from "./worldRoutePreviewRenderer";
 import { projectImmersiveBattlefieldMode } from "./immersiveBattlefieldPolicy";
 import { nonNegativeAnimationFrameDelta } from "./animationFrameDelta";
 import { 
@@ -342,6 +345,10 @@ type InfiniteBossRematchProfile = Extract<
 
 export const EnergySwarmGame: React.FC = () => {
   const { language } = useGameTranslation();
+  // UX15-C1 is an opt-in live combat background pilot ONLY, not infinite
+  // physics or a new game mode. No query => byte-for-byte legacy draw path.
+  const asteriaLiveQaRequested = typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("ux15-world") === "asteria";
   const viewportProfile = useViewportComposition();
   const {
     webLandscape: immersiveWebLandscape,
@@ -479,6 +486,7 @@ export const EnergySwarmGame: React.FC = () => {
   const suspendedFrameRenderedRef = useRef(false);
   const lastTimeRef = useRef(0);
   const timeElapsedRef = useRef(0);
+  const asteriaLiveCursorRef = useRef(createRouteCursor("asteria-campaign-qa"));
   const performanceDiagnosticsEnabledRef = useRef(false);
   const performanceDiagnosticsStateRef =
     useRef<PerformanceDiagnosticsState>(
@@ -1876,6 +1884,9 @@ export const EnergySwarmGame: React.FC = () => {
       contact_damage: 0
     };
 
+    // UX15-C1: restarting a campaign restarts only visual scenery, never
+    // the actual wave budget, combat timers, physical coordinates or loot.
+    asteriaLiveCursorRef.current = createRouteCursor("asteria-campaign-qa");
     // Initial cleanups
     playerPosRef.current = { x: WORLD_WIDTH / 2, y: WORLD_HEIGHT / 2 };
     pointerRef.current = { x: WORLD_WIDTH / 2, y: WORLD_HEIGHT / 2 };
@@ -4734,6 +4745,20 @@ export const EnergySwarmGame: React.FC = () => {
     }
 
     timeElapsedRef.current += delta;
+    // UX15-C1: no segment may advance while a menu/physics freeze is active.
+    // The surrounding loop already aborts on Pause/Upgrade/Hitstop. This
+    // extra gate protects the scene during hidden tabs and wave breaks.
+    if (asteriaLiveQaRequested && presentationMode === "CAMPAIGN" &&
+        runtimeProgressionRef.current.mode === "CAMPAIGN" &&
+        currentWaveRef.current <= 2) {
+      asteriaLiveCursorRef.current = stepRouteClock(
+        asteriaLiveCursorRef.current, delta, ROUTE_QA_SPEED_UNITS_PER_SECOND,
+        { playing: isPlaying && !isGameOver && waveActiveRef.current && !isPhotoMode,
+          paused: isPausedRef.current, hidden: document.hidden,
+          modalOpen: mobilePanel !== "closed", upgradeOpen: isUpgradeSelectionOpen,
+          hitstop: hitStopTimerRef.current > 0 },
+      );
+    }
 
     // Decay disruption timer & hitstop cooldown
     if (disruptTimerRef.current > 0) {
@@ -7682,23 +7707,46 @@ export const EnergySwarmGame: React.FC = () => {
     const backingScaleY = canvas.height / panoramicViewport.height;
     ctx.setTransform(backingScaleX, 0, 0, backingScaleY, 0, 0);
 
-    // 1. Draw Space Background and layered grids
-    const quality = getQualityConfig(stats.qualityPreset);
-    backgroundRenderer.render(
-      ctx,
-      timeElapsedRef.current,
-      activeBiome,
-      cameraStateRef.current.cameraX,
-      cameraStateRef.current.cameraY,
-      cameraStateRef.current.zoom,
-      quality.drawNebula,
-      quality.drawPlanets,
-      quality.drawCosmicWhale &&
-        runtimeProgressionRef.current.mode === "INFINITE",
-      bossActiveRef.current,
-      cameraStateRef.current.viewportWidth,
-      cameraStateRef.current.viewportHeight
-    );
+    // UX15-C1: first opt-in playable ASTERIA environment. The authentic
+    // live ENERGY GLB, 30-ORBI formation, enemies, loot, attacks and legacy
+    // camera are drawn on top by the unchanged combat renderer below.
+    // We deliberately keep physics in the 1600x960 arena until the real
+    // origin-rebase/camera integration is certified in UX15-C2/D.
+    const asteriaCombatVisualActive = asteriaLiveQaRequested &&
+      presentationMode === "CAMPAIGN" &&
+      runtimeProgressionRef.current.mode === "CAMPAIGN" &&
+      currentWaveRef.current <= 2;
+    if (asteriaCombatVisualActive) {
+      drawWorldRouteQaScene(ctx, asteriaLiveCursorRef.current,
+        { manualX: 0, y: 240 }, panoramicViewport.width, false);
+      canvas.dataset.ux15World = "ASTERIA_ORBITAL";
+      canvas.dataset.ux15RouteDistance = String(
+        Math.floor(projectRouteDistance(asteriaLiveCursorRef.current)));
+      canvas.dataset.ux15Segment = String(asteriaLiveCursorRef.current.segmentOrdinal);
+      canvas.dataset.ux15LiveCombat = "true";
+    } else {
+      delete canvas.dataset.ux15World;
+      delete canvas.dataset.ux15RouteDistance;
+      delete canvas.dataset.ux15Segment;
+      delete canvas.dataset.ux15LiveCombat;
+      // Stable existing background for all default and other-mode sessions.
+      const quality = getQualityConfig(stats.qualityPreset);
+      backgroundRenderer.render(
+        ctx,
+        timeElapsedRef.current,
+        activeBiome,
+        cameraStateRef.current.cameraX,
+        cameraStateRef.current.cameraY,
+        cameraStateRef.current.zoom,
+        quality.drawNebula,
+        quality.drawPlanets,
+        quality.drawCosmicWhale &&
+          runtimeProgressionRef.current.mode === "INFINITE",
+        bossActiveRef.current,
+        cameraStateRef.current.viewportWidth,
+        cameraStateRef.current.viewportHeight
+      );
+    }
 
     const liveOverdriveRenderProjection = projectCombatOverdrive(
       combatOverdriveRef.current,
