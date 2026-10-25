@@ -141,6 +141,9 @@ export default function PhysicalRouteQa() {
       const logicalWidth=Math.min(2400,Math.max(800,
         Math.round(480*availableWidth/Math.max(1,stageHeight))));
       viewportRef.current={width:logicalWidth,height:480,zoom:1};
+      if(stateRef.current.physicsTicks===0) {
+        stateRef.current=createPhysicalRouteQaState(viewportRef.current);
+      }
       canvas.dataset.logicalWidth=String(logicalWidth);
       canvas.dataset.logicalHeight="480";
       canvas.width=Math.round(logicalWidth*dpr);
