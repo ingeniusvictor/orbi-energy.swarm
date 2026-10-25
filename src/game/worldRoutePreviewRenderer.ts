@@ -2,13 +2,13 @@ import { ASTERIA_WORLD_ID, getRouteWindow, projectRouteDistance, stableRouteHash
 import { projectRoutePreviewCamera, type RoutePreviewPlayer } from "./worldRouteCamera";
 
 /** UX15-B Canvas2D engineering mock-up. NOT final ASTERIA art or gameplay. */
-const W = 800, H = 480;
+const H = 480;
 const contrast = (x: number, a: number, b: number) => Math.max(a, Math.min(b, x));
 
 const drawRidge = (
   ctx: CanvasRenderingContext2D,
   shift: number, y: number, amplitude: number, spacing: number,
-  color: string, seed: string,
+  color: string, seed: string, W: number,
 ) => {
   ctx.fillStyle = color;
   ctx.beginPath();
@@ -27,7 +27,7 @@ const drawRidge = (
 const drawSection = (
   ctx: CanvasRenderingContext2D,
   x: number, right: number,
-  kind: string, accent: string, variant: number,
+  kind: string, accent: string, variant: number, W: number,
 ) => {
   const width = right - x;
   if (right < -40 || x > W + 40 || width <= 0) return;
@@ -111,8 +111,10 @@ const drawSection = (
  */
 export function drawWorldRouteQaScene(
   ctx: CanvasRenderingContext2D, cursor: RouteCursor,
-  player: RoutePreviewPlayer,
+  player: RoutePreviewPlayer, logicalWidth = 800,
 ): void {
+  const W = logicalWidth;
+  if (!Number.isFinite(W) || W < 800 || W > 2400) throw new RangeError("Invalid panoramic QA width");
   if (cursor.worldId !== ASTERIA_WORLD_ID) throw new RangeError("Unexpected QA world");
   ctx.save();
   ctx.clearRect(0, 0, W, H);
@@ -148,14 +150,14 @@ export function drawWorldRouteQaScene(
   ctx.strokeStyle = "rgba(141,213,244,.28)";ctx.lineWidth = 8;
   ctx.beginPath();ctx.ellipse(650 - parallax * .004 % 45, 103, 99, 22, -.28, 0, Math.PI*2);ctx.stroke();
 
-  drawRidge(ctx, parallax * .11, 259, 98, 138, "#1b344f", "far");
-  drawRidge(ctx, parallax * .25, 292, 76, 92, "#10283f", "near");
+  drawRidge(ctx, parallax * .11, 259, 98, 138, "#1b344f", "far", W);
+  drawRidge(ctx, parallax * .25, 292, 76, 92, "#10283f", "near", W);
 
   for (const visible of window) {
     const start = cam.anchorScreenX + visible.startRelative;
     const end = cam.anchorScreenX + visible.endRelative;
     drawSection(ctx, start, end,
-      visible.segment.kind, visible.segment.accent, visible.segment.decorationVariant);
+      visible.segment.kind, visible.segment.accent, visible.segment.decorationVariant, W);
   }
 
   // Energy is a gold instrumentation marker only: no simulated attacks/ORBIs.
