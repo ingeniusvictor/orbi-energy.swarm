@@ -101,7 +101,7 @@ test("UX15-C3B2: real spatial index detects overlap with QA shield and no invuln
 
 test("UX15-C3B2: deny boss, architect and hazards until their owners are certified",()=>{
   const state=start();
-  const first=state.encounter.enemies[0];
+  const first=createPhysicalRouteQaState(viewport).encounter.enemies[0];
   const enemy={...first,isBoss:true};
   const collision={...state.encounter,enemies:[enemy]};
   assert.throws(()=>stepRouteCombatBridge(collision,state.bridge!,state.player,0),
