@@ -346,8 +346,8 @@ export const GameHud: React.FC<GameHudProps> = ({
             <article>
               <div><ChevronsRight size={17} aria-hidden="true"/><strong>DASH · E</strong></div>
               <p>{language === "es"
-                ? "Impulso de 180 ms según dirección actual/última. Recarga de 10 s; sin inmunidad ni gasto de resonancia."
-                : "180ms dash in the current/last direction. 10s cooldown; no immunity or resonance cost."}</p>
+                ? "Impulso de 180 ms según dirección actual/última. Recarga de 18 s; sin inmunidad ni gasto de resonancia."
+                : "180ms dash in the current/last direction. 18s cooldown; no immunity or resonance cost."}</p>
               <span>{dashStatus}</span>
             </article>
             <article>
