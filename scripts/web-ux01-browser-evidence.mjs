@@ -760,9 +760,22 @@ async function runCanonicalOrbiRouteQa(name,width,height,touch){
       const cdp=await context.newCDPSession(page);
       const x=bounds.x+bounds.width*.5,y=bounds.y+bounds.height*.62;
       await cdp.send("Input.dispatchTouchEvent",{type:"touchStart",touchPoints:[{x,y}]});
+      await page.waitForTimeout(160);
+      await cdp.send("Input.dispatchTouchEvent",{type:"touchMove",touchPoints:[{x:x+40,y:y-45}]});
+      await page.waitForTimeout(150);
       await cdp.send("Input.dispatchTouchEvent",{type:"touchMove",touchPoints:[{x:x+95,y:y-100}]});
       await page.waitForTimeout(650);
       await cdp.send("Input.dispatchTouchEvent",{type:"touchEnd",touchPoints:[]});
+      // A physical movement is still compulsory: retry the actual native
+      // gesture when browser GLB compositing missed the initial touch-start.
+      if(Number(await lab.getAttribute("data-player-local-y"))>=startY-12){
+        const ax=bounds.x+bounds.width*.45,ay=bounds.y+bounds.height*.75;
+        await cdp.send("Input.dispatchTouchEvent",{type:"touchStart",touchPoints:[{x:ax,y:ay}]});
+        await page.waitForTimeout(180);
+        await cdp.send("Input.dispatchTouchEvent",{type:"touchMove",touchPoints:[{x:ax+45,y:ay-75}]});
+        await page.waitForTimeout(750);
+        await cdp.send("Input.dispatchTouchEvent",{type:"touchEnd",touchPoints:[]});
+      }
       await cdp.detach();
     }else{
       await page.keyboard.down("w");
