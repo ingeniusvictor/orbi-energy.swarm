@@ -393,7 +393,7 @@ export default function PhysicalRouteQa() {
         Math.round(480*availableWidth/Math.max(1,stageHeight))));
       viewportRef.current={width:logicalWidth,height:480,zoom:1};
       if(stateRef.current.physicsTicks===0) {
-        stateRef.current=createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled,c3b2Enabled,c3b3Enabled,c3b4Enabled,c3b5Enabled,c3b6Enabled,c3b7Enabled,c3b8Enabled,c3b9Enabled);
+        stateRef.current=createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled,c3b2Enabled,c3b3Enabled,c3b4Enabled,c3b5Enabled,c3b6Enabled,c3b7Enabled,c3b8Enabled,c3b9Enabled,c3b11Enabled);
       }
       canvas.dataset.logicalWidth=String(logicalWidth);
       canvas.dataset.logicalHeight="480";
@@ -485,7 +485,7 @@ export default function PhysicalRouteQa() {
   },[]);
 
   const reset=()=>{
-    stateRef.current=createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled,c3b2Enabled,c3b3Enabled,c3b4Enabled,c3b5Enabled,c3b6Enabled,c3b7Enabled,c3b8Enabled,c3b9Enabled);
+    stateRef.current=createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled,c3b2Enabled,c3b3Enabled,c3b4Enabled,c3b5Enabled,c3b6Enabled,c3b7Enabled,c3b8Enabled,c3b9Enabled,c3b11Enabled);
     controlsRef.current.clear();
     pointerRef.current=null;
     dashRequestedRef.current=false;
