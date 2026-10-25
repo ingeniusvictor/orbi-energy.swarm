@@ -50,9 +50,9 @@ export interface RouteCoordinateOwners {
 export interface RouteRebasePermit {
   phase: "TICK_BOUNDARY";
   /** Never rebase during unresolved boss phases, attack callbacks or collision. */
-  unresolvedBossPhase: false;
+  unresolvedBossPhase: boolean;
   /** Fail closed if an unregistered world-space system is active. */
-  unregisteredWorldOwners: false;
+  unregisteredWorldOwners: boolean;
 }
 
 export interface RouteCoordinateRebaseResult {
