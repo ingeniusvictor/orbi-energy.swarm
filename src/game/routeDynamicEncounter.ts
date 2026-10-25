@@ -3,6 +3,7 @@ import { EnemyType, type Enemy, type Projectile, type Resource } from "./types";
 import type { RouteLocalPoint } from "./physicalRouteSpace";
 import type { RoutePhysicalCamera, RoutePhysicalViewport } from "./routePhysicalCamera";
 import type { RouteQaEncounter } from "./routePhysicalQaEncounter";
+import { applyRouteCanonicalImpactEffects } from "./routeOrbiImpactFxQa";
 
 /**
  * UX15-C3B-1: deterministic encounter window for the isolated ASTERIA lab.
@@ -34,6 +35,11 @@ export interface RouteDynamicQaState {
   readonly hits: number;
   readonly destroyed: number;
   readonly pickups: number;
+  readonly splashHits:number;
+  readonly slowedHits:number;
+  readonly pushes:number;
+  readonly magneticPulls:number;
+  readonly areaKills:number;
   readonly nextSpawnMs: number;
   readonly nextFireMs: number;
   readonly nextProjectileOrdinal: number;
@@ -43,6 +49,7 @@ export interface RouteDynamicQaState {
 export function createRouteDynamicQaState(): RouteDynamicQaState {
   return {
     spawned:0,culled:0,hits:0,destroyed:0,pickups:0,
+    splashHits:0,slowedHits:0,pushes:0,magneticPulls:0,areaKills:0,
     nextSpawnMs:700,nextFireMs:900,
     nextProjectileOrdinal:0,nextResourceOrdinal:0,
   };
@@ -132,7 +139,14 @@ export function stepRouteDynamicQaEncounter(
   simulatedMs:number,
   combatBridgeEnabled=false,
   orbiWeaponsEnabled=false,
+  impactFxEnabled=false,
 ):{encounter:RouteQaEncounter; dynamic:RouteDynamicQaState} {
+  if(impactFxEnabled && (!combatBridgeEnabled || !orbiWeaponsEnabled))
+    throw new Error("Canonical impact FX requires C3B-2 and C3B-3 QA gates");
+  if(impactFxEnabled&&(encounter.boss!==null||encounter.architectQaBoss!==null||
+    encounter.hazardZones.length>0||encounter.enemies.some(e=>
+      e.type!==EnemyType.CRAWLER || e.isBoss)))
+    throw new Error("Uncertified enemy/boss/hazard impact FX gate");
   if (![deltaMs,simulatedMs,player.x,player.y].every(Number.isFinite) ||
       deltaMs<0 || deltaMs>50+1e-7 || simulatedMs<0)
     throw new RangeError("Invalid physical QA encounter clock");
@@ -142,8 +156,9 @@ export function stepRouteDynamicQaEncounter(
   const enemies=encounter.enemies.map(e=>({...e}));
   const projectiles=encounter.projectiles.map(p=>({...p}));
   const resources=encounter.resources.map(r=>({...r}));
-  let {spawned,culled,hits,destroyed,pickups,nextSpawnMs,nextFireMs,
-    nextProjectileOrdinal,nextResourceOrdinal}=prior;
+  let {spawned,culled,hits,destroyed,pickups,
+    splashHits,slowedHits,pushes,magneticPulls,areaKills,
+    nextSpawnMs,nextFireMs,nextProjectileOrdinal,nextResourceOrdinal}=prior;
 
   if(simulatedMs>=nextSpawnMs){
     nextSpawnMs+=ROUTE_QA_SPAWN_PERIOD_MS;
@@ -165,13 +180,18 @@ export function stepRouteDynamicQaEncounter(
   }
 
   for(const enemy of enemies){
+    if(impactFxEnabled&&enemy.slowTimer!==undefined&&enemy.slowTimer>0)
+      enemy.slowTimer=Math.max(0,enemy.slowTimer-deltaMs);
     const dx=player.x-enemy.x,dy=player.y-enemy.y;
     const length=Math.hypot(dx,dy);
     if(length>0.01){
       // C3B-1 visual QA held enemies at 55 units, never touching ENERGY.
       // Opt-in C3B-2 allows actual physical contact with the QA shield.
       const stopDistance=combatBridgeEnabled?24:55;
-      const advance=Math.min(enemy.speed*dt,Math.max(0,length-stopDistance));
+      // Legacy HYDRO slows enemy movement to 45% while slowTimer is active.
+      const slowFactor=impactFxEnabled&&(enemy.slowTimer??0)>0?.45:1;
+      const advance=Math.min(enemy.speed*slowFactor*dt,
+        Math.max(0,length-stopDistance));
       enemy.x+=advance*dx/length;enemy.y+=advance*dy/length;
     }
   }
@@ -220,12 +240,26 @@ export function stepRouteDynamicQaEncounter(
     if(victim){
       shot.life=0;hits++;
       victim.health=Math.max(0,victim.health-shot.damage);
-      if(victim.health===0){
-        victim.isDead=true;destroyed++;
+      // C3B-4 applies metadata only AFTER real swept contact, never per
+      // frame or on missed/expired shots. Legacy C3B1-3 retain old behavior.
+      const fx=impactFxEnabled
+        ? applyRouteCanonicalImpactEffects(shot,victim,enemies)
+        : null;
+      splashHits+=fx?.splashHits??0;
+      slowedHits+=fx?.slows??0;
+      pushes+=fx?.pushes??0;
+      magneticPulls+=fx?.pulls??0;
+      areaKills+=fx?.splashKills.length??0;
+      const casualties=[
+        ...(victim.health===0?[victim]:[]),...(fx?.splashKills??[]),
+      ];
+      for(const killed of casualties){
+        killed.isDead=true;
+        destroyed++;
         if(resources.length<Math.min(MAX_RESOURCES,ROUTE_QA_RESOURCE_CAP)){
           resources.push({
             id:`route-qa-drop-${nextResourceOrdinal++}`,type:"ENERGY",
-            x:victim.x,y:victim.y,size:9,color:"#67e8f9",amount:1,
+            x:killed.x,y:killed.y,size:9,color:"#67e8f9",amount:1,
             spawnTime:simulatedMs,
           });
         }
@@ -246,7 +280,8 @@ export function stepRouteDynamicQaEncounter(
   return {
     encounter:{...encounter,enemies:remainingEnemies,
       projectiles:remainingShots,resources:remainingDrops},
-    dynamic:{spawned,culled:Math.max(0,culled),hits,destroyed,pickups,nextSpawnMs,
+    dynamic:{spawned,culled:Math.max(0,culled),hits,destroyed,pickups,
+      splashHits,slowedHits,pushes,magneticPulls,areaKills,nextSpawnMs,
       nextFireMs,nextProjectileOrdinal,nextResourceOrdinal},
   };
 }
