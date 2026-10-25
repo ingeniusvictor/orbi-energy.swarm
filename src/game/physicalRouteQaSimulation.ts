@@ -32,6 +32,7 @@ import {
   type RouteWave1QaState,
 } from "./routeWave1Qa";
 import { rebaseRouteCoordinateOwners } from "./routeCoordinateOwners";
+import { armRouteDroneDuelQa, createRouteDroneDuelQaState, stepRouteDroneDuelQa, type RouteDroneDuelQaState } from "./routeDroneDuelQa";
 import {
   beginRouteOverdriveQa,createRouteOverdriveQaState,
   endRouteOverdriveQa,type RouteOverdriveQaState,
@@ -86,6 +87,7 @@ export interface PhysicalRouteQaState {
   readonly wave1Qa:RouteWave1QaState|null;
   readonly wave2Qa:RouteWave2QaState|null;
   readonly eliteQaEnabled:boolean;
+  readonly droneDuelQa:RouteDroneDuelQaState|null;
   readonly rebases: number;
   readonly physicsTicks: number;
 }
@@ -107,7 +109,10 @@ export function createPhysicalRouteQaState(
   enableWave1Qa = false,
   enableWave2Qa = false,
   enableEliteQa = false,
+  enableDroneDuelQa = false,
 ): PhysicalRouteQaState {
+  if(enableDroneDuelQa&&!enableEliteQa)
+    throw new Error("C3B11 physical duel requires C3B10 and prior Wave2 elites");
   if(enableEliteQa&&!enableWave2Qa)
     throw new Error("Physical elite QA requires C3B-8 Wave2");
   if(enableWave2Qa&&!enableWave1Qa)
@@ -168,9 +173,17 @@ export function createPhysicalRouteQaState(
     wave1Qa:enableWave1Qa?createRouteWave1QaState():null,
     wave2Qa:enableWave2Qa?createRouteWave2QaState():null,
     eliteQaEnabled:enableEliteQa,
+    droneDuelQa:enableDroneDuelQa?createRouteDroneDuelQaState():null,
     rebases: 0,
     physicsTicks: 0,
   };
+}
+
+/** Explicit offline action. Never alters Wave3 status or campaign ownership. */
+export function armPhysicalRouteDroneDuelQa(state:PhysicalRouteQaState):PhysicalRouteQaState {
+  if(!state.droneDuelQa)throw new Error("C3B11 duel flag not enabled");
+  return {...state,droneDuelQa:armRouteDroneDuelQa(state.droneDuelQa,
+    state.player,state.wave2Qa?.status==="GATED_WAVE3")};
 }
 
 export function stepPhysicalRouteQa(
@@ -333,6 +346,13 @@ export function stepPhysicalRouteQa(
         frame.cursor.simulatedMs,[],bridge.contactHits-beforeHits);
     }
   }
+  let droneDuelQa=state.droneDuelQa;
+  if(droneDuelQa){
+    if(droneDuelQa.status==="ACTIVE" && wave2Qa?.status!=="GATED_WAVE3")
+      throw new Error("Live Drone QA denied before Wave3 gate");
+    droneDuelQa=stepRouteDroneDuelQa(droneDuelQa,player,camera,viewport,dt,
+      frame.cursor.simulatedMs);
+  }
   let rebases = state.rebases;
   const deltaX = planRouteOriginShift(frame,player.x);
   if (deltaX !== null) {
@@ -344,11 +364,19 @@ export function stepPhysicalRouteQa(
     // visual effects later with a second independent coordinate calculation.
     const beamTrail=convergenceQa?.convergence.trail
       ?{...convergenceQa.convergence.trail}:null;
+    // Register all independent hostile QA owners in the SAME atomic rebase.
+    // Clone first: no mutation of a previous immutable simulation snapshot.
+    if(droneDuelQa?.status==="ACTIVE"){
+      droneDuelQa={...droneDuelQa,
+        actor:droneDuelQa.actor?{...droneDuelQa.actor}:null,
+        projectiles:droneDuelQa.projectiles.map(p=>({...p}))};
+    }
     const transaction = rebaseRouteCoordinateOwners({
       ...encounter, frame, player, camera,
-      extraWorldAnchors:beamTrail
-        ?[...encounter.extraWorldAnchors,beamTrail]
-        :encounter.extraWorldAnchors,
+      extraWorldAnchors:[...encounter.extraWorldAnchors,
+        ...(beamTrail?[beamTrail]:[]),
+        ...(droneDuelQa?.actor?[droneDuelQa.actor]:[]),
+        ...(droneDuelQa?.projectiles??[])],
     },deltaX,{
       phase:"TICK_BOUNDARY",unresolvedBossPhase:false,unregisteredWorldOwners:false,
     });
@@ -373,6 +401,7 @@ export function stepPhysicalRouteQa(
     wave1Qa,
     wave2Qa,
     eliteQaEnabled:state.eliteQaEnabled,
+    droneDuelQa,
     rebases,
     physicsTicks: state.physicsTicks + 1,
   };
