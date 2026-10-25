@@ -1512,9 +1512,14 @@ async function runFotonPropulsionQa(name,width,height,touch){
     null,{timeout:15000});
   const initialLength=Number(await canvas.getAttribute("data-c3b12-thrust-length"));
   check(initialLength>25&&initialLength<34,name+": cruising exhaust not sized correctly");
-  const initialX=Number(await lab.getAttribute("data-player-local-x"));
+  // The actor's LOCAL x may decrease during a legitimate floating-origin
+  // rebase. Certify monotonic forward physical travel in the reconstituted
+  // world coordinate, without accepting any backwards player movement.
+  const worldX=async()=>Number(await lab.getAttribute("data-player-local-x"))+
+    Number(await lab.getAttribute("data-origin-offset-x"));
+  const initialX=await worldX();
   await page.waitForTimeout(520);
-  check(Number(await lab.getAttribute("data-player-local-x"))>initialX,
+  check(await worldX()>initialX,
     name+": FOTON did not advance with its physical thrusters");
   await page.getByTestId("ux15-c3b2-dash").click({timeout:15000});
   await page.waitForFunction(()=>document.querySelector(
