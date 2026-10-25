@@ -7917,6 +7917,11 @@ export const EnergySwarmGame: React.FC = () => {
       runOrbiAcquiredRef.current,
       energyThrusterPoseRef.current.bankRadians,
     );
+    // World-space charge filaments and short electric stroke over ENERGY.
+    drawOrbiConvergence(
+      ctx, convergenceRef.current, timeElapsedRef.current,
+      playerPosRef.current, swarmRef.current, flashProfile.mode === "REDUCED",
+    );
 
     // UX11-E: bounded propulsion streaks, no Dyson rings, no gameplay immunity.
     if (projectPropulsionDash(propulsionDashRef.current, timeElapsedRef.current).active) {
@@ -8983,6 +8988,8 @@ export const EnergySwarmGame: React.FC = () => {
                 dashCanActivate={dashView.canActivate && !isPaused && !isGameOver && !isPhotoMode && !isUpgradeSelectionOpen}
                 dashCooldownRemainingMs={dashView.cooldownRemainingMs}
                 onActivateDash={handleDashActivation}
+                convergence={convergenceView}
+                onActivateConvergence={handleConvergenceActivation}
                 onTogglePause={mobilePanel !== "closed" ? () => changeImmersivePanel("closed") : togglePause}
                 onToggleMute={toggleMute}
                 immersive={immersiveLandscapeMode}
@@ -9145,6 +9152,11 @@ export const EnergySwarmGame: React.FC = () => {
                   onDash={handleDashActivation} dashActive={dashView.active}
                   dashReady={dashView.canActivate} dashCooldownRemainingMs={dashView.cooldownRemainingMs}
                   onOverdrive={handleOverdriveActivation}
+                  onConvergence={handleConvergenceActivation}
+                  convergenceReady={convergenceView.canActivate}
+                  convergenceChanneling={convergenceView.channeling}
+                  convergenceUsedThisWave={convergenceView.usedThisWave}
+                  convergenceCooldownRemainingMs={convergenceView.cooldownRemainingMs}
                   overdriveReady={combatOverdriveView.canActivate}
                   overdriveActive={combatOverdriveView.active}
                   overdriveRemainingMs={combatOverdriveView.active ? combatOverdriveView.remainingMs : combatOverdriveView.reentryRemainingMs}
