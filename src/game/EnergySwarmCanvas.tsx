@@ -1439,7 +1439,8 @@ export function drawEnemiesList(
 
         // Premium art replaces the armor only. The old rear reactor,
         // charge warning cone and speed trails stay independent.
-        if (!drawPremiumEnemyBody(ctx, enemy)) {
+        const premiumArmored = drawPremiumEnemyBody(ctx, enemy);
+        if (!premiumArmored) {
         // Main body armor triangular profile
         ctx.fillStyle = "#030712"; // negro
         ctx.strokeStyle = "#8b5cf6"; // borde violeta
@@ -1471,13 +1472,21 @@ export function drawEnemiesList(
         ctx.fill();
         }
 
-        // Exposed rear core engine
-        ctx.fillStyle = "#ef4444"; // rojo intenso
+        // Exposed rear core engine: same reactive indicator, but keep the
+        // premium armor visible instead of painting a flat dot across it.
+        ctx.save();
+        ctx.fillStyle = premiumArmored ? "#fb923c" : "#ef4444";
         ctx.shadowColor = "#f43f5e";
-        ctx.shadowBlur = 8;
+        ctx.shadowBlur = premiumArmored ? 5 : 8;
         ctx.beginPath();
-        ctx.arc(0, enemy.size * 0.65, enemy.size * 0.35, 0, Math.PI * 2);
+        if (premiumArmored) {
+          ctx.ellipse(0, enemy.size * 0.82, enemy.size * 0.12,
+            enemy.size * 0.22, 0, 0, Math.PI * 2);
+        } else {
+          ctx.arc(0, enemy.size * 0.65, enemy.size * 0.35, 0, Math.PI * 2);
+        }
         ctx.fill();
+        ctx.restore();
         break;
       }
 
@@ -1600,7 +1609,8 @@ export function drawEnemiesList(
         
         // Swap only the Devourer chassis. Keep six original pulsating
         // satellites + animated hostile pupil (and all boss attack logic).
-        if (!drawPremiumEnemyBody(ctx, enemy)) {
+        const premiumDevourer = drawPremiumEnemyBody(ctx, enemy);
+        if (!premiumDevourer) {
         // Main mass
         ctx.fillStyle = "#1e1b4b"; // Deep violet core
         ctx.strokeStyle = enemy.color; // Rose bright boundaries
@@ -1611,27 +1621,59 @@ export function drawEnemiesList(
         ctx.stroke();
         }
 
-        // 6 segmented orbiting dark plasma wings
+        // 6 segmented orbiting dark plasma wings, same orbital logic.
+        // New art gets luminous satellite ports rather than flat discs.
         ctx.fillStyle = enemy.color;
         for (let i = 0; i < 6; i++) {
           const wingAngle = (i * Math.PI) / 3 + time * 0.002;
           const wx = Math.cos(wingAngle) * (enemy.size * 1.3);
           const wy = Math.sin(wingAngle) * (enemy.size * 1.3);
+          const radius = 10 + Math.sin(time * 0.005 + i) * 3;
           ctx.beginPath();
-          ctx.arc(wx, wy, 10 + Math.sin(time * 0.005 + i) * 3, 0, Math.PI * 2);
-          ctx.fill();
+          ctx.arc(wx, wy, premiumDevourer ? radius * 0.72 : radius, 0, Math.PI * 2);
+          if (premiumDevourer) {
+            ctx.save();
+            ctx.shadowBlur = 9;
+            ctx.shadowColor = "#c084fc";
+            ctx.lineWidth = 1.8;
+            ctx.strokeStyle = "#d8b4fe";
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(wx, wy, radius * 0.23, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+          } else {
+            ctx.fill();
+          }
         }
 
-        // Central hyper giant evil glowing pupil eye
-        ctx.fillStyle = "#000000";
-        ctx.beginPath();
-        ctx.arc(0, 0, enemy.size * 0.45, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.fillStyle = "#f43f5e"; // bright rose pupil
-        ctx.beginPath();
-        ctx.arc(Math.sin(time * 0.003) * 3, Math.cos(time * 0.003) * 3, enemy.size * 0.25, 0, Math.PI * 2);
-        ctx.fill();
+        // Central hyper giant evil glowing pupil eye: keep movement and
+        // pulse, but preserve the magma reactor visible through the new art.
+        if (premiumDevourer) {
+          ctx.save();
+          ctx.lineWidth = 1.7;
+          ctx.strokeStyle = "#f0abfc";
+          ctx.shadowColor = "#f43f5e";
+          ctx.shadowBlur = 6;
+          ctx.beginPath();
+          ctx.arc(0, 0, enemy.size * 0.17, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.fillStyle = "#fb7185";
+          ctx.beginPath();
+          ctx.arc(Math.sin(time * 0.003) * 3, Math.cos(time * 0.003) * 3,
+            enemy.size * 0.05, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        } else {
+          ctx.fillStyle = "#000000";
+          ctx.beginPath();
+          ctx.arc(0, 0, enemy.size * 0.45, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = "#f43f5e";
+          ctx.beginPath();
+          ctx.arc(Math.sin(time * 0.003) * 3, Math.cos(time * 0.003) * 3, enemy.size * 0.25, 0, Math.PI * 2);
+          ctx.fill();
+        }
         break;
       }
     }
