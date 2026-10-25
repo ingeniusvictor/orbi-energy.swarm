@@ -35,6 +35,7 @@ type QaTelemetry = {
   shield: number; contactHits: number; indexedEnemies:number;
   dashActivatedAtMs:number; dashCooldownMs:number; nearestEnemyDistance:number;
   orbiShots:number; orbiEchoes:number; orbiTargets:number; orbiSupport:number;
+  splashHits:number; slows:number; pushes:number; pulls:number; areaKills:number;
 };
 const initialTelemetry = (): QaTelemetry => ({
   distance: 0, ordinal: 0, playerX: 800, playerY: 480,
@@ -44,12 +45,14 @@ const initialTelemetry = (): QaTelemetry => ({
   shield:100,contactHits:0,indexedEnemies:0,dashActivatedAtMs:-1,
   dashCooldownMs:0,nearestEnemyDistance:-1,
   orbiShots:0,orbiEchoes:0,orbiTargets:0,orbiSupport:0,
+  splashHits:0,slows:0,pushes:0,pulls:0,areaKills:0,
 });
 const routeParams=typeof window !== "undefined"
   ? new URLSearchParams(window.location.search):new URLSearchParams();
 const c3bPreviewEnabled=routeParams.get("ux15-c3b")==="1";
 const c3b2Enabled=c3bPreviewEnabled && routeParams.get("ux15-c3b2")==="1";
 const c3b3Enabled=c3b2Enabled && routeParams.get("ux15-c3b3")==="1";
+const c3b4Enabled=c3b3Enabled && routeParams.get("ux15-c3b4")==="1";
 const arrowKeys = new Set(["w","a","s","d","arrowup","arrowdown","arrowleft","arrowright"]);
 
 /**
@@ -62,7 +65,7 @@ const arrowKeys = new Set(["w","a","s","d","arrowup","arrowdown","arrowleft","ar
 export default function PhysicalRouteQa() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const viewportRef = useRef<RoutePhysicalViewport>({ width: 800, height: 480, zoom: 1 });
-  const stateRef = useRef<PhysicalRouteQaState>(createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled,c3b2Enabled,c3b3Enabled));
+  const stateRef = useRef<PhysicalRouteQaState>(createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled,c3b2Enabled,c3b3Enabled,c3b4Enabled));
   const controlsRef = useRef(new Set<string>());
   const dashRequestedRef=useRef(false);
   const pointerRef = useRef<{ id:number; startX:number; startY:number; x:number; y:number } | null>(null);
@@ -106,6 +109,11 @@ export default function PhysicalRouteQa() {
       orbiEchoes:s.weapons?.echoShots??0,
       orbiTargets:s.weapons?.targetsAcquired??0,
       orbiSupport:s.weapons?.supportRestored??0,
+      splashHits:s.dynamic?.splashHits??0,
+      slows:s.dynamic?.slowedHits??0,
+      pushes:s.dynamic?.pushes??0,
+      pulls:s.dynamic?.magneticPulls??0,
+      areaKills:s.dynamic?.areaKills??0,
     });
   };
 
@@ -178,7 +186,9 @@ export default function PhysicalRouteQa() {
       ctx.fillStyle="rgba(3,16,30,.78)";
       ctx.fillRect(12,11,330,32);
       ctx.fillStyle="#8ff5ec";
-      ctx.fillText(c3b3Enabled
+      ctx.fillText(c3b4Enabled
+        ? "C3B-4 · AREA / SLOW / PUSH / MAGNET QA"
+        :c3b3Enabled
         ? "C3B-3 · 10 CANONICAL ORBI ATTACK PROFILES"
         :c3b2Enabled
         ? "C3B-2 · DASH + CONTACT · QA SHIELD"
@@ -197,7 +207,7 @@ export default function PhysicalRouteQa() {
         Math.round(480*availableWidth/Math.max(1,stageHeight))));
       viewportRef.current={width:logicalWidth,height:480,zoom:1};
       if(stateRef.current.physicsTicks===0) {
-        stateRef.current=createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled,c3b2Enabled,c3b3Enabled);
+        stateRef.current=createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled,c3b2Enabled,c3b3Enabled,c3b4Enabled);
       }
       canvas.dataset.logicalWidth=String(logicalWidth);
       canvas.dataset.logicalHeight="480";
@@ -270,7 +280,7 @@ export default function PhysicalRouteQa() {
   },[]);
 
   const reset=()=>{
-    stateRef.current=createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled,c3b2Enabled,c3b3Enabled);
+    stateRef.current=createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled,c3b2Enabled,c3b3Enabled,c3b4Enabled);
     controlsRef.current.clear();
     pointerRef.current=null;
     dashRequestedRef.current=false;
@@ -295,7 +305,12 @@ export default function PhysicalRouteQa() {
   };
   return (
     <main className="ux15-route-qa ux15-physical-qa" data-testid="ux15-physical-qa"
-      data-qa-mode={c3b3Enabled?"PHYSICAL_ROUTE_C3B3_QA":c3b2Enabled?"PHYSICAL_ROUTE_C3B2_QA":c3bPreviewEnabled?"PHYSICAL_ROUTE_C3B1_QA":"PHYSICAL_ROUTE_ISOLATED"}
+      data-qa-mode={c3b4Enabled?"PHYSICAL_ROUTE_C3B4_QA":c3b3Enabled?"PHYSICAL_ROUTE_C3B3_QA":c3b2Enabled?"PHYSICAL_ROUTE_C3B2_QA":c3bPreviewEnabled?"PHYSICAL_ROUTE_C3B1_QA":"PHYSICAL_ROUTE_ISOLATED"}
+      data-c3b4-splash-hits={telemetry.splashHits}
+      data-c3b4-slows={telemetry.slows}
+      data-c3b4-pushes={telemetry.pushes}
+      data-c3b4-magnetic-pulls={telemetry.pulls}
+      data-c3b4-area-kills={telemetry.areaKills}
       data-c3b3-orbi-shots={telemetry.orbiShots}
       data-c3b3-orbi-echoes={telemetry.orbiEchoes}
       data-c3b3-orbi-targets={telemetry.orbiTargets}
@@ -328,17 +343,21 @@ export default function PhysicalRouteQa() {
       data-glb-status={telemetry.glb}>
       <header className="ux15-route-qa__header">
         <div>
-          <span className="ux15-route-qa__eyebrow">ORBI ENERGY SWARM · {c3b3Enabled?"UX15-C3B-3":c3b2Enabled?"UX15-C3B-2":c3bPreviewEnabled?"UX15-C3B-1":"UX15-C3A-3"}</span>
+          <span className="ux15-route-qa__eyebrow">ORBI ENERGY SWARM · {c3b4Enabled?"UX15-C3B-4":c3b3Enabled?"UX15-C3B-3":c3b2Enabled?"UX15-C3B-2":c3bPreviewEnabled?"UX15-C3B-1":"UX15-C3A-3"}</span>
           <h1>{locale==="es"?"LABORATORIO DE TRAVESÍA FÍSICA":"PHYSICAL TRAVERSAL LAB"}</h1>
           <p>{locale==="es"
-            ?(c3b3Enabled
+            ?(c3b4Enabled
+              ?"Impactos ORBI físicos: explosiones, ralentización, empuje y magnetismo. Prototipo aislado, sin premios de campaña."
+              :c3b3Enabled
               ?"ORBI canónicos con diez perfiles de ataque y selección espacial real de objetivos. Disparos experimentales y sin recompensas de partida."
               :c3b2Enabled
               ?"Puente físico QA: Dash auténtico sin paredes horizontales y detección de contacto con índice espacial real. Sin pérdida de estadísticas ni recompensas."
               :c3bPreviewEnabled
               ?"Encuentro físico QA: enemigos aparecen fuera de cámara, persiguen a ENERGY y reciben impactos. Sin recompensas ni combate de campaña."
               :"ENERGY, cámara y 30 ORBI recorren ASTERIA junto a enemigos, balas y recursos controlados. Sin daño ni recompensas.")
-            :(c3b3Enabled
+            :(c3b4Enabled
+              ?"Physical ORBI impact QA: splash damage, slowing, pushback and magnetism. Isolated prototype; no campaign rewards."
+              :c3b3Enabled
               ?"Canonical ORBI with ten real attack profiles and spatial enemy targeting. Experimental shots; no live rewards."
               :c3b2Enabled
               ?"Physical QA bridge: canonical Dash with no horizontal wall and shared spatial contact detection. No game stats or rewards."
@@ -367,6 +386,12 @@ export default function PhysicalRouteQa() {
         <div><span>{locale==="es"?"Cámara · X":"Camera · X"}</span><strong>{Math.round(telemetry.cameraX)} u</strong></div>
         <div><span>{locale==="es"?"Segmento":"Segment"}</span><strong>{telemetry.ordinal+1}</strong></div>
         <div><span>Origin epoch</span><strong>{telemetry.originEpoch}</strong></div>
+        {c3b4Enabled && <>
+          <div><span>Daño de área</span><strong>{telemetry.splashHits} impactos</strong></div>
+          <div><span>Ralentizaciones</span><strong>{telemetry.slows}</strong></div>
+          <div><span>Empujes / atracciones</span><strong>{telemetry.pushes} / {telemetry.pulls}</strong></div>
+          <div><span>Bajas por área</span><strong>{telemetry.areaKills}</strong></div>
+        </>}
         {c3b3Enabled && <>
           <div><span>ORBI disparos</span><strong>{telemetry.orbiShots}</strong></div>
           <div><span>Objetivos adquiridos</span><strong>{telemetry.orbiTargets}</strong></div>
