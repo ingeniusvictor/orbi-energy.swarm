@@ -63,6 +63,9 @@ export default function WorldRouteQaPreview() {
     };
     const onKeyUp = (e: KeyboardEvent) => pressedRef.current.delete(e.key.toLowerCase());
     const blur = () => { pressedRef.current.clear();pointerRef.current = null; };
+    // Visibility resumption starts with zero simulated delta, not one artificial
+    // 50ms advancement after Chrome has suspended requestAnimationFrame.
+    const onVisibility = () => { last = 0; if (document.hidden) blur(); };
     const tick = (now: number) => {
       if (disposed) return;
       frame = requestAnimationFrame(tick);
@@ -106,6 +109,7 @@ export default function WorldRouteQaPreview() {
     window.addEventListener("keydown", onKeyDown);
     window.addEventListener("keyup", onKeyUp);
     window.addEventListener("blur", blur);
+    document.addEventListener("visibilitychange", onVisibility);
     canvas.addEventListener("pointercancel", blur);
     drawWorldRouteQaScene(ctx, cursorRef.current, playerRef.current);
     frame = requestAnimationFrame(tick);
@@ -115,6 +119,7 @@ export default function WorldRouteQaPreview() {
       window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("keyup", onKeyUp);
       window.removeEventListener("blur", blur);
+      document.removeEventListener("visibilitychange", onVisibility);
       canvas.removeEventListener("pointercancel", blur);
       pressedRef.current.clear();
       pointerRef.current = null;
