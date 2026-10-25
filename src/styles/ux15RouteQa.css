@@ -24,7 +24,7 @@
   border:1px solid rgba(85,211,231,.54);border-radius:12px;overflow:hidden;
   box-shadow:0 0 45px rgba(29,170,201,.12);background:#050e20}
 .ux15-route-qa__viewport canvas{
-  display:block;width:auto;height:auto;max-width:100%;max-height:min(64dvh,640px);
+  display:block;width:100%;height:auto;max-width:100%;max-height:min(64dvh,640px);
   aspect-ratio:5/3;touch-action:none;object-fit:contain}
 .ux15-route-qa__flag{position:absolute;right:10px;top:9px;pointer-events:none;
   font:900 10px/1 monospace;letter-spacing:.09em;color:#f3c58f;
@@ -47,7 +47,7 @@
   .ux15-route-qa__header h1{font-size:14px}
   .ux15-route-qa__header p,.ux15-route-qa__footer p{font-size:9px}
   .ux15-route-qa__eyebrow{font-size:8px}
-  .ux15-route-qa__viewport{width:min(100%,610px)}
+  .ux15-route-qa__viewport{width:100%}
   .ux15-route-qa__viewport canvas{max-height:56dvh}
   .ux15-route-qa__telemetry{grid-template-columns:repeat(4,minmax(0,1fr))}
   .ux15-route-qa__telemetry>div{padding:4px 7px}
