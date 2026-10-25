@@ -204,6 +204,7 @@ export function stepPhysicalRouteQa(
       state.frame.cursor.simulatedMs,
       currentWaveKey,
       true,state.bridge?.shield??0,
+      state.wave2Qa!==null&&state.frame.cursor.simulatedMs>=ROUTE_WAVE2_START_MS,
     );
     convergenceQa=admitted.convergenceQa;
     activatedOverdrive=admitted.overdriveQa;
@@ -263,6 +264,7 @@ export function stepPhysicalRouteQa(
         ?state.wave2Qa.waveKey:state.wave1Qa?.waveKey??
           routeConvergenceWaveKey(frame.cursor.segmentOrdinal),
       bridge?.shield??0,
+      state.wave2Qa!==null&&frame.cursor.simulatedMs>=ROUTE_WAVE2_START_MS,
     );
     convergenceQa=resolved.convergenceQa;
     encounter=resolved.encounter;
