@@ -67,9 +67,7 @@ export function stepRouteCombatBridge(
     throw new RangeError("Invalid route combat-bridge clock/position");
   // No boss phases, telegraphs or registered hazards have been certified.
   if(encounter.boss!==null || encounter.architectQaBoss!==null ||
-     encounter.hazardZones.length>0 && encounter.hazardZones.some(
-       zone=>zone.r!==undefined && zone.r>0,
-     ) ||
+     encounter.hazardZones.length>0 ||
      encounter.enemies.some(enemy=>enemy.isBoss)){
     throw new Error("Uncertified boss/hazard encounter is denied by C3B2 gate");
   }
