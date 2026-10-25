@@ -22,6 +22,7 @@ interface Props {
   onOpen: (tab: MobileLaunchTab, section?: MobileLaunchSection) => void;
   onPlay: () => void;
   onScoreAttack: () => void;
+  onWorldRoute: () => void;
   hasInfiniteRecord: boolean;
   audioMuted: boolean;
   musicEnabled: boolean;
@@ -35,7 +36,7 @@ interface Props {
 
 export const MobileLaunchNavigation: React.FC<Props> = ({
   layer, section, tab, language, onLanguage, onEnter, onBack,
-  onOpen, onPlay, onScoreAttack, hasInfiniteRecord,
+  onOpen, onPlay, onScoreAttack, onWorldRoute, hasInfiniteRecord,
   audioMuted, musicEnabled, soundEffectsEnabled, onAudioToggle, onMusicToggle, onEffectsToggle,
   nanoCredits = 0, purifiedEnergy = 0,
 }) => {
@@ -43,7 +44,7 @@ export const MobileLaunchNavigation: React.FC<Props> = ({
   // Portrait fallback uses a text-free world illustration, never Spanish
   // buttons and logos baked into a WebP beneath real English controls.
   const worldImage = 'url("' + import.meta.env.BASE_URL + 'ux09/orbi-command-world.svg")';
-  const [selectedMode, setSelectedMode] = useState<"CAMPAIGN" | "SCORE_ATTACK" | "INFINITE">("CAMPAIGN");
+  const [selectedMode, setSelectedMode] = useState<"CAMPAIGN" | "SCORE_ATTACK" | "WORLD_ROUTE" | "INFINITE">("CAMPAIGN");
   const [landscape, setLandscape] = useState(() =>
     typeof window !== "undefined" && window.matchMedia("(orientation: landscape)").matches
   );
@@ -79,6 +80,15 @@ export const MobileLaunchNavigation: React.FC<Props> = ({
       Icon: Gauge, action: onScoreAttack, locked: false, accent: "cyan",
     },
     {
+      id: "WORLD_ROUTE" as const,
+      name: es ? "TRAVESÍA DE MUNDOS" : "WORLD TRAVERSAL",
+      subtitle: es ? "ASTERIA · BETA" : "ASTERIA · BETA",
+      description: es
+        ? "Recorre ASTERIA en horizontal 2.5D con ENERGY y sus ORBI. Beta con combate y mejoras de Campaña."
+        : "Travel across ASTERIA in 2.5D with ENERGY and its ORBIs. Beta with Campaign combat and upgrades.",
+      Icon: Compass, action: onWorldRoute, locked: false, accent: "teal",
+    },
+    {
       id: "INFINITE" as const, name: "INFINITE", subtitle: es ? "DESBLOQUEAR EN CAMPAÑA" : "UNLOCK THROUGH CAMPAIGN",
       description: es ? "Sobrevive a oleadas interminables de enemigos y alcanza nuevas fronteras de puntuación." : "Survive endless enemy waves and reach new scoring frontiers.",
       Icon: LockKeyhole, action: undefined, locked: true, accent: "violet",
@@ -87,7 +97,7 @@ export const MobileLaunchNavigation: React.FC<Props> = ({
   if (artLayer) return (
     <PremiumNativeNavigation layer={layer} section={section} tab={tab} language={language}
       onLanguage={onLanguage} onEnter={onEnter} onBack={onBack} onOpen={onOpen}
-      onPlay={onPlay} onScoreAttack={onScoreAttack} hasInfiniteRecord={hasInfiniteRecord}
+      onPlay={onPlay} onScoreAttack={onScoreAttack} onWorldRoute={onWorldRoute} hasInfiniteRecord={hasInfiniteRecord}
       audioMuted={audioMuted} musicEnabled={musicEnabled} soundEffectsEnabled={soundEffectsEnabled}
       onAudioToggle={onAudioToggle} onMusicToggle={onMusicToggle} onEffectsToggle={onEffectsToggle}
       nanoCredits={nanoCredits} purifiedEnergy={purifiedEnergy}/>
@@ -183,7 +193,7 @@ export const MobileLaunchNavigation: React.FC<Props> = ({
                           <LockKeyhole size={18}/>{hasInfiniteRecord ? (es ? "DESDE CAMPAÑA" : "FROM CAMPAIGN") : (es ? "BLOQUEADO" : "LOCKED")}
                         </div>
                       ) : (
-                        <button data-testid={mode.id === "CAMPAIGN" ? "orbi-mobile-campaign" : "orbi-mobile-score-attack"}
+                        <button data-testid={mode.id === "CAMPAIGN" ? "orbi-mobile-campaign" : mode.id === "WORLD_ROUTE" ? "orbi-mobile-world-route" : "orbi-mobile-score-attack"}
                           className="orbi-ux09-mode-action" onClick={mode.action}>
                           {es ? "INICIAR" : "START"} <ChevronRight size={18}/>
                         </button>
