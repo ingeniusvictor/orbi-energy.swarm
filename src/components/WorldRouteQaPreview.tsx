@@ -28,8 +28,11 @@ export default function WorldRouteQaPreview() {
   const [reduced, setReduced] = useState(false);
 
   const repaint = () => {
-    const ctx = canvasRef.current?.getContext("2d", { alpha: false });
-    if (ctx) drawWorldRouteQaScene(ctx, cursorRef.current, playerRef.current, logicalWidthRef.current);
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext("2d", { alpha: false });
+    if (ctx && canvas) canvas.dataset.ux15Art = drawWorldRouteQaScene(
+      ctx, cursorRef.current, playerRef.current, logicalWidthRef.current,
+    ) ? "premium" : "fallback";
     const cursor = cursorRef.current;
     setTelemetry({
       ordinal: cursor.segmentOrdinal,
@@ -61,7 +64,9 @@ export default function WorldRouteQaPreview() {
       canvas.width = Math.round(logicalWidth * dpr);
       canvas.height = Math.round(480 * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      drawWorldRouteQaScene(ctx, cursorRef.current, playerRef.current, logicalWidth);
+      canvas.dataset.ux15Art = drawWorldRouteQaScene(
+        ctx, cursorRef.current, playerRef.current, logicalWidth,
+      ) ? "premium" : "fallback";
     };
     onResize();
     let frame = 0;
@@ -114,7 +119,9 @@ export default function WorldRouteQaPreview() {
       );
       if (now - lastPaint >= 1000 / 30) {
         lastPaint = now;
-        drawWorldRouteQaScene(ctx, cursorRef.current, playerRef.current, logicalWidthRef.current);
+        canvas.dataset.ux15Art = drawWorldRouteQaScene(
+          ctx, cursorRef.current, playerRef.current, logicalWidthRef.current,
+        ) ? "premium" : "fallback";
         if (++paintCounter % 9 === 0) {
           const cursor = cursorRef.current;
           setTelemetry({ ordinal: cursor.segmentOrdinal,
@@ -129,7 +136,9 @@ export default function WorldRouteQaPreview() {
     window.addEventListener("blur", blur);
     document.addEventListener("visibilitychange", onVisibility);
     canvas.addEventListener("pointercancel", blur);
-    drawWorldRouteQaScene(ctx, cursorRef.current, playerRef.current, logicalWidthRef.current);
+    canvas.dataset.ux15Art = drawWorldRouteQaScene(
+          ctx, cursorRef.current, playerRef.current, logicalWidthRef.current,
+        ) ? "premium" : "fallback";
     frame = requestAnimationFrame(tick);
     return () => {
       disposed = true;
@@ -149,6 +158,13 @@ export default function WorldRouteQaPreview() {
   const goReset = () => {
     cursorRef.current = createRouteCursor();
     playerRef.current = { manualX: 0, y: 240 };
+    repaint();
+  };
+  const nextArtSection = () => {
+    const cursor = cursorRef.current;
+    cursorRef.current = {
+      ...cursor, segmentOrdinal: cursor.segmentOrdinal + 1, offset: 0,
+    };
     repaint();
   };
   const onPointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
@@ -211,6 +227,9 @@ export default function WorldRouteQaPreview() {
             runningRef.current = !runningRef.current;
             setRunning(runningRef.current);
           }}>{running ? (locale === "es" ? "Pausar" : "Pause") : (locale === "es" ? "Reanudar" : "Resume")}</button>
+          <button type="button" data-testid="ux15-route-next-section" onClick={nextArtSection}>
+            {locale === "es" ? "Siguiente paisaje" : "Next landscape"}
+          </button>
           <button type="button" data-testid="ux15-route-reset" onClick={goReset}>
             {locale === "es" ? "Reiniciar ruta" : "Reset route"}
           </button>
