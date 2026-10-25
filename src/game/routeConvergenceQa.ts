@@ -15,6 +15,7 @@ import type { RouteLocalPoint } from "./physicalRouteSpace";
 import type { RouteQaEncounter } from "./routePhysicalQaEncounter";
 import { ROUTE_QA_PROJECTILE_CAP } from "./routeDynamicEncounter";
 import { EnemyType, type Enemy, type Projectile } from "./types";
+import { isRouteWave2EliteQaEnemy } from "./routeWave2EliteQa";
 import type { RouteOverdriveQaState } from "./routeOverdriveQa";
 
 /**
@@ -58,10 +59,12 @@ export const routeConvergenceWaveKey=(ordinal:number):string=>{
   return `ASTERIA_QA_SEGMENT:${ordinal}`;
 };
 
-function certifiedEncounter(encounter:RouteQaEncounter,allowParasites=false):void {
+function certifiedEncounter(encounter:RouteQaEncounter,allowParasites=false,
+  allowQaElites=false):void {
   if(encounter.boss||encounter.architectQaBoss||
     encounter.hazardZones.length>0||
     encounter.enemies.some(e=>e.isBoss||e.evolvedVariantId||e.enemyFormation||
+      (!allowQaElites&&isRouteWave2EliteQaEnemy(e))||
       (e.type!==EnemyType.CRAWLER&&!(allowParasites&&e.type===EnemyType.PARASITE)))){
     throw new Error("Uncertified Convergence boss, enemy or hazard owner");
   }
@@ -80,11 +83,12 @@ export function beginRouteConvergenceQa(
   requested:boolean,
   shield:number,
   allowParasites=false,
+  allowQaElites=false,
 ):{convergenceQa:RouteConvergenceQaState;overdriveQa:RouteOverdriveQaState} {
   if(!Number.isFinite(nowMs)||nowMs<0||!Number.isFinite(shield))
     throw new RangeError("Invalid QA Convergence time/shield");
   if(!requested)return {convergenceQa:previous,overdriveQa:overdrive};
-  certifiedEncounter(encounter,allowParasites);
+  certifiedEncounter(encounter,allowParasites,allowQaElites);
   const aim=selectConvergenceTargets(player,encounter.enemies);
   const active=projectCombatOverdrive(overdrive.overdrive,nowMs,true).active;
   const next=activateConvergence(previous.convergence,{
@@ -123,7 +127,7 @@ export function advanceRouteConvergenceQa(
   if(!isConvergenceChanneling(previous.convergence)){
     return {convergenceQa:previous,encounter};
   }
-  certifiedEncounter(encounter,allowParasites);
+  certifiedEncounter(encounter,allowParasites,allowQaElites);
   const charge=previous.convergence;
   if(charge.waveKey!==waveKey||shield<=0||encounter.swarm.length<8){
     return {convergenceQa:{...previous,
