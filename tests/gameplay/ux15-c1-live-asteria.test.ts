@@ -37,7 +37,7 @@ test("UX15-C1: no second false player or duplicated UI from the QA preview",()=>
 test("UX15-C1: route progression follows frozen physics clock, not render RAF or wall time",()=>{
   assert.match(code,/timeElapsedRef\.current \+= delta;\n    \/\/ UX15-C1/);
   assert.match(code,/stepRouteClock\(/);
-  assert.match(code,/waveActiveRef\.current && !isPhotoMode/);
+  assert.match(code,/loopActiveRef\.current && waveActiveRef\.current && !isPhotoMode/);
   assert.match(code,/hidden: document\.hidden/);
   assert.match(code,/modalOpen: mobilePanel !== "closed"/);
   assert.match(code,/upgradeOpen: isUpgradeSelectionOpen/);
