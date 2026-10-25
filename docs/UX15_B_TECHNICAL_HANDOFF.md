@@ -13,6 +13,7 @@ El juego normal abre **ARENA_LEGACY** sin cambiar el motor, los 1600×960, el co
 - Para salir: botón **Volver al juego** (usa `import.meta.env.BASE_URL`, compatible con Vite bajo subdirectorio).
 - Es un laboratorio **Canvas2D** con paisaje original provisional, no render de enemigos, hitboxes o recompensas. No es un nuevo modo de juego ni se puede progresar aquí.
 - El laboratorio tiene avance 2.5D de ASTERIA, seis diseños de segmento canónicos; teclas WASD/flechas o deslizar dedo mueven únicamente un marcador dorado ilustrativo; botón pausa/reanudar, reiniciar, ES/EN y métricas QA.
+- **Panorama real en QA:** la altura lógica permanece en 480 y la anchura lógica aumenta según la relación útil de la pantalla; una unidad de mundo tiene idéntico tamaño en X/Y. Se verifica en Chromium móvil (no estirar un canvas 800×480).
 - El avance base de **52 unidades/segundo** es un parámetro **provisional exclusivo QA** y no altera temporizadores de waves, velocidad de ENERGY o dificultad.
 - Si el sistema prefiere `prefers-reduced-motion`, el avance automático queda detenido para evitar movimiento no deseado.
 
