@@ -2,7 +2,7 @@ import { MAX_ENEMIES } from "./constants";
 import { createCampaignRuntimeWaveDescriptor, type RuntimeWaveDescriptor } from "./runtimeWaveDescriptor";
 import { projectRuntimeCombatPressure } from "./runtimeCombatPressure";
 import { ROUTE_QA_ENEMY_CAP,projectRouteViewportSpawn } from "./routeDynamicEncounter";
-import { ROUTE_WAVE1_LEGACY_FRAME_MS,ROUTE_WAVE1_QA_ENEMY_PREFIX } from "./routeWave1Qa";
+import { ROUTE_WAVE1_LEGACY_FRAME_MS } from "./routeWave1Qa";
 import type { RouteLocalPoint } from "./physicalRouteSpace";
 import type { RoutePhysicalCamera,RoutePhysicalViewport } from "./routePhysicalCamera";
 import type { RouteQaEncounter } from "./routePhysicalQaEncounter";
