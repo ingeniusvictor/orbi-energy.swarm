@@ -14,7 +14,7 @@ import { projectCombatOverdrive } from "./combatOverdrive";
 import type { RouteLocalPoint } from "./physicalRouteSpace";
 import type { RouteQaEncounter } from "./routePhysicalQaEncounter";
 import { ROUTE_QA_PROJECTILE_CAP } from "./routeDynamicEncounter";
-import { EnemyType, type Projectile } from "./types";
+import { EnemyType, type Enemy, type Projectile } from "./types";
 import type { RouteOverdriveQaState } from "./routeOverdriveQa";
 
 /**
@@ -32,6 +32,20 @@ export interface RouteConvergenceQaState {
   readonly registeredKills:number;
   readonly cancellations:number;
 }
+
+/** A durable, ordinary CRAWLER target fixture only in this opt-in lab.
+ * It makes the 800ms channel/beam observable on desktop AND native touch,
+ * without importing real waves, bosses or public gameplay rewards. */
+export const makeRouteConvergenceCalibrationTarget=(
+  player:RouteLocalPoint,
+):Enemy=>({
+  id:"route-qa-convergence-calibration",
+  type:EnemyType.CRAWLER,
+  x:player.x+320,y:player.y,vx:0,vy:0,
+  health:5000,maxHealth:5000,speed:0,size:20,
+  color:"#f59e0b",shootCooldown:0,pulseCooldown:0,
+  contactDamageCooldown:0,isDead:false,isBoss:false,flashTicks:0,
+});
 
 export const createRouteConvergenceQaState=():RouteConvergenceQaState=>({
   convergence:createConvergenceState(),activations:0,beams:0,
