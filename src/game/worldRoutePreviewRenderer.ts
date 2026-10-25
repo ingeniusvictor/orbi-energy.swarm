@@ -26,7 +26,7 @@ const drawRidge = (
 
 const drawSection = (
   ctx: CanvasRenderingContext2D,
-  x: number, right: number, centerX: number,
+  x: number, right: number,
   kind: string, accent: string, variant: number,
 ) => {
   const width = right - x;
@@ -154,7 +154,7 @@ export function drawWorldRouteQaScene(
   for (const visible of window) {
     const start = cam.anchorScreenX + visible.startRelative;
     const end = cam.anchorScreenX + visible.endRelative;
-    drawSection(ctx, start, end, cam.anchorScreenX,
+    drawSection(ctx, start, end,
       visible.segment.kind, visible.segment.accent, visible.segment.decorationVariant);
   }
 
