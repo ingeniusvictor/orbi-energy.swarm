@@ -1,6 +1,7 @@
 import React from "react";
 import { getEvo8WingCount } from "./orbiEvolution";
 import { prewarmEvo8Lot1Sprites, disposeEvo8Lot1Sprites, drawEvo8Lot1Sprite } from "./evo8PremiumSprite";
+import { prewarmPremiumEnemySprites, disposePremiumEnemySprites, drawPremiumEnemyBody } from "./premiumEnemySprites";
 import { 
   OrbiMember, Enemy, Projectile, Resource, BiomeType, 
   FormationType, EnemyType, OrbiType, QualityPreset
@@ -101,7 +102,9 @@ export const EnergySwarmCanvas: React.FC<EnergySwarmCanvasProps> = ({
   React.useEffect(() => {
     prewarmFotonGameplay3D(qualityPreset);
     prewarmEvo8Lot1Sprites(import.meta.env.BASE_URL);
+    prewarmPremiumEnemySprites(import.meta.env.BASE_URL);
     return () => {
+      disposePremiumEnemySprites();
       disposeEvo8Lot1Sprites();
       disposeFotonGameplay3D();
     };
@@ -1361,6 +1364,9 @@ export function drawEnemiesList(
           ctx.fill();
         }
 
+        // Preserve every old purple/cyan field ring and antenna, and only
+        // swap the central hexagon for the graviton asset when decoded.
+        if (!drawPremiumEnemyBody(ctx, enemy)) {
         // Main body hexagonal core
         ctx.fillStyle = "#0891b2";
         ctx.beginPath();
@@ -1370,6 +1376,7 @@ export function drawEnemiesList(
         }
         ctx.closePath();
         ctx.fill();
+        }
         break;
       }
 
@@ -1430,6 +1437,9 @@ export function drawEnemiesList(
         const velAngle = Math.atan2(enemy.vy || 1, enemy.vx || 0);
         ctx.rotate(velAngle + Math.PI / 2); // Face relative to travel
 
+        // Premium art replaces the armor only. The old rear reactor,
+        // charge warning cone and speed trails stay independent.
+        if (!drawPremiumEnemyBody(ctx, enemy)) {
         // Main body armor triangular profile
         ctx.fillStyle = "#030712"; // negro
         ctx.strokeStyle = "#8b5cf6"; // borde violeta
@@ -1459,6 +1469,7 @@ export function drawEnemiesList(
         ctx.lineTo(0, -enemy.size * 0.5);
         ctx.closePath();
         ctx.fill();
+        }
 
         // Exposed rear core engine
         ctx.fillStyle = "#ef4444"; // rojo intenso
@@ -1587,6 +1598,9 @@ export function drawEnemiesList(
         // GIANT BOSS: BLACKOUT DEVOURER
         ctx.rotate(time * 0.0008);
         
+        // Swap only the Devourer chassis. Keep six original pulsating
+        // satellites + animated hostile pupil (and all boss attack logic).
+        if (!drawPremiumEnemyBody(ctx, enemy)) {
         // Main mass
         ctx.fillStyle = "#1e1b4b"; // Deep violet core
         ctx.strokeStyle = enemy.color; // Rose bright boundaries
@@ -1595,6 +1609,7 @@ export function drawEnemiesList(
         ctx.arc(0, 0, enemy.size, 0, Math.PI * 2);
         ctx.fill();
         ctx.stroke();
+        }
 
         // 6 segmented orbiting dark plasma wings
         ctx.fillStyle = enemy.color;
