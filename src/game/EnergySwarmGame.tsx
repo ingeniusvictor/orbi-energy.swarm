@@ -4753,7 +4753,7 @@ export const EnergySwarmGame: React.FC = () => {
         currentWaveRef.current <= 2) {
       asteriaLiveCursorRef.current = stepRouteClock(
         asteriaLiveCursorRef.current, delta, ROUTE_QA_SPEED_UNITS_PER_SECOND,
-        { playing: isPlaying && !isGameOver && waveActiveRef.current && !isPhotoMode,
+        { playing: loopActiveRef.current && waveActiveRef.current && !isPhotoMode,
           paused: isPausedRef.current, hidden: document.hidden,
           modalOpen: mobilePanel !== "closed", upgradeOpen: isUpgradeSelectionOpen,
           hitstop: hitStopTimerRef.current > 0 },
