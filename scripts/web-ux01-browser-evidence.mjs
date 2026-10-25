@@ -1108,7 +1108,10 @@ async function runRouteCampaignWave1Qa(name,width,height,touch){
       name+": official 8-concurrent cap missing");
     await page.waitForFunction(()=>Number(document.querySelector(
       '[data-testid="ux15-physical-qa"]')?.dataset.c3b7WaveSpawned)>=2,
-      null,{timeout:touch?16000:11000});
+      // Keep the exact >=2 real-actor requirement. Mobile Chromium with
+      // SwiftShader/GLB can need more wall time under shared CI load even
+      // though the simulation remains deterministic and unchanged.
+      null,{timeout:touch?30000:18000});
     const spawned=Number(await lab.getAttribute("data-c3b7-wave-spawned"));
     check(spawned>=2&&spawned<=12,name+": wave1 count invalid");
     check(Number(await lab.getAttribute("data-c3b7-wave-active"))<=8,
