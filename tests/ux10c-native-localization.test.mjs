@@ -39,7 +39,8 @@ test("UX10-C preserves Campaign, Score Attack, true locked Infinite, and tactics
   assert.match(native,/orbi-mobile-campaign/);
   assert.match(native,/orbi-mobile-score-attack/);
   assert.match(native,/orbi-mobile-infinite-locked/);
-  assert.match(native,/onClick=\{mode\.key === "campaign" \? onPlay : onScoreAttack\}/);
+  assert.match(native,/onClick=\{mode\.key === "campaign" \? onPlay : mode\.key === "route" \? onWorldRoute : onScoreAttack\}/);
+  assert.match(native,/orbi-mobile-world-route/);
   assert.match(native,/mode\.lock \? \(/);
   assert.match(native,/hasInfiniteRecord/);
   assert.match(native,/orbi-ux09b-formation-manual/);
