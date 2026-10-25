@@ -19,8 +19,9 @@ test("UX15-B QA is explicit lazy route, normal game preserves its existing root"
   // only for explicit ASTERIA Campaign 1–2 opt-in: preview never mounts here.
   assert.doesNotMatch(engine,/WorldRouteQaPreview/);
   assert.match(engine,/get\("ux15-world"\) === "asteria"/);
-  assert.match(engine,/const asteriaCombatVisualActive = asteriaLiveQaRequested/);
-  assert.match(engine,/currentWaveRef\.current <= 2/);
+  assert.match(engine,/const asteriaCombatVisualActive = worldRouteRunActiveRef\.current/);
+  assert.match(engine,/worldRouteRunActiveRef\.current/);
+  assert.doesNotMatch(engine,/currentWaveRef\.current <= 2/);
   assert.match(engine,/backgroundRenderer\.render\(/);
 });
 

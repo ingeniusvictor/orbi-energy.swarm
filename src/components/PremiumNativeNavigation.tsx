@@ -27,6 +27,7 @@ interface Props {
   onOpen: (tab: MobileLaunchTab, section?: MobileLaunchSection) => void;
   onPlay: () => void;
   onScoreAttack: () => void;
+  onWorldRoute: () => void;
   nanoCredits?: number;
   purifiedEnergy?: number;
   hasInfiniteRecord: boolean;
@@ -60,12 +61,16 @@ const formations = [
 const modes = [
   { key: "campaign", Icon: Sparkles, es: "CAMPAÑA", en: "CAMPAIGN", descEs: "Explora sectores, recluta energías y protege a ENERGY de Blackout.", descEn: "Explore sectors, recruit energies and protect ENERGY against Blackout.", testId: "orbi-mobile-campaign", lock: false },
   { key: "score", Icon: Gauge, es: "SCORE ATTACK", en: "SCORE ATTACK", descEs: "Desafío contrarreloj: consigue la mejor puntuación.", descEn: "Race the clock and set a new high score.", testId: "orbi-mobile-score-attack", lock: false },
+  { key: "route", Icon: Compass, es: "TRAVESÍA DE MUNDOS", en: "WORLD TRAVERSAL",
+    descEs: "ASTERIA · ruta horizontal 2.5D. Beta con combate y mejoras de Campaña.",
+    descEn: "ASTERIA · 2.5D horizontal route. Beta with Campaign combat and upgrades.",
+    testId: "orbi-mobile-world-route", lock: false },
   { key: "infinite", Icon: LockKeyhole, es: "INFINITE", en: "INFINITE", descEs: "Modo de progresión condicionado a la campaña.", descEn: "Progression mode linked to the campaign.", testId: "orbi-mobile-infinite-locked", lock: true },
 ] as const;
 
 export const PremiumNativeNavigation: React.FC<Props> = ({
   layer, section, tab, language, onLanguage, onEnter, onBack, onOpen,
-  onPlay, onScoreAttack, nanoCredits = 0, purifiedEnergy = 0, hasInfiniteRecord,
+  onPlay, onScoreAttack, onWorldRoute, nanoCredits = 0, purifiedEnergy = 0, hasInfiniteRecord,
   audioMuted, musicEnabled, soundEffectsEnabled, onAudioToggle, onMusicToggle, onEffectsToggle,
 }) => {
   const es = language === "es";
@@ -180,6 +185,7 @@ export const PremiumNativeNavigation: React.FC<Props> = ({
                     <span className="orbi-ux11f-mode-progress">
                       {mode.key === "campaign" ? "EVO8 · ORBI" :
                         mode.key === "score" ? `${SCORE_ATTACK_DURATION_MS / 1000}s · SCORE` :
+                        mode.key === "route" ? "ASTERIA · 2.5D · BETA" :
                         hasInfiniteRecord ? (es ? "ACCESO EN CAMPAÑA" : "IN CAMPAIGN") :
                           (es ? "ACCESO CONDICIONAL" : "CONDITIONAL ACCESS")}
                     </span>
@@ -189,6 +195,7 @@ export const PremiumNativeNavigation: React.FC<Props> = ({
                       <span className="orbi-ux11f-edition-dot" />
                       {mode.key === "campaign" ? (es ? "MISIÓN PRINCIPAL" : "MAIN MISSION") :
                         mode.key === "score" ? (es ? "DESAFÍO CRONOMETRADO" : "TIMED CHALLENGE") :
+                        mode.key === "route" ? (es ? "NUEVO MODO · BETA" : "NEW MODE · BETA") :
                         (es ? "DESDE CAMPAÑA" : "FROM CAMPAIGN")}
                     </span>
                     <h3>{es ? mode.es : mode.en}</h3>
@@ -197,7 +204,7 @@ export const PremiumNativeNavigation: React.FC<Props> = ({
                       <div className="orbi-ux10c-mode-locked" data-testid="orbi-mobile-infinite-locked" aria-disabled="true"><LockKeyhole size={15}/>{hasInfiniteRecord ? (es ? "DESDE CAMPAÑA" : "FROM CAMPAIGN") : (es ? "BLOQUEADO" : "LOCKED")}</div>
                     ) : (
                       <button type="button" data-testid={mode.testId} className="orbi-ux10c-mode-start"
-                        onClick={mode.key === "campaign" ? onPlay : onScoreAttack}
+                        onClick={mode.key === "campaign" ? onPlay : mode.key === "route" ? onWorldRoute : onScoreAttack}
                         onFocus={() => setSelectedMode(mode.key)}><Play size={15} fill="currentColor" />{es ? "INICIAR" : "START"}<ChevronRight size={16}/></button>
                     )}
                   </div>

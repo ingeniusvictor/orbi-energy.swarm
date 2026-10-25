@@ -18,6 +18,7 @@ interface StartScreenProps {
   stats: GameStats;
   onStartGame: () => void;
   onStartScoreAttack: () => void;
+  onStartWorldRoute: () => void;
   onResetStats: () => void;
   onChangePreset: (preset: QualityPreset) => void;
   onToggleMute: () => void;
@@ -30,6 +31,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({
   stats,
   onStartGame,
   onStartScoreAttack,
+  onStartWorldRoute,
   onResetStats,
   onChangePreset,
   onToggleMute,
@@ -77,6 +79,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({
         onBack={backMobileMenu} onOpen={openMobileMenu}
         onPlay={() => { playClickSound(); onStartGame(); }}
         onScoreAttack={() => { playClickSound(); onStartScoreAttack(); }}
+        onWorldRoute={() => { playClickSound(); onStartWorldRoute(); }}
         hasInfiniteRecord={hasInfiniteRecord}
         audioMuted={stats.audioMuted} musicEnabled={stats.musicEnabled !== false}
         soundEffectsEnabled={stats.soundEffectsEnabled !== false}
@@ -375,6 +378,27 @@ export const StartScreen: React.FC<StartScreenProps> = ({
               <p className="orbi-start-scroll-cue hidden py-1 text-center font-mono text-[10px] tracking-[0.08em] text-cyan-200/75" aria-hidden="true">
                 {language === "es" ? "DESLIZA ↓ PARA MÁS MODOS Y OPCIONES" : "SWIPE ↓ FOR MORE MODES AND OPTIONS"}
               </p>
+
+              <div data-world-route-mode-panel="true"
+                className="mt-3 rounded-xl border border-emerald-400/40 bg-[linear-gradient(120deg,rgba(6,78,95,.3),rgba(13,35,65,.6))] p-3">
+                <div className="flex items-center justify-between gap-2">
+                  <div>
+                    <strong className="text-[11px] font-black text-emerald-200">
+                      {language === "es" ? "TRAVESÍA DE MUNDOS" : "WORLD TRAVERSAL"}
+                    </strong>
+                    <p className="mt-1 text-[9px] leading-relaxed text-cyan-100/75">
+                      {language === "es" ? "ASTERIA · ruta horizontal 2.5D. Beta visual con combate y mejoras de Campaña."
+                        : "ASTERIA · 2.5D horizontal route. Visual beta using Campaign combat and upgrades."}
+                    </p>
+                  </div>
+                  <span className="rounded-md border border-emerald-400/40 px-2 py-1 text-[9px] text-emerald-200">BETA</span>
+                </div>
+                <button type="button" data-world-route-start-cta="true"
+                  onClick={() => { playClickSound(); onStartWorldRoute(); }}
+                  className="mt-2 w-full rounded-lg border border-emerald-400/50 bg-emerald-500/20 px-3 py-2.5 text-[10px] font-black uppercase tracking-[.1em] text-emerald-100 hover:bg-emerald-500/30">
+                  {language === "es" ? "INICIAR TRAVESÍA" : "START TRAVERSAL"}
+                </button>
+              </div>
 
               <div
                 data-score-attack-panel="true"

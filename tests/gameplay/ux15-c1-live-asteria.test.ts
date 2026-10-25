@@ -11,10 +11,10 @@ const renderer=readFileSync(new URL("../../src/game/worldRoutePreviewRenderer.ts
 
 test("UX15-C1: campaign real gameplay explicitly opts into visual route; legacy remains default",()=>{
   assert.match(code,/get\("ux15-world"\) === "asteria"/);
-  assert.match(code,/const asteriaCombatVisualActive = asteriaLiveQaRequested/);
-  assert.match(code,/presentationMode === "CAMPAIGN"/);
-  assert.match(code,/runtimeProgressionRef\.current\.mode === "CAMPAIGN"/);
-  assert.match(code,/currentWaveRef\.current <= 2/);
+  assert.match(code,/const asteriaCombatVisualActive = worldRouteRunActiveRef\.current/);
+  assert.match(code,/startWorldRouteGame/);
+  assert.match(code,/worldRouteRunActiveRef\.current/);
+  assert.doesNotMatch(code,/currentWaveRef\.current <= 2/);
   assert.match(code,/drawWorldRouteQaScene\(ctx, asteriaLiveCursorRef\.current,/);
   assert.match(code,/panoramicViewport\.width, false\)/);
   assert.match(code,/backgroundRenderer\.render\(/);
