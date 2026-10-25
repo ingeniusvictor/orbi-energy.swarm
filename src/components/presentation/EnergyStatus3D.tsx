@@ -45,6 +45,7 @@ const disposeImportedModel = (root: any) => {
 export const EnergyStatus3D: React.FC<{ language: Locale }> = ({ language }) => {
   const mountRef = useRef<HTMLDivElement>(null);
   const [status, setStatus] = useState<PreviewStatus>("LOADING");
+  const [fallbackReason, setFallbackReason] = useState("none");
 
   useEffect(() => {
     const mount = mountRef.current;
@@ -62,6 +63,7 @@ export const EnergyStatus3D: React.FC<{ language: Locale }> = ({ language }) => 
     let visible = !document.hidden;
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     setStatus("LOADING");
+    setFallbackReason("none");
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 100);
@@ -84,6 +86,7 @@ export const EnergyStatus3D: React.FC<{ language: Locale }> = ({ language }) => 
       contextLost = true;
       visible = false;
       cancelAnimationFrame(frame);
+      setFallbackReason("webglcontextlost");
       setStatus("FALLBACK");
     };
 
@@ -154,6 +157,7 @@ export const EnergyStatus3D: React.FC<{ language: Locale }> = ({ language }) => 
       resizeObserver.observe(mount);
     } catch {
       renderer?.dispose();
+      setFallbackReason("webgl-unavailable");
       setStatus("FALLBACK");
       return;
     }
@@ -175,6 +179,7 @@ export const EnergyStatus3D: React.FC<{ language: Locale }> = ({ language }) => 
           const maxDimension = Math.max(size.x, size.y, size.z);
           if (!Number.isFinite(maxDimension) || maxDimension <= 0) {
             disposeImportedModel(imported);
+            setFallbackReason("invalid-glb-bounds");
             setStatus("FALLBACK");
             return;
           }
@@ -206,12 +211,16 @@ export const EnergyStatus3D: React.FC<{ language: Locale }> = ({ language }) => 
         } catch {
           // Failed GLB setup must degrade to the verified CSS hero.
           if (!model) disposeImportedModel(gltf.scene);
+          setFallbackReason("glb-setup-error");
           setStatus("FALLBACK");
         }
       },
       undefined,
       () => {
-        if (!disposed && !contextLost) setStatus("FALLBACK");
+        if (!disposed && !contextLost) {
+          setFallbackReason("glb-download-error");
+          setStatus("FALLBACK");
+        }
       },
     );
 
@@ -231,6 +240,7 @@ export const EnergyStatus3D: React.FC<{ language: Locale }> = ({ language }) => 
   return (
     <div className="orbi-ux11d-energy-preview" data-testid="orbi-ux11d-energy-preview"
       data-3d-status={status} data-model-source={status === "READY" ? "canonical-glb" : "fallback"}
+      data-fallback-reason={fallbackReason}
       role="img"
       aria-label={language === "es" ? "ENERGY, protagonista dorado neutral en 3D" : "ENERGY, golden neutral protagonist in 3D"}>
       <div className="orbi-ux11d-fallback" aria-hidden="true">
