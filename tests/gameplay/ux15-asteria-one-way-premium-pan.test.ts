@@ -57,12 +57,14 @@ test("UX15-FIX: large and ultrawide viewport never invert parallax or require cr
 
 test("UX15-FIX: Canvas2D renderer repeats originals from right with restored alpha and no blank seam",()=>{
   const calls:{args:number[];alpha:number}[]=[];
+  let alpha=.57;
+  let saved=1;
   const ctx={
-    globalAlpha:.57,
-    save(){this.saved=this.globalAlpha;},
-    restore(){this.globalAlpha=this.saved;},
-    drawImage(_image:unknown,...args:number[]){calls.push({args,alpha:this.globalAlpha});},
-    saved:1,
+    get globalAlpha(){return alpha;},
+    set globalAlpha(value:number){alpha=value;},
+    save(){saved=alpha;},
+    restore(){alpha=saved;},
+    drawImage(_image:unknown,...args:number[]){calls.push({args,alpha});},
   } as unknown as CanvasRenderingContext2D;
   const old=readFileSync(new URL("../../src/game/asteriaPremiumRenderer.ts",import.meta.url),"utf8");
   assert.doesNotMatch(old,/path <= maxPan/);
