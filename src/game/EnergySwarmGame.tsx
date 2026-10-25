@@ -2027,7 +2027,7 @@ export const EnergySwarmGame: React.FC = () => {
 
   const startGameWithMode = (
     mode: ScoreAttackLiveEngineStartMode,
-    worldRoute: boolean = false,
+    worldRoute: boolean = worldRouteRunActiveRef.current || (mode === "CAMPAIGN" && asteriaLiveQaRequested),
   ) => {
     const activation = resolveScoreAttackLiveEngineActivation(mode);
     if (mode === "SCORE_ATTACK" && !activation) return false;
@@ -2044,7 +2044,7 @@ export const EnergySwarmGame: React.FC = () => {
   const startCampaignGame = () => {
     // Historical QA link continues to open the route even when Campaign
     // was selected explicitly; ordinary / launches only legacy Campaign.
-    void startGameWithMode("CAMPAIGN", asteriaLiveQaRequested);
+    void startGameWithMode("CAMPAIGN");
   };
   const startWorldRouteGame = () => {
     void startGameWithMode("CAMPAIGN", true);
@@ -2053,7 +2053,7 @@ export const EnergySwarmGame: React.FC = () => {
   // --- REBOOT GAME ON LOSS ---
   const rebootGame = () => {
     playClickSound();
-    void startGameWithMode(presentationMode, worldRouteRunActiveRef.current);
+    void startGameWithMode(presentationMode);
   };
 
   // --- TOGGLE PAUSE ---
@@ -8637,7 +8637,7 @@ export const EnergySwarmGame: React.FC = () => {
         <PauseMenu
           onResume={togglePause}
           onRestart={() => {
-            void startGameWithMode(presentationMode, worldRouteRunActiveRef.current);
+            void startGameWithMode(presentationMode);
           }}
           onEnterPhotoMode={enterPhotoMode}
           onExitToMenu={() => {
@@ -8711,7 +8711,7 @@ export const EnergySwarmGame: React.FC = () => {
           infiniteBossRematchesDefeated={stats.infiniteBossRematchesDefeated}
           recentRunArchive={stats.recentRunArchive}
           onRestart={() => {
-            void startGameWithMode(presentationMode, worldRouteRunActiveRef.current);
+            void startGameWithMode(presentationMode);
           }}
           onExitToMenu={() => {
             setIsPlaying(false);
