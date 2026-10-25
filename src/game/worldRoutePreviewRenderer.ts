@@ -127,7 +127,7 @@ export function drawWorldRouteQaScene(
   const window = getRouteWindow(cursor, 1, 2);
   // Parallax uses segment-local displacement. The loop is capped and
   // independent of total absolute route distance.
-  const parallax = cursor.segmentOrdinal * 47 + cursor.offset;
+  const parallax = projectRouteDistance(cursor);
   for (let i = 0; i < 85; i++) {
     const ux = stableRouteHash(`asteria-star-${i}`) % W;
     const uy = stableRouteHash(`asteria-star-y-${i}`) % 265;
