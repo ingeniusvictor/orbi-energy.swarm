@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   createPhysicalRouteQaState,
   stepPhysicalRouteQa,
+  armPhysicalRouteDroneDuelQa,
   type PhysicalRouteQaState,
 } from "../game/physicalRouteQaSimulation";
 import {
@@ -62,6 +63,8 @@ type QaTelemetry = {
   wave2EliteHolds:number;wave2CapHolds:number;wave2SafetyHolds:number;
   eliteQaRolls:number;eliteQaSpawned:number;eliteQaActive:number;
   dronePreflightName:string;dronePreflightBudget:number;
+  droneDuelStatus:string;droneDuelShots:number;droneDuelHits:number;
+  droneDuelShield:number;droneDuelProjectiles:number;droneDuelCulled:number;droneDuelWorldX:number;
 };
 const initialTelemetry = (): QaTelemetry => ({
   distance: 0, ordinal: 0, playerX: 800, playerY: 480,
@@ -88,6 +91,8 @@ const initialTelemetry = (): QaTelemetry => ({
   wave2EliteHolds:0,wave2CapHolds:0,wave2SafetyHolds:0,
   eliteQaRolls:0,eliteQaSpawned:0,eliteQaActive:0,
   dronePreflightName:"",dronePreflightBudget:0,
+  droneDuelStatus:"DISABLED",droneDuelShots:0,droneDuelHits:0,
+  droneDuelShield:100,droneDuelProjectiles:0,droneDuelCulled:0,droneDuelWorldX:0,
 });
 const routeParams=typeof window !== "undefined"
   ? new URLSearchParams(window.location.search):new URLSearchParams();
@@ -101,6 +106,7 @@ const c3b7Enabled=c3b6Enabled && routeParams.get("ux15-c3b7")==="1";
 const c3b8Enabled=c3b7Enabled && routeParams.get("ux15-c3b8")==="1";
 const c3b9Enabled=c3b8Enabled && routeParams.get("ux15-c3b9")==="1";
 const c3b10Enabled=c3b9Enabled && routeParams.get("ux15-c3b10")==="1";
+const c3b11Enabled=c3b10Enabled && routeParams.get("ux15-c3b11")==="1";
 // Offline, read-only authority calibration: never insert this actor or its shot
 // into the live physical encounter. A missing earlier flag always fails closed.
 const c3b10ShadowShot=c3b10Enabled?projectDroneLockPreflightShot(
@@ -117,7 +123,7 @@ const arrowKeys = new Set(["w","a","s","d","arrowup","arrowdown","arrowleft","ar
 export default function PhysicalRouteQa() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const viewportRef = useRef<RoutePhysicalViewport>({ width: 800, height: 480, zoom: 1 });
-  const stateRef = useRef<PhysicalRouteQaState>(createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled,c3b2Enabled,c3b3Enabled,c3b4Enabled,c3b5Enabled,c3b6Enabled,c3b7Enabled,c3b8Enabled,c3b9Enabled));
+  const stateRef = useRef<PhysicalRouteQaState>(createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled,c3b2Enabled,c3b3Enabled,c3b4Enabled,c3b5Enabled,c3b6Enabled,c3b7Enabled,c3b8Enabled,c3b9Enabled,c3b11Enabled));
   const controlsRef = useRef(new Set<string>());
   const dashRequestedRef=useRef(false);
   const overdriveRequestedRef=useRef(false);
@@ -151,6 +157,13 @@ export default function PhysicalRouteQa() {
         isRouteWave2EliteQaEnemy(e)&&!e.isDead&&e.health>0).length:0,
       dronePreflightName:c3b9Enabled?inspectRouteWave3PreflightQa().name:"",
       dronePreflightBudget:c3b9Enabled?inspectRouteWave3PreflightQa().budget:0,
+      droneDuelStatus:s.droneDuelQa?.status??"DISABLED",
+      droneDuelShots:s.droneDuelQa?.fired??0,
+      droneDuelHits:s.droneDuelQa?.hits??0,
+      droneDuelShield:s.droneDuelQa?.shield??100,
+      droneDuelProjectiles:s.droneDuelQa?.projectiles.length??0,
+      droneDuelCulled:(s.droneDuelQa?.culled??0)+(s.droneDuelQa?.expired??0),
+      droneDuelWorldX:s.droneDuelQa?.actor?s.droneDuelQa.actor.x+s.frame.originOffsetX:0,
       wave2Status:s.wave2Qa?.status??"DISABLED",
       wave2Spawned:s.wave2Qa?.spawned??0,
       wave2Parasites:s.wave2Qa?.spawnedParasites??0,
@@ -302,6 +315,10 @@ export default function PhysicalRouteQa() {
         }
       }
       drawProjectilesList(ctx,s.encounter.projectiles);
+      if(c3b11Enabled&&s.droneDuelQa?.actor){
+        drawEnemiesList(ctx,[s.droneDuelQa.actor],s.frame.cursor.simulatedMs,s.player);
+        drawProjectilesList(ctx,[...s.droneDuelQa.projectiles]);
+      }
       drawSwarmRoster(ctx,s.encounter.swarm,s.frame.cursor.simulatedMs);
       if(c3b6Enabled&&s.convergenceQa){
         // Reuse exact UX14-B Canvas2D renderer and its bounded six-hit
@@ -341,7 +358,9 @@ export default function PhysicalRouteQa() {
       ctx.fillStyle="rgba(3,16,30,.78)";
       ctx.fillRect(12,11,330,32);
       ctx.fillStyle="#8ff5ec";
-      ctx.fillText(c3b10Enabled
+      ctx.fillText(c3b11Enabled
+        ? "C3B-11 · DRONE DUEL · PHYSICAL QA ONLY"
+        :c3b10Enabled
         ? "C3B-10 · DRONE LOCK · SHADOW TRAJECTORY ONLY"
         :c3b9Enabled
         ? "C3B-9 · ELITE WAVE 2 · DRONE LOCK PREFLIGHT"
@@ -374,7 +393,7 @@ export default function PhysicalRouteQa() {
         Math.round(480*availableWidth/Math.max(1,stageHeight))));
       viewportRef.current={width:logicalWidth,height:480,zoom:1};
       if(stateRef.current.physicsTicks===0) {
-        stateRef.current=createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled,c3b2Enabled,c3b3Enabled,c3b4Enabled,c3b5Enabled,c3b6Enabled,c3b7Enabled,c3b8Enabled,c3b9Enabled);
+        stateRef.current=createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled,c3b2Enabled,c3b3Enabled,c3b4Enabled,c3b5Enabled,c3b6Enabled,c3b7Enabled,c3b8Enabled,c3b9Enabled,c3b11Enabled);
       }
       canvas.dataset.logicalWidth=String(logicalWidth);
       canvas.dataset.logicalHeight="480";
@@ -466,7 +485,7 @@ export default function PhysicalRouteQa() {
   },[]);
 
   const reset=()=>{
-    stateRef.current=createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled,c3b2Enabled,c3b3Enabled,c3b4Enabled,c3b5Enabled,c3b6Enabled,c3b7Enabled,c3b8Enabled,c3b9Enabled);
+    stateRef.current=createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled,c3b2Enabled,c3b3Enabled,c3b4Enabled,c3b5Enabled,c3b6Enabled,c3b7Enabled,c3b8Enabled,c3b9Enabled,c3b11Enabled);
     controlsRef.current.clear();
     pointerRef.current=null;
     dashRequestedRef.current=false;
@@ -500,6 +519,16 @@ export default function PhysicalRouteQa() {
     }
     drawRef.current();publishTelemetry();
   };
+  const armDroneDuel=()=>{
+    if(!c3b11Enabled||!runningRef.current||stateRef.current.droneDuelQa?.status==="ACTIVE")return;
+    const gates={playing:true,paused:false,hidden:false,modalOpen:false,upgradeOpen:false,hitstop:false};
+    for(let i=0;i<1700&&stateRef.current.wave2Qa?.status!=="GATED_WAVE3";i++){
+      stateRef.current=stepPhysicalRouteQa(stateRef.current,50,{x:0,y:0},viewportRef.current,gates);
+    }
+    if(stateRef.current.wave2Qa?.status!=="GATED_WAVE3")return;
+    stateRef.current=armPhysicalRouteDroneDuelQa(stateRef.current);
+    drawRef.current();publishTelemetry();
+  };
   const onPointerUp=(e:React.PointerEvent<HTMLCanvasElement>)=>{
     if(pointerRef.current?.id===e.pointerId)pointerRef.current=null;
     if(e.currentTarget.hasPointerCapture(e.pointerId))
@@ -507,7 +536,15 @@ export default function PhysicalRouteQa() {
   };
   return (
     <main className="ux15-route-qa ux15-physical-qa" data-testid="ux15-physical-qa"
-      data-qa-mode={c3b10Enabled?"PHYSICAL_ROUTE_C3B10_QA":c3b9Enabled?"PHYSICAL_ROUTE_C3B9_QA":c3b8Enabled?"PHYSICAL_ROUTE_C3B8_QA":c3b7Enabled?"PHYSICAL_ROUTE_C3B7_QA":c3b6Enabled?"PHYSICAL_ROUTE_C3B6_QA":c3b5Enabled?"PHYSICAL_ROUTE_C3B5_QA":c3b4Enabled?"PHYSICAL_ROUTE_C3B4_QA":c3b3Enabled?"PHYSICAL_ROUTE_C3B3_QA":c3b2Enabled?"PHYSICAL_ROUTE_C3B2_QA":c3bPreviewEnabled?"PHYSICAL_ROUTE_C3B1_QA":"PHYSICAL_ROUTE_ISOLATED"}
+      data-qa-mode={c3b11Enabled?"PHYSICAL_ROUTE_C3B11_QA":c3b10Enabled?"PHYSICAL_ROUTE_C3B10_QA":c3b9Enabled?"PHYSICAL_ROUTE_C3B9_QA":c3b8Enabled?"PHYSICAL_ROUTE_C3B8_QA":c3b7Enabled?"PHYSICAL_ROUTE_C3B7_QA":c3b6Enabled?"PHYSICAL_ROUTE_C3B6_QA":c3b5Enabled?"PHYSICAL_ROUTE_C3B5_QA":c3b4Enabled?"PHYSICAL_ROUTE_C3B4_QA":c3b3Enabled?"PHYSICAL_ROUTE_C3B3_QA":c3b2Enabled?"PHYSICAL_ROUTE_C3B2_QA":c3bPreviewEnabled?"PHYSICAL_ROUTE_C3B1_QA":"PHYSICAL_ROUTE_ISOLATED"}
+      data-c3b11-status={telemetry.droneDuelStatus}
+      data-c3b11-shots={telemetry.droneDuelShots}
+      data-c3b11-hits={telemetry.droneDuelHits}
+      data-c3b11-shield={telemetry.droneDuelShield}
+      data-c3b11-hostile-projectiles={telemetry.droneDuelProjectiles}
+      data-c3b11-expired-culled={telemetry.droneDuelCulled}
+      data-c3b11-drone-world-x={telemetry.droneDuelWorldX}
+      data-c3b11-wave3-active="false"
       data-c3b10-shadow-shot={c3b10ShadowShot?"1":"0"}
       data-c3b10-shadow-speed={c3b10ShadowShot?Math.hypot(c3b10ShadowShot.vx,c3b10ShadowShot.vy):0}
       data-c3b10-drone-spawn-authorized="false"
@@ -594,10 +631,12 @@ export default function PhysicalRouteQa() {
       data-glb-status={telemetry.glb}>
       <header className="ux15-route-qa__header">
         <div>
-          <span className="ux15-route-qa__eyebrow">ORBI ENERGY SWARM · {c3b10Enabled?"UX15-C3B-10":c3b9Enabled?"UX15-C3B-9":c3b8Enabled?"UX15-C3B-8":c3b7Enabled?"UX15-C3B-7":c3b6Enabled?"UX15-C3B-6":c3b5Enabled?"UX15-C3B-5":c3b4Enabled?"UX15-C3B-4":c3b3Enabled?"UX15-C3B-3":c3b2Enabled?"UX15-C3B-2":c3bPreviewEnabled?"UX15-C3B-1":"UX15-C3A-3"}</span>
+          <span className="ux15-route-qa__eyebrow">ORBI ENERGY SWARM · {c3b11Enabled?"UX15-C3B-11":c3b10Enabled?"UX15-C3B-10":c3b9Enabled?"UX15-C3B-9":c3b8Enabled?"UX15-C3B-8":c3b7Enabled?"UX15-C3B-7":c3b6Enabled?"UX15-C3B-6":c3b5Enabled?"UX15-C3B-5":c3b4Enabled?"UX15-C3B-4":c3b3Enabled?"UX15-C3B-3":c3b2Enabled?"UX15-C3B-2":c3bPreviewEnabled?"UX15-C3B-1":"UX15-C3A-3"}</span>
           <h1>{locale==="es"?"LABORATORIO DE TRAVESÍA FÍSICA":"PHYSICAL TRAVERSAL LAB"}</h1>
           <p>{locale==="es"
-            ?(c3b10Enabled
+            ?(c3b11Enabled
+              ?"Duelo físico DRONE experimental: plasma, impacto y escudo QA; Wave 3 sigue bloqueada."
+              :c3b10Enabled
               ?"Drone Lock: auditoría de IA, disparos y colisiones con proyecciones aisladas. Sin DRONE físicos ni Wave 3."
               :c3b9Enabled
               ?"Oleada 2: élites aleatorios con estadísticas originales y tiradas QA repetibles. Drone Lock preparada, sin activar drones."
@@ -618,7 +657,9 @@ export default function PhysicalRouteQa() {
               :c3bPreviewEnabled
               ?"Encuentro físico QA: enemigos aparecen fuera de cámara, persiguen a ENERGY y reciben impactos. Sin recompensas ni combate de campaña."
               :"ENERGY, cámara y 30 ORBI recorren ASTERIA junto a enemigos, balas y recursos controlados. Sin daño ni recompensas.")
-             :(c3b10Enabled
+             :(c3b11Enabled
+              ?"Physical DRONE duel with QA plasma and shield impacts; Wave3 remains locked."
+              :c3b10Enabled
               ?"Drone Lock read-only AI, plasma and collision projections. No physical DRONE or Wave 3 activation."
               :c3b9Enabled
               ?"Wave 2 random elites with original stat scaling and deterministic QA samples. Drone Lock reviewed but no drone spawns."
@@ -661,6 +702,12 @@ export default function PhysicalRouteQa() {
         <div><span>{locale==="es"?"Cámara · X":"Camera · X"}</span><strong>{Math.round(telemetry.cameraX)} u</strong></div>
         <div><span>{locale==="es"?"Segmento":"Segment"}</span><strong>{telemetry.ordinal+1}</strong></div>
         <div><span>Origin epoch</span><strong>{telemetry.originEpoch}</strong></div>
+        {c3b11Enabled && <>
+          <div><span>DRONE · recinto físico</span><strong>{telemetry.droneDuelStatus}</strong></div>
+          <div><span>Plasma emitido / activo</span><strong>{telemetry.droneDuelShots} / {telemetry.droneDuelProjectiles}</strong></div>
+          <div><span>Impactos / escudo QA</span><strong>{telemetry.droneDuelHits} · {telemetry.droneDuelShield} / 100</strong></div>
+          <div><span>Caducados / cull</span><strong>{telemetry.droneDuelCulled}</strong></div>
+        </>}
         {c3b10Enabled && <>
           <div><span>Drone Lock · IA física</span><strong>PROYECCIÓN AISLADA · SIN SPAWN</strong></div>
           <div><span>Plasma de DRONE (lectura QA)</span><strong>{c3b10ShadowShot?"1 proyectil · 12 daño · 2,5 s":"No certificado"}</strong></div>
@@ -740,6 +787,8 @@ export default function PhysicalRouteQa() {
             setRunning(runningRef.current);
             publishTelemetry();
           }}>{running?(locale==="es"?"Pausar":"Pause"):(locale==="es"?"Reanudar":"Resume")}</button>
+          {c3b11Enabled && <button type="button" data-testid="ux15-c3b11-arm-drone"
+            onClick={armDroneDuel}>{locale==="es"?"Iniciar duelo DRONE (QA)":"Start DRONE duel (QA)"}</button>}
           {c3b8Enabled && <button type="button"
             data-testid="ux15-c3b8-skip-wave1"
             onClick={advanceToWave2Qa}>
