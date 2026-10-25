@@ -274,6 +274,54 @@ async function run(name,width,height,coarse,immersive,webImmersive) {
     evidence.cases.push({name,pass:true,geometry});
   }finally{await context.close();}
 }
+// UX15-B isolated production-bundle acceptance: this preview is not gameplay.
+async function runRouteQa(name,width,height,touch){
+  const context=await browser.newContext({viewport:{width,height},isMobile:touch,
+    hasTouch:touch,deviceScaleFactor:touch?2:1,
+    reducedMotion:"no-preference",serviceWorkers:"block"});
+  const page=await context.newPage();
+  page.on("pageerror",e=>diagnostics.push(name+": "+String(e)));
+  page.on("console",msg=>{if(msg.type()==="error")diagnostics.push(name+": "+msg.text());});
+  try{
+    await page.goto(url+"/?ux15-route-qa=1",{waitUntil:"domcontentloaded",timeout:30000});
+    const lab=page.getByTestId("ux15-route-qa");
+    await lab.waitFor({state:"visible",timeout:15000});
+    check(await lab.getAttribute("data-route-mode")==="ROUTE_QA_PREVIEW",
+      name+": incorrect QA route mode");
+    check(await page.getByTestId("ux15-route-canvas").isVisible(),
+      name+": route Canvas2D preview hidden");
+    check((await page.locator(".orbi-game-root").count())===0,
+      name+": QA preview mounted production combat game");
+    await page.waitForFunction(()=>Number(document.querySelector(
+      '[data-testid="ux15-route-qa"]')?.getAttribute("data-route-distance"))>2,
+      {timeout:8000});
+    const advanced=Number(await lab.getAttribute("data-route-distance"));
+    check(advanced>2,name+": simulation clock not traversing");
+
+    // Verify real 2D manual movement without changing the scenery ownership.
+    await page.keyboard.down("d");
+    await page.waitForTimeout(450);
+    await page.keyboard.up("d");
+    await page.waitForFunction(()=>Number(document.querySelector(
+      '[data-testid="ux15-route-qa"]')?.getAttribute("data-player-manual-x"))>5,
+      {timeout:4000});
+    check(Number(await lab.getAttribute("data-player-manual-x"))>5,
+      name+": ENERGY QA marker failed to move freely in X");
+    await shot(page,name+"-asteria-route-traversal");
+
+    await page.getByTestId("ux15-route-pause").click();
+    await page.waitForTimeout(420);
+    const paused=Number(await lab.getAttribute("data-route-distance"));
+    await page.waitForTimeout(300);
+    check(Number(await lab.getAttribute("data-route-distance"))===paused,
+      name+": route progressed after pause");
+    await page.getByTestId("ux15-route-reset").click();
+    check(Number(await lab.getAttribute("data-route-distance"))===0,
+      name+": reset did not return to segment zero");
+    evidence.cases.push({name,pass:true,routePreview:true,advancedUnits:advanced});
+  }finally{await context.close();}
+}
+
 await mkdir(output,{recursive:true});
 try {
   await startServer();
@@ -286,6 +334,8 @@ try {
   await run("portrait-touch-390x844",390,844,true,false,false);
   check(evidence.glbStatuses.some(entry=>entry.status==="READY"),
     "No real GLB rendered in any Chromium viewport; fallback is not UX14-C acceptance");
+  await runRouteQa("ux15b-route-desktop-1440x900",1440,900,false);
+  await runRouteQa("ux15b-route-mobile-844x390",844,390,true);
 }catch(error){evidence.failures.push({message:String(error),stack:error?.stack||""});process.exitCode=1;}
 finally{
   evidence.errors=diagnostics;
