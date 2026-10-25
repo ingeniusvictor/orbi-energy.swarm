@@ -5,6 +5,7 @@ import {
   relocateSpatialIndexEntry,
 } from "./spatialIndex";
 import { EnemyType, type Enemy, type Projectile } from "./types";
+import { isRouteWave2EliteQaEnemy } from "./routeWave2EliteQa";
 
 /** One bounded QA impact: same canonical Projectile metadata and spatial
  * queries as the live engine, never game score, bosses, Convergence or RNG.
@@ -35,9 +36,11 @@ export function applyRouteCanonicalImpactEffects(
   victim:Enemy,
   enemies:Enemy[],
   allowOrdinaryParasites=false,
+  allowQaElites=false,
 ):RouteImpactFxResult {
   if(!enemies.includes(victim)||enemies.some(e=>
       e.isBoss||e.evolvedVariantId||e.enemyFormation||
+      (!allowQaElites&&isRouteWave2EliteQaEnemy(e))||
       (e.type!==EnemyType.CRAWLER&&
        !(allowOrdinaryParasites&&e.type===EnemyType.PARASITE)))||
      shot.convergenceTargetId||shot.fromPlayer!==true)
