@@ -4,6 +4,7 @@ import { Shield, Award, Users, Volume2, VolumeX, Pause, Play, Zap, Music2, Maxim
 import { useGameTranslation, formatNumber } from "../i18n";
 import { getCampaignObjective } from "../game/campaignGuide";
 import type { ResonanceTier } from "../game/combatResonance";
+import type { projectConvergence } from "../game/orbiConvergence";
 import type { ScoreAttackLiveEngineStartMode } from "../game/scoreAttackLiveEngineLifecycle";
 import { SCORE_ATTACK_DURATION_MS } from "../game/scoreAttackTimeboxProjection";
 import { projectShieldThreat } from "../game/shieldThreatPresentation";
@@ -38,6 +39,8 @@ interface GameHudProps {
   dashCanActivate: boolean;
   dashCooldownRemainingMs: number;
   onActivateDash: () => void;
+  convergence: ReturnType<typeof projectConvergence>;
+  onActivateConvergence: () => void;
   onTogglePause: () => void;
   onToggleMute: () => void;
   immersive?: boolean;
@@ -79,6 +82,8 @@ export const GameHud: React.FC<GameHudProps> = ({
   dashCanActivate,
   dashCooldownRemainingMs,
   onActivateDash,
+  convergence,
+  onActivateConvergence,
   onTogglePause,
   onToggleMute,
   immersive = false,
@@ -182,6 +187,18 @@ export const GameHud: React.FC<GameHudProps> = ({
     ? `Dash de propulsión: ${dashStatus}. Desplazamiento rápido sin invulnerabilidad. Tecla E, usa la dirección actual o la última.`
     : `Propulsion dash: ${dashStatus}. Fast movement without invulnerability. E key, current or last direction.`;
 
+  const convergenceStatus = convergence.channeling
+    ? (language === "es" ? "CANALIZANDO" : "CHANNELING")
+    : convergence.usedThisWave
+      ? (language === "es" ? "USADO" : "USED")
+      : convergence.cooldownRemainingMs > 0
+        ? `${Math.ceil(convergence.cooldownRemainingMs / 1000)}s`
+        : convergence.canActivate ? (language === "es" ? "LISTO" : "READY")
+          : (language === "es" ? "BLOQUEADO" : "LOCKED");
+  const convergenceAria = language === "es"
+    ? `Convergencia ORBI: ${convergenceStatus}. Requiere 8 ORBI y 100% de resonancia. Una vez por oleada, recarga 60 segundos. Tecla Q.`
+    : `ORBI Convergence: ${convergenceStatus}. Requires 8 ORBIs and 100% resonance. Once per wave, 60-second recharge. Q key.`;
+
   // Localized wave details lookup helper
   const getLocalizedWaveDetails = () => {
     const waveKey = String(currentWave);
@@ -221,6 +238,12 @@ export const GameHud: React.FC<GameHudProps> = ({
               aria-label={dashAriaLabel} title={dashAriaLabel}>
               <ChevronsRight size={18} aria-hidden="true" />
               <span aria-hidden="true">DASH</span>
+            </button>
+            <button type="button" className="orbi-immersive-action orbi-convergence-action"
+              data-testid="orbi-convergence-action"
+              onClick={onActivateConvergence} disabled={!convergence.canActivate}
+              aria-label={convergenceAria} title={convergenceAria}>
+              <Zap size={16} aria-hidden="true" /><span aria-hidden="true">Q</span>
             </button>
             <button type="button" className="orbi-immersive-action orbi-immersive-music"
               data-testid="orbi-immersive-music-toggle"
@@ -330,6 +353,7 @@ export const GameHud: React.FC<GameHudProps> = ({
               <div><Activity size={16} aria-hidden="true"/><span>{language === "es" ? "RESONANCIA" : "RESONANCE"}</span><strong>{Math.round(combatResonance)}%</strong></div>
               <div><Zap size={16} aria-hidden="true"/><span>OVERDRIVE</span><strong>{overdriveStatus}</strong></div>
               <div><ChevronsRight size={16} aria-hidden="true"/><span>DASH · E</span><strong>{dashStatus}</strong></div>
+              <div><Zap size={16} aria-hidden="true"/><span>CONVERGENCIA · Q</span><strong>{convergenceStatus}</strong></div>
               <div><Target size={16} aria-hidden="true"/><span>{language === "es" ? "CADENA" : "CHAIN"}</span><strong>{combatChain} · ×{combatScoreMultiplier.toFixed(2)}</strong></div>
               <div>{audioMuted ? <VolumeX size={16} aria-hidden="true"/> : <Volume2 size={16} aria-hidden="true"/>}
                 <span>{language === "es" ? "AUDIO" : "SOUND"}</span><strong>{audioMuted ? t("hud.muted") : t("hud.unmuted")}</strong></div>
@@ -349,6 +373,13 @@ export const GameHud: React.FC<GameHudProps> = ({
                 ? "Impulso de 180 ms según dirección actual/última. Recarga de 18 s; sin inmunidad ni gasto de resonancia."
                 : "180ms dash in the current/last direction. 18s cooldown; no immunity or resonance cost."}</p>
               <span>{dashStatus}</span>
+            </article>
+            <article>
+              <div><Zap size={17} aria-hidden="true"/><strong>{language === "es" ? "CONVERGENCIA ORBI · Q" : "ORBI CONVERGENCE · Q"}</strong></div>
+              <p>{language === "es"
+                ? "Haz eléctrico penetrante. Requiere 8 ORBI y 100% de resonancia; canaliza 0,8 s, recarga 60 s y solo una vez por oleada. Incompatible con Overdrive."
+                : "Piercing electric beam. Requires 8 ORBIs and 100% resonance; channels 0.8s, recharges 60s, once per wave. Cannot combine with Overdrive."}</p>
+              <span>{convergenceStatus}</span>
             </article>
             <article>
               <div><Shield size={17} aria-hidden="true"/><strong>{language === "es" ? "DEFENSA DEL NÚCLEO" : "CORE DEFENSE"}</strong></div>
@@ -454,6 +485,11 @@ export const GameHud: React.FC<GameHudProps> = ({
 
       {/* 5. QUICK CONTROLLER BUTTONS */}
       <div className="orbi-hud-actions flex items-center gap-1">
+        <button type="button" data-testid="orbi-convergence-action-desktop"
+          onClick={onActivateConvergence} disabled={!convergence.canActivate}
+          className="orbi-dash-action-compact orbi-convergence-action-compact"
+          aria-label={convergenceAria} title={convergenceAria}
+        ><Zap size={12} aria-hidden="true" /><span>Q · {convergenceStatus}</span></button>
         <button type="button" data-testid="orbi-dash-action-desktop"
           onClick={onActivateDash} disabled={!dashCanActivate}
           className="orbi-dash-action-compact"
