@@ -142,6 +142,7 @@ export function stepRouteDynamicQaEncounter(
   orbiWeaponsEnabled=false,
   impactFxEnabled=false,
   convergenceEnabled=false,
+  wave1Enabled=false,
 ):{encounter:RouteQaEncounter; dynamic:RouteDynamicQaState;
    defeats:CombatResonanceDefeatEvent[]; convergenceHits:number; convergenceKills:number} {
   if(impactFxEnabled && (!combatBridgeEnabled || !orbiWeaponsEnabled))
@@ -165,7 +166,7 @@ export function stepRouteDynamicQaEncounter(
     splashHits,slowedHits,pushes,magneticPulls,areaKills,
     nextSpawnMs,nextFireMs,nextProjectileOrdinal,nextResourceOrdinal}=prior;
 
-  if(simulatedMs>=nextSpawnMs){
+  if(!wave1Enabled && simulatedMs>=nextSpawnMs){
     nextSpawnMs+=ROUTE_QA_SPAWN_PERIOD_MS;
     if(enemies.length<Math.min(MAX_ENEMIES,ROUTE_QA_ENEMY_CAP)){
       // Four viewport-relative edges, not a fixed legacy arena. Introduce

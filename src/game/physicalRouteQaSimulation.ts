@@ -22,6 +22,11 @@ import {
   type RouteConvergenceQaState,
 } from "./routeConvergenceQa";
 import { isConvergenceChanneling } from "./orbiConvergence";
+import {
+  createRouteWave1QaState,
+  stepRouteWave1Qa,
+  type RouteWave1QaState,
+} from "./routeWave1Qa";
 import { rebaseRouteCoordinateOwners } from "./routeCoordinateOwners";
 import {
   beginRouteOverdriveQa,createRouteOverdriveQaState,
@@ -74,6 +79,7 @@ export interface PhysicalRouteQaState {
   readonly impactFxEnabled:boolean;
   readonly overdriveQa:RouteOverdriveQaState|null;
   readonly convergenceQa:RouteConvergenceQaState|null;
+  readonly wave1Qa:RouteWave1QaState|null;
   readonly rebases: number;
   readonly physicsTicks: number;
 }
@@ -92,7 +98,10 @@ export function createPhysicalRouteQaState(
   enableImpactFxQa = false,
   enableOverdriveQa = false,
   enableConvergenceQa = false,
+  enableWave1Qa = false,
 ): PhysicalRouteQaState {
+  if(enableWave1Qa&&!enableConvergenceQa)
+    throw new Error("Certified wave-1 QA requires C3B-6 Convergence lab");
   if(enableConvergenceQa&&!enableOverdriveQa)
     throw new Error("Physical Convergence QA requires C3B-5 Overdrive bridge");
   if(enableOverdriveQa&&!enableImpactFxQa)
@@ -144,6 +153,7 @@ export function createPhysicalRouteQaState(
     impactFxEnabled:enableImpactFxQa,
     overdriveQa:enableOverdriveQa?createRouteOverdriveQaState():null,
     convergenceQa:enableConvergenceQa?createRouteConvergenceQaState():null,
+    wave1Qa:enableWave1Qa?createRouteWave1QaState():null,
     rebases: 0,
     physicsTicks: 0,
   };
@@ -180,7 +190,7 @@ export function stepPhysicalRouteQa(
     const admitted=beginRouteConvergenceQa(
       convergenceQa,activatedOverdrive,state.encounter,state.player,
       state.frame.cursor.simulatedMs,
-      routeConvergenceWaveKey(state.frame.cursor.segmentOrdinal),
+      state.wave1Qa?.waveKey??routeConvergenceWaveKey(state.frame.cursor.segmentOrdinal),
       true,state.bridge?.shield??0,
     );
     convergenceQa=admitted.convergenceQa;
@@ -237,7 +247,7 @@ export function stepPhysicalRouteQa(
   if(convergenceQa&&overdriveQa){
     const resolved=advanceRouteConvergenceQa(
       convergenceQa,encounter,player,frame.cursor.simulatedMs,
-      routeConvergenceWaveKey(frame.cursor.segmentOrdinal),
+      state.wave1Qa?.waveKey??routeConvergenceWaveKey(frame.cursor.segmentOrdinal),
       bridge?.shield??0,
     );
     convergenceQa=resolved.convergenceQa;
@@ -246,7 +256,8 @@ export function stepPhysicalRouteQa(
   if(dynamic){
     const next=stepRouteDynamicQaEncounter(
       encounter,dynamic,player,camera,viewport,dt,frame.cursor.simulatedMs,
-      bridge!==null,weapons!==null,state.impactFxEnabled,convergenceQa!==null,
+      bridge!==null,weapons!==null,state.impactFxEnabled,
+      convergenceQa!==null,state.wave1Qa!==null,
     );
     encounter=next.encounter;
     dynamic=next.dynamic;
@@ -261,6 +272,13 @@ export function stepPhysicalRouteQa(
       overdriveQa=endRouteOverdriveQa(overdriveQa,
         frame.cursor.simulatedMs,next.defeats,0);
     }
+  }
+  let wave1Qa=state.wave1Qa;
+  if(wave1Qa){
+    const paced=stepRouteWave1Qa(wave1Qa,encounter,player,camera,viewport,
+      frame.cursor.simulatedMs);
+    wave1Qa=paced.wave;
+    encounter=paced.encounter;
   }
   if(weapons){
     const volley=stepRouteOrbiWeaponsQa(
@@ -320,6 +338,7 @@ export function stepPhysicalRouteQa(
     impactFxEnabled:state.impactFxEnabled,
     overdriveQa,
     convergenceQa,
+    wave1Qa,
     rebases,
     physicsTicks: state.physicsTicks + 1,
   };

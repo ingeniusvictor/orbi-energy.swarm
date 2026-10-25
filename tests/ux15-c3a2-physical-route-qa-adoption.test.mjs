@@ -23,7 +23,7 @@ test("UX15-C3A2: isolated QA renders actual canonical gameplay protagonist GLB p
   assert.match(lab,/import \{ drawFoton \} from "\.\.\/game\/EnergySwarmCanvas"/);
   assert.match(lab,/prewarmFotonGameplay3D\(QualityPreset\.MEDIUM\)/);
   assert.match(lab,/drawFoton\(ctx,s\.player/);
-  assert.match(lab,/data-qa-mode=\{c3b6Enabled\?"PHYSICAL_ROUTE_C3B6_QA":c3b5Enabled\?"PHYSICAL_ROUTE_C3B5_QA":c3b4Enabled\?"PHYSICAL_ROUTE_C3B4_QA":c3b3Enabled\?"PHYSICAL_ROUTE_C3B3_QA":c3b2Enabled\?"PHYSICAL_ROUTE_C3B2_QA":c3bPreviewEnabled\?"PHYSICAL_ROUTE_C3B1_QA":"PHYSICAL_ROUTE_ISOLATED"\}/);
+  assert.match(lab,/data-qa-mode=\{c3b7Enabled\?"PHYSICAL_ROUTE_C3B7_QA":c3b6Enabled\?"PHYSICAL_ROUTE_C3B6_QA":c3b5Enabled\?"PHYSICAL_ROUTE_C3B5_QA":c3b4Enabled\?"PHYSICAL_ROUTE_C3B4_QA":c3b3Enabled\?"PHYSICAL_ROUTE_C3B3_QA":c3b2Enabled\?"PHYSICAL_ROUTE_C3B2_QA":c3bPreviewEnabled\?"PHYSICAL_ROUTE_C3B1_QA":"PHYSICAL_ROUTE_ISOLATED"\}/);
   assert.match(lab,/PHYSICAL QA · CONTROLLED ACTORS · NO DAMAGE/);
   assert.match(lab,/drawAsteriaPremiumWorld\(ctx,s\.frame\.cursor/);
   assert.doesNotMatch(lab,/drawWorldRouteQaScene\([^;]*true\)/);
