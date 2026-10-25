@@ -1,5 +1,4 @@
 import {
-  ASTERIA_SECTION_DEFS,
   type AsteriaSectionId,
   type RouteCursor,
   createAsteriaSegment,
