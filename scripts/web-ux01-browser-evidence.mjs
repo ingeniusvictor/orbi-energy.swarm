@@ -425,6 +425,10 @@ async function runPhysicalRouteQa(name,width,height,touch){
       null,{timeout:8000});
     const firstX=Number(await lab.getAttribute("data-player-local-x"));
     const firstCamera=Number(await lab.getAttribute("data-camera-local-x"));
+    const firstOrbi=Number(await lab.getAttribute("data-orbi-local-x"));
+    const firstEnemy=Number(await lab.getAttribute("data-enemy-local-x"));
+    const firstShot=Number(await lab.getAttribute("data-shot-local-x"));
+    const firstResource=Number(await lab.getAttribute("data-resource-local-x"));
     await page.waitForTimeout(900);
     await page.waitForFunction((x)=>Number(document.querySelector(
       '[data-testid="ux15-physical-qa"]')?.dataset.playerLocalX)>x+17,
@@ -434,6 +438,14 @@ async function runPhysicalRouteQa(name,width,height,touch){
     const distance=Number(await lab.getAttribute("data-route-distance"));
     check(progressedX>firstX+17,name+": ENERGY did not auto-travel in physical local X");
     check(progressedCamera>firstCamera+12,name+": physical camera failed to follow ENERGY");
+    check(Number(await lab.getAttribute("data-orbi-local-x"))>firstOrbi+17,
+      name+": real ORBI formation did not follow ENERGY physically");
+    check(Math.abs(Number(await lab.getAttribute("data-enemy-local-x"))-firstEnemy)<0.01,
+      name+": static enemy moved without a floating-origin transaction");
+    check(Math.abs(Number(await lab.getAttribute("data-shot-local-x"))-firstShot)<0.01,
+      name+": static projectile moved without a floating-origin transaction");
+    check(Math.abs(Number(await lab.getAttribute("data-resource-local-x"))-firstResource)<0.01,
+      name+": static pickup moved without a floating-origin transaction");
     check(distance>20,name+": route cursor did not travel");
     const startY=Number(await lab.getAttribute("data-player-local-y"));
 
@@ -490,6 +502,14 @@ async function runPhysicalRouteQa(name,width,height,touch){
       await page.keyboard.up("d");
       check(Number(await lab.getAttribute("data-rebase-count"))>=1,
         name+": physical floating origin did not rebase");
+      const offset=Number(await lab.getAttribute("data-origin-offset-x"));
+      check(offset>=512,name+": physical origin offset missing");
+      check(Math.abs(Number(await lab.getAttribute("data-enemy-local-x"))+
+        offset-firstEnemy)<0.01,name+": enemy not translated with origin");
+      check(Math.abs(Number(await lab.getAttribute("data-shot-local-x"))+
+        offset-firstShot)<0.01,name+": projectile not translated with origin");
+      check(Math.abs(Number(await lab.getAttribute("data-resource-local-x"))+
+        offset-firstResource)<0.01,name+": resource not translated with origin");
     }
     await page.getByTestId("ux15-physical-reset").click();
     check(Number(await lab.getAttribute("data-route-distance"))===0,

@@ -14,6 +14,7 @@ import {
 } from "../game/asteriaPremiumRenderer";
 import { drawWorldRouteQaScene } from "../game/worldRoutePreviewRenderer";
 import { drawFoton } from "../game/EnergySwarmCanvas";
+import { drawSwarmRoster, drawEnemiesList, drawProjectilesList, drawResources } from "../game/EnergySwarmCanvas";
 import {
   disposeFotonGameplay3D,
   getFotonGameplay3DStatus,
@@ -25,12 +26,14 @@ import "../styles/ux15RouteQa.css";
 
 type QaTelemetry = {
   distance: number; ordinal: number; playerX: number; playerY: number;
-  cameraX: number; originEpoch: number; rebases: number;
+  cameraX: number; originEpoch: number; originOffsetX: number; rebases: number;
   physicsTicks: number; glb: string;
+  orbiX: number; enemyX: number; shotX: number; resourceX: number;
 };
 const initialTelemetry = (): QaTelemetry => ({
   distance: 0, ordinal: 0, playerX: 800, playerY: 480,
-  cameraX: 464, originEpoch: 0, rebases: 0, physicsTicks: 0, glb: "LOADING",
+  cameraX: 464, originEpoch: 0, originOffsetX: 0, rebases: 0, physicsTicks: 0, glb: "LOADING",
+  orbiX: 0, enemyX: 0, shotX: 0, resourceX: 0,
 });
 const arrowKeys = new Set(["w","a","s","d","arrowup","arrowdown","arrowleft","arrowright"]);
 
@@ -61,8 +64,13 @@ export default function PhysicalRouteQa() {
       ordinal:s.frame.cursor.segmentOrdinal,
       playerX:s.player.x, playerY:s.player.y,
       cameraX:s.camera.localX, originEpoch:s.frame.originEpoch,
+      originOffsetX:s.frame.originOffsetX,
       rebases:s.rebases,physicsTicks:s.physicsTicks,
       glb:getFotonGameplay3DStatus(),
+      orbiX:s.encounter.swarm[0].x,
+      enemyX:s.encounter.enemies[0].x,
+      shotX:s.encounter.projectiles[0].x,
+      resourceX:s.encounter.resources[0].x,
     });
   };
 
@@ -114,10 +122,16 @@ export default function PhysicalRouteQa() {
       }
       ctx.restore();
 
+      // Draw actual game actors in one physical coordinate frame. Their
+      // positions remain world-anchored through floating-origin rebases.
       // This is the actual gameplay ENERGY compositor, NOT a gold QA marker.
       ctx.save();
       ctx.scale(view.zoom,view.zoom);
       ctx.translate(-s.camera.localX,-s.camera.localY);
+      drawResources(ctx,s.encounter.resources,s.frame.cursor.simulatedMs,s.player,"MINIMAL");
+      drawEnemiesList(ctx,s.encounter.enemies,s.frame.cursor.simulatedMs,s.player);
+      drawProjectilesList(ctx,s.encounter.projectiles);
+      drawSwarmRoster(ctx,s.encounter.swarm,s.frame.cursor.simulatedMs);
       drawFoton(ctx,s.player,0,s.frame.cursor.simulatedMs,
         {x:s.player.x+120,y:s.player.y},
         false,undefined,1,QualityPreset.MEDIUM,false,
@@ -127,9 +141,9 @@ export default function PhysicalRouteQa() {
       ctx.save();
       ctx.font="700 12px system-ui, sans-serif";
       ctx.fillStyle="rgba(3,16,30,.78)";
-      ctx.fillRect(12,11,256,32);
+      ctx.fillRect(12,11,330,32);
       ctx.fillStyle="#8ff5ec";
-      ctx.fillText("PHYSICAL QA · NO COMBAT",22,32);
+      ctx.fillText("PHYSICAL QA · CONTROLLED ACTORS · NO DAMAGE",22,32);
       ctx.restore();
     };
     drawRef.current=draw;
@@ -234,7 +248,12 @@ export default function PhysicalRouteQa() {
       data-player-local-y={telemetry.playerY.toFixed(2)}
       data-camera-local-x={telemetry.cameraX.toFixed(2)}
       data-origin-epoch={telemetry.originEpoch}
+      data-origin-offset-x={telemetry.originOffsetX.toFixed(2)}
       data-rebase-count={telemetry.rebases}
+      data-orbi-local-x={telemetry.orbiX.toFixed(2)}
+      data-enemy-local-x={telemetry.enemyX.toFixed(2)}
+      data-shot-local-x={telemetry.shotX.toFixed(2)}
+      data-resource-local-x={telemetry.resourceX.toFixed(2)}
       data-physics-ticks={telemetry.physicsTicks}
       data-glb-status={telemetry.glb}>
       <header className="ux15-route-qa__header">
@@ -242,8 +261,8 @@ export default function PhysicalRouteQa() {
           <span className="ux15-route-qa__eyebrow">ORBI ENERGY SWARM · UX15-C3A-2</span>
           <h1>{locale==="es"?"LABORATORIO DE TRAVESÍA FÍSICA":"PHYSICAL TRAVERSAL LAB"}</h1>
           <p>{locale==="es"
-            ?"ENERGY y cámara se desplazan físicamente en ASTERIA. QA aislado sin enemigos ni recompensas."
-            :"ENERGY and camera move physically in ASTERIA. Isolated QA, no enemies or rewards."}</p>
+            ?"ENERGY, cámara y 30 ORBI recorren ASTERIA junto a enemigos, balas y recursos controlados. Sin daño ni recompensas."
+            :"ENERGY, camera and 30 ORBI travel with controlled enemies, shots and resources. No damage or rewards."}</p>
         </div>
         <div className="ux15-route-qa__actions">
           <button type="button" onClick={()=>setLocale(v=>v==="es"?"en":"es")}>
@@ -266,6 +285,8 @@ export default function PhysicalRouteQa() {
         <div><span>{locale==="es"?"Cámara · X":"Camera · X"}</span><strong>{Math.round(telemetry.cameraX)} u</strong></div>
         <div><span>{locale==="es"?"Segmento":"Segment"}</span><strong>{telemetry.ordinal+1}</strong></div>
         <div><span>Origin epoch</span><strong>{telemetry.originEpoch}</strong></div>
+        <div><span>ORBI 1 · X</span><strong>{Math.round(telemetry.orbiX)} u</strong></div>
+        <div><span>Enemigo · X</span><strong>{Math.round(telemetry.enemyX)} u</strong></div>
         <div><span>{locale==="es"?"Estado":"Status"}</span><strong>{reduced?"REDUCED MOTION":running?"PHYSICAL RUN":"PAUSED"}</strong></div>
       </section>
       <div className="ux15-route-qa__footer">

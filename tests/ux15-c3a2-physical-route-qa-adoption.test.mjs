@@ -24,7 +24,7 @@ test("UX15-C3A2: isolated QA renders actual canonical gameplay protagonist GLB p
   assert.match(lab,/prewarmFotonGameplay3D\(QualityPreset\.MEDIUM\)/);
   assert.match(lab,/drawFoton\(ctx,s\.player/);
   assert.match(lab,/data-qa-mode="PHYSICAL_ROUTE_ISOLATED"/);
-  assert.match(lab,/PHYSICAL QA · NO COMBAT/);
+  assert.match(lab,/PHYSICAL QA · CONTROLLED ACTORS · NO DAMAGE/);
   assert.match(lab,/drawAsteriaPremiumWorld\(ctx,s\.frame\.cursor/);
   assert.doesNotMatch(lab,/drawWorldRouteQaScene\([^;]*true\)/);
   assert.doesNotMatch(lab,/spawnEnemy|registerCombatDefeat|setNanoCredits|scoreRef|bossRef|projectilesRef/);
@@ -35,9 +35,9 @@ test("UX15-C3A2: real player, camera and origin are owned by ONE simulated clock
   assert.match(sim,/advancePhysicalRouteFrame\(/);
   assert.match(sim,/stepRoutePhysicalCamera\(/);
   assert.match(sim,/planRouteOriginShift\(/);
-  assert.match(sim,/rebasePhysicalRouteFrame\(/);
-  assert.match(sim,/shiftRoutePhysicalCamera\(/);
-  assert.match(sim,/shiftRouteLocalPoint\(/);
+  // C3A-3 supersedes the two-owner C3A-2 rebase with one transaction.
+  assert.match(sim,/rebaseRouteCoordinateOwners\(/);
+  assert.match(sim,/structuredClone\(encounter\)/);
   assert.match(sim,/if \(!canAdvanceRoute\(gates\) \|\| deltaMs === 0\) return state/);
   assert.doesNotMatch(sim,/requestAnimationFrame|Date\.now|Math\.random|React|enemiesRef/);
   assert.match(lab,/data-player-local-x=/);

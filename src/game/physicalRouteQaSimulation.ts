@@ -2,19 +2,18 @@ import {
   advancePhysicalRouteFrame,
   createPhysicalRouteFrame,
   planRouteOriginShift,
-  rebasePhysicalRouteFrame,
-  shiftRouteLocalPoint,
   type PhysicalRouteFrame,
   type RouteLocalPoint,
 } from "./physicalRouteSpace";
 import {
   ROUTE_PHYSICAL_CAMERA_ANCHOR_X,
-  shiftRoutePhysicalCamera,
   stepRoutePhysicalCamera,
   type RoutePhysicalCamera,
   type RoutePhysicalViewport,
 } from "./routePhysicalCamera";
 import { createRouteCursor } from "./worldRouteCore";
+import { rebaseRouteCoordinateOwners } from "./routeCoordinateOwners";
+import { createRouteQaEncounter, stepRouteQaEncounter, type RouteQaEncounter } from "./routePhysicalQaEncounter";
 import {
   canAdvanceRoute,
   ROUTE_QA_SPEED_UNITS_PER_SECOND,
@@ -37,6 +36,7 @@ export interface PhysicalRouteQaState {
   readonly frame: PhysicalRouteFrame;
   readonly player: RouteLocalPoint;
   readonly camera: RoutePhysicalCamera;
+  readonly encounter: RouteQaEncounter;
   readonly rebases: number;
   readonly physicsTicks: number;
 }
@@ -62,6 +62,7 @@ export function createPhysicalRouteQaState(
     frame: createPhysicalRouteFrame(createRouteCursor(seed)),
     player,
     camera,
+    encounter: createRouteQaEncounter(player),
     rebases: 0,
     physicsTicks: 0,
   };
@@ -104,20 +105,26 @@ export function stepPhysicalRouteQa(
     state.camera,player,viewport,dt,
   ).camera;
   let frame = advancement.frame;
+  let encounter = stepRouteQaEncounter(state.encounter, player);
   let rebases = state.rebases;
   const deltaX = planRouteOriginShift(frame,player.x);
   if (deltaX !== null) {
-    // C3A-2 owns ONLY player and camera, both shifted on the same tick.
-    // Future C3A-3 must replace this with an atomic all-entities adapter.
-    frame = rebasePhysicalRouteFrame(frame,deltaX).nextFrame;
-    player = shiftRouteLocalPoint(player,deltaX);
-    camera = shiftRoutePhysicalCamera(camera,deltaX);
+    // C3A-3: one atomic rebase for all controlled encounter owners.
+    // Clone first: previous simulation snapshots remain immutable to tests/UI.
+    encounter = structuredClone(encounter);
+    const transaction = rebaseRouteCoordinateOwners({
+      ...encounter, frame, player, camera,
+    },deltaX,{
+      phase:"TICK_BOUNDARY",unresolvedBossPhase:false,unregisteredWorldOwners:false,
+    });
+    frame = transaction.frame;
     rebases++;
   }
   return {
     frame,
     player,
     camera,
+    encounter,
     rebases,
     physicsTicks: state.physicsTicks + 1,
   };
