@@ -3,7 +3,6 @@ import test from "node:test";
 import {
   advanceRouteConvergenceQa,
   beginRouteConvergenceQa,
-  createRouteConvergenceQaState,
   projectRouteConvergenceQa,
   registerRouteConvergenceHits,
   routeConvergenceWaveKey,
@@ -13,7 +12,7 @@ import {
   CONVERGENCE_MAX_HITS,convergenceHitDamage,
 } from "../../src/game/orbiConvergence";
 import {
-  beginRouteOverdriveQa,createRouteOverdriveQaState,
+  beginRouteOverdriveQa,
 } from "../../src/game/routeOverdriveQa";
 import {
   createPhysicalRouteQaState,stepPhysicalRouteQa,
@@ -210,7 +209,7 @@ test("C3B6: channel blocks Dash and Overdrive; slows manual controls to canonica
 test("C3B6: rebase registers beam trail as owned physical X and preserves immutable prior snapshot",()=>{
   const s=loaded();
   const charged=beginRouteOverdriveQa(s.overdriveQa!,0,false,true);
-  let state:typeof s={...s,overdriveQa:charged};
+  let state:ReturnType<typeof original>={...s,overdriveQa:charged};
   const sourceX=state.player.x;
   for(let i=0;i<16;i++){
     state=stepPhysicalRouteQa(state,50,{x:0,y:0},view,gates,
