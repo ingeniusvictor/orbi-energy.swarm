@@ -104,7 +104,7 @@ export const GameHud: React.FC<GameHudProps> = ({
   const shieldPercent = shieldThreat.percent;
   const shieldFillStyle = {
     width: `${shieldPercent}%`,
-    backgroundColor: shieldThreat.fill,
+    background: shieldThreat.fill,
     boxShadow: `0 0 10px ${shieldThreat.glow}`,
   };
 
