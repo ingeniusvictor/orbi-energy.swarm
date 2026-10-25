@@ -174,12 +174,13 @@ async function run(width,height,mobile,dpr=1){
    const campaign=page.getByTestId("orbi-mobile-campaign");
    const score=page.getByTestId("orbi-mobile-score-attack");
    ensure(await campaign.isVisible() && await score.isVisible(),id+": Campaign/Score missing");
+   ensure(await page.getByTestId("orbi-mobile-world-route").isVisible(),id+": World Traversal missing");
    ensure(await page.getByTestId("orbi-mobile-infinite-locked").count()===1,id+": Infinite unguarded");
-   ensure(await page.locator(".orbi-ux10c-mode").count()===3,id+": mode cards missing");
+   ensure(await page.locator(".orbi-ux10c-mode").count()===4,id+": four mode cards missing");
    const modeArts=await page.locator(".orbi-ux10c-modes .orbi-ux11f-scene").evaluateAll(els=>els.map(el=>el.getAttribute("data-scene")));
-   ensure(modeArts.length===3,id+": mode artwork missing");
-   ensure(modeArts.join(",")==="campaign,score,infinite",id+": each game mode must have unique art");
-   ensure(await page.locator(".orbi-ux11f-mode-progress").count()===3,
+   ensure(modeArts.length===4,id+": fourth mode artwork missing");
+   ensure(modeArts.join(",")==="campaign,score,route,infinite",id+": each game mode must have unique art");
+   ensure(await page.locator(".orbi-ux11f-mode-progress").count()===4,
      id+": real mode technical captions missing");
    ensure((await page.locator(".orbi-ux10c-mode--score .orbi-ux11f-mode-progress").innerText()).includes("60s"),
      id+": Score Attack duration should come from canonical timebox");
