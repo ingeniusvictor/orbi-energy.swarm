@@ -1,4 +1,4 @@
-import { ASTERIA_WORLD_ID, getRouteWindow, stableRouteHash, type RouteCursor } from "./worldRouteCore";
+import { ASTERIA_WORLD_ID, getRouteWindow, projectRouteDistance, stableRouteHash, type RouteCursor } from "./worldRouteCore";
 import { projectRoutePreviewCamera, type RoutePreviewPlayer } from "./worldRouteCamera";
 
 /** UX15-B Canvas2D engineering mock-up. NOT final ASTERIA art or gameplay. */
