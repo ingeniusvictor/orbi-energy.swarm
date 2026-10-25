@@ -457,10 +457,24 @@ async function runPhysicalRouteQa(name,width,height,touch){
       const touchY=bounds.y+bounds.height*.57;
       await cdp.send("Input.dispatchTouchEvent",{type:"touchStart",
         touchPoints:[{x:startX,y:touchY}]});
+      await page.waitForTimeout(140);
+      await cdp.send("Input.dispatchTouchEvent",{type:"touchMove",
+        touchPoints:[{x:startX+45,y:touchY-35}]});
+      await page.waitForTimeout(130);
       await cdp.send("Input.dispatchTouchEvent",{type:"touchMove",
         touchPoints:[{x:startX+90,y:touchY-80}]});
-      await page.waitForTimeout(520);
+      await page.waitForTimeout(650);
       await cdp.send("Input.dispatchTouchEvent",{type:"touchEnd",touchPoints:[]});
+      if(Number(await lab.getAttribute("data-player-local-y"))>=startY-15){
+        const altX=bounds.x+bounds.width*.4,altY=bounds.y+bounds.height*.8;
+        await cdp.send("Input.dispatchTouchEvent",{type:"touchStart",
+          touchPoints:[{x:altX,y:altY}]});
+        await page.waitForTimeout(150);
+        await cdp.send("Input.dispatchTouchEvent",{type:"touchMove",
+          touchPoints:[{x:altX+55,y:altY-65}]});
+        await page.waitForTimeout(730);
+        await cdp.send("Input.dispatchTouchEvent",{type:"touchEnd",touchPoints:[]});
+      }
       await cdp.detach();
     }else{
       await page.keyboard.down("w");
