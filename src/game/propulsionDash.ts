@@ -6,8 +6,8 @@
  * advance the dash or its cooldown. A dash never grants invulnerability.
  */
 export const DASH_DURATION_MS = 180;
-export const DASH_COOLDOWN_MS = 10_000;
-export const DASH_SPEED_UNITS_PER_MS = 0.85;
+export const DASH_COOLDOWN_MS = 18_000;
+export const DASH_SPEED_UNITS_PER_MS = 0.72;
 export const DASH_PLAYER_RADIUS = 16;
 
 export interface DashVector { x: number; y: number }
