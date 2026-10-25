@@ -74,7 +74,7 @@
 .orbi-premium-status-core-label span {font-size:clamp(8px,.8vw,11px); color:#82cfe6;}
 .orbi-premium-status :is(.orbi-premium-status-shield,.orbi-premium-status-wave) h3 {display:flex;align-items:center;gap:6px;color:#7be6f9;font:800 clamp(10px,.95vw,13px)/1.2 monospace;letter-spacing:.08em;text-transform:uppercase;}
 .orbi-premium-status :is(.orbi-premium-status-shield,.orbi-premium-status-wave) > strong {display:block; margin:6px 0; color:#fef3c7; font:900 clamp(23px,3vw,44px)/1 'Space Grotesk',sans-serif;}
-.orbi-premium-status-shield > strong {color:#34d399!important;}
+.orbi-premium-status-shield > strong {color:#34d399;} /* live inline UX14 shield band takes priority */
 .orbi-premium-status-meter {height:9px;border-radius:6px;background:#0a1c34;overflow:hidden;border:1px solid rgba(103,232,249,.25);}
 .orbi-premium-status-meter span {display:block;height:100%;background:linear-gradient(90deg,#06b6d4,#34d399);box-shadow:0 0 11px #34d399;}
 .orbi-premium-status-shield p,.orbi-premium-status-wave p {margin-top:6px;color:#b7ccda;font-size:clamp(9px,.85vw,12px);}

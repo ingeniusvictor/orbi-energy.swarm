@@ -1487,6 +1487,56 @@ export function drawEnemiesList(
         }
         ctx.fill();
         ctx.restore();
+
+        // UX14-A: premium armored engine now feels massive and alive.
+        // Pure Canvas VFX: never changes health, armor reduction, charge
+        // timers, damage or hitboxes. Deliberately omitted for legacy fallback.
+        if (premiumArmored) {
+          const charging = enemy.chargeTimer !== undefined && enemy.chargeTimer > 0;
+          const flicker = 0.73 + Math.sin(time * 0.012 + enemy.x * 0.027) * 0.18;
+          const pulse = charging ? 1.22 : 1;
+          ctx.save();
+          // Two asymmetric retrothrusters extend outside the image rather than
+          // covering its gunmetal armor plates.
+          for (const side of [-1, 1]) {
+            const px = side * enemy.size * 0.52;
+            const py = enemy.size * 1.03;
+            const length = enemy.size * (charging ? 1.06 : 0.46) * flicker;
+            const flame = ctx.createLinearGradient(px, py, px, py + length);
+            flame.addColorStop(0, "rgba(255,247,203,.95)");
+            flame.addColorStop(.35, charging ? "rgba(255,91,34,.9)" : "rgba(251,146,60,.77)");
+            flame.addColorStop(1, "rgba(255,70,16,0)");
+            ctx.fillStyle = flame;
+            ctx.shadowColor = "#f97316";
+            ctx.shadowBlur = charging ? 11 : 5;
+            ctx.beginPath();
+            ctx.moveTo(px - enemy.size * .12, py);
+            ctx.lineTo(px, py + length);
+            ctx.lineTo(px + enemy.size * .12, py);
+            ctx.closePath();
+            ctx.fill();
+          }
+          // Refractive armored frontal plating: an animated rim, not a new
+          // defensive shield. Existing directional resistance remains unchanged.
+          ctx.shadowColor = "#f59e0b";
+          ctx.shadowBlur = charging ? 12 : 4;
+          ctx.strokeStyle = charging ? "rgba(255,204,115,.9)" : "rgba(251,146,60,.52)";
+          ctx.lineWidth = charging ? 2.4 : 1.25;
+          ctx.beginPath();
+          ctx.ellipse(0, -enemy.size * .15, enemy.size * 1.48,
+            enemy.size * 1.60, 0, Math.PI * 1.15, Math.PI * 1.86);
+          ctx.stroke();
+          // Three directional plate light sources, subtle during idle.
+          ctx.fillStyle = charging ? "#fff1bd" : "#ffbe72";
+          ctx.shadowBlur = 6;
+          for (const x of [-.83, 0, .83]) {
+            ctx.beginPath();
+            ctx.arc(x * enemy.size, -enemy.size * .77,
+              enemy.size * (charging ? .095 : .066) * pulse, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          ctx.restore();
+        }
         break;
       }
 
