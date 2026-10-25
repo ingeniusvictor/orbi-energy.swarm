@@ -896,8 +896,14 @@ async function runRouteOverdriveQa(name,width,height,touch){
       const cdp=await context.newCDPSession(page);
       const x=bounds.x+bounds.width*.5,y=bounds.y+bounds.height*.64;
       await cdp.send("Input.dispatchTouchEvent",{type:"touchStart",touchPoints:[{x,y}]});
+      // Headless Chromium can coalesce adjacent CDP start/move packets.
+      // Span three render frames so React receives the initial pointer
+      // capture and real native motion before the pointer is released.
+      await page.waitForTimeout(110);
+      await cdp.send("Input.dispatchTouchEvent",{type:"touchMove",touchPoints:[{x:x+45,y:y-40}]});
+      await page.waitForTimeout(120);
       await cdp.send("Input.dispatchTouchEvent",{type:"touchMove",touchPoints:[{x:x+90,y:y-100}]});
-      await page.waitForTimeout(550);
+      await page.waitForTimeout(650);
       await cdp.send("Input.dispatchTouchEvent",{type:"touchEnd",touchPoints:[]});
       await cdp.detach();
     }else{
@@ -985,8 +991,11 @@ async function runRouteConvergenceQa(name,width,height,touch){
       const cdp=await context.newCDPSession(page);
       const x=bounds.x+bounds.width*.5,y=bounds.y+bounds.height*.62;
       await cdp.send("Input.dispatchTouchEvent",{type:"touchStart",touchPoints:[{x,y}]});
+      await page.waitForTimeout(110);
+      await cdp.send("Input.dispatchTouchEvent",{type:"touchMove",touchPoints:[{x:x+45,y:y-40}]});
+      await page.waitForTimeout(120);
       await cdp.send("Input.dispatchTouchEvent",{type:"touchMove",touchPoints:[{x:x+95,y:y-105}]});
-      await page.waitForTimeout(550);
+      await page.waitForTimeout(650);
       await cdp.send("Input.dispatchTouchEvent",{type:"touchEnd",touchPoints:[]});
       await cdp.detach();
     }else{
