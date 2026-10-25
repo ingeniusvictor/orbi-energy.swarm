@@ -23,7 +23,7 @@ export default function WorldRouteQaPreview() {
   const pressedRef = useRef(new Set<string>());
   const [running, setRunning] = useState(true);
   const [locale, setLocale] = useState<"es" | "en">("es");
-  const [telemetry, setTelemetry] = useState({ ordinal: 0, distance: 0, simulatedMs: 0 });
+  const [telemetry, setTelemetry] = useState({ ordinal: 0, distance: 0, simulatedMs: 0, playerX: 0, playerY: 240 });
   const [reduced, setReduced] = useState(false);
 
   const repaint = () => {
@@ -34,6 +34,7 @@ export default function WorldRouteQaPreview() {
       ordinal: cursor.segmentOrdinal,
       distance: projectRouteDistance(cursor),
       simulatedMs: cursor.simulatedMs,
+      playerX: playerRef.current.manualX, playerY: playerRef.current.y,
     });
   };
 
@@ -97,7 +98,8 @@ export default function WorldRouteQaPreview() {
         if (++paintCounter % 9 === 0) {
           const cursor = cursorRef.current;
           setTelemetry({ ordinal: cursor.segmentOrdinal,
-            distance: projectRouteDistance(cursor), simulatedMs: cursor.simulatedMs });
+            distance: projectRouteDistance(cursor), simulatedMs: cursor.simulatedMs,
+            playerX: playerRef.current.manualX, playerY: playerRef.current.y });
         }
       }
     };
@@ -143,7 +145,8 @@ export default function WorldRouteQaPreview() {
   return (
     <main className="ux15-route-qa" data-testid="ux15-route-qa"
       data-route-mode="ROUTE_QA_PREVIEW" data-segment-ordinal={telemetry.ordinal}
-      data-route-distance={Math.floor(telemetry.distance)}>
+      data-route-distance={Math.floor(telemetry.distance)}
+      data-player-manual-x={telemetry.playerX.toFixed(2)} data-player-y={telemetry.playerY.toFixed(2)}>
       <header className="ux15-route-qa__header">
         <div>
           <span className="ux15-route-qa__eyebrow">ORBI ENERGY SWARM · UX15-B</span>
