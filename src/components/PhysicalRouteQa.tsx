@@ -24,6 +24,8 @@ import { QualityPreset } from "../game/types";
 import { projectRouteDistance } from "../game/worldRouteCore";
 import { projectPropulsionDash } from "../game/propulsionDash";
 import { projectRouteOverdriveQa } from "../game/routeOverdriveQa";
+import { drawOrbiConvergence } from "../game/orbiConvergenceRenderer";
+import { projectRouteConvergenceQa,routeConvergenceWaveKey } from "../game/routeConvergenceQa";
 import { projectCombatOverdrivePresentation } from "../game/combatOverdrivePresentation";
 import "../styles/ux15RouteQa.css";
 
@@ -42,6 +44,11 @@ type QaTelemetry = {
   overdriveRemainingMs:number; overdriveMultiplier:number;
   overdriveReady:boolean; overdriveLockMs:number;
   overdriveActivations:number; qaCharges:number;creditedDefeats:number;damageBreaks:number;
+  convergenceReady:boolean;convergenceChanneling:boolean;
+  convergenceChannelMs:number;convergenceCooldownMs:number;
+  convergenceUsedWave:boolean;convergenceActivations:number;
+  convergenceBeams:number;convergenceHits:number;convergenceKills:number;
+  convergenceCancels:number;
 };
 const initialTelemetry = (): QaTelemetry => ({
   distance: 0, ordinal: 0, playerX: 800, playerY: 480,
@@ -55,6 +62,11 @@ const initialTelemetry = (): QaTelemetry => ({
   resonance:0,chain:0,overdriveActive:false,overdriveRemainingMs:0,
   overdriveMultiplier:1,overdriveReady:false,overdriveLockMs:0,
   overdriveActivations:0,qaCharges:0,creditedDefeats:0,damageBreaks:0,
+  convergenceReady:false,convergenceChanneling:false,
+  convergenceChannelMs:0,convergenceCooldownMs:0,
+  convergenceUsedWave:false,convergenceActivations:0,
+  convergenceBeams:0,convergenceHits:0,convergenceKills:0,
+  convergenceCancels:0,
 });
 const routeParams=typeof window !== "undefined"
   ? new URLSearchParams(window.location.search):new URLSearchParams();
@@ -63,6 +75,7 @@ const c3b2Enabled=c3bPreviewEnabled && routeParams.get("ux15-c3b2")==="1";
 const c3b3Enabled=c3b2Enabled && routeParams.get("ux15-c3b3")==="1";
 const c3b4Enabled=c3b3Enabled && routeParams.get("ux15-c3b4")==="1";
 const c3b5Enabled=c3b4Enabled && routeParams.get("ux15-c3b5")==="1";
+const c3b6Enabled=c3b5Enabled && routeParams.get("ux15-c3b6")==="1";
 const arrowKeys = new Set(["w","a","s","d","arrowup","arrowdown","arrowleft","arrowright"]);
 
 /**
@@ -75,11 +88,12 @@ const arrowKeys = new Set(["w","a","s","d","arrowup","arrowdown","arrowleft","ar
 export default function PhysicalRouteQa() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const viewportRef = useRef<RoutePhysicalViewport>({ width: 800, height: 480, zoom: 1 });
-  const stateRef = useRef<PhysicalRouteQaState>(createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled,c3b2Enabled,c3b3Enabled,c3b4Enabled,c3b5Enabled));
+  const stateRef = useRef<PhysicalRouteQaState>(createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled,c3b2Enabled,c3b3Enabled,c3b4Enabled,c3b5Enabled,c3b6Enabled));
   const controlsRef = useRef(new Set<string>());
   const dashRequestedRef=useRef(false);
   const overdriveRequestedRef=useRef(false);
   const chargeQaRequestedRef=useRef(false);
+  const convergenceRequestedRef=useRef(false);
   const pointerRef = useRef<{ id:number; startX:number; startY:number; x:number; y:number } | null>(null);
   const runningRef = useRef(true);
   const drawRef = useRef<() => void>(() => {});
@@ -92,7 +106,24 @@ export default function PhysicalRouteQa() {
     const s=stateRef.current;
     const projection=s.overdriveQa?projectRouteOverdriveQa(
       s.overdriveQa,s.frame.cursor.simulatedMs):null;
+    const conv=s.convergenceQa&&s.overdriveQa
+      ?projectRouteConvergenceQa(
+        s.convergenceQa,s.overdriveQa,s.encounter,s.player,
+        s.frame.cursor.simulatedMs,
+        routeConvergenceWaveKey(s.frame.cursor.segmentOrdinal),
+        s.bridge?.shield??0,
+      ):null;
     setTelemetry({
+      convergenceReady:conv?.canActivate??false,
+      convergenceChanneling:conv?.channeling??false,
+      convergenceChannelMs:conv?.channelRemainingMs??0,
+      convergenceCooldownMs:conv?.cooldownRemainingMs??0,
+      convergenceUsedWave:conv?.usedThisWave??false,
+      convergenceActivations:s.convergenceQa?.activations??0,
+      convergenceBeams:s.convergenceQa?.beams??0,
+      convergenceHits:s.convergenceQa?.registeredHits??0,
+      convergenceKills:s.convergenceQa?.registeredKills??0,
+      convergenceCancels:s.convergenceQa?.cancellations??0,
       resonance:projection?.resonance??0,
       chain:projection?.chain??0,
       overdriveActive:projection?.active??false,
@@ -214,6 +245,14 @@ export default function PhysicalRouteQa() {
       }
       drawProjectilesList(ctx,s.encounter.projectiles);
       drawSwarmRoster(ctx,s.encounter.swarm,s.frame.cursor.simulatedMs);
+      if(c3b6Enabled&&s.convergenceQa){
+        // Reuse exact UX14-B Canvas2D renderer and its bounded six-hit
+        // beam/24-link channel presentation in physical camera coordinates.
+        drawOrbiConvergence(
+          ctx,s.convergenceQa.convergence,
+          s.frame.cursor.simulatedMs,s.player,s.encounter.swarm,false,
+        );
+      }
       if(c3b5Enabled && s.overdriveQa){
         const status=projectRouteOverdriveQa(s.overdriveQa,s.frame.cursor.simulatedMs);
         const fx=projectCombatOverdrivePresentation({
@@ -244,7 +283,9 @@ export default function PhysicalRouteQa() {
       ctx.fillStyle="rgba(3,16,30,.78)";
       ctx.fillRect(12,11,330,32);
       ctx.fillStyle="#8ff5ec";
-      ctx.fillText(c3b5Enabled
+      ctx.fillText(c3b6Enabled
+        ? "C3B-6 · CANONICAL ORBI CONVERGENCE QA"
+        :c3b5Enabled
         ? "C3B-5 · COMBAT RESONANCE + OVERDRIVE QA"
         :c3b4Enabled
         ? "C3B-4 · AREA / SLOW / PUSH / MAGNET QA"
@@ -267,7 +308,7 @@ export default function PhysicalRouteQa() {
         Math.round(480*availableWidth/Math.max(1,stageHeight))));
       viewportRef.current={width:logicalWidth,height:480,zoom:1};
       if(stateRef.current.physicsTicks===0) {
-        stateRef.current=createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled,c3b2Enabled,c3b3Enabled,c3b4Enabled,c3b5Enabled);
+        stateRef.current=createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled,c3b2Enabled,c3b3Enabled,c3b4Enabled,c3b5Enabled,c3b6Enabled);
       }
       canvas.dataset.logicalWidth=String(logicalWidth);
       canvas.dataset.logicalHeight="480";
@@ -282,6 +323,10 @@ export default function PhysicalRouteQa() {
         e.preventDefault();
         if(!e.repeat)dashRequestedRef.current=true;
       }
+      if(c3b6Enabled&&k==="c"){
+        e.preventDefault();
+        if(!e.repeat)convergenceRequestedRef.current=true;
+      }
       if(c3b5Enabled&&k==="o"){
         e.preventDefault();
         if(!e.repeat)overdriveRequestedRef.current=true;
@@ -293,6 +338,7 @@ export default function PhysicalRouteQa() {
       controlsRef.current.clear();pointerRef.current=null;
       dashRequestedRef.current=false;overdriveRequestedRef.current=false;
       chargeQaRequestedRef.current=false;
+      convergenceRequestedRef.current=false;
     };
     const onVisibility=()=>{last=0;if(document.hidden)clearInput();};
     const tick=(now:number)=>{
@@ -317,11 +363,13 @@ export default function PhysicalRouteQa() {
         gates,c3b2Enabled && dashRequestedRef.current,
         c3b5Enabled && overdriveRequestedRef.current,
         c3b5Enabled && chargeQaRequestedRef.current,
+        c3b6Enabled && convergenceRequestedRef.current,
       );
       if(dt>0 && gates.playing && !gates.paused && !gates.hidden){
         dashRequestedRef.current=false;
         overdriveRequestedRef.current=false;
         chargeQaRequestedRef.current=false;
+        convergenceRequestedRef.current=false;
       }
       if(now-lastPaint>=1000/30){
         lastPaint=now;
@@ -352,12 +400,13 @@ export default function PhysicalRouteQa() {
   },[]);
 
   const reset=()=>{
-    stateRef.current=createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled,c3b2Enabled,c3b3Enabled,c3b4Enabled,c3b5Enabled);
+    stateRef.current=createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled,c3b2Enabled,c3b3Enabled,c3b4Enabled,c3b5Enabled,c3b6Enabled);
     controlsRef.current.clear();
     pointerRef.current=null;
     dashRequestedRef.current=false;
     overdriveRequestedRef.current=false;
     chargeQaRequestedRef.current=false;
+    convergenceRequestedRef.current=false;
     drawRef.current();
     publishTelemetry();
   };
@@ -379,7 +428,17 @@ export default function PhysicalRouteQa() {
   };
   return (
     <main className="ux15-route-qa ux15-physical-qa" data-testid="ux15-physical-qa"
-      data-qa-mode={c3b5Enabled?"PHYSICAL_ROUTE_C3B5_QA":c3b4Enabled?"PHYSICAL_ROUTE_C3B4_QA":c3b3Enabled?"PHYSICAL_ROUTE_C3B3_QA":c3b2Enabled?"PHYSICAL_ROUTE_C3B2_QA":c3bPreviewEnabled?"PHYSICAL_ROUTE_C3B1_QA":"PHYSICAL_ROUTE_ISOLATED"}
+      data-qa-mode={c3b6Enabled?"PHYSICAL_ROUTE_C3B6_QA":c3b5Enabled?"PHYSICAL_ROUTE_C3B5_QA":c3b4Enabled?"PHYSICAL_ROUTE_C3B4_QA":c3b3Enabled?"PHYSICAL_ROUTE_C3B3_QA":c3b2Enabled?"PHYSICAL_ROUTE_C3B2_QA":c3bPreviewEnabled?"PHYSICAL_ROUTE_C3B1_QA":"PHYSICAL_ROUTE_ISOLATED"}
+      data-c3b6-ready={String(telemetry.convergenceReady)}
+      data-c3b6-channeling={String(telemetry.convergenceChanneling)}
+      data-c3b6-channel-ms={Math.round(telemetry.convergenceChannelMs)}
+      data-c3b6-cooldown-ms={Math.round(telemetry.convergenceCooldownMs)}
+      data-c3b6-used-wave={String(telemetry.convergenceUsedWave)}
+      data-c3b6-activations={telemetry.convergenceActivations}
+      data-c3b6-beams={telemetry.convergenceBeams}
+      data-c3b6-hits={telemetry.convergenceHits}
+      data-c3b6-kills={telemetry.convergenceKills}
+      data-c3b6-cancelled={telemetry.convergenceCancels}
       data-c3b5-resonance={telemetry.resonance}
       data-c3b5-chain={telemetry.chain}
       data-c3b5-overdrive-active={String(telemetry.overdriveActive)}
@@ -428,10 +487,12 @@ export default function PhysicalRouteQa() {
       data-glb-status={telemetry.glb}>
       <header className="ux15-route-qa__header">
         <div>
-          <span className="ux15-route-qa__eyebrow">ORBI ENERGY SWARM · {c3b5Enabled?"UX15-C3B-5":c3b4Enabled?"UX15-C3B-4":c3b3Enabled?"UX15-C3B-3":c3b2Enabled?"UX15-C3B-2":c3bPreviewEnabled?"UX15-C3B-1":"UX15-C3A-3"}</span>
+          <span className="ux15-route-qa__eyebrow">ORBI ENERGY SWARM · {c3b6Enabled?"UX15-C3B-6":c3b5Enabled?"UX15-C3B-5":c3b4Enabled?"UX15-C3B-4":c3b3Enabled?"UX15-C3B-3":c3b2Enabled?"UX15-C3B-2":c3bPreviewEnabled?"UX15-C3B-1":"UX15-C3A-3"}</span>
           <h1>{locale==="es"?"LABORATORIO DE TRAVESÍA FÍSICA":"PHYSICAL TRAVERSAL LAB"}</h1>
           <p>{locale==="es"
-            ?(c3b5Enabled
+            ?(c3b6Enabled
+              ?"Convergencia ORBI canónica: carga resonancia QA, apunta con C y canaliza un rayo de 800 ms. Exclusiva del laboratorio."
+              :c3b5Enabled
               ?"Resonancia y Overdrive reales en QA: derrota enemigos para cargar, activa con O. Carga QA opcional sin puntuación ni progreso."
               :c3b4Enabled
               ?"Impactos ORBI físicos: explosiones, ralentización, empuje y magnetismo. Prototipo aislado, sin premios de campaña."
@@ -442,7 +503,9 @@ export default function PhysicalRouteQa() {
               :c3bPreviewEnabled
               ?"Encuentro físico QA: enemigos aparecen fuera de cámara, persiguen a ENERGY y reciben impactos. Sin recompensas ni combate de campaña."
               :"ENERGY, cámara y 30 ORBI recorren ASTERIA junto a enemigos, balas y recursos controlados. Sin daño ni recompensas.")
-            :(c3b5Enabled
+            :(c3b6Enabled
+              ?"Canonical ORBI Convergence: charge QA resonance, press C to channel an 800ms beam. Isolated lab only."
+              :c3b5Enabled
               ?"Real resonance and Overdrive QA: defeat enemies to charge, press O to activate. Optional QA charge without score or progress."
               :c3b4Enabled
               ?"Physical ORBI impact QA: splash damage, slowing, pushback and magnetism. Isolated prototype; no campaign rewards."
@@ -475,6 +538,12 @@ export default function PhysicalRouteQa() {
         <div><span>{locale==="es"?"Cámara · X":"Camera · X"}</span><strong>{Math.round(telemetry.cameraX)} u</strong></div>
         <div><span>{locale==="es"?"Segmento":"Segment"}</span><strong>{telemetry.ordinal+1}</strong></div>
         <div><span>Origin epoch</span><strong>{telemetry.originEpoch}</strong></div>
+        {c3b6Enabled && <>
+          <div><span>Convergencia QA</span><strong>{telemetry.convergenceChanneling?"CANALIZANDO":telemetry.convergenceReady?"LISTA":telemetry.convergenceUsedWave?"USADA":"NO DISPONIBLE"}</strong></div>
+          <div><span>Canal / cooldown</span><strong>{(telemetry.convergenceChannelMs/1000).toFixed(2)} / {(telemetry.convergenceCooldownMs/1000).toFixed(0)} s</strong></div>
+          <div><span>Rayos / objetivos</span><strong>{telemetry.convergenceBeams} / {telemetry.convergenceHits}</strong></div>
+          <div><span>Bajas / canceladas</span><strong>{telemetry.convergenceKills} / {telemetry.convergenceCancels}</strong></div>
+        </>}
         {c3b5Enabled && <>
           <div><span>Resonancia / cadena</span><strong>{telemetry.resonance} / {telemetry.chain}</strong></div>
           <div><span>Overdrive QA</span><strong>{telemetry.overdriveActive?"ACTIVO":telemetry.overdriveReady?"LISTO":"CARGANDO"}</strong></div>
@@ -520,6 +589,11 @@ export default function PhysicalRouteQa() {
             setRunning(runningRef.current);
             publishTelemetry();
           }}>{running?(locale==="es"?"Pausar":"Pause"):(locale==="es"?"Reanudar":"Resume")}</button>
+          {c3b6Enabled && <button type="button"
+            data-testid="ux15-c3b6-convergence"
+            onClick={()=>{if(runningRef.current)convergenceRequestedRef.current=true;}}>
+            {locale==="es"?"Convergencia (C)":"Convergence (C)"}
+          </button>}
           {c3b5Enabled && <>
             <button type="button" data-testid="ux15-c3b5-charge"
               onClick={()=>{if(runningRef.current)chargeQaRequestedRef.current=true;}}>
