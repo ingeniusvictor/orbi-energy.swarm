@@ -525,6 +525,87 @@ async function runPhysicalRouteQa(name,width,height,touch){
   }finally{await context.close();}
 }
 
+/** UX15-C3B-1: dynamic physical route window and projectile hits, isolated QA. */
+async function runDynamicRouteQa(name,width,height,touch){
+  const context=await browser.newContext({viewport:{width,height},
+    isMobile:touch,hasTouch:touch,deviceScaleFactor:touch?2:1,
+    reducedMotion:"no-preference",serviceWorkers:"block"});
+  const page=await context.newPage();
+  page.on("pageerror",e=>diagnostics.push(name+": "+String(e)));
+  page.on("console",msg=>{if(msg.type()==="error")diagnostics.push(name+": "+msg.text());});
+  try{
+    await page.goto(url+"/?ux15-physical-qa=1&ux15-c3b=1",
+      {waitUntil:"domcontentloaded",timeout:30000});
+    const lab=page.getByTestId("ux15-physical-qa");
+    await lab.waitFor({state:"visible",timeout:15000});
+    check(await lab.getAttribute("data-qa-mode")==="PHYSICAL_ROUTE_C3B1_QA",
+      name+": dynamic physical route flag failed");
+    check(await page.locator(".orbi-game-root").count()===0,
+      name+": legacy gameplay should not start in dynamic QA");
+    // The mobile GLB compositor may reduce simulated-tick throughput.
+    // Verify observable physical progress instead of demanding three spawn
+    // cycles in an arbitrary short wall-clock interval on software GPU.
+    const requiredSpawns=touch?1:3;
+    await page.waitForFunction((required)=>Number(document.querySelector(
+      '[data-testid="ux15-physical-qa"]')?.dataset.c3bSpawned)>=required,
+      requiredSpawns,{timeout:touch?22000:10000});
+    const spawnCount=Number(await lab.getAttribute("data-c3b-spawned"));
+    check(spawnCount>=requiredSpawns,name+": no physical-camera-relative spawning");
+    check(Number(await lab.getAttribute("data-physics-ticks"))>12,
+      name+": spawn counter advanced without physical ticks");
+    await page.waitForFunction(()=>Number(document.querySelector(
+      '[data-testid="ux15-physical-qa"]')?.dataset.c3bHits)>=1,
+      null,{timeout:touch?30000:14000});
+    const hitCount=Number(await lab.getAttribute("data-c3b-hits"));
+    check(hitCount>=1,name+": physical swept projectile collision not observed");
+    check(Number(await lab.getAttribute("data-c3b-active-enemies"))<=12,
+      name+": enemy cap exceeded");
+    check(Number(await lab.getAttribute("data-c3b-active-shots"))<=24,
+      name+": shot cap exceeded");
+    const startY=Number(await lab.getAttribute("data-player-local-y"));
+    if(touch){
+      const bounds=await page.getByTestId("ux15-physical-canvas").boundingBox();
+      check(Boolean(bounds),name+": missing touch canvas");
+      const cdp=await context.newCDPSession(page);
+      const x=bounds.x+bounds.width*.5,y=bounds.y+bounds.height*.6;
+      await cdp.send("Input.dispatchTouchEvent",{type:"touchStart",touchPoints:[{x,y}]});
+      await cdp.send("Input.dispatchTouchEvent",{type:"touchMove",touchPoints:[{x:x+90,y:y-95}]});
+      await page.waitForTimeout(550);
+      await cdp.send("Input.dispatchTouchEvent",{type:"touchEnd",touchPoints:[]});
+      await cdp.detach();
+    }else{
+      await page.keyboard.down("w");
+      await page.waitForTimeout(550);
+      await page.keyboard.up("w");
+    }
+    await page.waitForFunction(y=>Number(document.querySelector(
+      '[data-testid="ux15-physical-qa"]')?.dataset.playerLocalY)<y-15,
+      startY,{timeout:4000});
+    await shot(page,name+"-dynamic-route-encounter");
+    await page.getByTestId("ux15-physical-pause").click();
+    await page.waitForTimeout(450);
+    const before={spawned:await lab.getAttribute("data-c3b-spawned"),
+      hits:await lab.getAttribute("data-c3b-hits"),
+      ticks:await lab.getAttribute("data-physics-ticks")};
+    await page.waitForTimeout(550);
+    check(before.spawned===await lab.getAttribute("data-c3b-spawned"),
+      name+": spawns continued during pause");
+    check(before.hits===await lab.getAttribute("data-c3b-hits"),
+      name+": hits continued during pause");
+    check(before.ticks===await lab.getAttribute("data-physics-ticks"),
+      name+": simulation continued during pause");
+    await page.getByTestId("ux15-physical-pause").click();
+    await page.getByTestId("ux15-physical-reset").click();
+    check(Number(await lab.getAttribute("data-c3b-spawned"))===0,
+      name+": reset did not zero spawn count");
+    check(Number(await lab.getAttribute("data-c3b-hits"))===0,
+      name+": reset did not zero QA hits");
+    evidence.cases.push({name,pass:true,ux15c3b1:true,
+      physicalViewportSpawning:true,projectileHits:hitCount,
+      spawns:spawnCount,input:touch?"native-touch":"keyboard"});
+  }finally{await context.close();}
+}
+
 await mkdir(output,{recursive:true});
 try {
   await startServer();
@@ -543,6 +624,8 @@ try {
   await runAsteriaCombat("ux15c1-real-game-mobile-844x390",844,390,true);
   await runPhysicalRouteQa("ux15c3a2-physical-desktop-1440x900",1440,900,false);
   await runPhysicalRouteQa("ux15c3a2-physical-mobile-844x390",844,390,true);
+  await runDynamicRouteQa("ux15c3b1-dynamic-desktop-1440x900",1440,900,false);
+  await runDynamicRouteQa("ux15c3b1-dynamic-mobile-844x390",844,390,true);
 }catch(error){evidence.failures.push({message:String(error),stack:error?.stack||""});process.exitCode=1;}
 finally{
   evidence.errors=diagnostics;

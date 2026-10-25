@@ -14,6 +14,7 @@ import {
 import { createRouteCursor } from "./worldRouteCore";
 import { rebaseRouteCoordinateOwners } from "./routeCoordinateOwners";
 import { createRouteQaEncounter, stepRouteQaEncounter, type RouteQaEncounter } from "./routePhysicalQaEncounter";
+import { createRouteDynamicQaState, stepRouteDynamicQaEncounter, type RouteDynamicQaState } from "./routeDynamicEncounter";
 import {
   canAdvanceRoute,
   ROUTE_QA_SPEED_UNITS_PER_SECOND,
@@ -37,6 +38,7 @@ export interface PhysicalRouteQaState {
   readonly player: RouteLocalPoint;
   readonly camera: RoutePhysicalCamera;
   readonly encounter: RouteQaEncounter;
+  readonly dynamic: RouteDynamicQaState | null;
   readonly rebases: number;
   readonly physicsTicks: number;
 }
@@ -49,6 +51,7 @@ export interface PhysicalRouteQaInput {
 export function createPhysicalRouteQaState(
   viewport: RoutePhysicalViewport,
   seed = ROUTE_PHYSICAL_QA_SEED,
+  enableDynamicQa = false,
 ): PhysicalRouteQaState {
   const player = { x: 800, y: 480 };
   const camera = {
@@ -58,11 +61,20 @@ export function createPhysicalRouteQaState(
   // Validate viewport using the certified projection routine. Invalid zoom
   // or impossible sizes must not leak a half-constructed QA simulation.
   stepRoutePhysicalCamera(camera, player, viewport, 0);
+  const encounter=createRouteQaEncounter(player);
+  // C3B-1 is a separate opt-in. The C3A-3 lab keeps its fixed actors and
+  // previous snapshots/tests unchanged unless this flag is explicitly true.
+  if(enableDynamicQa){
+    encounter.enemies=[];
+    encounter.projectiles=[];
+    encounter.resources=[];
+  }
   return {
     frame: createPhysicalRouteFrame(createRouteCursor(seed)),
     player,
     camera,
-    encounter: createRouteQaEncounter(player),
+    encounter,
+    dynamic:enableDynamicQa?createRouteDynamicQaState():null,
     rebases: 0,
     physicsTicks: 0,
   };
@@ -106,6 +118,14 @@ export function stepPhysicalRouteQa(
   ).camera;
   let frame = advancement.frame;
   let encounter = stepRouteQaEncounter(state.encounter, player);
+  let dynamic=state.dynamic;
+  if(dynamic){
+    const next=stepRouteDynamicQaEncounter(
+      encounter,dynamic,player,camera,viewport,dt,frame.cursor.simulatedMs,
+    );
+    encounter=next.encounter;
+    dynamic=next.dynamic;
+  }
   let rebases = state.rebases;
   const deltaX = planRouteOriginShift(frame,player.x);
   if (deltaX !== null) {
@@ -125,6 +145,7 @@ export function stepPhysicalRouteQa(
     player,
     camera,
     encounter,
+    dynamic,
     rebases,
     physicsTicks: state.physicsTicks + 1,
   };
