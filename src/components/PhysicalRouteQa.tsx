@@ -28,6 +28,8 @@ import { drawOrbiConvergence } from "../game/orbiConvergenceRenderer";
 import { projectRouteConvergenceQa,routeConvergenceWaveKey } from "../game/routeConvergenceQa";
 import { projectCombatOverdrivePresentation } from "../game/combatOverdrivePresentation";
 import { countRouteWave1Active,projectRouteWave1RemainingMs } from "../game/routeWave1Qa";
+import { countWave2Live,routeWave2RemainingMs,ROUTE_WAVE2_START_MS,
+  ROUTE_WAVE2_QA_ENEMY_PREFIX } from "../game/routeWave2Qa";
 import "../styles/ux15RouteQa.css";
 
 type QaTelemetry = {
@@ -53,6 +55,9 @@ type QaTelemetry = {
   wave1Name:string;wave1Spawned:number;wave1Budget:number;
   wave1Active:number;wave1ConcurrentCap:number;wave1RemainingMs:number;
   wave1Status:string;wave1SafetyHolds:number;wave1ConcurrentHolds:number;
+  wave2Status:string;wave2Spawned:number;wave2Parasites:number;wave2Active:number;
+  wave2Budget:number;wave2ConcurrentCap:number;wave2RemainingMs:number;
+  wave2EliteHolds:number;wave2CapHolds:number;wave2SafetyHolds:number;
 };
 const initialTelemetry = (): QaTelemetry => ({
   distance: 0, ordinal: 0, playerX: 800, playerY: 480,
@@ -74,6 +79,9 @@ const initialTelemetry = (): QaTelemetry => ({
   wave1Name:"",wave1Spawned:0,wave1Budget:0,wave1Active:0,
   wave1ConcurrentCap:0,wave1RemainingMs:0,wave1Status:"DISABLED",
   wave1SafetyHolds:0,wave1ConcurrentHolds:0,
+  wave2Status:"DISABLED",wave2Spawned:0,wave2Parasites:0,wave2Active:0,
+  wave2Budget:0,wave2ConcurrentCap:0,wave2RemainingMs:0,
+  wave2EliteHolds:0,wave2CapHolds:0,wave2SafetyHolds:0,
 });
 const routeParams=typeof window !== "undefined"
   ? new URLSearchParams(window.location.search):new URLSearchParams();
@@ -84,6 +92,7 @@ const c3b4Enabled=c3b3Enabled && routeParams.get("ux15-c3b4")==="1";
 const c3b5Enabled=c3b4Enabled && routeParams.get("ux15-c3b5")==="1";
 const c3b6Enabled=c3b5Enabled && routeParams.get("ux15-c3b6")==="1";
 const c3b7Enabled=c3b6Enabled && routeParams.get("ux15-c3b7")==="1";
+const c3b8Enabled=c3b7Enabled && routeParams.get("ux15-c3b8")==="1";
 const arrowKeys = new Set(["w","a","s","d","arrowup","arrowdown","arrowleft","arrowright"]);
 
 /**
@@ -96,7 +105,7 @@ const arrowKeys = new Set(["w","a","s","d","arrowup","arrowdown","arrowleft","ar
 export default function PhysicalRouteQa() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const viewportRef = useRef<RoutePhysicalViewport>({ width: 800, height: 480, zoom: 1 });
-  const stateRef = useRef<PhysicalRouteQaState>(createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled,c3b2Enabled,c3b3Enabled,c3b4Enabled,c3b5Enabled,c3b6Enabled,c3b7Enabled));
+  const stateRef = useRef<PhysicalRouteQaState>(createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled,c3b2Enabled,c3b3Enabled,c3b4Enabled,c3b5Enabled,c3b6Enabled,c3b7Enabled,c3b8Enabled));
   const controlsRef = useRef(new Set<string>());
   const dashRequestedRef=useRef(false);
   const overdriveRequestedRef=useRef(false);
@@ -118,10 +127,23 @@ export default function PhysicalRouteQa() {
       ?projectRouteConvergenceQa(
         s.convergenceQa,s.overdriveQa,s.encounter,s.player,
         s.frame.cursor.simulatedMs,
-        s.wave1Qa?.waveKey??routeConvergenceWaveKey(s.frame.cursor.segmentOrdinal),
+        s.wave2Qa&&s.frame.cursor.simulatedMs>=ROUTE_WAVE2_START_MS
+           ?s.wave2Qa.waveKey:s.wave1Qa?.waveKey??
+            routeConvergenceWaveKey(s.frame.cursor.segmentOrdinal),
         s.bridge?.shield??0,
       ):null;
     setTelemetry({
+      wave2Status:s.wave2Qa?.status??"DISABLED",
+      wave2Spawned:s.wave2Qa?.spawned??0,
+      wave2Parasites:s.wave2Qa?.spawnedParasites??0,
+      wave2Active:s.wave2Qa?countWave2Live(s.encounter):0,
+      wave2Budget:s.wave2Qa?.descriptor.spawn.enemyBudget??0,
+      wave2ConcurrentCap:s.wave2Qa?.descriptor.spawn.maxConcurrentEnemies??0,
+      wave2RemainingMs:s.wave2Qa?routeWave2RemainingMs(s.wave2Qa,
+        s.frame.cursor.simulatedMs):0,
+      wave2EliteHolds:s.wave2Qa?.uncertifiedEliteRollsSuppressed??0,
+      wave2CapHolds:s.wave2Qa?.heldForCap??0,
+      wave2SafetyHolds:s.wave2Qa?.heldForSafety??0,
       wave1Name:s.wave1Qa?.descriptor.display.displayName??"",
       wave1Spawned:s.wave1Qa?.spawned??0,
       wave1Budget:s.wave1Qa?.descriptor.spawn.enemyBudget??0,
@@ -301,7 +323,9 @@ export default function PhysicalRouteQa() {
       ctx.fillStyle="rgba(3,16,30,.78)";
       ctx.fillRect(12,11,330,32);
       ctx.fillStyle="#8ff5ec";
-      ctx.fillText(c3b7Enabled
+      ctx.fillText(c3b8Enabled
+        ? "C3B-8 · PARASITE DRIFT · WAVE 2 PHYSICAL QA"
+        :c3b7Enabled
         ? "C3B-7 · SCOUT SIGNAL · WAVE 1 PHYSICAL QA"
         :c3b6Enabled
         ? "C3B-6 · CANONICAL ORBI CONVERGENCE QA"
@@ -328,7 +352,7 @@ export default function PhysicalRouteQa() {
         Math.round(480*availableWidth/Math.max(1,stageHeight))));
       viewportRef.current={width:logicalWidth,height:480,zoom:1};
       if(stateRef.current.physicsTicks===0) {
-        stateRef.current=createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled,c3b2Enabled,c3b3Enabled,c3b4Enabled,c3b5Enabled,c3b6Enabled,c3b7Enabled);
+        stateRef.current=createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled,c3b2Enabled,c3b3Enabled,c3b4Enabled,c3b5Enabled,c3b6Enabled,c3b7Enabled,c3b8Enabled);
       }
       canvas.dataset.logicalWidth=String(logicalWidth);
       canvas.dataset.logicalHeight="480";
@@ -420,7 +444,7 @@ export default function PhysicalRouteQa() {
   },[]);
 
   const reset=()=>{
-    stateRef.current=createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled,c3b2Enabled,c3b3Enabled,c3b4Enabled,c3b5Enabled,c3b6Enabled,c3b7Enabled);
+    stateRef.current=createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled,c3b2Enabled,c3b3Enabled,c3b4Enabled,c3b5Enabled,c3b6Enabled,c3b7Enabled,c3b8Enabled);
     controlsRef.current.clear();
     pointerRef.current=null;
     dashRequestedRef.current=false;
@@ -441,6 +465,19 @@ export default function PhysicalRouteQa() {
     p.x=Math.max(-1,Math.min(1,(e.clientX-p.startX)/55));
     p.y=Math.max(-1,Math.min(1,(e.clientY-p.startY)/55));
   };
+  // QA-only deterministic simulation accelerated with the same tick engine;
+  // never changes public campaign progression, RNG or account records.
+  const advanceToWave2Qa=()=>{
+    if(!c3b8Enabled||!runningRef.current)return;
+    const target=ROUTE_WAVE2_START_MS+2_000;
+    const gates={playing:true,paused:false,hidden:false,modalOpen:false,
+      upgradeOpen:false,hitstop:false};
+    for(let i=0;i<800&&stateRef.current.frame.cursor.simulatedMs<target;i++){
+      stateRef.current=stepPhysicalRouteQa(stateRef.current,50,{x:0,y:0},
+        viewportRef.current,gates);
+    }
+    drawRef.current();publishTelemetry();
+  };
   const onPointerUp=(e:React.PointerEvent<HTMLCanvasElement>)=>{
     if(pointerRef.current?.id===e.pointerId)pointerRef.current=null;
     if(e.currentTarget.hasPointerCapture(e.pointerId))
@@ -448,7 +485,17 @@ export default function PhysicalRouteQa() {
   };
   return (
     <main className="ux15-route-qa ux15-physical-qa" data-testid="ux15-physical-qa"
-      data-qa-mode={c3b7Enabled?"PHYSICAL_ROUTE_C3B7_QA":c3b6Enabled?"PHYSICAL_ROUTE_C3B6_QA":c3b5Enabled?"PHYSICAL_ROUTE_C3B5_QA":c3b4Enabled?"PHYSICAL_ROUTE_C3B4_QA":c3b3Enabled?"PHYSICAL_ROUTE_C3B3_QA":c3b2Enabled?"PHYSICAL_ROUTE_C3B2_QA":c3bPreviewEnabled?"PHYSICAL_ROUTE_C3B1_QA":"PHYSICAL_ROUTE_ISOLATED"}
+      data-qa-mode={c3b8Enabled?"PHYSICAL_ROUTE_C3B8_QA":c3b7Enabled?"PHYSICAL_ROUTE_C3B7_QA":c3b6Enabled?"PHYSICAL_ROUTE_C3B6_QA":c3b5Enabled?"PHYSICAL_ROUTE_C3B5_QA":c3b4Enabled?"PHYSICAL_ROUTE_C3B4_QA":c3b3Enabled?"PHYSICAL_ROUTE_C3B3_QA":c3b2Enabled?"PHYSICAL_ROUTE_C3B2_QA":c3bPreviewEnabled?"PHYSICAL_ROUTE_C3B1_QA":"PHYSICAL_ROUTE_ISOLATED"}
+      data-c3b8-wave-status={telemetry.wave2Status}
+      data-c3b8-wave-spawned={telemetry.wave2Spawned}
+      data-c3b8-wave-parasites={telemetry.wave2Parasites}
+      data-c3b8-wave-active={telemetry.wave2Active}
+      data-c3b8-wave-budget={telemetry.wave2Budget}
+      data-c3b8-wave-concurrent-cap={telemetry.wave2ConcurrentCap}
+      data-c3b8-wave-remaining-ms={Math.round(telemetry.wave2RemainingMs)}
+      data-c3b8-wave-elite-uncertified={telemetry.wave2EliteHolds}
+      data-c3b8-wave-cap-holds={telemetry.wave2CapHolds}
+      data-c3b8-wave-safety-holds={telemetry.wave2SafetyHolds}
       data-c3b7-wave-name={telemetry.wave1Name}
       data-c3b7-wave-status={telemetry.wave1Status}
       data-c3b7-wave-spawned={telemetry.wave1Spawned}
@@ -516,10 +563,12 @@ export default function PhysicalRouteQa() {
       data-glb-status={telemetry.glb}>
       <header className="ux15-route-qa__header">
         <div>
-          <span className="ux15-route-qa__eyebrow">ORBI ENERGY SWARM · {c3b7Enabled?"UX15-C3B-7":c3b6Enabled?"UX15-C3B-6":c3b5Enabled?"UX15-C3B-5":c3b4Enabled?"UX15-C3B-4":c3b3Enabled?"UX15-C3B-3":c3b2Enabled?"UX15-C3B-2":c3bPreviewEnabled?"UX15-C3B-1":"UX15-C3A-3"}</span>
+          <span className="ux15-route-qa__eyebrow">ORBI ENERGY SWARM · {c3b8Enabled?"UX15-C3B-8":c3b7Enabled?"UX15-C3B-7":c3b6Enabled?"UX15-C3B-6":c3b5Enabled?"UX15-C3B-5":c3b4Enabled?"UX15-C3B-4":c3b3Enabled?"UX15-C3B-3":c3b2Enabled?"UX15-C3B-2":c3bPreviewEnabled?"UX15-C3B-1":"UX15-C3A-3"}</span>
           <h1>{locale==="es"?"LABORATORIO DE TRAVESÍA FÍSICA":"PHYSICAL TRAVERSAL LAB"}</h1>
           <p>{locale==="es"
-            ?(c3b7Enabled
+            ?(c3b8Enabled
+              ?"Oleada 2 Parasite Drift con PARASITE físicos y surge ×1,4. Versión QA sin élites, recompensas ni Wave 3."
+              :c3b7Enabled
               ?"Oleada 1 Scout Signal: ritmo y presupuesto oficiales, apariciones físicas fuera de cámara y bloqueo seguro de oleadas no certificadas."
               :c3b6Enabled
               ?"Convergencia ORBI canónica: carga resonancia QA, apunta con C y canaliza un rayo de 800 ms. Exclusiva del laboratorio."
@@ -534,7 +583,9 @@ export default function PhysicalRouteQa() {
               :c3bPreviewEnabled
               ?"Encuentro físico QA: enemigos aparecen fuera de cámara, persiguen a ENERGY y reciben impactos. Sin recompensas ni combate de campaña."
               :"ENERGY, cámara y 30 ORBI recorren ASTERIA junto a enemigos, balas y recursos controlados. Sin daño ni recompensas.")
-            :(c3b7Enabled
+            :(c3b8Enabled
+              ?"Parasite Drift wave 2 with physical PARASITE and 1.4× speed surge. QA only: no elites, rewards or wave 3."
+              :c3b7Enabled
               ?"Scout Signal wave 1: official pacing and budget, physical off-screen spawns and fail-closed transition to uncertified waves."
               :c3b6Enabled
               ?"Canonical ORBI Convergence: charge QA resonance, press C to channel an 800ms beam. Isolated lab only."
@@ -571,6 +622,15 @@ export default function PhysicalRouteQa() {
         <div><span>{locale==="es"?"Cámara · X":"Camera · X"}</span><strong>{Math.round(telemetry.cameraX)} u</strong></div>
         <div><span>{locale==="es"?"Segmento":"Segment"}</span><strong>{telemetry.ordinal+1}</strong></div>
         <div><span>Origin epoch</span><strong>{telemetry.originEpoch}</strong></div>
+        {c3b8Enabled && <>
+          <div><span>Parasite Drift · Wave 2</span><strong>{telemetry.wave2Status}</strong></div>
+          <div><span>Enemigos / presupuesto</span><strong>{telemetry.wave2Spawned} / {telemetry.wave2Budget}</strong></div>
+          <div><span>PARASITE / activos</span><strong>{telemetry.wave2Parasites} / {telemetry.wave2Active}</strong></div>
+          <div><span>Concurrencia permitida</span><strong>Máx. {telemetry.wave2ConcurrentCap}</strong></div>
+          <div><span>Tiempo Wave 2</span><strong>{(telemetry.wave2RemainingMs/1000).toFixed(1)} s</strong></div>
+          <div><span>Élites sin certificar (QA)</span><strong>{telemetry.wave2EliteHolds}</strong></div>
+          <div><span>Wave 3</span><strong>{telemetry.wave2Status==="GATED_WAVE3"?"BLOQUEADA QA":"PENDIENTE"}</strong></div>
+        </>}
         {c3b7Enabled && <>
           <div><span>Oleada canónica</span><strong>{telemetry.wave1Name}</strong></div>
           <div><span>Scout / presupuesto</span><strong>{telemetry.wave1Spawned} / {telemetry.wave1Budget}</strong></div>
@@ -630,6 +690,11 @@ export default function PhysicalRouteQa() {
             setRunning(runningRef.current);
             publishTelemetry();
           }}>{running?(locale==="es"?"Pausar":"Pause"):(locale==="es"?"Reanudar":"Resume")}</button>
+          {c3b8Enabled && <button type="button"
+            data-testid="ux15-c3b8-skip-wave1"
+            onClick={advanceToWave2Qa}>
+            {locale==="es"?"Simular hasta Wave 2 (QA)":"Simulate until Wave 2 (QA)"}
+          </button>}
           {c3b6Enabled && <button type="button"
             data-testid="ux15-c3b6-convergence"
             onClick={()=>{if(runningRef.current)convergenceRequestedRef.current=true;}}>
