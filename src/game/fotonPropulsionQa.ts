@@ -31,8 +31,8 @@ export function projectFotonPropulsionQa(
   return {
     mode:dashActive?"DASH":"CRUISE",
     length,
-    innerLength:length*(dashActive?.77:.64),
-    alpha:reducedMotion?.52:dashActive?.94:.78,
+    innerLength:length*(dashActive ? .77 : .64),
+    alpha:reducedMotion ? .52 : dashActive ? .94 : .78,
     streaks:reducedMotion?0:dashActive?3:0,
     animated:!reducedMotion,
   };
