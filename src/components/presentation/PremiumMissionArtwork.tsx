@@ -5,12 +5,12 @@ import React, { useId } from "react";
  * ENERGY is gold; FOTON is a separate green solar-panel companion. */
 export type PremiumScene =
   | "modes" | "hangar" | "tactics" | "codex" | "controls" | "settings" | "about"
-  | "campaign" | "score" | "infinite";
+  | "campaign" | "score" | "infinite" | "route";
 
 const COLORS: Record<PremiumScene,string> = {
   modes:"#f8d27b", hangar:"#68e5f1", tactics:"#9fc4ff",
   codex:"#7af5a2", controls:"#71e7ef", settings:"#b7a5fc", about:"#7dc9f5",
-  campaign:"#facd75", score:"#64eff5", infinite:"#b18af8",
+  campaign:"#facd75", score:"#64eff5", infinite:"#b18af8", route:"#43f1df",
 };
 const SPARKS = [
   [31,40],[75,92],[105,32],[132,193],[165,53],[205,24],[237,186],
@@ -24,7 +24,7 @@ export const PremiumMissionArtwork = React.memo(function PremiumMissionArtwork({
   const shade="ux11f-shade-"+id;
   const glow="ux11f-glow-"+id;
   const accent=COLORS[scene];
-  const mode=scene==="campaign"||scene==="score"||scene==="infinite";
+  const mode=scene==="campaign"||scene==="score"||scene==="infinite"||scene==="route";
   return (
     <svg viewBox="0 0 520 240" preserveAspectRatio="xMidYMid slice"
       className={"orbi-ux11f-scene orbi-ux11f-scene--"+scene}
@@ -154,6 +154,27 @@ export const PremiumMissionArtwork = React.memo(function PremiumMissionArtwork({
           <path d="M0 0L-30 -44 M0 0L40 -17" stroke="#f8d27b" strokeLinecap="round" strokeWidth="6"/>
           <circle r="11" fill="#fff2b0" stroke="#03a8c7" strokeWidth="2"/>
           <path d="M-116 0H-93 M93 0H116 M0 -116V-93 M0 93V116" stroke="#d3faff" strokeWidth="2"/>
+        </g>
+      )}
+      {scene==="route"&&(
+        <g className="orbi-ux15-world-route-art">
+          {/* Original 2.5D orbital canyon, no text, no borrowed Star Fox art. */}
+          <path d="M0 166Q65 118 113 159T237 149T366 152T520 121V240H0Z"
+            fill="#13426b" stroke="#71d9ee" strokeWidth="2" opacity=".6"/>
+          <path d="M0 206L97 108L146 157L216 131L276 192L370 85L434 148L520 96V240H0Z"
+            fill="#102d4b" stroke="#8acde3" strokeWidth="2"/>
+          <path d="M-10 221L530 221 M-10 198L530 198" stroke="#5dfee5" strokeWidth="2" opacity=".55"/>
+          <path d="M21 221L148 198M112 221L234 198M219 221L342 198M326 221L452 198M435 221L522 198"
+            stroke="#5dfee5" strokeWidth="1.5" opacity=".3"/>
+          <g stroke="#56d4e9" fill="#123c5d" strokeWidth="3">
+            <path d="M70 177V87H93V177 M398 185V100H421V185 M327 158V118H341V158"/>
+            <path d="M60 89H105M390 102H432M319 119H349"/>
+          </g>
+          <ellipse cx="440" cy="52" rx="69" ry="19" fill="none" stroke="#a7edff" strokeWidth="5" opacity=".6"/>
+          <circle cx="215" cy="147" r="22" fill="#f4bf59" stroke="#fff1b0" strokeWidth="4"/>
+          <path d="M170 147L191 147M238 147L285 147" stroke="#8df8dd" strokeWidth="3" strokeDasharray="4 7"/>
+          <circle cx="168" cy="147" r="8" fill="#62ecc0" stroke="#d3ffef" strokeWidth="2"/>
+          <circle cx="284" cy="147" r="7" fill="#9cb6ff" stroke="#ebfaff" strokeWidth="2"/>
         </g>
       )}
       {scene==="infinite"&&(
