@@ -57,6 +57,7 @@ export interface PhysicalRouteQaState {
   readonly dynamic: RouteDynamicQaState | null;
   readonly bridge: RouteCombatBridgeState | null;
   readonly weapons: RouteOrbiWeaponsQaState | null;
+  readonly impactFxEnabled:boolean;
   readonly rebases: number;
   readonly physicsTicks: number;
 }
@@ -72,7 +73,10 @@ export function createPhysicalRouteQaState(
   enableDynamicQa = false,
   enableCombatBridgeQa = false,
   enableOrbiWeaponsQa = false,
+  enableImpactFxQa = false,
 ): PhysicalRouteQaState {
+  if(enableImpactFxQa&&!enableOrbiWeaponsQa)
+    throw new Error("Canonical impact FX requires C3B-3 weapons QA");
   if(enableOrbiWeaponsQa && !enableCombatBridgeQa){
     throw new Error("Canonical ORBI QA requires C3B-2 combat bridge");
   }
@@ -112,6 +116,7 @@ export function createPhysicalRouteQaState(
     dynamic:enableDynamicQa?createRouteDynamicQaState():null,
     bridge:enableCombatBridgeQa?createRouteCombatBridgeState():null,
     weapons:enableOrbiWeaponsQa?createRouteOrbiWeaponsQaState():null,
+    impactFxEnabled:enableImpactFxQa,
     rebases: 0,
     physicsTicks: 0,
   };
@@ -182,7 +187,7 @@ export function stepPhysicalRouteQa(
   if(dynamic){
     const next=stepRouteDynamicQaEncounter(
       encounter,dynamic,player,camera,viewport,dt,frame.cursor.simulatedMs,
-      bridge!==null,weapons!==null,
+      bridge!==null,weapons!==null,state.impactFxEnabled,
     );
     encounter=next.encounter;
     dynamic=next.dynamic;
@@ -223,6 +228,7 @@ export function stepPhysicalRouteQa(
     dynamic,
     bridge,
     weapons,
+    impactFxEnabled:state.impactFxEnabled,
     rebases,
     physicsTicks: state.physicsTicks + 1,
   };
