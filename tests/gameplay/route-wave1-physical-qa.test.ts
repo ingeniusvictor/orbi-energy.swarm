@@ -150,7 +150,7 @@ test("C3B7: fail closed on boss, unknown enemy, hazards, and wave-2 descriptors"
 
 test("C3B7: preserve C3B1-C3B6 legacy flags and reject non-certified activation",()=>{
   for(let flags=0;flags<7;flags++){
-    const args=[true,true,true,true,true,true,false].map((v,i)=>i<flags?true:false);
+    const args=[true,true,true,true,true,true,false].map((_,i)=>i<flags?true:false);
     const src=createPhysicalRouteQaState(viewport,undefined,
       ...args as [boolean,boolean,boolean,boolean,boolean,boolean,boolean]);
     assert.equal(src.wave1Qa,null);
