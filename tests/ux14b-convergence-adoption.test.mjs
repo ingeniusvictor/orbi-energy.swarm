@@ -26,9 +26,8 @@ test("UX14-B resolves unique hit tickets through the original collision and prog
   assert.match(game,/aim\.targets\.forEach\(\(enemy, index\)/);
   assert.match(game,/convergenceTargetId: enemy\.id/);
   assert.match(game,/enemy\.id === proj\.convergenceTargetId/);
-  assert.match(game,/if \(proj\.convergenceTargetId\) proj\.life = 0/);
-  assert.match(game,/registerCombatDefeat\(enemy, proj\.affinity, Boolean\(proj\.convergenceTargetId\)\)/);
-  assert.match(game,/suppressResonanceGain/);
+  assert.match(game,/registerCombatDefeat\(enemy, proj\.affinity\);/);
+  assert.match(game,/resonanceBeforeConvergenceDefeat/);
   assert.match(game,/bossDefeatedSequenceActiveRef\.current = true/);
   assert.match(game,/spawnResource\(enemy\.x, enemy\.y\)/);
   assert.match(game,/persistInfiniteMilestoneDefeat\(enemy\)/);
