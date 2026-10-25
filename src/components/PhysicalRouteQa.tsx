@@ -264,6 +264,7 @@ export default function PhysicalRouteQa() {
     stateRef.current=createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled,c3b2Enabled);
     controlsRef.current.clear();
     pointerRef.current=null;
+    dashRequestedRef.current=false;
     drawRef.current();
     publishTelemetry();
   };
