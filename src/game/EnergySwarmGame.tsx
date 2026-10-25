@@ -6268,6 +6268,39 @@ export const EnergySwarmGame: React.FC = () => {
         !resource.consumed && resource.size > 0,
     ); // size <= 0 or consumed represents collected
 
+    // UX14-B: at most six target-pinned one-frame hits through the real
+    // projectile collision resolver. No parallel kill, drop or phase pipeline.
+    const charge = convergenceRef.current;
+    if (isConvergenceChanneling(charge)) {
+      const stillValid = swarmRef.current.length >= 8 &&
+        shieldRef.current > 0 && !bossDefeatedSequenceActiveRef.current &&
+        bossIntroTimeRef.current === null && phaseTransitionTimerRef.current <= 0 &&
+        architectQaBossRef.current === null &&
+        (waveActiveRef.current || bossActiveRef.current) &&
+        charge.waveKey === getConvergenceWaveKey();
+      if (!stillValid) {
+        convergenceRef.current = cancelConvergence(charge);
+      } else if (timeElapsedRef.current >= (charge.channelUntilMs ?? Infinity)) {
+        const aim = selectConvergenceTargets(playerPosRef.current, enemiesRef.current);
+        if (aim && aim.targets.length > 0) {
+          aim.targets.forEach((enemy, index) => {
+            projectilesRef.current.push({
+              id: `orbi-convergence-${charge.usedWaveKey}-${index}`,
+              x: enemy.x, y: enemy.y, vx: aim.dx, vy: aim.dy,
+              damage: convergenceHitDamage(swarmRef.current.length, index),
+              size: 1, color: "#67e8f9", fromPlayer: true,
+              life: 1, maxLife: 1, convergenceTargetId: enemy.id,
+            });
+          });
+          convergenceRef.current = finishConvergence(
+            charge, timeElapsedRef.current, playerPosRef.current, aim,
+          );
+          playOrbiConvergenceSound("FIRE");
+        } else {
+          convergenceRef.current = cancelConvergence(charge);
+        }
+      }
+    }
     // 10. SINGLE-IMPACT COLLISION SWEEPS
     detectAndResolveCollisions();
   };
@@ -6618,7 +6651,8 @@ export const EnergySwarmGame: React.FC = () => {
     Boolean(enemy.evolvedVariantId) ||
     enemy.milestoneKind === "MINIBOSS";
 
-  const registerCombatDefeat = (enemy: Enemy, affinity?: OrbiAffinity) => {
+  const registerCombatDefeat = (enemy: Enemy, affinity?: OrbiAffinity,
+    suppressResonanceGain = false) => {
     const commandLinkBreakIntent = enemy.enemyFormation
       ? resolveLiveCommandLinkBreakIntent(enemy.enemyFormation)
       : null;
@@ -6636,7 +6670,10 @@ export const EnergySwarmGame: React.FC = () => {
         isBoss: enemy.isBoss,
       },
     );
-    combatResonanceRef.current = resolution.state;
+    // Beam kills still score once, but cannot refill spent resonance.
+    combatResonanceRef.current = suppressResonanceGain
+      ? { ...resolution.state, resonance: combatResonanceRef.current.resonance }
+      : resolution.state;
     scoreRef.current += resolution.awardedScore;
   };
 
@@ -6702,7 +6739,7 @@ export const EnergySwarmGame: React.FC = () => {
       if (proj.fromPlayer) {
         // First check if hitting any Boss Shield Nodes
         let hitShieldNode = false;
-        for (let s = 0; s < shieldNodesRef.current.length; s++) {
+        for (let s = 0; s < (proj.convergenceTargetId ? 0 : shieldNodesRef.current.length); s++) {
           const node = shieldNodesRef.current[s];
           const ndx = proj.x - node.x;
           const ndy = proj.y - node.y;
@@ -6787,19 +6824,22 @@ export const EnergySwarmGame: React.FC = () => {
           proj.x,
           proj.y,
           proj.size + 2,
-          (enemy) => !enemy.isDead,
+          (enemy) => !enemy.isDead &&
+            (!proj.convergenceTargetId || enemy.id === proj.convergenceTargetId),
         );
+        // A charged hit cannot drift to a different enemy or survive a frame.
+        if (proj.convergenceTargetId) proj.life = 0;
         const enemy = collision.item;
 
         if (enemy && collision.entry) {
           const collisionOrder = collision.entry.order;
             // SINGLE IMPACT DETECTED! Kill projectile instantly
             proj.life = 0;
-            observeLegacyPlayerHit(proj, "LEGACY_ENEMY");
+            if (!proj.convergenceTargetId) observeLegacyPlayerHit(proj, "LEGACY_ENEMY");
 
             // Compute damage modifiers and status flags
             let damageToApply = proj.damage;
-            let isCrit = Boolean(proj.isCriticalShot);
+            let isCrit = !proj.convergenceTargetId && Boolean(proj.isCriticalShot);
             let isShieldBlock = false;
 
             if (
@@ -6812,9 +6852,10 @@ export const EnergySwarmGame: React.FC = () => {
               );
               if (shieldNodesRef.current.length > 0) {
                 isShieldBlock = true;
-                damageToApply *= chassis.weakpoints.protectedDamageMultiplier;
+                damageToApply = proj.convergenceTargetId ? 0 :
+                  damageToApply * chassis.weakpoints.protectedDamageMultiplier;
               } else if (coreExposedTimerRef.current > 0) {
-                isCrit = true;
+                if (!proj.convergenceTargetId) isCrit = true;
                 damageToApply *= chassis.weakpoints.exposedDamageMultiplier;
               }
             } else if (enemy.type === EnemyType.BLACKOUT_ELITE) {
@@ -6833,6 +6874,16 @@ export const EnergySwarmGame: React.FC = () => {
                 // Flank/Back hit: 1.4x extra critical damage! (vulnerabilidad trasera)
                 isCrit = true;
                 damageToApply *= 1.4;
+              }
+            }
+
+            if (proj.convergenceTargetId) {
+              // Never crit or cross the boss's 70%/35% phase barriers.
+              isCrit = false;
+              if (enemy.isBoss) {
+                damageToApply = capConvergenceBossDamage(
+                  damageToApply, enemy.health, enemy.maxHealth, enemy.bossPhase ?? 1,
+                );
               }
             }
 
@@ -6913,7 +6964,7 @@ export const EnergySwarmGame: React.FC = () => {
                   : 1.8;
             const signatureBehavior =
               enemySignatureBehaviorCacheRef.current.get(enemy);
-            const pushFactor =
+            const pushFactor = proj.convergenceTargetId ? 0 :
               basePushFactor *
               signatureBehavior.projectilePushbackMultiplier *
               (proj.pushMultiplier ?? 1);
@@ -7090,7 +7141,7 @@ export const EnergySwarmGame: React.FC = () => {
               ) {
                 persistInfiniteMilestoneDefeat(enemy);
               }
-              registerCombatDefeat(enemy, proj.affinity);
+              registerCombatDefeat(enemy, proj.affinity, Boolean(proj.convergenceTargetId));
               const commandLinkPulseIntent = enemy.enemyFormation
                 ? resolveLiveCommandLinkPulseIntent(
                     enemy.enemyFormation,
