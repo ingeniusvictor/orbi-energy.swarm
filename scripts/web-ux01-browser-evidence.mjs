@@ -905,6 +905,18 @@ async function runRouteOverdriveQa(name,width,height,touch){
       await cdp.send("Input.dispatchTouchEvent",{type:"touchMove",touchPoints:[{x:x+90,y:y-100}]});
       await page.waitForTimeout(650);
       await cdp.send("Input.dispatchTouchEvent",{type:"touchEnd",touchPoints:[]});
+      // A real native second attempt is preferable to falsely accepting a
+      // zero-displacement mobile gesture if a render frame was dropped.
+      if(Number(await lab.getAttribute("data-player-local-y"))>=initialY-12){
+        const altX=bounds.x+bounds.width*.35,altY=bounds.y+bounds.height*.8;
+        await cdp.send("Input.dispatchTouchEvent",{type:"touchStart",touchPoints:[{x:altX,y:altY}]});
+        await page.waitForTimeout(160);
+        await cdp.send("Input.dispatchTouchEvent",{type:"touchMove",touchPoints:[{x:altX+20,y:altY-35}]});
+        await page.waitForTimeout(140);
+        await cdp.send("Input.dispatchTouchEvent",{type:"touchMove",touchPoints:[{x:altX+45,y:altY-75}]});
+        await page.waitForTimeout(750);
+        await cdp.send("Input.dispatchTouchEvent",{type:"touchEnd",touchPoints:[]});
+      }
       await cdp.detach();
     }else{
       await page.keyboard.down("w");
@@ -997,6 +1009,16 @@ async function runRouteConvergenceQa(name,width,height,touch){
       await cdp.send("Input.dispatchTouchEvent",{type:"touchMove",touchPoints:[{x:x+95,y:y-105}]});
       await page.waitForTimeout(650);
       await cdp.send("Input.dispatchTouchEvent",{type:"touchEnd",touchPoints:[]});
+      if(Number(await lab.getAttribute("data-player-local-y"))>=initialY-12){
+        const altX=bounds.x+bounds.width*.35,altY=bounds.y+bounds.height*.8;
+        await cdp.send("Input.dispatchTouchEvent",{type:"touchStart",touchPoints:[{x:altX,y:altY}]});
+        await page.waitForTimeout(160);
+        await cdp.send("Input.dispatchTouchEvent",{type:"touchMove",touchPoints:[{x:altX+20,y:altY-35}]});
+        await page.waitForTimeout(140);
+        await cdp.send("Input.dispatchTouchEvent",{type:"touchMove",touchPoints:[{x:altX+45,y:altY-75}]});
+        await page.waitForTimeout(750);
+        await cdp.send("Input.dispatchTouchEvent",{type:"touchEnd",touchPoints:[]});
+      }
       await cdp.detach();
     }else{
       await page.keyboard.down("w");
