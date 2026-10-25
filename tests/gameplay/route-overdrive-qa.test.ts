@@ -173,7 +173,11 @@ test("C3B5: 20+ rebases and deterministic replay preserve Overdrive timings and 
   assert.ok(rebases>=20);
   assert.equal(a.rebases,rebases);
   assert.equal(a.overdriveQa?.debugCharges,1);
-  assert.equal(a.overdriveQa?.activations,1);
+  // A second activation is legitimately earned from subsequent physical
+  // ORBI defeats once the canonical 12-second window has passed; it is NOT
+  // a spurious repeated keypress or a second injected QA charge.
+  assert.equal(a.overdriveQa?.activations,2);
+  assert.ok(a.overdriveQa!.creditedDefeats>0);
 });
 
 test("C3B5: pause, hidden, upgrade, modal and hitstop prevent charge/Overdrive progression",()=>{
