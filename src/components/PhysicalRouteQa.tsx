@@ -162,7 +162,7 @@ export default function PhysicalRouteQa() {
       drawSwarmRoster(ctx,s.encounter.swarm,s.frame.cursor.simulatedMs);
       drawFoton(ctx,s.player,0,s.frame.cursor.simulatedMs,
         {x:s.player.x+120,y:s.player.y},
-        false,undefined,1,QualityPreset.MEDIUM,false,
+        false,undefined,(s.bridge?.shield??100)/100,QualityPreset.MEDIUM,false,
         {x:-1,y:0},0,0);
       ctx.restore();
 
