@@ -29,7 +29,7 @@ import { projectRouteConvergenceQa,routeConvergenceWaveKey } from "../game/route
 import { projectCombatOverdrivePresentation } from "../game/combatOverdrivePresentation";
 import { countRouteWave1Active,projectRouteWave1RemainingMs } from "../game/routeWave1Qa";
 import { countWave2Live,routeWave2RemainingMs,ROUTE_WAVE2_START_MS,
-  ROUTE_WAVE2_QA_ENEMY_PREFIX } from "../game/routeWave2Qa";
+ } from "../game/routeWave2Qa";
 import "../styles/ux15RouteQa.css";
 
 type QaTelemetry = {
