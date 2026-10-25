@@ -13,7 +13,8 @@ import {
   preloadAsteriaPremiumWorld,
 } from "../game/asteriaPremiumRenderer";
 import { drawWorldRouteQaScene } from "../game/worldRoutePreviewRenderer";
-import { drawFoton, drawSwarmRoster, drawEnemiesList, drawProjectilesList, drawResources } from "../game/EnergySwarmCanvas";
+import { drawFoton } from "../game/EnergySwarmCanvas";
+import { drawSwarmRoster, drawEnemiesList, drawProjectilesList, drawResources } from "../game/EnergySwarmCanvas";
 import {
   disposeFotonGameplay3D,
   getFotonGameplay3DStatus,
