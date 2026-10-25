@@ -41,5 +41,5 @@ test("UX13 real browser coverage renders three decoded WebP bodies plus original
  assert.match(browser,/casePremiumEnemies/);
  assert.match(browser,/premium-enemies/);
  assert.match(browser,/imageDraws.length!==3/);
- assert.match(browser,/gravity_disruptor\.webp/);
+ assert.match(read("src/game/premiumEnemySprites.ts"),/gravity_disruptor\.webp/);
 });
