@@ -3,6 +3,8 @@ import { projectRuntimeCombatPressure } from "./runtimeCombatPressure";
 import { EnemyType, type Enemy, type Projectile } from "./types";
 import type { RouteLocalPoint } from "./physicalRouteSpace";
 import { ROUTE_WAVE1_LEGACY_FRAME_MS } from "./routeWave1Qa";
+import { getRouteWorldRect, ROUTE_PROJECTILE_CULL_MARGIN } from "./routeDynamicEncounter";
+import type { RoutePhysicalCamera, RoutePhysicalViewport } from "./routePhysicalCamera";
 
 /**
  * C3B-10: isolated DRONE authority audit. These projections are NEVER adopted
@@ -141,4 +143,38 @@ export function projectDroneLockPreflightProjectileMotion(
     y:shot.y+shot.vy*deltaMs/1000,
     life:Math.max(0,shot.life-deltaMs),
   };
+}
+
+/** The game's hostile-core test uses a strict (16 + projectile.size)
+ * circle, without speculative swept collision. C3B-10 reports a possible
+ * contact only; it does not consume shields, health, score or resources.
+ */
+export function inspectDroneLockPreflightContact(
+  shot: Projectile, player: RouteLocalPoint,
+): boolean {
+  if (!shot.id.startsWith("route-wave3-preflight-shot-") ||
+      shot.fromPlayer || shot.size !== 3.5 || !finitePoint(player) ||
+      !Number.isFinite(shot.x) || !Number.isFinite(shot.y))
+    throw new RangeError("Uncertified preflight contact");
+  const dx=shot.x-player.x,dy=shot.y-player.y;
+  return shot.life>0 && dx*dx+dy*dy<(16+shot.size)**2;
+}
+
+/** QA's finite camera replaces the legacy fixed 1600x900 map. This is
+ * a culling PROPOSAL only, not proof that the live drone projectile
+ * migration is finished. Never silently cull a coordinate owner.
+ */
+export function inspectDroneLockPreflightCulling(
+  shot: Projectile, camera: RoutePhysicalCamera,
+  viewport: RoutePhysicalViewport,
+): "KEEP" | "EXPIRED" | "OUTSIDE_ROUTE_VIEW" {
+  if (!shot.id.startsWith("route-wave3-preflight-shot-") ||
+      shot.fromPlayer || ![shot.x,shot.y,shot.life].every(Number.isFinite))
+    throw new RangeError("Uncertified preflight culling");
+  if (shot.life<=0) return "EXPIRED";
+  const rect=getRouteWorldRect(camera,viewport);
+  const margin=ROUTE_PROJECTILE_CULL_MARGIN;
+  return shot.x<rect.left-margin || shot.x>rect.right+margin ||
+    shot.y<rect.top-margin || shot.y>rect.bottom+margin
+    ? "OUTSIDE_ROUTE_VIEW" : "KEEP";
 }
