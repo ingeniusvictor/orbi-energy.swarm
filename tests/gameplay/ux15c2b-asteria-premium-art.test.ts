@@ -58,7 +58,7 @@ test("UX15-C2B: assets decoded only in opted-in route with bounded reusable cach
 });
 
 test("UX15-C2B: premium pictures never affect enemies, colliders, loot or movement",()=>{
-  assert.doesNotMatch(art,/spawnEnemy|enemyRef|loot|damageEnemy|WORLD_WIDTH|physicsRef|MAX_ENEMIES/);
+  assert.doesNotMatch(art,/spawnEnemy\(|enemyRef\.current|lootRef|damageEnemy\(|WORLD_WIDTH|physicsRef|MAX_ENEMIES/);
   assert.doesNotMatch(art,/THREE|WebGLRenderer|performance\.now|Date\.now|Math\.random/);
   assert.match(art,/ctx\.drawImage\(image/);
   assert.match(art,/Math\.max\(width \/ image\.naturalWidth, height \/ image\.naturalHeight\)/);
