@@ -76,3 +76,23 @@
   .ux15-physical-qa__telemetry>div{padding:3px 5px}
   .ux15-physical-qa__telemetry strong{font-size:9px}
 }
+
+/* UX15-C3B-8: physically available controls after Wave2 adds the QA
+   simulation control. No horizontal overflow/overlapping hit targets,
+   including landscape touch and narrow laptop. Public game CSS untouched. */
+.ux15-physical-qa .ux15-route-qa__footer{
+  flex-wrap:wrap;
+  align-items:flex-start;
+}
+.ux15-physical-qa .ux15-route-qa__footer .ux15-route-qa__actions{
+  flex:1 1 680px;
+  max-width:100%;
+  min-width:0;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+  align-items:center;
+}
+.ux15-physical-qa .ux15-route-qa__footer .ux15-route-qa__actions button{
+  max-width:100%;
+  white-space:normal;
+}

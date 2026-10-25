@@ -34,8 +34,12 @@ export function applyRouteCanonicalImpactEffects(
   shot:Projectile,
   victim:Enemy,
   enemies:Enemy[],
+  allowOrdinaryParasites=false,
 ):RouteImpactFxResult {
-  if(!enemies.includes(victim)||enemies.some(e=>e.type!==EnemyType.CRAWLER||e.isBoss)||
+  if(!enemies.includes(victim)||enemies.some(e=>
+      e.isBoss||e.evolvedVariantId||e.enemyFormation||
+      (e.type!==EnemyType.CRAWLER&&
+       !(allowOrdinaryParasites&&e.type===EnemyType.PARASITE)))||
      shot.convergenceTargetId||shot.fromPlayer!==true)
     throw new Error("Uncertified route impact target or Convergence");
   const metadata=[
@@ -58,7 +62,9 @@ export function applyRouteCanonicalImpactEffects(
   const splashKills:Enemy[]=[];
   // Direct-hit knockback, including CRAWLER's canonical 5.5 base strength.
   const angle=Math.atan2(shot.vy,shot.vx);
-  const strength=5.5*(shot.pushMultiplier??1);
+  const basePush=victim.type===EnemyType.CRAWLER?5.5:
+    shot.isCriticalShot?4:1.8;
+  const strength=basePush*(shot.pushMultiplier??1);
   if(strength>0){
     victim.x+=Math.cos(angle)*strength;
     victim.y+=Math.sin(angle)*strength;

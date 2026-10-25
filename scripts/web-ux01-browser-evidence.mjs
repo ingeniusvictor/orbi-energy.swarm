@@ -1145,6 +1145,100 @@ async function runRouteCampaignWave1Qa(name,width,height,touch){
   }finally{await context.close();}
 }
 
+/** C3B8: real descriptor for Parasite Drift and controlled Wave2 fast-forward. */
+async function runPhysicalParasiteDriftQa(name,width,height,touch){
+ const context=await browser.newContext({viewport:{width,height},
+   isMobile:touch,hasTouch:touch,deviceScaleFactor:touch?2:1,
+   reducedMotion:"no-preference",serviceWorkers:"block"});
+ const page=await context.newPage();
+ page.on("pageerror",e=>diagnostics.push(name+": "+String(e)));
+ page.on("console",msg=>{if(msg.type()==="error")diagnostics.push(name+": "+msg.text());});
+ try{
+  await page.goto(url+"/?ux15-physical-qa=1&ux15-c3b=1&ux15-c3b2=1&ux15-c3b3=1&ux15-c3b4=1&ux15-c3b5=1&ux15-c3b6=1&ux15-c3b7=1&ux15-c3b8=1",
+    {waitUntil:"domcontentloaded",timeout:30000});
+  const lab=page.getByTestId("ux15-physical-qa");
+  await lab.waitFor({state:"visible",timeout:15000});
+  check(await lab.getAttribute("data-qa-mode")==="PHYSICAL_ROUTE_C3B8_QA",
+    name+": wave2 feature gate missing");
+  check(await page.locator(".orbi-game-root").count()===0,
+    name+": live campaign accidentally loaded");
+  check(await lab.getAttribute("data-c3b8-wave-status")==="PENDING",
+    name+": premature wave2 start");
+  check(Number(await lab.getAttribute("data-c3b8-wave-budget"))===18,
+    name+": missing original wave2 budget");
+  check(Number(await lab.getAttribute("data-c3b8-wave-concurrent-cap"))===12,
+    name+": invalid wave2 concurrency");
+  await page.getByTestId("ux15-c3b8-skip-wave1").click({timeout:30000});
+  await page.waitForFunction(()=>Number(document.querySelector(
+    '[data-testid="ux15-physical-qa"]')?.dataset.c3b8WaveSpawned)>=1,
+    null,{timeout:18000});
+  check(await lab.getAttribute("data-c3b8-wave-status")==="ACTIVE",
+    name+": wave2 not active");
+  check(Number(await lab.getAttribute("data-c3b8-wave-parasites"))>=1,
+    name+": no physical PARASITE spawned");
+  check(Number(await lab.getAttribute("data-c3b8-wave-active"))<=12,
+    name+": concurrent cap exceeded");
+  check(Number(await lab.getAttribute("data-c3b8-wave-elite-uncertified"))>=1,
+    name+": uncertified elites not disclosed");
+  check(Number(await lab.getAttribute("data-c3b-spawned"))===0,
+    name+": legacy 700ms QA spawner still running");
+  check(Number(await lab.getAttribute("data-c3b8-wave-remaining-ms"))<40000,
+    name+": the second wave simulation clock did not advance");
+  const preY=Number(await lab.getAttribute("data-player-local-y"));
+  if(touch){
+   await page.getByTestId("ux15-physical-canvas").scrollIntoViewIfNeeded();
+   const bounds=await page.getByTestId("ux15-physical-canvas").boundingBox();
+   check(Boolean(bounds),name+": missing native canvas");
+   const cdp=await context.newCDPSession(page);
+   const x=bounds.x+bounds.width*.35,y=bounds.y+bounds.height*.8;
+   await cdp.send("Input.dispatchTouchEvent",{type:"touchStart",touchPoints:[{x,y}]});
+   await page.waitForTimeout(160);
+   await cdp.send("Input.dispatchTouchEvent",{type:"touchMove",touchPoints:[{x:x+25,y:y-40}]});
+   await page.waitForTimeout(140);
+   await cdp.send("Input.dispatchTouchEvent",{type:"touchMove",touchPoints:[{x:x+55,y:y-100}]});
+   await page.waitForTimeout(700);
+   await cdp.send("Input.dispatchTouchEvent",{type:"touchEnd",touchPoints:[]});
+   if(Number(await lab.getAttribute("data-player-local-y"))>=preY-12){
+    const ax=bounds.x+bounds.width*.45,ay=bounds.y+bounds.height*.75;
+    await cdp.send("Input.dispatchTouchEvent",{type:"touchStart",touchPoints:[{x:ax,y:ay}]});
+    await page.waitForTimeout(150);
+    await cdp.send("Input.dispatchTouchEvent",{type:"touchMove",touchPoints:[{x:ax+45,y:ay-85}]});
+    await page.waitForTimeout(750);
+    await cdp.send("Input.dispatchTouchEvent",{type:"touchEnd",touchPoints:[]});
+   }
+   await cdp.detach();
+  }else{
+   await page.keyboard.down("w");
+   await page.waitForTimeout(650);
+   await page.keyboard.up("w");
+  }
+  await page.waitForFunction(y=>Number(document.querySelector(
+    '[data-testid="ux15-physical-qa"]')?.dataset.playerLocalY)<y-12,
+    preY,{timeout:8000});
+  await shot(page,name+"-parasite-drift");
+  await page.getByTestId("ux15-physical-pause").click();
+  await page.waitForTimeout(450);
+  const paused={ticks:await lab.getAttribute("data-physics-ticks"),
+    count:await lab.getAttribute("data-c3b8-wave-spawned"),
+    time:await lab.getAttribute("data-c3b8-wave-remaining-ms")};
+  await page.waitForTimeout(700);
+  check(paused.ticks===await lab.getAttribute("data-physics-ticks"),
+    name+": wave2 physics moved while paused");
+  check(paused.count===await lab.getAttribute("data-c3b8-wave-spawned"),
+    name+": enemies spawned while paused");
+  check(paused.time===await lab.getAttribute("data-c3b8-wave-remaining-ms"),
+    name+": timebox changed while paused");
+  await page.getByTestId("ux15-physical-reset").click();
+  check(Number(await lab.getAttribute("data-c3b8-wave-spawned"))===0,
+    name+": reset retained Wave2 budget");
+  check(await lab.getAttribute("data-c3b8-wave-status")==="PENDING",
+    name+": reset did not return to Wave1");
+  evidence.cases.push({name,pass:true,ux15c3b8:true,
+    sourceWave:"parasite_drift",budget:18,cap:12,
+    input:touch?"native-touch":"keyboard"});
+ }finally{await context.close();}
+}
+
 await mkdir(output,{recursive:true});
 try {
   await startServer();
@@ -1177,6 +1271,8 @@ try {
   await runRouteConvergenceQa("ux15c3b6-convergence-mobile-844x390",844,390,true);
   await runRouteCampaignWave1Qa("ux15c3b7-wave1-desktop-1440x900",1440,900,false);
   await runRouteCampaignWave1Qa("ux15c3b7-wave1-mobile-844x390",844,390,true);
+  await runPhysicalParasiteDriftQa("ux15c3b8-wave2-desktop-1440x900",1440,900,false);
+  await runPhysicalParasiteDriftQa("ux15c3b8-wave2-mobile-844x390",844,390,true);
 }catch(error){evidence.failures.push({message:String(error),stack:error?.stack||""});process.exitCode=1;}
 finally{
   evidence.errors=diagnostics;
