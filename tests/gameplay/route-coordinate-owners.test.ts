@@ -10,6 +10,7 @@ import {
 } from "../../src/game/liveEnemyFormationDirector";
 import { beginSiegeVolleyTelegraph, createSiegeVolleyTelegraphState } from "../../src/game/siegeVolleyTelegraph";
 import { EnemyType, FormationType } from "../../src/game/types";
+import { calculateSwarmOffset } from "../../src/game/formations";
 import type { RouteRunGates } from "../../src/game/worldRouteClock";
 
 const viewport={width:1440,height:480,zoom:1};
@@ -124,20 +125,31 @@ test("UX15-C3A3: no partial writes on invalid coordinates, unsafe phase or froze
   assert.equal(s.player.x,playerX);
 });
 
-test("UX15-C3A3: all six ORBI formations retain their offsets, cooldowns and progress through rebase",()=>{
-  const s=createOwners();
-  const all=Object.values(FormationType);
-  assert.equal(all.length,6);
-  s.swarm.forEach((m,i)=>{ m.shootCooldown=18000+i; });
-  const before=s.swarm.map(m=>({x:m.x,y:m.y,tx:m.targetX,cooldown:m.shootCooldown,xp:m.xp}));
-  rebaseRouteCoordinateOwners(s,1024,permit);
-  s.swarm.forEach((m,i)=>{
-    near(m.x,before[i].x-1024);
-    near(m.targetX,before[i].tx-1024);
-    near(m.y,before[i].y);
-    near(m.shootCooldown,before[i].cooldown);
-    near(m.xp,before[i].xp);
-  });
+test("UX15-C3A3: 30 ORBI in each of six official formations retain offsets, cooldowns and progress",()=>{
+  const formations=Object.values(FormationType);
+  assert.equal(formations.length,6);
+  for(const formation of formations){
+    const s=createOwners();
+    s.swarm.forEach((m,i)=>{
+      const offset=calculateSwarmOffset(formation,i,30,4200,0.7);
+      m.x=s.player.x+offset.x;
+      m.y=s.player.y+offset.y;
+      m.targetX=m.x;
+      m.targetY=m.y;
+      m.shootCooldown=18000+i;
+    });
+    const before=s.swarm.map(m=>({x:m.x,y:m.y,tx:m.targetX,ty:m.targetY,
+      cooldown:m.shootCooldown,xp:m.xp}));
+    rebaseRouteCoordinateOwners(s,1024,permit);
+    s.swarm.forEach((m,i)=>{
+      near(m.x,before[i].x-1024);
+      near(m.targetX,before[i].tx-1024);
+      near(m.y,before[i].y);
+      near(m.targetY,before[i].ty);
+      near(m.shootCooldown,before[i].cooldown);
+      near(m.xp,before[i].xp);
+    });
+  }
 });
 
 test("UX15-C3A3: 20+ physical origin shifts with moving ORBI and stationary world actors",()=>{
