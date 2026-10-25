@@ -173,6 +173,20 @@ export default function PhysicalRouteQa() {
       ctx.translate(-s.camera.localX,-s.camera.localY);
       drawResources(ctx,s.encounter.resources,s.frame.cursor.simulatedMs,s.player,"MINIMAL");
       drawEnemiesList(ctx,s.encounter.enemies,s.frame.cursor.simulatedMs,s.player);
+      if(c3b4Enabled){
+        // Cyan control halo around physically slowed targets. This follows
+        // enemy-local coordinates, including atomic floating-origin rebases.
+        for(const enemy of s.encounter.enemies){
+          if((enemy.slowTimer??0)<=0)continue;
+          ctx.save();
+          ctx.strokeStyle="rgba(56,216,237,.75)";
+          ctx.lineWidth=2;
+          ctx.beginPath();
+          ctx.arc(enemy.x,enemy.y,enemy.size+8,0,Math.PI*2);
+          ctx.stroke();
+          ctx.restore();
+        }
+      }
       drawProjectilesList(ctx,s.encounter.projectiles);
       drawSwarmRoster(ctx,s.encounter.swarm,s.frame.cursor.simulatedMs);
       drawFoton(ctx,s.player,0,s.frame.cursor.simulatedMs,
