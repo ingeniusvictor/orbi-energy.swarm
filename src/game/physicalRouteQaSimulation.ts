@@ -18,7 +18,6 @@ import { createRouteDynamicQaState, stepRouteDynamicQaEncounter, type RouteDynam
 import {
   activatePropulsionDash,
   stepRoutePropulsionDash,
-  DASH_PLAYER_RADIUS,
 } from "./propulsionDash";
 import {
   createRouteCombatBridgeState,
