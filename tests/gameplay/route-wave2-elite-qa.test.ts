@@ -45,7 +45,8 @@ test("C3B9: exact live elite multipliers 1.8x hp and 1.4x radius/tint, no attack
  assert.equal(projected.enemy.speed,base.speed);
  assert.equal(isRouteWave2EliteQaEnemy(projected.enemy),true);
  assert.equal(isRouteWave2EliteQaEnemy(base),false);
- assert.equal(adoptWave2EliteQa(base,7,.05).elite,false);
+ const ordinary7=makeRouteWave2Enemy(EnemyType.CRAWLER,7,p,descriptor);
+ assert.equal(adoptWave2EliteQa(ordinary7,7,.05).elite,false);
  assert.throws(()=>adoptWave2EliteQa({...base,isBoss:true},6,.05),/Uncertified/);
  assert.throws(()=>adoptWave2EliteQa(base,6,2),RangeError);
 });
