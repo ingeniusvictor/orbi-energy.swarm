@@ -31,6 +31,7 @@ import { countRouteWave1Active,projectRouteWave1RemainingMs } from "../game/rout
 import { countWave2Live,routeWave2RemainingMs,ROUTE_WAVE2_START_MS,
  } from "../game/routeWave2Qa";
 import { inspectRouteWave3PreflightQa,isRouteWave2EliteQaEnemy } from "../game/routeWave2EliteQa";
+import { makeDroneLockPreflightActor,projectDroneLockPreflightShot } from "../game/routeWave3DronePreflightQa";
 import "../styles/ux15RouteQa.css";
 
 type QaTelemetry = {
@@ -99,6 +100,11 @@ const c3b6Enabled=c3b5Enabled && routeParams.get("ux15-c3b6")==="1";
 const c3b7Enabled=c3b6Enabled && routeParams.get("ux15-c3b7")==="1";
 const c3b8Enabled=c3b7Enabled && routeParams.get("ux15-c3b8")==="1";
 const c3b9Enabled=c3b8Enabled && routeParams.get("ux15-c3b9")==="1";
+const c3b10Enabled=c3b9Enabled && routeParams.get("ux15-c3b10")==="1";
+// Offline, read-only authority calibration: never insert this actor or its shot
+// into the live physical encounter. A missing earlier flag always fails closed.
+const c3b10ShadowShot=c3b10Enabled?projectDroneLockPreflightShot(
+  makeDroneLockPreflightActor({x:200,y:0}),{x:0,y:0},0,1):null;
 const arrowKeys = new Set(["w","a","s","d","arrowup","arrowdown","arrowleft","arrowright"]);
 
 /**
@@ -335,7 +341,9 @@ export default function PhysicalRouteQa() {
       ctx.fillStyle="rgba(3,16,30,.78)";
       ctx.fillRect(12,11,330,32);
       ctx.fillStyle="#8ff5ec";
-      ctx.fillText(c3b9Enabled
+      ctx.fillText(c3b10Enabled
+        ? "C3B-10 · DRONE LOCK · SHADOW TRAJECTORY ONLY"
+        :c3b9Enabled
         ? "C3B-9 · ELITE WAVE 2 · DRONE LOCK PREFLIGHT"
         :c3b8Enabled
         ? "C3B-8 · PARASITE DRIFT · WAVE 2 PHYSICAL QA"
@@ -499,7 +507,11 @@ export default function PhysicalRouteQa() {
   };
   return (
     <main className="ux15-route-qa ux15-physical-qa" data-testid="ux15-physical-qa"
-      data-qa-mode={c3b9Enabled?"PHYSICAL_ROUTE_C3B9_QA":c3b8Enabled?"PHYSICAL_ROUTE_C3B8_QA":c3b7Enabled?"PHYSICAL_ROUTE_C3B7_QA":c3b6Enabled?"PHYSICAL_ROUTE_C3B6_QA":c3b5Enabled?"PHYSICAL_ROUTE_C3B5_QA":c3b4Enabled?"PHYSICAL_ROUTE_C3B4_QA":c3b3Enabled?"PHYSICAL_ROUTE_C3B3_QA":c3b2Enabled?"PHYSICAL_ROUTE_C3B2_QA":c3bPreviewEnabled?"PHYSICAL_ROUTE_C3B1_QA":"PHYSICAL_ROUTE_ISOLATED"}
+      data-qa-mode={c3b10Enabled?"PHYSICAL_ROUTE_C3B10_QA":c3b9Enabled?"PHYSICAL_ROUTE_C3B9_QA":c3b8Enabled?"PHYSICAL_ROUTE_C3B8_QA":c3b7Enabled?"PHYSICAL_ROUTE_C3B7_QA":c3b6Enabled?"PHYSICAL_ROUTE_C3B6_QA":c3b5Enabled?"PHYSICAL_ROUTE_C3B5_QA":c3b4Enabled?"PHYSICAL_ROUTE_C3B4_QA":c3b3Enabled?"PHYSICAL_ROUTE_C3B3_QA":c3b2Enabled?"PHYSICAL_ROUTE_C3B2_QA":c3bPreviewEnabled?"PHYSICAL_ROUTE_C3B1_QA":"PHYSICAL_ROUTE_ISOLATED"}
+      data-c3b10-shadow-shot={c3b10ShadowShot?"1":"0"}
+      data-c3b10-shadow-speed={c3b10ShadowShot?Math.hypot(c3b10ShadowShot.vx,c3b10ShadowShot.vy):0}
+      data-c3b10-drone-spawn-authorized="false"
+      data-c3b10-live-drone-count={c3b10Enabled?stateRef.current.encounter.enemies.filter(e=>e.type==="DRONE").length:0}
       data-c3b9-elite-rolls={telemetry.eliteQaRolls}
       data-c3b9-elite-spawned={telemetry.eliteQaSpawned}
       data-c3b9-elite-active={telemetry.eliteQaActive}
@@ -582,10 +594,12 @@ export default function PhysicalRouteQa() {
       data-glb-status={telemetry.glb}>
       <header className="ux15-route-qa__header">
         <div>
-          <span className="ux15-route-qa__eyebrow">ORBI ENERGY SWARM · {c3b9Enabled?"UX15-C3B-9":c3b8Enabled?"UX15-C3B-8":c3b7Enabled?"UX15-C3B-7":c3b6Enabled?"UX15-C3B-6":c3b5Enabled?"UX15-C3B-5":c3b4Enabled?"UX15-C3B-4":c3b3Enabled?"UX15-C3B-3":c3b2Enabled?"UX15-C3B-2":c3bPreviewEnabled?"UX15-C3B-1":"UX15-C3A-3"}</span>
+          <span className="ux15-route-qa__eyebrow">ORBI ENERGY SWARM · {c3b10Enabled?"UX15-C3B-10":c3b9Enabled?"UX15-C3B-9":c3b8Enabled?"UX15-C3B-8":c3b7Enabled?"UX15-C3B-7":c3b6Enabled?"UX15-C3B-6":c3b5Enabled?"UX15-C3B-5":c3b4Enabled?"UX15-C3B-4":c3b3Enabled?"UX15-C3B-3":c3b2Enabled?"UX15-C3B-2":c3bPreviewEnabled?"UX15-C3B-1":"UX15-C3A-3"}</span>
           <h1>{locale==="es"?"LABORATORIO DE TRAVESÍA FÍSICA":"PHYSICAL TRAVERSAL LAB"}</h1>
           <p>{locale==="es"
-            ?(c3b9Enabled
+            ?(c3b10Enabled
+              ?"Drone Lock: auditoría de IA, disparos y colisiones con proyecciones aisladas. Sin DRONE físicos ni Wave 3."
+              :c3b9Enabled
               ?"Oleada 2: élites aleatorios con estadísticas originales y tiradas QA repetibles. Drone Lock preparada, sin activar drones."
               :c3b8Enabled
               ?"Oleada 2 Parasite Drift con PARASITE físicos y surge ×1,4. Versión QA sin élites, recompensas ni Wave 3."
@@ -604,7 +618,9 @@ export default function PhysicalRouteQa() {
               :c3bPreviewEnabled
               ?"Encuentro físico QA: enemigos aparecen fuera de cámara, persiguen a ENERGY y reciben impactos. Sin recompensas ni combate de campaña."
               :"ENERGY, cámara y 30 ORBI recorren ASTERIA junto a enemigos, balas y recursos controlados. Sin daño ni recompensas.")
-            :(c3b9Enabled
+             :(c3b10Enabled
+              ?"Drone Lock read-only AI, plasma and collision projections. No physical DRONE or Wave 3 activation."
+              :c3b9Enabled
               ?"Wave 2 random elites with original stat scaling and deterministic QA samples. Drone Lock reviewed but no drone spawns."
               :c3b8Enabled
               ?"Parasite Drift wave 2 with physical PARASITE and 1.4× speed surge. QA only: no elites, rewards or wave 3."
@@ -645,6 +661,11 @@ export default function PhysicalRouteQa() {
         <div><span>{locale==="es"?"Cámara · X":"Camera · X"}</span><strong>{Math.round(telemetry.cameraX)} u</strong></div>
         <div><span>{locale==="es"?"Segmento":"Segment"}</span><strong>{telemetry.ordinal+1}</strong></div>
         <div><span>Origin epoch</span><strong>{telemetry.originEpoch}</strong></div>
+        {c3b10Enabled && <>
+          <div><span>Drone Lock · IA física</span><strong>PROYECCIÓN AISLADA · SIN SPAWN</strong></div>
+          <div><span>Plasma de DRONE (lectura QA)</span><strong>{c3b10ShadowShot?"1 proyectil · 12 daño · 2,5 s":"No certificado"}</strong></div>
+          <div><span>Wave 3 autorizada</span><strong>NO · BLOQUEADA</strong></div>
+        </>}
         {c3b9Enabled && <>
           <div><span>Probabilidad élite canónica</span><strong>5 % (tirada determinista QA)</strong></div>
           <div><span>Tiradas / élites generados</span><strong>{telemetry.eliteQaRolls} / {telemetry.eliteQaSpawned}</strong></div>
