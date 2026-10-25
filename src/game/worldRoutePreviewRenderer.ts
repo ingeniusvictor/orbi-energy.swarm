@@ -120,6 +120,7 @@ export function drawWorldRouteQaScene(
   if (!Number.isFinite(W) || W < 800 || W > 2400) throw new RangeError("Invalid panoramic QA width");
   if (cursor.worldId !== ASTERIA_WORLD_ID) throw new RangeError("Unexpected QA world");
   ctx.save();
+  const cam = projectRoutePreviewCamera(player, {width: W, height: H, zoom: 1});
   const premiumReady = paintAsteriaPremiumArtwork(ctx, cursor, W, H);
   // Retain the safe, battle-tested UX15-B geometric fallback when WebP is
   // unavailable, corrupted, loading, or WebP decoding is unsupported.
@@ -132,7 +133,6 @@ export function drawWorldRouteQaScene(
   sky.addColorStop(1, "#060e26");
   ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
 
-  const cam = projectRoutePreviewCamera(player, {width: W, height: H, zoom: 1});
   const window = getRouteWindow(cursor, 1, 2);
   // Parallax uses segment-local displacement. The loop is capped and
   // independent of total absolute route distance.
