@@ -29,7 +29,7 @@ test("UX15-C2A presents a genuine fourth World Traversal choice across all three
 });
 
 test("UX15-C2A World Traversal is independent of plain Campaign & Score, but explicitly reuses campaign rules during beta", () => {
-  assert.match(engine,/const startCampaignGame = \(\) => \{[\s\S]*startGameWithMode\("CAMPAIGN", asteriaLiveQaRequested\)/);
+  assert.match(engine,/const startCampaignGame = \(\) => \{[\s\S]*startGameWithMode\("CAMPAIGN"\)/);
   assert.match(engine,/const startWorldRouteGame = \(\) => \{[\s\S]*startGameWithMode\("CAMPAIGN", true\)/);
   assert.match(engine,/worldRouteRunActiveRef\.current = mode === "CAMPAIGN" && worldRoute/);
   assert.match(engine,/scoreAttackActivationRef\.current = activation;/);
@@ -46,7 +46,7 @@ test("UX15-C2A route persistence is run-owned and is NOT reset by upgrade cards,
   assert.match(engine,/const asteriaCombatVisualActive = worldRouteRunActiveRef\.current/);
   assert.match(engine,/upgradeOpen: isUpgradeSelectionOpen/);
   assert.match(engine,/modalOpen: mobilePanel !== "closed"/);
-  assert.match(engine,/startGameWithMode\(presentationMode, worldRouteRunActiveRef\.current\)/);
+  assert.match(engine,/startGameWithMode\(presentationMode\)/);
   assert.match(engine,/worldRouteRunActiveRef\.current = false;\s*setWorldRouteSelected\(false\)/);
 });
 
