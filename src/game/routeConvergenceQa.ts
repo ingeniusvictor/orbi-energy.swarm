@@ -58,10 +58,11 @@ export const routeConvergenceWaveKey=(ordinal:number):string=>{
   return `ASTERIA_QA_SEGMENT:${ordinal}`;
 };
 
-function certifiedEncounter(encounter:RouteQaEncounter):void {
+function certifiedEncounter(encounter:RouteQaEncounter,allowParasites=false):void {
   if(encounter.boss||encounter.architectQaBoss||
     encounter.hazardZones.length>0||
-    encounter.enemies.some(e=>e.isBoss||e.type!==EnemyType.CRAWLER)){
+    encounter.enemies.some(e=>e.isBoss||e.evolvedVariantId||e.enemyFormation||
+      (e.type!==EnemyType.CRAWLER&&!(allowParasites&&e.type===EnemyType.PARASITE)))){
     throw new Error("Uncertified Convergence boss, enemy or hazard owner");
   }
 }
@@ -78,11 +79,12 @@ export function beginRouteConvergenceQa(
   waveKey:string,
   requested:boolean,
   shield:number,
+  allowParasites=false,
 ):{convergenceQa:RouteConvergenceQaState;overdriveQa:RouteOverdriveQaState} {
   if(!Number.isFinite(nowMs)||nowMs<0||!Number.isFinite(shield))
     throw new RangeError("Invalid QA Convergence time/shield");
   if(!requested)return {convergenceQa:previous,overdriveQa:overdrive};
-  certifiedEncounter(encounter);
+  certifiedEncounter(encounter,allowParasites);
   const aim=selectConvergenceTargets(player,encounter.enemies);
   const active=projectCombatOverdrive(overdrive.overdrive,nowMs,true).active;
   const next=activateConvergence(previous.convergence,{
@@ -114,13 +116,14 @@ export function advanceRouteConvergenceQa(
   nowMs:number,
   waveKey:string,
   shield:number,
+  allowParasites=false,
 ):{convergenceQa:RouteConvergenceQaState;encounter:RouteQaEncounter} {
   if(!Number.isFinite(nowMs)||nowMs<0)
     throw new RangeError("Invalid Convergence channel clock");
   if(!isConvergenceChanneling(previous.convergence)){
     return {convergenceQa:previous,encounter};
   }
-  certifiedEncounter(encounter);
+  certifiedEncounter(encounter,allowParasites);
   const charge=previous.convergence;
   if(charge.waveKey!==waveKey||shield<=0||encounter.swarm.length<8){
     return {convergenceQa:{...previous,
