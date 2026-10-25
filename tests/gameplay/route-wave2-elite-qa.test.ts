@@ -10,12 +10,13 @@ import {
 } from "../../src/game/routeWave2EliteQa";
 import {
   createRouteWave2QaState,makeRouteWave2Enemy,stepRouteWave2Qa,
-  countWave2Live,projectRouteParasiteMotion,ROUTE_WAVE2_START_MS,
+  countWave2Live,projectRouteParasiteMotion,
 } from "../../src/game/routeWave2Qa";
 import { applyRouteCanonicalImpactEffects } from "../../src/game/routeOrbiImpactFxQa";
 import { beginRouteOverdriveQa } from "../../src/game/routeOverdriveQa";
 import { beginRouteConvergenceQa,advanceRouteConvergenceQa } from "../../src/game/routeConvergenceQa";
 import type { RouteRunGates } from "../../src/game/worldRouteClock";
+import type { RouteQaEncounter } from "../../src/game/routePhysicalQaEncounter";
 const viewport={width:1100,height:480,zoom:1};
 const gates:RouteRunGates={playing:true,paused:false,hidden:false,modalOpen:false,upgradeOpen:false,hitstop:false};
 const state=()=>createPhysicalRouteQaState(viewport,"c3b9-elite",true,true,true,true,true,true,true,true,true);
@@ -53,7 +54,7 @@ test("C3B9: exact live elite multipliers 1.8x hp and 1.4x radius/tint, no attack
 test("C3B9: Wave2 only permits specially marked QA random elites behind ninth gate",()=>{
  const s=state();
  const clean={...s.encounter,enemies:[]};
- let w=createRouteWave2QaState(),encounter=clean;
+ let w=createRouteWave2QaState(),encounter:RouteQaEncounter=clean;
  for(let i=0;i<7;i++){
    const r=stepRouteWave2Qa(w,encounter,s.player,s.camera,viewport,
      w.nextSpawnAtMs,true);
