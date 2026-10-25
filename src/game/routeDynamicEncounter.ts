@@ -5,6 +5,7 @@ import type { RoutePhysicalCamera, RoutePhysicalViewport } from "./routePhysical
 import type { RouteQaEncounter } from "./routePhysicalQaEncounter";
 import { applyRouteCanonicalImpactEffects } from "./routeOrbiImpactFxQa";
 import type { CombatResonanceDefeatEvent } from "./combatResonance";
+import { isRouteWave2EliteQaEnemy } from "./routeWave2EliteQa";
 import { isRouteWave2OrdinaryEnemy,projectRouteParasiteMotion,
   ROUTE_WAVE2_START_MS } from "./routeWave2Qa";
 
@@ -147,6 +148,7 @@ export function stepRouteDynamicQaEncounter(
   wave1Enabled=false,
   wave2Enabled=false,
   worldOriginOffsetX=0,
+  eliteQaEnabled=false,
 ):{encounter:RouteQaEncounter; dynamic:RouteDynamicQaState;
    defeats:CombatResonanceDefeatEvent[]; convergenceHits:number; convergenceKills:number} {
   if(impactFxEnabled && (!combatBridgeEnabled || !orbiWeaponsEnabled))
@@ -154,7 +156,8 @@ export function stepRouteDynamicQaEncounter(
   if(impactFxEnabled&&(encounter.boss!==null||encounter.architectQaBoss!==null||
     encounter.hazardZones.length>0||encounter.enemies.some(e=>
       wave2Enabled&&simulatedMs>=ROUTE_WAVE2_START_MS
-        ?!isRouteWave2OrdinaryEnemy(e)
+        ?!isRouteWave2OrdinaryEnemy(e)&&
+          !(eliteQaEnabled&&isRouteWave2EliteQaEnemy(e))
         :e.type!==EnemyType.CRAWLER||e.isBoss)))
     throw new Error("Uncertified enemy/boss/hazard impact FX gate");
   if (![deltaMs,simulatedMs,player.x,player.y].every(Number.isFinite) ||
@@ -201,6 +204,7 @@ export function stepRouteDynamicQaEncounter(
       const slow=impactFxEnabled&&(enemy.slowTimer??0)>0?.45:1;
       const physical=projectRouteParasiteMotion(
         enemy,player,deltaMs,simulatedMs,worldOriginOffsetX,slow,
+        eliteQaEnabled,
       );
       enemy.x=physical.x;enemy.y=physical.y;
       continue;
@@ -292,7 +296,8 @@ export function stepRouteDynamicQaEncounter(
       // frame or on missed/expired shots. Legacy C3B1-3 retain old behavior.
       const fx=impactFxEnabled
         ? applyRouteCanonicalImpactEffects(shot,victim,enemies,
-            wave2Enabled&&simulatedMs>=ROUTE_WAVE2_START_MS)
+            wave2Enabled&&simulatedMs>=ROUTE_WAVE2_START_MS,
+            eliteQaEnabled)
         : null;
       splashHits+=fx?.splashHits??0;
       slowedHits+=fx?.slows??0;
