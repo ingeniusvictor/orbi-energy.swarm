@@ -124,7 +124,7 @@ export function projectAsteriaPanoramaStrip(
  * vertical strips. Reusing one decoded WebP preserves the existing asset
  * budget and requires no second canvas/WebGL context or texture allocation.
  */
-function paintPanorama(
+export function paintAsteriaPanorama(
   ctx:CanvasRenderingContext2D,
   image:HTMLImageElement,
   logicalWidth:number,
@@ -137,10 +137,14 @@ function paintPanorama(
   const nativeOverlap=overlap*image.naturalWidth/width;
   ctx.save();
   const parentAlpha=ctx.globalAlpha;
-  for(let index=0;index<tileCount;index++){
+  // The tile on the LEFT must also participate at the wrap seam: its
+  // rightmost 96px remain behind the entering tile after phase rolls to zero.
+  // Otherwise the far-left edge would pop from the previous right edge to
+  // the new left edge for one frame.
+  for(let index=-1;index<tileCount;index++){
     const x=initialX+index*stride;
     if(x>=logicalWidth||x+width<=0)continue;
-    if(index===0){
+    if(index===-1){
       ctx.drawImage(image,x,y,width,height);
       continue;
     }
@@ -191,10 +195,10 @@ export function drawAsteriaPremiumWorld(
   // flash black or draw a half-decoded texture during a sector transition.
   ctx.save();
   const distance = projectRouteDistance(cursor);
-  paintPanorama(ctx, currentAsset.image, logicalWidth, distance);
+  paintAsteriaPanorama(ctx, currentAsset.image, logicalWidth, distance);
   if (fade > 0 && nextScene.file !== scene.file && nextAsset?.status === "ready") {
     ctx.globalAlpha = fade;
-    paintPanorama(ctx, nextAsset.image, logicalWidth, distance);
+    paintAsteriaPanorama(ctx, nextAsset.image, logicalWidth, distance);
     ctx.globalAlpha = 1;
   }
 
