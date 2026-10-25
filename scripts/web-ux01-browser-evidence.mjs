@@ -122,6 +122,10 @@ async function run(name,width,height,coarse,immersive,webImmersive) {
       },{timeout:10000});
       const status=await energyPreview.getAttribute("data-3d-status");
       if(status==="READY"){
+        check(await energyPreview.getAttribute("data-model-source")==="canonical-glb",
+          name+": authentic gameplay GLB not mounted in Estado");
+        check((await energyPreview.locator(".orbi-ux11d-preview-marker").innerText()).includes("ENERGY"),
+          name+": real GLB identity marker missing");
         const canvas=energyPreview.locator(".orbi-ux11d-webgl-canvas");
         check(await canvas.isVisible(),name+": WebGL hero canvas missing");
         const size=await canvas.boundingBox();
