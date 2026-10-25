@@ -5,6 +5,8 @@ import type { RoutePhysicalCamera, RoutePhysicalViewport } from "./routePhysical
 import type { RouteQaEncounter } from "./routePhysicalQaEncounter";
 import { applyRouteCanonicalImpactEffects } from "./routeOrbiImpactFxQa";
 import type { CombatResonanceDefeatEvent } from "./combatResonance";
+import { isRouteWave2OrdinaryEnemy,projectRouteParasiteMotion,
+  ROUTE_WAVE2_START_MS } from "./routeWave2Qa";
 
 /**
  * UX15-C3B-1: deterministic encounter window for the isolated ASTERIA lab.
@@ -143,13 +145,17 @@ export function stepRouteDynamicQaEncounter(
   impactFxEnabled=false,
   convergenceEnabled=false,
   wave1Enabled=false,
+  wave2Enabled=false,
+  worldOriginOffsetX=0,
 ):{encounter:RouteQaEncounter; dynamic:RouteDynamicQaState;
    defeats:CombatResonanceDefeatEvent[]; convergenceHits:number; convergenceKills:number} {
   if(impactFxEnabled && (!combatBridgeEnabled || !orbiWeaponsEnabled))
     throw new Error("Canonical impact FX requires C3B-2 and C3B-3 QA gates");
   if(impactFxEnabled&&(encounter.boss!==null||encounter.architectQaBoss!==null||
     encounter.hazardZones.length>0||encounter.enemies.some(e=>
-      e.type!==EnemyType.CRAWLER || e.isBoss)))
+      wave2Enabled&&simulatedMs>=ROUTE_WAVE2_START_MS
+        ?!isRouteWave2OrdinaryEnemy(e)
+        :e.type!==EnemyType.CRAWLER||e.isBoss)))
     throw new Error("Uncertified enemy/boss/hazard impact FX gate");
   if (![deltaMs,simulatedMs,player.x,player.y].every(Number.isFinite) ||
       deltaMs<0 || deltaMs>50+1e-7 || simulatedMs<0)
@@ -166,7 +172,7 @@ export function stepRouteDynamicQaEncounter(
     splashHits,slowedHits,pushes,magneticPulls,areaKills,
     nextSpawnMs,nextFireMs,nextProjectileOrdinal,nextResourceOrdinal}=prior;
 
-  if(!wave1Enabled && simulatedMs>=nextSpawnMs){
+  if(!wave1Enabled && !wave2Enabled && simulatedMs>=nextSpawnMs){
     nextSpawnMs+=ROUTE_QA_SPAWN_PERIOD_MS;
     if(enemies.length<Math.min(MAX_ENEMIES,ROUTE_QA_ENEMY_CAP)){
       // Four viewport-relative edges, not a fixed legacy arena. Introduce
@@ -190,6 +196,15 @@ export function stepRouteDynamicQaEncounter(
       enemy.slowTimer=Math.max(0,enemy.slowTimer-deltaMs);
     const dx=player.x-enemy.x,dy=player.y-enemy.y;
     const length=Math.hypot(dx,dy);
+    if(wave2Enabled&&simulatedMs>=ROUTE_WAVE2_START_MS&&
+       enemy.type===EnemyType.PARASITE){
+      const slow=impactFxEnabled&&(enemy.slowTimer??0)>0?.45:1;
+      const physical=projectRouteParasiteMotion(
+        enemy,player,deltaMs,simulatedMs,worldOriginOffsetX,slow,
+      );
+      enemy.x=physical.x;enemy.y=physical.y;
+      continue;
+    }
     if(length>0.01){
       // C3B-1 visual QA held enemies at 55 units, never touching ENERGY.
       // Opt-in C3B-2 allows actual physical contact with the QA shield.
@@ -276,7 +291,8 @@ export function stepRouteDynamicQaEncounter(
       // C3B-4 applies metadata only AFTER real swept contact, never per
       // frame or on missed/expired shots. Legacy C3B1-3 retain old behavior.
       const fx=impactFxEnabled
-        ? applyRouteCanonicalImpactEffects(shot,victim,enemies)
+        ? applyRouteCanonicalImpactEffects(shot,victim,enemies,
+            wave2Enabled&&simulatedMs>=ROUTE_WAVE2_START_MS)
         : null;
       splashHits+=fx?.splashHits??0;
       slowedHits+=fx?.slows??0;
