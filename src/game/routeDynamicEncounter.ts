@@ -146,10 +146,15 @@ export function stepRouteDynamicQaEncounter(
   if(simulatedMs>=nextSpawnMs){
     nextSpawnMs+=ROUTE_QA_SPAWN_PERIOD_MS;
     if(enemies.length<Math.min(MAX_ENEMIES,ROUTE_QA_ENEMY_CAP)){
-      // Deterministic alternating lane near the future route; physical
-      // spawn always remains outside the camera and safety radius.
-      const lane=0.20+((spawned*7)%13)/13*0.60;
-      const point=projectRouteViewportSpawn(camera,viewport,player,"RIGHT",lane);
+      // Four viewport-relative edges, not a fixed legacy arena. Introduce
+      // the first enemy above ENERGY's camera anchor: a short, observable
+      // approach even with a very wide mobile landscape viewport.
+      const sides=["TOP","RIGHT","BOTTOM","LEFT"] as const;
+      const side=sides[spawned%4];
+      const lane=side==="TOP"||side==="BOTTOM"
+        ? 0.42+(spawned%3-1)*0.10
+        : 0.20+((spawned*7)%13)/13*0.60;
+      const point=projectRouteViewportSpawn(camera,viewport,player,side,lane);
       if(point){
         enemies.push(makeCrawler(spawned,point.x,point.y));
         spawned++;
