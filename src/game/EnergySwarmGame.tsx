@@ -349,6 +349,9 @@ export const EnergySwarmGame: React.FC = () => {
   // physics or a new game mode. No query => byte-for-byte legacy draw path.
   const asteriaLiveQaRequested = typeof window !== "undefined" &&
     new URLSearchParams(window.location.search).get("ux15-world") === "asteria";
+  // UX15-C2A: independent launcher identity. Existing campaign wave/loot rules
+  // are reused for this beta mode, but visual world identity is owned by run.
+  // It does not derive from a sector/wave value or the upgrade-selection UI.
   const viewportProfile = useViewportComposition();
   const {
     webLandscape: immersiveWebLandscape,
@@ -408,6 +411,7 @@ export const EnergySwarmGame: React.FC = () => {
   const [victory, setVictory] = useState(false);
   const [presentationMode, setPresentationMode] =
     useState<ScoreAttackLiveEngineStartMode>("CAMPAIGN");
+  const [worldRouteSelected, setWorldRouteSelected] = useState(false);
 
   const [score, setScore] = useState(0);
   const [highScore, setHighScore] = useState(0);
@@ -487,6 +491,7 @@ export const EnergySwarmGame: React.FC = () => {
   const lastTimeRef = useRef(0);
   const timeElapsedRef = useRef(0);
   const asteriaLiveCursorRef = useRef(createRouteCursor("asteria-campaign-qa"));
+  const worldRouteRunActiveRef = useRef(false);
   const performanceDiagnosticsEnabledRef = useRef(false);
   const performanceDiagnosticsStateRef =
     useRef<PerformanceDiagnosticsState>(
@@ -2020,9 +2025,16 @@ export const EnergySwarmGame: React.FC = () => {
     requestAnimationFrame(gameLoop);
   };
 
-  const startGameWithMode = (mode: ScoreAttackLiveEngineStartMode) => {
+  const startGameWithMode = (
+    mode: ScoreAttackLiveEngineStartMode,
+    worldRoute: boolean = false,
+  ) => {
     const activation = resolveScoreAttackLiveEngineActivation(mode);
     if (mode === "SCORE_ATTACK" && !activation) return false;
+    // A stable run-owned identity survives upgrade cards, wave transitions,
+    // Estado, pause, restart and eventual campaign→Infinite handoff.
+    worldRouteRunActiveRef.current = mode === "CAMPAIGN" && worldRoute;
+    setWorldRouteSelected(worldRouteRunActiveRef.current);
     scoreAttackActivationRef.current = activation;
     setPresentationMode(mode);
     startGame();
@@ -2030,13 +2042,18 @@ export const EnergySwarmGame: React.FC = () => {
   };
 
   const startCampaignGame = () => {
-    void startGameWithMode("CAMPAIGN");
+    // Historical QA link continues to open the route even when Campaign
+    // was selected explicitly; ordinary / launches only legacy Campaign.
+    void startGameWithMode("CAMPAIGN", asteriaLiveQaRequested);
+  };
+  const startWorldRouteGame = () => {
+    void startGameWithMode("CAMPAIGN", true);
   };
 
   // --- REBOOT GAME ON LOSS ---
   const rebootGame = () => {
     playClickSound();
-    void startGameWithMode(presentationMode);
+    void startGameWithMode(presentationMode, worldRouteRunActiveRef.current);
   };
 
   // --- TOGGLE PAUSE ---
@@ -4748,9 +4765,7 @@ export const EnergySwarmGame: React.FC = () => {
     // UX15-C1: no segment may advance while a menu/physics freeze is active.
     // The surrounding loop already aborts on Pause/Upgrade/Hitstop. This
     // extra gate protects the scene during hidden tabs and wave breaks.
-    if (asteriaLiveQaRequested && presentationMode === "CAMPAIGN" &&
-        runtimeProgressionRef.current.mode === "CAMPAIGN" &&
-        currentWaveRef.current <= 2) {
+    if (worldRouteRunActiveRef.current) {
       asteriaLiveCursorRef.current = stepRouteClock(
         asteriaLiveCursorRef.current, delta, ROUTE_QA_SPEED_UNITS_PER_SECOND,
         { playing: loopActiveRef.current && waveActiveRef.current && !isPhotoMode,
@@ -7712,10 +7727,7 @@ export const EnergySwarmGame: React.FC = () => {
     // camera are drawn on top by the unchanged combat renderer below.
     // We deliberately keep physics in the 1600x960 arena until the real
     // origin-rebase/camera integration is certified in UX15-C2/D.
-    const asteriaCombatVisualActive = asteriaLiveQaRequested &&
-      presentationMode === "CAMPAIGN" &&
-      runtimeProgressionRef.current.mode === "CAMPAIGN" &&
-      currentWaveRef.current <= 2;
+    const asteriaCombatVisualActive = worldRouteRunActiveRef.current;
     if (asteriaCombatVisualActive) {
       drawWorldRouteQaScene(ctx, asteriaLiveCursorRef.current,
         { manualX: 0, y: 240 }, panoramicViewport.width, false);
@@ -8575,6 +8587,7 @@ export const EnergySwarmGame: React.FC = () => {
           : "false"
       }
       data-photo-mode={isPhotoMode ? "true" : "false"}
+      data-selected-game-mode={worldRouteSelected ? "WORLD_ROUTE" : presentationMode}
       data-immersive-landscape={isPlaying && immersiveLandscapeMode ? "true" : "false"}
       data-web-immersive={isPlaying && immersiveWebLandscape ? "true" : "false"}
       data-mobile-panel={isPlaying && immersiveLandscapeMode ? mobilePanel : "closed"}
@@ -8586,6 +8599,7 @@ export const EnergySwarmGame: React.FC = () => {
         <StartScreen
           stats={stats}
           onStartGame={startCampaignGame}
+          onStartWorldRoute={startWorldRouteGame}
           onStartScoreAttack={() => {
             void startGameWithMode("SCORE_ATTACK");
           }}
@@ -8623,7 +8637,7 @@ export const EnergySwarmGame: React.FC = () => {
         <PauseMenu
           onResume={togglePause}
           onRestart={() => {
-            void startGameWithMode(presentationMode);
+            void startGameWithMode(presentationMode, worldRouteRunActiveRef.current);
           }}
           onEnterPhotoMode={enterPhotoMode}
           onExitToMenu={() => {
@@ -8632,6 +8646,8 @@ export const EnergySwarmGame: React.FC = () => {
             setPhotoHintVisible(false);
             setIsPlaying(false);
             setPresentationMode("CAMPAIGN");
+            worldRouteRunActiveRef.current = false;
+            setWorldRouteSelected(false);
             setPausedState(false);
           }}
           audioMuted={audioMuted}
@@ -8695,12 +8711,14 @@ export const EnergySwarmGame: React.FC = () => {
           infiniteBossRematchesDefeated={stats.infiniteBossRematchesDefeated}
           recentRunArchive={stats.recentRunArchive}
           onRestart={() => {
-            void startGameWithMode(presentationMode);
+            void startGameWithMode(presentationMode, worldRouteRunActiveRef.current);
           }}
           onExitToMenu={() => {
             setIsPlaying(false);
             setIsGameOver(false);
             setPresentationMode("CAMPAIGN");
+            worldRouteRunActiveRef.current = false;
+            setWorldRouteSelected(false);
           }}
           activeRunUpgrades={activeRunUpgrades}
           strongestAffinity={getStrongestAffinity()}
