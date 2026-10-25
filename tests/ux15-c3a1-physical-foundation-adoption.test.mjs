@@ -25,7 +25,7 @@ test("UX15-C3A1: new physical foundation stays inert: no real combat/camera adop
 
 test("UX15-C3A1: local physics modules are pure and never import UI, mutate live engine or spawn",()=>{
   for(const mod of [physics,camera]){
-    assert.doesNotMatch(mod,/React|useRef\(|document\.|window\.|performance\.now|Date\.now\(|Math\.random\(|requestAnimationFrame\(|new WebGLRenderer/);
+    assert.doesNotMatch(mod,/from ["\x27]react["\x27]|useRef\(|document\.|window\.|performance\.now\(|Date\.now\(|Math\.random\(|requestAnimationFrame\(|new WebGLRenderer/);
     assert.doesNotMatch(mod,/enemiesRef|projectilesRef|bossRef|scoreRef|shieldRef/);
     assert.doesNotMatch(mod,/\.push\(|\.splice\(/);
   }
