@@ -1,5 +1,6 @@
 import { ASTERIA_WORLD_ID, getRouteWindow, projectRouteDistance, stableRouteHash, type RouteCursor } from "./worldRouteCore";
 import { projectRoutePreviewCamera, type RoutePreviewPlayer } from "./worldRouteCamera";
+import { paintAsteriaPremiumArtwork } from "./asteriaPremiumArtwork";
 
 /** UX15-B Canvas2D engineering mock-up. NOT final ASTERIA art or gameplay. */
 const H = 480;
@@ -114,11 +115,15 @@ export function drawWorldRouteQaScene(
   ctx: CanvasRenderingContext2D, cursor: RouteCursor,
   player: RoutePreviewPlayer, logicalWidth = 800,
   showQaMarker = true,
-): void {
+): boolean {
   const W = logicalWidth;
   if (!Number.isFinite(W) || W < 800 || W > 2400) throw new RangeError("Invalid panoramic QA width");
   if (cursor.worldId !== ASTERIA_WORLD_ID) throw new RangeError("Unexpected QA world");
   ctx.save();
+  const premiumReady = paintAsteriaPremiumArtwork(ctx, cursor, W, H);
+  // Retain the safe, battle-tested UX15-B geometric fallback when WebP is
+  // unavailable, corrupted, loading, or WebP decoding is unsupported.
+  if (!premiumReady) {
   ctx.clearRect(0, 0, W, H);
   const sky = ctx.createLinearGradient(0, 0, 0, H);
   sky.addColorStop(0, "#030c24");
@@ -161,6 +166,7 @@ export function drawWorldRouteQaScene(
     drawSection(ctx, start, end,
       visible.segment.kind, visible.segment.accent, visible.segment.decorationVariant, W, showQaMarker);
   }
+  } // End temporary UX15-B geometry fallback.
 
   // Engineering preview only: the real battle renders the authentic 3D ENERGY
   // after this background. Never draw a duplicate gold surrogate in gameplay.
@@ -190,4 +196,5 @@ export function drawWorldRouteQaScene(
   ctx.fillText("ASTERIA · ROUTE QA", 21, 29);
   }
   ctx.restore();
+  return premiumReady;
 }
