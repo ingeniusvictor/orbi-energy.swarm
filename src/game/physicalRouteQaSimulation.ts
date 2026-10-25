@@ -16,6 +16,7 @@ import {
   advanceRouteConvergenceQa,
   beginRouteConvergenceQa,
   createRouteConvergenceQaState,
+  makeRouteConvergenceCalibrationTarget,
   registerRouteConvergenceHits,
   routeConvergenceWaveKey,
   type RouteConvergenceQaState,
@@ -128,6 +129,9 @@ export function createPhysicalRouteQaState(
   }
   if(enableOrbiWeaponsQa){
     encounter.swarm=attachCanonicalQaWeapons(encounter.swarm);
+  }
+  if(enableConvergenceQa){
+    encounter.enemies.push(makeRouteConvergenceCalibrationTarget(player));
   }
   return {
     frame: createPhysicalRouteFrame(createRouteCursor(seed)),
