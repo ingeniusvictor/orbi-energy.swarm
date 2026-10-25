@@ -1,4 +1,5 @@
 import { FORMATIONS } from "./formations";
+import { projectCombatOverdriveEffects } from "./combatOverdriveEffects";
 import { getGaiaCombatScale } from "./gaiaEvolution";
 import { ORBI_ENERGY_CANON } from "./orbiEnergyCanon";
 import {
@@ -85,6 +86,7 @@ export function stepRouteOrbiWeaponsQa(
   previous:RouteOrbiWeaponsQaState,
   deltaMs:number,
   formation:FormationType=FormationType.LINE,
+  overdriveActive=false,
 ):RouteOrbiWeaponsQaStep {
   if(!Number.isFinite(deltaMs)||deltaMs<0||deltaMs>50+1e-7)
     throw new RangeError("Invalid ORBI route weapons tick");
@@ -124,7 +126,8 @@ export function stepRouteOrbiWeaponsQa(
       (1+FORMATIONS[formation].projSpeedMod)*profile.speedMultiplier;
     const baseDamage=(ROUTE_ORBI_BASE_DAMAGE+
       (formation===FormationType.CIRCLE?1.5:0))*
-      profile.damageMultiplier*(gaia?.damageMultiplier??1);
+      profile.damageMultiplier*(gaia?.damageMultiplier??1)*
+      projectCombatOverdriveEffects({active:overdriveActive}).playerDamageMultiplier;
     const criticalRoll=((nextShotOrdinal*67+encounter.swarm.indexOf(member)*131+
       17)%997)/997;
     const critical=criticalRoll<profile.criticalChance;

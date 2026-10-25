@@ -4,6 +4,7 @@ import type { RouteLocalPoint } from "./physicalRouteSpace";
 import type { RoutePhysicalCamera, RoutePhysicalViewport } from "./routePhysicalCamera";
 import type { RouteQaEncounter } from "./routePhysicalQaEncounter";
 import { applyRouteCanonicalImpactEffects } from "./routeOrbiImpactFxQa";
+import type { CombatResonanceDefeatEvent } from "./combatResonance";
 
 /**
  * UX15-C3B-1: deterministic encounter window for the isolated ASTERIA lab.
@@ -140,7 +141,7 @@ export function stepRouteDynamicQaEncounter(
   combatBridgeEnabled=false,
   orbiWeaponsEnabled=false,
   impactFxEnabled=false,
-):{encounter:RouteQaEncounter; dynamic:RouteDynamicQaState} {
+):{encounter:RouteQaEncounter; dynamic:RouteDynamicQaState; defeats:CombatResonanceDefeatEvent[]} {
   if(impactFxEnabled && (!combatBridgeEnabled || !orbiWeaponsEnabled))
     throw new Error("Canonical impact FX requires C3B-2 and C3B-3 QA gates");
   if(impactFxEnabled&&(encounter.boss!==null||encounter.architectQaBoss!==null||
@@ -150,12 +151,13 @@ export function stepRouteDynamicQaEncounter(
   if (![deltaMs,simulatedMs,player.x,player.y].every(Number.isFinite) ||
       deltaMs<0 || deltaMs>50+1e-7 || simulatedMs<0)
     throw new RangeError("Invalid physical QA encounter clock");
-  if(deltaMs===0) return {encounter,dynamic:prior};
+  if(deltaMs===0) return {encounter,dynamic:prior,defeats:[]};
   const rect=getRouteWorldRect(camera,viewport);
   const dt=deltaMs/1000;
   const enemies=encounter.enemies.map(e=>({...e}));
   const projectiles=encounter.projectiles.map(p=>({...p}));
   const resources=encounter.resources.map(r=>({...r}));
+  const defeats:CombatResonanceDefeatEvent[]=[];
   let {spawned,culled,hits,destroyed,pickups,
     splashHits,slowedHits,pushes,magneticPulls,areaKills,
     nextSpawnMs,nextFireMs,nextProjectileOrdinal,nextResourceOrdinal}=prior;
@@ -256,6 +258,10 @@ export function stepRouteDynamicQaEncounter(
       for(const killed of casualties){
         killed.isDead=true;
         destroyed++;
+        // Zero baseScore guarantees no score/reward authority leaks.
+        // Both direct and splash victims carry the firing ORBI's affinity.
+        defeats.push({occurredAtMs:simulatedMs,baseScore:0,
+          affinity:shot.affinity,isElite:false,isBoss:false});
         if(resources.length<Math.min(MAX_RESOURCES,ROUTE_QA_RESOURCE_CAP)){
           resources.push({
             id:`route-qa-drop-${nextResourceOrdinal++}`,type:"ENERGY",
@@ -280,6 +286,7 @@ export function stepRouteDynamicQaEncounter(
   return {
     encounter:{...encounter,enemies:remainingEnemies,
       projectiles:remainingShots,resources:remainingDrops},
+    defeats,
     dynamic:{spawned,culled:Math.max(0,culled),hits,destroyed,pickups,
       splashHits,slowedHits,pushes,magneticPulls,areaKills,nextSpawnMs,
       nextFireMs,nextProjectileOrdinal,nextResourceOrdinal},

@@ -13,6 +13,10 @@ import {
 } from "./routePhysicalCamera";
 import { createRouteCursor } from "./worldRouteCore";
 import { rebaseRouteCoordinateOwners } from "./routeCoordinateOwners";
+import {
+  beginRouteOverdriveQa,createRouteOverdriveQaState,
+  endRouteOverdriveQa,type RouteOverdriveQaState,
+} from "./routeOverdriveQa";
 import { createRouteQaEncounter, stepRouteQaEncounter, type RouteQaEncounter } from "./routePhysicalQaEncounter";
 import { createRouteDynamicQaState, stepRouteDynamicQaEncounter, type RouteDynamicQaState } from "./routeDynamicEncounter";
 import {
@@ -58,6 +62,7 @@ export interface PhysicalRouteQaState {
   readonly bridge: RouteCombatBridgeState | null;
   readonly weapons: RouteOrbiWeaponsQaState | null;
   readonly impactFxEnabled:boolean;
+  readonly overdriveQa:RouteOverdriveQaState|null;
   readonly rebases: number;
   readonly physicsTicks: number;
 }
@@ -74,7 +79,10 @@ export function createPhysicalRouteQaState(
   enableCombatBridgeQa = false,
   enableOrbiWeaponsQa = false,
   enableImpactFxQa = false,
+  enableOverdriveQa = false,
 ): PhysicalRouteQaState {
+  if(enableOverdriveQa&&!enableImpactFxQa)
+    throw new Error("Physical Overdrive QA requires C3B-4 impact effects");
   if(enableImpactFxQa&&!enableOrbiWeaponsQa)
     throw new Error("Canonical impact FX requires C3B-3 weapons QA");
   if(enableOrbiWeaponsQa && !enableCombatBridgeQa){
@@ -117,6 +125,7 @@ export function createPhysicalRouteQaState(
     bridge:enableCombatBridgeQa?createRouteCombatBridgeState():null,
     weapons:enableOrbiWeaponsQa?createRouteOrbiWeaponsQaState():null,
     impactFxEnabled:enableImpactFxQa,
+    overdriveQa:enableOverdriveQa?createRouteOverdriveQaState():null,
     rebases: 0,
     physicsTicks: 0,
   };
@@ -129,6 +138,8 @@ export function stepPhysicalRouteQa(
   viewport: RoutePhysicalViewport,
   gates: RouteRunGates,
   dashRequested=false,
+  overdriveRequested=false,
+  chargeQaRequested=false,
 ): PhysicalRouteQaState {
   if (!Number.isFinite(deltaMs) || deltaMs < 0 ||
       !Number.isFinite(manualInput.x) || !Number.isFinite(manualInput.y)) {
@@ -184,6 +195,10 @@ export function stepPhysicalRouteQa(
   let encounter = stepRouteQaEncounter(state.encounter, player);
   let dynamic=state.dynamic;
   let weapons=state.weapons;
+  let overdriveQa=state.overdriveQa
+    ?beginRouteOverdriveQa(state.overdriveQa,
+      frame.cursor.simulatedMs,overdriveRequested,chargeQaRequested)
+    :null;
   if(dynamic){
     const next=stepRouteDynamicQaEncounter(
       encounter,dynamic,player,camera,viewport,dt,frame.cursor.simulatedMs,
@@ -191,9 +206,17 @@ export function stepPhysicalRouteQa(
     );
     encounter=next.encounter;
     dynamic=next.dynamic;
+    if(overdriveQa){
+      // Only confirmed kills, not speculative enemy proximity or drops,
+      // can fill real resonance via the canonical resonance authority.
+      overdriveQa=endRouteOverdriveQa(overdriveQa,
+        frame.cursor.simulatedMs,next.defeats,0);
+    }
   }
   if(weapons){
-    const volley=stepRouteOrbiWeaponsQa(encounter,weapons,dt);
+    const volley=stepRouteOrbiWeaponsQa(
+      encounter,weapons,dt,undefined,overdriveQa?.overdrive.active??false,
+    );
     encounter=volley.encounter;
     weapons=volley.weapons;
     if(bridge){
@@ -202,9 +225,14 @@ export function stepPhysicalRouteQa(
     }
   }
   if(bridge){
+    const beforeHits=bridge.contactHits;
     bridge=stepRouteCombatBridge(
       encounter,bridge,player,frame.cursor.simulatedMs,
     );
+    if(overdriveQa && bridge.contactHits>beforeHits){
+      overdriveQa=endRouteOverdriveQa(overdriveQa,
+        frame.cursor.simulatedMs,[],bridge.contactHits-beforeHits);
+    }
   }
   let rebases = state.rebases;
   const deltaX = planRouteOriginShift(frame,player.x);
@@ -229,6 +257,7 @@ export function stepPhysicalRouteQa(
     bridge,
     weapons,
     impactFxEnabled:state.impactFxEnabled,
+    overdriveQa,
     rebases,
     physicsTicks: state.physicsTicks + 1,
   };

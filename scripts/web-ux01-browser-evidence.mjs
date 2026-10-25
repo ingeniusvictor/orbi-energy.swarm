@@ -846,6 +846,95 @@ async function runRouteOrbiImpactQa(name,width,height,touch){
   }finally{await context.close();}
 }
 
+/** C3B5: native Overdrive timing and explicit, isolated QA charge on real Chromium. */
+async function runRouteOverdriveQa(name,width,height,touch){
+  const context=await browser.newContext({viewport:{width,height},
+    isMobile:touch,hasTouch:touch,deviceScaleFactor:touch?2:1,
+    reducedMotion:"no-preference",serviceWorkers:"block"});
+  const page=await context.newPage();
+  page.on("pageerror",e=>diagnostics.push(name+": "+String(e)));
+  page.on("console",msg=>{if(msg.type()==="error")diagnostics.push(name+": "+msg.text());});
+  try{
+    await page.goto(url+"/?ux15-physical-qa=1&ux15-c3b=1&ux15-c3b2=1&ux15-c3b3=1&ux15-c3b4=1&ux15-c3b5=1",
+      {waitUntil:"domcontentloaded",timeout:30000});
+    const lab=page.getByTestId("ux15-physical-qa");
+    await lab.waitFor({state:"visible",timeout:15000});
+    check(await lab.getAttribute("data-qa-mode")==="PHYSICAL_ROUTE_C3B5_QA",
+      name+": C3B5 explicit gate absent");
+    check(await page.locator(".orbi-game-root").count()===0,
+      name+": public gameplay engine loaded in QA");
+    check(await lab.getAttribute("data-c3b5-overdrive-active")==="false",
+      name+": Overdrive must begin inactive");
+    check(Number(await lab.getAttribute("data-c3b5-damage-multiplier"))===1,
+      name+": damage should be unbuffed initially");
+    await page.getByTestId("ux15-c3b5-charge").click();
+    await page.waitForFunction(()=>Number(document.querySelector(
+      '[data-testid="ux15-physical-qa"]')?.dataset.c3b5DebugCharges)>=1,
+      null,{timeout:touch?14000:7000});
+    check(Number(await lab.getAttribute("data-c3b5-resonance"))===100,
+      name+": explicit QA charge did not fill resonance to 100");
+    // Click control on touchscreen, press canonical O keyboard on desktop.
+    if(touch)await page.getByTestId("ux15-c3b5-overdrive").click();
+    else await page.keyboard.press("o");
+    await page.waitForFunction(()=>document.querySelector(
+      '[data-testid="ux15-physical-qa"]')?.dataset.c3b5OverdriveActive==="true",
+      null,{timeout:touch?14000:7000});
+    check(Number(await lab.getAttribute("data-c3b5-activations"))===1,
+      name+": activation not counted");
+    check(Number(await lab.getAttribute("data-c3b5-resonance"))<100,
+      name+": Overdrive did not consume readiness");
+    check(Number(await lab.getAttribute("data-c3b5-damage-multiplier"))===1.2,
+      name+": official 1.2 damage multiplier not applied");
+    await shot(page,name+"-resonance-overdrive");
+    // Make sure the visual QA supports actual movement after scrolling to
+    // the mobile HUD controls, not only button activation.
+    const initialY=Number(await lab.getAttribute("data-player-local-y"));
+    if(touch){
+      await page.getByTestId("ux15-physical-canvas").scrollIntoViewIfNeeded();
+      const bounds=await page.getByTestId("ux15-physical-canvas").boundingBox();
+      check(Boolean(bounds),name+": missing touch stage");
+      const cdp=await context.newCDPSession(page);
+      const x=bounds.x+bounds.width*.5,y=bounds.y+bounds.height*.64;
+      await cdp.send("Input.dispatchTouchEvent",{type:"touchStart",touchPoints:[{x,y}]});
+      await cdp.send("Input.dispatchTouchEvent",{type:"touchMove",touchPoints:[{x:x+90,y:y-100}]});
+      await page.waitForTimeout(550);
+      await cdp.send("Input.dispatchTouchEvent",{type:"touchEnd",touchPoints:[]});
+      await cdp.detach();
+    }else{
+      await page.keyboard.down("w");
+      await page.waitForTimeout(550);
+      await page.keyboard.up("w");
+    }
+    await page.waitForFunction(y=>Number(document.querySelector(
+      '[data-testid="ux15-physical-qa"]')?.dataset.playerLocalY)<y-12,
+      initialY,{timeout:9000});
+    await page.getByTestId("ux15-physical-pause").click();
+    await page.waitForTimeout(450);
+    const frozen={
+      ticks:await lab.getAttribute("data-physics-ticks"),
+      remaining:await lab.getAttribute("data-c3b5-overdrive-remaining-ms"),
+      activations:await lab.getAttribute("data-c3b5-activations"),
+    };
+    await page.waitForTimeout(650);
+    check(frozen.ticks===await lab.getAttribute("data-physics-ticks"),
+      name+": physics continued after pause");
+    check(frozen.remaining===await lab.getAttribute("data-c3b5-overdrive-remaining-ms"),
+      name+": Overdrive simulation timer continued while paused");
+    check(frozen.activations===await lab.getAttribute("data-c3b5-activations"),
+      name+": activation changed while paused");
+    await page.getByTestId("ux15-physical-reset").click();
+    check(Number(await lab.getAttribute("data-c3b5-debug-charges"))===0,
+      name+": debug charge survived reset");
+    check(Number(await lab.getAttribute("data-c3b5-activations"))===0,
+      name+": Overdrive survived reset");
+    check(await lab.getAttribute("data-c3b5-overdrive-active")==="false",
+      name+": Overdrive remained active after reset");
+    evidence.cases.push({name,pass:true,ux15c3b5:true,
+      canonicalResonance:true,damageMultiplier:1.2,
+      input:touch?"native-touch":"keyboard"});
+  }finally{await context.close();}
+}
+
 await mkdir(output,{recursive:true});
 try {
   await startServer();
@@ -872,6 +961,8 @@ try {
   await runCanonicalOrbiRouteQa("ux15c3b3-orbi-mobile-844x390",844,390,true);
   await runRouteOrbiImpactQa("ux15c3b4-impact-desktop-1440x900",1440,900,false);
   await runRouteOrbiImpactQa("ux15c3b4-impact-mobile-844x390",844,390,true);
+  await runRouteOverdriveQa("ux15c3b5-overdrive-desktop-1440x900",1440,900,false);
+  await runRouteOverdriveQa("ux15c3b5-overdrive-mobile-844x390",844,390,true);
 }catch(error){evidence.failures.push({message:String(error),stack:error?.stack||""});process.exitCode=1;}
 finally{
   evidence.errors=diagnostics;
