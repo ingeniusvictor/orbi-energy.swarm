@@ -1,7 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
-  attachCanonicalQaWeapons,
   createRouteOrbiWeaponsQaState,
   stepRouteOrbiWeaponsQa,
   ROUTE_ORBI_BASE_SPEED_PER_FRAME,
