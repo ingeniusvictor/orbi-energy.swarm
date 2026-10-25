@@ -19,13 +19,13 @@ const STATUS_PREVIEW_FPS = 24;
 const MAX_STATUS_PIXEL_RATIO = 1.25;
 
 /** Release mesh geometry, imported materials and GLB textures exactly once. */
-const disposeImportedModel = (root: THREE.Object3D) => {
-  const geometries = new Set<THREE.BufferGeometry>();
-  const materials = new Set<THREE.Material>();
-  const textures = new Set<THREE.Texture>();
+const disposeImportedModel = (root: any) => {
+  const geometries = new Set<any>();
+  const materials = new Set<any>();
+  const textures = new Set<any>();
 
-  root.traverse((part) => {
-    const mesh = part as THREE.Mesh;
+  root.traverse((part: any) => {
+    const mesh = part as any;
     if (mesh.geometry && mesh.geometry.isBufferGeometry) geometries.add(mesh.geometry);
     if (!mesh.material) return;
     const list = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
@@ -33,7 +33,7 @@ const disposeImportedModel = (root: THREE.Object3D) => {
       materials.add(material);
       for (const value of Object.values(material)) {
         if (value && typeof value === "object" && "isTexture" in value &&
-            (value as THREE.Texture).isTexture) textures.add(value as THREE.Texture);
+            (value as any).isTexture) textures.add(value as any);
       }
     }
   });
@@ -50,8 +50,8 @@ export const EnergyStatus3D: React.FC<{ language: Locale }> = ({ language }) => 
     const mount = mountRef.current;
     if (!mount) return;
 
-    let renderer: THREE.WebGLRenderer | null = null;
-    let model: THREE.Object3D | null = null;
+    let renderer: any = null;
+    let model: any = null;
     let frame = 0;
     let disposed = false;
     let contextLost = false;
@@ -163,7 +163,7 @@ export const EnergyStatus3D: React.FC<{ language: Locale }> = ({ language }) => 
     const loader = new GLTFLoader();
     loader.load(
       ENERGY_PROTAGONIST_GLB,
-      (gltf) => {
+      (gltf: any) => {
         if (disposed || contextLost) {
           disposeImportedModel(gltf.scene);
           return;
@@ -184,8 +184,8 @@ export const EnergyStatus3D: React.FC<{ language: Locale }> = ({ language }) => 
           imported.position.sub(center);
           centered.scale.setScalar(1.72 / maxDimension);
           centered.add(imported);
-          imported.traverse((part) => {
-            const mesh = part as THREE.Mesh;
+          imported.traverse((part: any) => {
+            const mesh = part as any;
             if (!mesh.isMesh) return;
             mesh.frustumCulled = true;
             mesh.castShadow = false;
@@ -193,7 +193,7 @@ export const EnergyStatus3D: React.FC<{ language: Locale }> = ({ language }) => 
             const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
             for (const material of materials) {
               if (material && "envMapIntensity" in material) {
-                (material as THREE.MeshStandardMaterial).envMapIntensity = .82;
+                (material as any).envMapIntensity = .82;
               }
             }
           });
