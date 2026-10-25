@@ -1,0 +1,56 @@
+/* UX15-B: isolated opt-in QA surface. Does not style the production combat root. */
+.ux15-route-qa{box-sizing:border-box;min-height:100dvh;width:100%;padding:clamp(10px,2.2vw,28px);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(8px,1.5vh,18px);
+  background:radial-gradient(ellipse at 44% 26%,#172f4d 0,#080f23 62%,#040714 100%);
+  font-family:system-ui,"Space Grotesk",sans-serif;color:#d9f5ff}
+.ux15-route-qa *{box-sizing:border-box}
+.ux15-route-qa__header,.ux15-route-qa__footer,.ux15-route-qa__telemetry{
+  width:min(100%,1020px);display:flex;align-items:center;justify-content:space-between;gap:16px}
+.ux15-route-qa__header h1{font-size:clamp(17px,2.5vw,32px);line-height:1.14;
+  color:#fce4a7;margin:4px 0;letter-spacing:.04em}
+.ux15-route-qa__header p,.ux15-route-qa__footer p{margin:3px 0;color:#a9cbd9;
+  font-size:clamp(10px,1.1vw,13px);line-height:1.35}
+.ux15-route-qa__eyebrow{letter-spacing:.15em;color:#6de2f2;font-size:10px;font-weight:800}
+.ux15-route-qa__actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.ux15-route-qa__actions button,.ux15-route-qa__actions a{display:inline-flex;
+  align-items:center;justify-content:center;min-height:38px;padding:8px 13px;
+  border:1px solid #327489;border-radius:8px;color:#dbf8ff;background:#0b273b;
+  font:700 12px/1.1 system-ui,sans-serif;cursor:pointer;text-decoration:none}
+.ux15-route-qa__actions button:focus-visible,.ux15-route-qa__actions a:focus-visible{
+  outline:3px solid #f2b44f;outline-offset:2px}
+.ux15-route-qa__actions button:hover,.ux15-route-qa__actions a:hover{
+  background:#18445b;border-color:#61cfe1}
+.ux15-route-qa__viewport{position:relative;width:min(100%,1020px);display:flex;justify-content:center;
+  border:1px solid rgba(85,211,231,.54);border-radius:12px;overflow:hidden;
+  box-shadow:0 0 45px rgba(29,170,201,.12);background:#050e20}
+.ux15-route-qa__viewport canvas{
+  display:block;width:100%;height:auto;max-width:100%;max-height:min(64dvh,640px);
+  touch-action:none;object-fit:contain}
+.ux15-route-qa__flag{position:absolute;right:10px;top:9px;pointer-events:none;
+  font:900 10px/1 monospace;letter-spacing:.09em;color:#f3c58f;
+  padding:6px 8px;border-radius:4px;background:rgba(4,17,34,.77);
+  border:1px solid rgba(248,183,74,.4)}
+.ux15-route-qa__telemetry{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.ux15-route-qa__telemetry>div{min-width:0;padding:8px 10px;background:#0d2238;
+  border:1px solid rgba(85,175,199,.3);border-radius:8px;display:flex;flex-direction:column;gap:3px}
+.ux15-route-qa__telemetry span{color:#90bccd;font-size:10px}
+.ux15-route-qa__telemetry strong{font:700 clamp(10px,1.2vw,15px)/1.3 system-ui,sans-serif;
+  overflow-wrap:anywhere;color:#f5da9c}
+@media(max-width:720px){
+  .ux15-route-qa{justify-content:flex-start}
+  .ux15-route-qa__header,.ux15-route-qa__footer{align-items:flex-start;flex-wrap:wrap}
+  .ux15-route-qa__telemetry{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ux15-route-qa__viewport canvas{width:100%;max-height:58dvh}
+}
+@media(orientation:landscape) and (max-height:440px){
+  .ux15-route-qa{padding:6px;gap:4px;justify-content:flex-start}
+  .ux15-route-qa__header h1{font-size:14px}
+  .ux15-route-qa__header p,.ux15-route-qa__footer p{font-size:9px}
+  .ux15-route-qa__eyebrow{font-size:8px}
+  .ux15-route-qa__viewport{width:100%}
+  .ux15-route-qa__viewport canvas{max-height:56dvh}
+  .ux15-route-qa__telemetry{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .ux15-route-qa__telemetry>div{padding:4px 7px}
+  .ux15-route-qa__actions button,.ux15-route-qa__actions a{min-height:30px;padding:5px 8px}
+}
+@media(prefers-reduced-motion:reduce){.ux15-route-qa *{animation:none!important;transition:none!important}}
