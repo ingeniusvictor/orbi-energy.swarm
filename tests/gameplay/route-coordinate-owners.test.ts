@@ -88,7 +88,6 @@ test("UX15-C3A3: shared boss alias, formation assignment, pending director and f
   s.formationDirector=planned.state;
   s.boss=enemy;
   s.architectQaBoss=enemy;
-  s.enemies.push(enemy);
   // Deliberately force the same assignment alias in the director cache.
   s.formationDirector.pending!.common.anchorX=enemy.enemyFormation.anchorX;
   const formationBefore=enemy.enemyFormation.anchorX;
@@ -117,7 +116,7 @@ test("UX15-C3A3: no partial writes on invalid coordinates, unsafe phase or froze
   assert.equal(s.frame.originEpoch,0);
   s.projectiles[0].x=900;
   assert.throws(()=>rebaseRouteCoordinateOwners(s,512,{
-    ...permit,unregisteredWorldOwners:true as false,
+    ...permit,unregisteredWorldOwners:true,
   }),/denied/);
   assert.equal(s.player.x,playerX);
   Object.freeze(s.resources[0]);
