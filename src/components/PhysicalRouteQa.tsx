@@ -170,7 +170,7 @@ export default function PhysicalRouteQa() {
         Math.round(480*availableWidth/Math.max(1,stageHeight))));
       viewportRef.current={width:logicalWidth,height:480,zoom:1};
       if(stateRef.current.physicsTicks===0) {
-        stateRef.current=createPhysicalRouteQaState(viewportRef.current);
+        stateRef.current=createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled);
       }
       canvas.dataset.logicalWidth=String(logicalWidth);
       canvas.dataset.logicalHeight="480";
@@ -232,7 +232,7 @@ export default function PhysicalRouteQa() {
   },[]);
 
   const reset=()=>{
-    stateRef.current=createPhysicalRouteQaState(viewportRef.current);
+    stateRef.current=createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled);
     controlsRef.current.clear();
     pointerRef.current=null;
     drawRef.current();
