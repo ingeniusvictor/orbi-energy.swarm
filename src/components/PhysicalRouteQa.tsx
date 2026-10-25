@@ -1,0 +1,288 @@
+import React, { useEffect, useRef, useState } from "react";
+import {
+  createPhysicalRouteQaState,
+  stepPhysicalRouteQa,
+  type PhysicalRouteQaState,
+} from "../game/physicalRouteQaSimulation";
+import {
+  routeLocalToScreen,
+  type RoutePhysicalViewport,
+} from "../game/routePhysicalCamera";
+import {
+  drawAsteriaPremiumWorld,
+  preloadAsteriaPremiumWorld,
+} from "../game/asteriaPremiumRenderer";
+import { drawWorldRouteQaScene } from "../game/worldRoutePreviewRenderer";
+import { drawFoton } from "../game/EnergySwarmCanvas";
+import {
+  disposeFotonGameplay3D,
+  getFotonGameplay3DStatus,
+  prewarmFotonGameplay3D,
+} from "../game/fotonGameplay3DRenderer";
+import { QualityPreset } from "../game/types";
+import { projectRouteDistance } from "../game/worldRouteCore";
+import "../styles/ux15RouteQa.css";
+
+type QaTelemetry = {
+  distance: number; ordinal: number; playerX: number; playerY: number;
+  cameraX: number; originEpoch: number; rebases: number;
+  physicsTicks: number; glb: string;
+};
+const initialTelemetry = (): QaTelemetry => ({
+  distance: 0, ordinal: 0, playerX: 800, playerY: 480,
+  cameraX: 464, originEpoch: 0, rebases: 0, physicsTicks: 0, glb: "LOADING",
+});
+const arrowKeys = new Set(["w","a","s","d","arrowup","arrowdown","arrowleft","arrowright"]);
+
+/**
+ * Explicit, isolated QA harness: a REAL local physics-coordinate ENERGY and
+ * following camera draw with the same in-game GLB Canvas compositor.
+ *
+ * Not a live game run. Never imports EnergySwarmGame or drives enemies,
+ * projectiles, resources, bosses, stats, score, rewards or campaign state.
+ */
+export default function PhysicalRouteQa() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const viewportRef = useRef<RoutePhysicalViewport>({ width: 800, height: 480, zoom: 1 });
+  const stateRef = useRef<PhysicalRouteQaState>(createPhysicalRouteQaState(viewportRef.current));
+  const controlsRef = useRef(new Set<string>());
+  const pointerRef = useRef<{ id:number; startX:number; startY:number; x:number; y:number } | null>(null);
+  const runningRef = useRef(true);
+  const drawRef = useRef<() => void>(() => {});
+  const [running, setRunning] = useState(true);
+  const [locale,setLocale] = useState<"es" | "en">("es");
+  const [reduced,setReduced] = useState(false);
+  const [telemetry,setTelemetry] = useState<QaTelemetry>(initialTelemetry);
+
+  const publishTelemetry = () => {
+    const s=stateRef.current;
+    setTelemetry({
+      distance:projectRouteDistance(s.frame.cursor),
+      ordinal:s.frame.cursor.segmentOrdinal,
+      playerX:s.player.x, playerY:s.player.y,
+      cameraX:s.camera.localX, originEpoch:s.frame.originEpoch,
+      rebases:s.rebases,physicsTicks:s.physicsTicks,
+      glb:getFotonGameplay3DStatus(),
+    });
+  };
+
+  useEffect(()=>{
+    const canvas=canvasRef.current;
+    if(!canvas)return;
+    const ctx=canvas.getContext("2d",{alpha:false});
+    if(!ctx)return;
+    let disposed=false;
+    let frame=0,last=0,lastPaint=0,paintCounter=0;
+    const dpr=Math.min(2,Math.max(1,window.devicePixelRatio||1));
+    const prefersReduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    setReduced(prefersReduce);
+    preloadAsteriaPremiumWorld();
+    prewarmFotonGameplay3D(QualityPreset.MEDIUM);
+
+    const draw=()=>{
+      const s=stateRef.current;
+      const view=viewportRef.current;
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+      ctx.fillStyle="#04101c";
+      ctx.fillRect(0,0,view.width,480);
+      if(!drawAsteriaPremiumWorld(ctx,s.frame.cursor,view.width)){
+        drawWorldRouteQaScene(ctx,s.frame.cursor,{manualX:0,y:240},view.width,false);
+      }
+
+      // World-anchored technical fiducials: their screen position changes
+      // only when the PHYSICAL camera follows the PHYSICAL player, never as
+      // an invented CSS/parallax-only motion.
+      ctx.save();
+      const absoluteLeft=s.frame.originOffsetX+s.camera.localX;
+      const first=Math.floor(absoluteLeft/280)-1;
+      const marks=Math.ceil(view.width/(280*view.zoom))+4;
+      ctx.strokeStyle="rgba(117,241,245,.52)";
+      ctx.fillStyle="rgba(16,44,59,.62)";
+      ctx.lineWidth=1.5;
+      for(let j=0;j<marks;j++){
+        const id=first+j;
+        const localX=id*280-s.frame.originOffsetX;
+        const point=routeLocalToScreen({x:localX,y:570},s.camera,view);
+        ctx.beginPath();
+        ctx.ellipse(point.x,point.y,10,4,0,0,Math.PI*2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(point.x,point.y-16);
+        ctx.lineTo(point.x,point.y+16);
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      // This is the actual gameplay ENERGY compositor, NOT a gold QA marker.
+      ctx.save();
+      ctx.scale(view.zoom,view.zoom);
+      ctx.translate(-s.camera.localX,-s.camera.localY);
+      drawFoton(ctx,s.player,0,s.frame.cursor.simulatedMs,
+        {x:s.player.x+120,y:s.player.y},
+        false,undefined,1,QualityPreset.MEDIUM,false,
+        {x:-1,y:0},0,0);
+      ctx.restore();
+
+      ctx.save();
+      ctx.font="700 12px system-ui, sans-serif";
+      ctx.fillStyle="rgba(3,16,30,.78)";
+      ctx.fillRect(12,11,256,32);
+      ctx.fillStyle="#8ff5ec";
+      ctx.fillText("PHYSICAL QA · NO COMBAT",22,32);
+      ctx.restore();
+    };
+    drawRef.current=draw;
+    const resize=()=>{
+      const compact=window.matchMedia("(orientation: landscape) and (max-height: 440px)").matches;
+      const availableWidth=Math.min(1020,Math.max(320,window.innerWidth-(compact?12:24)));
+      const maxHeight=compact?window.innerHeight*.56:Math.min(window.innerHeight*.64,640);
+      const stageHeight=Math.min(maxHeight,availableWidth*480/800);
+      const logicalWidth=Math.min(2400,Math.max(800,
+        Math.round(480*availableWidth/Math.max(1,stageHeight))));
+      viewportRef.current={width:logicalWidth,height:480,zoom:1};
+      if(stateRef.current.physicsTicks===0) {
+        stateRef.current=createPhysicalRouteQaState(viewportRef.current);
+      }
+      canvas.dataset.logicalWidth=String(logicalWidth);
+      canvas.dataset.logicalHeight="480";
+      canvas.width=Math.round(logicalWidth*dpr);
+      canvas.height=Math.round(480*dpr);
+      draw();
+      publishTelemetry();
+    };
+    const keyDown=(e:KeyboardEvent)=>{
+      const k=e.key.toLowerCase();
+      if(arrowKeys.has(k)){e.preventDefault();controlsRef.current.add(k);}
+    };
+    const keyUp=(e:KeyboardEvent)=>controlsRef.current.delete(e.key.toLowerCase());
+    const clearInput=()=>{controlsRef.current.clear();pointerRef.current=null;};
+    const onVisibility=()=>{last=0;if(document.hidden)clearInput();};
+    const tick=(now:number)=>{
+      if(disposed)return;
+      frame=requestAnimationFrame(tick);
+      const dt=last?Math.min(50,Math.max(0,now-last)):0;
+      last=now;
+      let x=0,y=0;
+      if(controlsRef.current.has("a")||controlsRef.current.has("arrowleft"))x--;
+      if(controlsRef.current.has("d")||controlsRef.current.has("arrowright"))x++;
+      if(controlsRef.current.has("w")||controlsRef.current.has("arrowup"))y--;
+      if(controlsRef.current.has("s")||controlsRef.current.has("arrowdown"))y++;
+      if(pointerRef.current){x+=pointerRef.current.x;y+=pointerRef.current.y;}
+      stateRef.current=stepPhysicalRouteQa(stateRef.current,dt,{x,y},viewportRef.current,{
+        playing:!prefersReduce,
+        paused:!runningRef.current,
+        hidden:document.hidden,
+        modalOpen:false,upgradeOpen:false,hitstop:false,
+      });
+      if(now-lastPaint>=1000/30){
+        lastPaint=now;
+        draw();
+        if(++paintCounter%8===0)publishTelemetry();
+      }
+    };
+
+    window.addEventListener("resize",resize);
+    window.addEventListener("keydown",keyDown);
+    window.addEventListener("keyup",keyUp);
+    window.addEventListener("blur",clearInput);
+    document.addEventListener("visibilitychange",onVisibility);
+    resize();
+    frame=requestAnimationFrame(tick);
+    return()=>{
+      disposed=true;
+      cancelAnimationFrame(frame);
+      window.removeEventListener("resize",resize);
+      window.removeEventListener("keydown",keyDown);
+      window.removeEventListener("keyup",keyUp);
+      window.removeEventListener("blur",clearInput);
+      document.removeEventListener("visibilitychange",onVisibility);
+      clearInput();
+      drawRef.current=()=>{};
+      disposeFotonGameplay3D();
+    };
+  },[]);
+
+  const reset=()=>{
+    stateRef.current=createPhysicalRouteQaState(viewportRef.current);
+    controlsRef.current.clear();
+    pointerRef.current=null;
+    drawRef.current();
+    publishTelemetry();
+  };
+  const onPointerDown=(e:React.PointerEvent<HTMLCanvasElement>)=>{
+    e.preventDefault();
+    e.currentTarget.setPointerCapture(e.pointerId);
+    pointerRef.current={id:e.pointerId,startX:e.clientX,startY:e.clientY,x:0,y:0};
+  };
+  const onPointerMove=(e:React.PointerEvent<HTMLCanvasElement>)=>{
+    const p=pointerRef.current;
+    if(!p||p.id!==e.pointerId)return;
+    p.x=Math.max(-1,Math.min(1,(e.clientX-p.startX)/55));
+    p.y=Math.max(-1,Math.min(1,(e.clientY-p.startY)/55));
+  };
+  const onPointerUp=(e:React.PointerEvent<HTMLCanvasElement>)=>{
+    if(pointerRef.current?.id===e.pointerId)pointerRef.current=null;
+    if(e.currentTarget.hasPointerCapture(e.pointerId))
+      e.currentTarget.releasePointerCapture(e.pointerId);
+  };
+  return (
+    <main className="ux15-route-qa ux15-physical-qa" data-testid="ux15-physical-qa"
+      data-qa-mode="PHYSICAL_ROUTE_ISOLATED"
+      data-route-distance={telemetry.distance.toFixed(2)}
+      data-player-local-x={telemetry.playerX.toFixed(2)}
+      data-player-local-y={telemetry.playerY.toFixed(2)}
+      data-camera-local-x={telemetry.cameraX.toFixed(2)}
+      data-origin-epoch={telemetry.originEpoch}
+      data-rebase-count={telemetry.rebases}
+      data-physics-ticks={telemetry.physicsTicks}
+      data-glb-status={telemetry.glb}>
+      <header className="ux15-route-qa__header">
+        <div>
+          <span className="ux15-route-qa__eyebrow">ORBI ENERGY SWARM · UX15-C3A-2</span>
+          <h1>{locale==="es"?"LABORATORIO DE TRAVESÍA FÍSICA":"PHYSICAL TRAVERSAL LAB"}</h1>
+          <p>{locale==="es"
+            ?"ENERGY y cámara se desplazan físicamente en ASTERIA. QA aislado sin enemigos ni recompensas."
+            :"ENERGY and camera move physically in ASTERIA. Isolated QA, no enemies or rewards."}</p>
+        </div>
+        <div className="ux15-route-qa__actions">
+          <button type="button" onClick={()=>setLocale(v=>v==="es"?"en":"es")}>
+            {locale==="es"?"EN":"ES"}
+          </button>
+          <a href={import.meta.env.BASE_URL}>{locale==="es"?"Volver al juego":"Return to game"}</a>
+        </div>
+      </header>
+      <div className="ux15-route-qa__viewport">
+        <canvas ref={canvasRef} width={800} height={480}
+          data-testid="ux15-physical-canvas" role="img"
+          aria-label={locale==="es"?"Travesía física QA de ENERGY sin combate":"Physical ENERGY route QA without combat"}
+          onPointerDown={onPointerDown} onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp} onPointerCancel={onPointerUp}/>
+        <div className="ux15-route-qa__flag">PHYSICAL QA · NO COMBAT</div>
+      </div>
+      <section className="ux15-route-qa__telemetry ux15-physical-qa__telemetry" aria-label="Physical route telemetry">
+        <div><span>{locale==="es"?"Distancia de ruta":"Route distance"}</span><strong>{Math.floor(telemetry.distance).toLocaleString(locale)} u</strong></div>
+        <div><span>ENERGY · X</span><strong>{Math.round(telemetry.playerX)} u</strong></div>
+        <div><span>{locale==="es"?"Cámara · X":"Camera · X"}</span><strong>{Math.round(telemetry.cameraX)} u</strong></div>
+        <div><span>{locale==="es"?"Segmento":"Segment"}</span><strong>{telemetry.ordinal+1}</strong></div>
+        <div><span>Origin epoch</span><strong>{telemetry.originEpoch}</strong></div>
+        <div><span>{locale==="es"?"Estado":"Status"}</span><strong>{reduced?"REDUCED MOTION":running?"PHYSICAL RUN":"PAUSED"}</strong></div>
+      </section>
+      <div className="ux15-route-qa__footer">
+        <p>{locale==="es"
+          ?"WASD, flechas o arrastra sobre el escenario. Avance físico automático + dirección libre X/Y; el reinicio vuelve al origen."
+          :"WASD, arrows or drag on the stage. Physical auto-advance + free X/Y steering; reset returns to origin."}</p>
+        <div className="ux15-route-qa__actions">
+          <button type="button" data-testid="ux15-physical-pause" onClick={()=>{
+            runningRef.current=!runningRef.current;
+            setRunning(runningRef.current);
+            publishTelemetry();
+          }}>{running?(locale==="es"?"Pausar":"Pause"):(locale==="es"?"Reanudar":"Resume")}</button>
+          <button type="button" data-testid="ux15-physical-reset" onClick={reset}>
+            {locale==="es"?"Reiniciar":"Reset"}
+          </button>
+        </div>
+      </div>
+    </main>
+  );
+}
