@@ -290,6 +290,17 @@ async function runRouteQa(name,width,height,touch){
       name+": incorrect QA route mode");
     check(await page.getByTestId("ux15-route-canvas").isVisible(),
       name+": route Canvas2D preview hidden");
+    const routeCanvasMetrics=await page.getByTestId("ux15-route-canvas").evaluate(el=>{
+      const r=el.getBoundingClientRect();
+      return {logicalWidth:Number(el.dataset.logicalWidth),logicalHeight:Number(el.dataset.logicalHeight),
+        ratio:r.width/r.height,cssWidth:r.width,cssHeight:r.height};
+    });
+    check(routeCanvasMetrics.logicalHeight===480&&routeCanvasMetrics.logicalWidth>=800,
+      name+": logical route viewport malformed "+JSON.stringify(routeCanvasMetrics));
+    check(Math.abs(routeCanvasMetrics.ratio-routeCanvasMetrics.logicalWidth/480)<.035,
+      name+": horizontal route viewport geometry stretched "+JSON.stringify(routeCanvasMetrics));
+    if(touch) check(routeCanvasMetrics.logicalWidth>800&&routeCanvasMetrics.cssWidth>width*.85,
+      name+": mobile route not truly panoramic "+JSON.stringify(routeCanvasMetrics));
     check((await page.locator(".orbi-game-root").count())===0,
       name+": QA preview mounted production combat game");
     await page.waitForFunction(()=>Number(document.querySelector(
