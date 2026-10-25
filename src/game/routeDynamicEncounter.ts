@@ -131,6 +131,7 @@ export function stepRouteDynamicQaEncounter(
   deltaMs:number,
   simulatedMs:number,
   combatBridgeEnabled=false,
+  orbiWeaponsEnabled=false,
 ):{encounter:RouteQaEncounter; dynamic:RouteDynamicQaState} {
   if (![deltaMs,simulatedMs,player.x,player.y].every(Number.isFinite) ||
       deltaMs<0 || deltaMs>50+1e-7 || simulatedMs<0)
@@ -177,7 +178,9 @@ export function stepRouteDynamicQaEncounter(
 
   if(simulatedMs>=nextFireMs){
     nextFireMs+=ROUTE_QA_FIRE_PERIOD_MS;
-    if(projectiles.length<Math.min(MAX_PROJECTILES,ROUTE_QA_PROJECTILE_CAP)){
+    // C3B-3 never combines the fake ENERGY test gun with real ORBI shots.
+    if(!orbiWeaponsEnabled&&
+       projectiles.length<Math.min(MAX_PROJECTILES,ROUTE_QA_PROJECTILE_CAP)){
       const candidate=enemies.filter(e=>!e.isDead).sort((a,b)=>
         Math.hypot(a.x-player.x,a.y-player.y)-
         Math.hypot(b.x-player.x,b.y-player.y))[0];

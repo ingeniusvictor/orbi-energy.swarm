@@ -694,6 +694,80 @@ async function runRouteCombatBridgeQa(name,width,height,touch){
   }finally{await context.close();}
 }
 
+/** C3B3: canonical ORBI energy profiles in real Chromium, never main gameplay. */
+async function runCanonicalOrbiRouteQa(name,width,height,touch){
+  const context=await browser.newContext({viewport:{width,height},
+    isMobile:touch,hasTouch:touch,deviceScaleFactor:touch?2:1,
+    reducedMotion:"no-preference",serviceWorkers:"block"});
+  const page=await context.newPage();
+  page.on("pageerror",error=>diagnostics.push(name+": "+String(error)));
+  page.on("console",msg=>{if(msg.type()==="error")diagnostics.push(name+": "+msg.text());});
+  try{
+    await page.goto(url+"/?ux15-physical-qa=1&ux15-c3b=1&ux15-c3b2=1&ux15-c3b3=1",
+      {waitUntil:"domcontentloaded",timeout:30000});
+    const lab=page.getByTestId("ux15-physical-qa");
+    await lab.waitFor({state:"visible",timeout:15000});
+    check(await lab.getAttribute("data-qa-mode")==="PHYSICAL_ROUTE_C3B3_QA",
+      name+": wrong canonical ORBI QA flag");
+    check(await page.locator(".orbi-game-root").count()===0,
+      name+": normal game engine leaked into isolated ORBI QA");
+    check(Number(await lab.getAttribute("data-c3b3-orbi-shots"))===0,
+      name+": ORBI weapons must start without fired shots");
+    await page.waitForFunction(()=>Number(document.querySelector(
+      '[data-testid="ux15-physical-qa"]')?.dataset.c3b3OrbiShots)>=1,
+      null,{timeout:touch?35000:22000});
+    const shots=Number(await lab.getAttribute("data-c3b3-orbi-shots"));
+    const targets=Number(await lab.getAttribute("data-c3b3-orbi-targets"));
+    check(shots>=1&&targets>=1,name+": canonical targeting and shot not observed");
+    check(Number(await lab.getAttribute("data-c3b3-orbi-echoes"))<=shots,
+      name+": invalid QUANTUM echo accounting");
+    check(Number(await lab.getAttribute("data-c3b-active-shots"))<=24,
+      name+": ORBI projectile capacity exceeded");
+    const startY=Number(await lab.getAttribute("data-player-local-y"));
+    if(touch){
+      await page.getByTestId("ux15-physical-canvas").scrollIntoViewIfNeeded();
+      const bounds=await page.getByTestId("ux15-physical-canvas").boundingBox();
+      check(Boolean(bounds),name+": no mobile canvas");
+      const cdp=await context.newCDPSession(page);
+      const x=bounds.x+bounds.width*.5,y=bounds.y+bounds.height*.62;
+      await cdp.send("Input.dispatchTouchEvent",{type:"touchStart",touchPoints:[{x,y}]});
+      await cdp.send("Input.dispatchTouchEvent",{type:"touchMove",touchPoints:[{x:x+95,y:y-100}]});
+      await page.waitForTimeout(650);
+      await cdp.send("Input.dispatchTouchEvent",{type:"touchEnd",touchPoints:[]});
+      await cdp.detach();
+    }else{
+      await page.keyboard.down("w");
+      await page.waitForTimeout(650);
+      await page.keyboard.up("w");
+    }
+    await page.waitForFunction(start=>Number(document.querySelector(
+      '[data-testid="ux15-physical-qa"]')?.dataset.playerLocalY)<start-12,
+      startY,{timeout:8000});
+    await shot(page,name+"-canonical-orbi");
+    await page.getByTestId("ux15-physical-pause").click();
+    await page.waitForTimeout(450);
+    const paused={
+      ticks:await lab.getAttribute("data-physics-ticks"),
+      shots:await lab.getAttribute("data-c3b3-orbi-shots"),
+      targets:await lab.getAttribute("data-c3b3-orbi-targets"),
+    };
+    await page.waitForTimeout(650);
+    check(await lab.getAttribute("data-physics-ticks")===paused.ticks,
+      name+": paused physical simulation advanced");
+    check(await lab.getAttribute("data-c3b3-orbi-shots")===paused.shots,
+      name+": paused ORBI fired");
+    check(await lab.getAttribute("data-c3b3-orbi-targets")===paused.targets,
+      name+": paused ORBI target counter advanced");
+    await page.getByTestId("ux15-physical-reset").click();
+    check(Number(await lab.getAttribute("data-c3b3-orbi-shots"))===0,
+      name+": reset failed to clear ORBI volley count");
+    check(Number(await lab.getAttribute("data-c3b3-orbi-targets"))===0,
+      name+": reset failed to clear spatial target counter");
+    evidence.cases.push({name,pass:true,ux15c3b3:true,
+      canonicalProfiles:10,shots,targets,input:touch?"native-touch":"keyboard"});
+  }finally{await context.close();}
+}
+
 await mkdir(output,{recursive:true});
 try {
   await startServer();
@@ -716,6 +790,8 @@ try {
   await runDynamicRouteQa("ux15c3b1-dynamic-mobile-844x390",844,390,true);
   await runRouteCombatBridgeQa("ux15c3b2-bridge-desktop-1440x900",1440,900,false);
   await runRouteCombatBridgeQa("ux15c3b2-bridge-mobile-844x390",844,390,true);
+  await runCanonicalOrbiRouteQa("ux15c3b3-orbi-desktop-1440x900",1440,900,false);
+  await runCanonicalOrbiRouteQa("ux15c3b3-orbi-mobile-844x390",844,390,true);
 }catch(error){evidence.failures.push({message:String(error),stack:error?.stack||""});process.exitCode=1;}
 finally{
   evidence.errors=diagnostics;

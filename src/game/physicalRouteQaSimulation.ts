@@ -16,6 +16,12 @@ import { rebaseRouteCoordinateOwners } from "./routeCoordinateOwners";
 import { createRouteQaEncounter, stepRouteQaEncounter, type RouteQaEncounter } from "./routePhysicalQaEncounter";
 import { createRouteDynamicQaState, stepRouteDynamicQaEncounter, type RouteDynamicQaState } from "./routeDynamicEncounter";
 import {
+  attachCanonicalQaWeapons,
+  createRouteOrbiWeaponsQaState,
+  stepRouteOrbiWeaponsQa,
+  type RouteOrbiWeaponsQaState,
+} from "./routeOrbiWeaponsQa";
+import {
   activatePropulsionDash,
   stepRoutePropulsionDash,
 } from "./propulsionDash";
@@ -50,6 +56,7 @@ export interface PhysicalRouteQaState {
   readonly encounter: RouteQaEncounter;
   readonly dynamic: RouteDynamicQaState | null;
   readonly bridge: RouteCombatBridgeState | null;
+  readonly weapons: RouteOrbiWeaponsQaState | null;
   readonly rebases: number;
   readonly physicsTicks: number;
 }
@@ -64,7 +71,11 @@ export function createPhysicalRouteQaState(
   seed = ROUTE_PHYSICAL_QA_SEED,
   enableDynamicQa = false,
   enableCombatBridgeQa = false,
+  enableOrbiWeaponsQa = false,
 ): PhysicalRouteQaState {
+  if(enableOrbiWeaponsQa && !enableCombatBridgeQa){
+    throw new Error("Canonical ORBI QA requires C3B-2 combat bridge");
+  }
   if(enableCombatBridgeQa && !enableDynamicQa){
     throw new Error("Combat-bridge QA requires C3B-1 encounter flag");
   }
@@ -90,6 +101,9 @@ export function createPhysicalRouteQaState(
     encounter.hazardZones=[];
     encounter.shieldNodes=[];
   }
+  if(enableOrbiWeaponsQa){
+    encounter.swarm=attachCanonicalQaWeapons(encounter.swarm);
+  }
   return {
     frame: createPhysicalRouteFrame(createRouteCursor(seed)),
     player,
@@ -97,6 +111,7 @@ export function createPhysicalRouteQaState(
     encounter,
     dynamic:enableDynamicQa?createRouteDynamicQaState():null,
     bridge:enableCombatBridgeQa?createRouteCombatBridgeState():null,
+    weapons:enableOrbiWeaponsQa?createRouteOrbiWeaponsQaState():null,
     rebases: 0,
     physicsTicks: 0,
   };
@@ -163,13 +178,23 @@ export function stepPhysicalRouteQa(
   let frame = advancement.frame;
   let encounter = stepRouteQaEncounter(state.encounter, player);
   let dynamic=state.dynamic;
+  let weapons=state.weapons;
   if(dynamic){
     const next=stepRouteDynamicQaEncounter(
       encounter,dynamic,player,camera,viewport,dt,frame.cursor.simulatedMs,
-      bridge!==null,
+      bridge!==null,weapons!==null,
     );
     encounter=next.encounter;
     dynamic=next.dynamic;
+  }
+  if(weapons){
+    const volley=stepRouteOrbiWeaponsQa(encounter,weapons,dt);
+    encounter=volley.encounter;
+    weapons=volley.weapons;
+    if(bridge){
+      bridge={...bridge,shield:Math.min(100,
+        bridge.shield+volley.restoredShield)};
+    }
   }
   if(bridge){
     bridge=stepRouteCombatBridge(
@@ -197,6 +222,7 @@ export function stepPhysicalRouteQa(
     encounter,
     dynamic,
     bridge,
+    weapons,
     rebases,
     physicsTicks: state.physicsTicks + 1,
   };
