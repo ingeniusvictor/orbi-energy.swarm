@@ -166,6 +166,7 @@ export function stepPhysicalRouteQa(
   if(dynamic){
     const next=stepRouteDynamicQaEncounter(
       encounter,dynamic,player,camera,viewport,dt,frame.cursor.simulatedMs,
+      bridge!==null,
     );
     encounter=next.encounter;
     dynamic=next.dynamic;
