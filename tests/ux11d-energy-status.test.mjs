@@ -8,13 +8,16 @@ const css=read("src/styles/ux11EnergyStatus.css");
 const bootstrap=read("src/main.tsx");
 const chrome=read("scripts/web-ux01-browser-evidence.mjs");
 
-test("UX11-D status renders true WebGL ENERGY instead of unverified historical FOTON GLB",()=>{
+test("UX14-C upgrades UX11-D WebGL Estado to reuse the real gameplay ENERGY GLB",()=>{
   assert.match(hud,/<EnergyStatus3D language=\{language\}\/>/);
   assert.match(renderer,/new THREE\.WebGLRenderer/);
-  assert.match(renderer,/IcosahedronGeometry/);
+  assert.match(renderer,/new GLTFLoader\(\)/);
+  assert.match(renderer,/assets\/orbi-foton\.glb/);
+  assert.match(renderer,/data-model-source=\{status === "READY" \? "canonical-glb"/);
   assert.match(renderer,/ENERGY, protagonista dorado neutral en 3D/);
-  assert.doesNotMatch(renderer,/import.*GLTFLoader|loader\.load\(|new THREE\.TorusGeometry/);
-  assert.match(renderer,/Dyson halos are intentionally hidden/);
+  assert.match(renderer,/loader\.load\(/);
+  assert.doesNotMatch(renderer,/new THREE\.IcosahedronGeometry|new THREE\.TorusGeometry/);
+  assert.match(renderer,/No Dyson ring/);
   assert.match(css,/\.orbi-ux11d-energy-preview/);
   assert.match(bootstrap,/ux11EnergyStatus\.css/);
 });
@@ -23,12 +26,13 @@ test("UX11-D renderer pauses work, respects motion preferences and survives WebG
   for(const phrase of [
     "setStatus(\"FALLBACK\")", "webglcontextlost", "visibilitychange",
     "prefers-reduced-motion: reduce", "cancelAnimationFrame(frame)",
-    "renderer.dispose()", "ResizeObserver", "low-power",
+    "renderer?.dispose()", "ResizeObserver", "low-power",
+    "disposeImportedModel", "MAX_STATUS_PIXEL_RATIO",
     'data-3d-status={status}', "orbi-ux11d-fallback"
   ])assert.ok(renderer.includes(phrase),phrase);
   assert.match(css,/data-3d-status="READY"/);
   assert.match(css,/not\(\[data-3d-status="READY"\]\)/);
-  assert.match(renderer,/renderer\.setPixelRatio\(Math\.min\(1\.35/);
+  assert.match(renderer,/renderer\.setPixelRatio\(Math\.min\(MAX_STATUS_PIXEL_RATIO/);
 });
 
 test("UX11-D live Estado capabilities remain truthful and separate Overdrive from Dash",()=>{
