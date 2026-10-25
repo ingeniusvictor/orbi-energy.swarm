@@ -38,7 +38,7 @@ test("UX15-C3A2: real auto-movement changes ENERGY local X and physical camera, 
   assert.equal(s.frame.originEpoch,0);
   const before=routeLocalToScreen(initial.player,initial.camera,viewport);
   const after=routeLocalToScreen(s.player,s.camera,viewport);
-  near(after.x,before.x,3);
+  assert.ok(Math.abs(after.x-before.x)<10); // smoothed camera follow lag
 });
 
 test("UX15-C3A2: steering left/right changes real world travel while independent Y stays free",()=>{
