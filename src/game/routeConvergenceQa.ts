@@ -121,6 +121,7 @@ export function advanceRouteConvergenceQa(
   waveKey:string,
   shield:number,
   allowParasites=false,
+  allowQaElites=false,
 ):{convergenceQa:RouteConvergenceQaState;encounter:RouteQaEncounter} {
   if(!Number.isFinite(nowMs)||nowMs<0)
     throw new RangeError("Invalid Convergence channel clock");
