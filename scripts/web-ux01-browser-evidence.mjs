@@ -768,6 +768,84 @@ async function runCanonicalOrbiRouteQa(name,width,height,touch){
   }finally{await context.close();}
 }
 
+/** C3B4: actual canonical impact resolution at physical game coordinates. */
+async function runRouteOrbiImpactQa(name,width,height,touch){
+  const context=await browser.newContext({viewport:{width,height},
+    isMobile:touch,hasTouch:touch,deviceScaleFactor:touch?2:1,
+    reducedMotion:"no-preference",serviceWorkers:"block"});
+  const page=await context.newPage();
+  page.on("pageerror",e=>diagnostics.push(name+": "+String(e)));
+  page.on("console",msg=>{if(msg.type()==="error")diagnostics.push(name+": "+msg.text());});
+  try{
+    await page.goto(url+"/?ux15-physical-qa=1&ux15-c3b=1&ux15-c3b2=1&ux15-c3b3=1&ux15-c3b4=1",
+      {waitUntil:"domcontentloaded",timeout:30000});
+    const lab=page.getByTestId("ux15-physical-qa");
+    await lab.waitFor({state:"visible",timeout:15000});
+    check(await lab.getAttribute("data-qa-mode")==="PHYSICAL_ROUTE_C3B4_QA",
+      name+": new impact QA flag not activated");
+    check(await page.locator(".orbi-game-root").count()===0,
+      name+": ordinary battle engine must not run in impact QA");
+    check(Number(await lab.getAttribute("data-c3b4-splash-hits"))===0,
+      name+": nonzero splash counter before start");
+    await page.waitForFunction(()=>Number(document.querySelector(
+      '[data-testid="ux15-physical-qa"]')?.dataset.c3b4Pushes)>=1,
+      null,{timeout:touch?40000:30000});
+    const impacts=Number(await lab.getAttribute("data-c3b-hits"));
+    const pushes=Number(await lab.getAttribute("data-c3b4-pushes"));
+    const splashes=Number(await lab.getAttribute("data-c3b4-splash-hits"));
+    const slows=Number(await lab.getAttribute("data-c3b4-slows"));
+    const pulls=Number(await lab.getAttribute("data-c3b4-magnetic-pulls"));
+    check(impacts>=1&&pushes>=1,name+": canonical projectile push absent");
+    check([splashes,slows,pulls].every(v=>Number.isInteger(v)&&v>=0),
+      name+": invalid effects telemetry");
+    check(Number(await lab.getAttribute("data-c3b-active-shots"))<=24,
+      name+": canonical impact exceeded projectile cap");
+    const beforeY=Number(await lab.getAttribute("data-player-local-y"));
+    if(touch){
+      await page.getByTestId("ux15-physical-canvas").scrollIntoViewIfNeeded();
+      const bounds=await page.getByTestId("ux15-physical-canvas").boundingBox();
+      check(Boolean(bounds),name+": missing touch canvas");
+      const cdp=await context.newCDPSession(page);
+      const x=bounds.x+bounds.width*.5,y=bounds.y+bounds.height*.63;
+      await cdp.send("Input.dispatchTouchEvent",{type:"touchStart",touchPoints:[{x,y}]});
+      await cdp.send("Input.dispatchTouchEvent",{type:"touchMove",touchPoints:[{x:x+85,y:y-105}]});
+      await page.waitForTimeout(650);
+      await cdp.send("Input.dispatchTouchEvent",{type:"touchEnd",touchPoints:[]});
+      await cdp.detach();
+    }else{
+      await page.keyboard.down("w");
+      await page.waitForTimeout(650);
+      await page.keyboard.up("w");
+    }
+    await page.waitForFunction(y=>Number(document.querySelector(
+      '[data-testid="ux15-physical-qa"]')?.dataset.playerLocalY)<y-12,
+      beforeY,{timeout:8000});
+    await shot(page,name+"-canonical-impacts");
+    await page.getByTestId("ux15-physical-pause").click();
+    await page.waitForTimeout(450);
+    const paused={
+      ticks:await lab.getAttribute("data-physics-ticks"),
+      pushes:await lab.getAttribute("data-c3b4-pushes"),
+      splash:await lab.getAttribute("data-c3b4-splash-hits"),
+    };
+    await page.waitForTimeout(650);
+    check(paused.ticks===await lab.getAttribute("data-physics-ticks"),
+      name+": ticks advanced while paused");
+    check(paused.pushes===await lab.getAttribute("data-c3b4-pushes"),
+      name+": knockback continued during pause");
+    check(paused.splash===await lab.getAttribute("data-c3b4-splash-hits"),
+      name+": splash hits advanced while paused");
+    await page.getByTestId("ux15-physical-reset").click();
+    check(Number(await lab.getAttribute("data-c3b4-pushes"))===0,
+      name+": reset failed to clear push counter");
+    check(Number(await lab.getAttribute("data-c3b4-magnetic-pulls"))===0,
+      name+": reset failed to clear magnet counter");
+    evidence.cases.push({name,pass:true,ux15c3b4:true,
+      impacts,pushes,splashes,slows,pulls,
+      input:touch?"native-touch":"keyboard"});
+  }finally{await context.close();}
+}
+
 await mkdir(output,{recursive:true});
 try {
   await startServer();
@@ -792,6 +870,8 @@ try {
   await runRouteCombatBridgeQa("ux15c3b2-bridge-mobile-844x390",844,390,true);
   await runCanonicalOrbiRouteQa("ux15c3b3-orbi-desktop-1440x900",1440,900,false);
   await runCanonicalOrbiRouteQa("ux15c3b3-orbi-mobile-844x390",844,390,true);
+  await runRouteOrbiImpactQa("ux15c3b4-impact-desktop-1440x900",1440,900,false);
+  await runRouteOrbiImpactQa("ux15c3b4-impact-mobile-844x390",844,390,true);
 }catch(error){evidence.failures.push({message:String(error),stack:error?.stack||""});process.exitCode=1;}
 finally{
   evidence.errors=diagnostics;
