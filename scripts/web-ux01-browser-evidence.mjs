@@ -1390,6 +1390,70 @@ async function runDroneLockTrajectoryPreflight(name,width,height,touch){
  }finally{await context.close();}
 }
 
+
+/** C3B11: truly moving hostile QA projectile, one independently-owned DRONE,
+ * and observed shield contact in the controlled world-coordinate lab.
+ * The official third wave MUST remain gated throughout this scenario.
+ */
+async function runPhysicalDroneDuelQa(name,width,height,touch){
+ const context=await browser.newContext({viewport:{width,height},
+   isMobile:touch,hasTouch:touch,deviceScaleFactor:touch?2:1,
+   reducedMotion:"no-preference",serviceWorkers:"block"});
+ const page=await context.newPage();
+ page.on("pageerror",e=>diagnostics.push(name+": "+String(e)));
+ page.on("console",msg=>{if(msg.type()==="error")diagnostics.push(name+": "+msg.text());});
+ try{
+  await page.goto(url+"/?ux15-physical-qa=1&ux15-c3b=1&ux15-c3b2=1&ux15-c3b3=1&ux15-c3b4=1&ux15-c3b5=1&ux15-c3b6=1&ux15-c3b7=1&ux15-c3b8=1&ux15-c3b9=1&ux15-c3b10=1&ux15-c3b11=1",
+    {waitUntil:"domcontentloaded",timeout:30000});
+  const lab=page.getByTestId("ux15-physical-qa");
+  await lab.waitFor({state:"visible",timeout:15000});
+  check(await lab.getAttribute("data-qa-mode")==="PHYSICAL_ROUTE_C3B11_QA",
+    name+": missing explicit full C3B11 flag chain");
+  check(await lab.getAttribute("data-c3b11-status")==="DISARMED",
+    name+": drone was armed before explicit user QA action");
+  check(await lab.getAttribute("data-c3b11-wave3-active")==="false",
+    name+": official Wave3 was unlocked");
+  check(Number(await lab.getAttribute("data-c3b10-live-drone-count"))===0,
+    name+": ordinary encounter adopted drone prematurely");
+  await page.getByTestId("ux15-c3b11-arm-drone").click({timeout:60000});
+  await page.waitForFunction(()=>document.querySelector(
+    '[data-testid="ux15-physical-qa"]')?.getAttribute("data-c3b11-status")==="ACTIVE",
+    null,{timeout:25000});
+  check(await lab.getAttribute("data-c3b8-wave-status")==="GATED_WAVE3",
+    name+": drone duel began before Wave2 was gated");
+  await page.waitForFunction(()=>Number(document.querySelector(
+    '[data-testid="ux15-physical-qa"]')?.getAttribute("data-c3b11-shots"))>=1,
+    null,{timeout:30000});
+  const fired=Number(await lab.getAttribute("data-c3b11-shots"));
+  const shield=Number(await lab.getAttribute("data-c3b11-shield"));
+  check(fired>=1,name+": physical DRONE never emitted hostile plasma");
+  check(shield>=0 && shield<=100,name+": QA shield outside legal range");
+  check(Number(await lab.getAttribute("data-c3b11-drone-world-x"))>0,
+    name+": missing registered physical DRONE coordinate");
+  check(await lab.getAttribute("data-c3b11-wave3-active")==="false",
+    name+": Wave3 changed under separate duel");
+  check(Number(await lab.getAttribute("data-c3b10-live-drone-count"))===0,
+    name+": QA drone leaked into Wave2 spatial enemy list");
+  await shot(page,name+"-physical-drone-duel");
+  await page.getByTestId("ux15-physical-pause").click();
+  await page.waitForTimeout(400);
+  const ticks=await lab.getAttribute("data-physics-ticks");
+  const shots=await lab.getAttribute("data-c3b11-shots");
+  await page.waitForTimeout(600);
+  check(await lab.getAttribute("data-physics-ticks")===ticks,
+    name+": physical duel advanced while paused");
+  check(await lab.getAttribute("data-c3b11-shots")===shots,
+    name+": hostile plasma fired while paused");
+  await page.getByTestId("ux15-physical-reset").click();
+  check(await lab.getAttribute("data-c3b11-status")==="DISARMED",
+    name+": reset retained active DRONE");
+  check(Number(await lab.getAttribute("data-c3b11-shots"))===0,
+    name+": reset did not clear plasma counter");
+  evidence.cases.push({name,pass:true,ux15c3b11:true,
+    wave3Active:false,fired,shield,input:touch?"native-touch":"keyboard"});
+ }finally{await context.close();}
+}
+
 await mkdir(output,{recursive:true});
 try {
   await startServer();
@@ -1428,6 +1492,8 @@ try {
   await runPhysicalEliteQa("ux15c3b9-elite-mobile-844x390",844,390,true);
   await runDroneLockTrajectoryPreflight("ux15c3b10-drone-desktop-1440x900",1440,900,false);
   await runDroneLockTrajectoryPreflight("ux15c3b10-drone-mobile-844x390",844,390,true);
+  await runPhysicalDroneDuelQa("ux15c3b11-duel-desktop-1440x900",1440,900,false);
+  await runPhysicalDroneDuelQa("ux15c3b11-duel-mobile-844x390",844,390,true);
 }catch(error){evidence.failures.push({message:String(error),stack:error?.stack||""});process.exitCode=1;}
 finally{
   evidence.errors=diagnostics;
