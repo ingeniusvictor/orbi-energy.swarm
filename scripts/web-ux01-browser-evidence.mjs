@@ -137,6 +137,9 @@ async function run(name,width,height,coarse,immersive,webImmersive) {
         check(await canvas.isVisible(),name+": WebGL hero canvas missing");
         const size=await canvas.boundingBox();
         check(size && size.width>=55 && size.height>=70,name+": 3D viewport collapsed");
+        // UX14-C: capture the actual mounted GLB after model loading, before
+        // forcing WebGL loss (the older Estado shot precedes async loading).
+        await shot(page,name+"-energy-real-glb");
         // Validate actual browser context-loss downgrade with the CSS preview.
         await canvas.evaluate(el=>el.dispatchEvent(new Event("webglcontextlost",{bubbles:true,cancelable:true})));
         await page.waitForFunction(()=>
