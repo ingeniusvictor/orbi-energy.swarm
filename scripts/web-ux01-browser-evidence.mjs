@@ -329,7 +329,28 @@ async function runRouteQa(name,width,height,touch){
     await page.getByTestId("ux15-route-reset").click();
     check(Number(await lab.getAttribute("data-route-distance"))===0,
       name+": reset did not return to segment zero");
-    evidence.cases.push({name,pass:true,routePreview:true,advancedUnits:advanced});
+    // Certified art tour: all six sections must render real approved WebPs,
+    // with screenshots of four distinct original panoramas (no geometric QA
+    // fallback considered acceptable for UX15-C2B).
+    const canvasArt=page.getByTestId("ux15-route-canvas");
+    const artworkProof=[];
+    for (let section=0; section<6; section++) {
+      if (section>0) await page.getByTestId("ux15-route-next-section").click();
+      await page.waitForFunction((section)=>{
+        const lab=document.querySelector('[data-testid="ux15-route-qa"]');
+        const canvas=document.querySelector('[data-testid="ux15-route-canvas"]');
+        return Number(lab?.getAttribute("data-segment-ordinal"))===section &&
+          canvas?.getAttribute("data-ux15-art")==="premium";
+      },section,{timeout:15000});
+      check(await canvasArt.getAttribute("data-ux15-art")==="premium",
+        name+": section "+section+" never displayed approved art");
+      artworkProof.push(section);
+      if ([0,1,3,4].includes(section)) {
+        await shot(page,name+"-premium-section-"+section);
+      }
+    }
+    evidence.cases.push({name,pass:true,routePreview:true,
+      premiumArtSections:artworkProof,advancedUnits:advanced});
   }finally{await context.close();}
 }
 
