@@ -16,6 +16,7 @@ import "../styles/ux15RouteQa.css";
  */
 export default function WorldRouteQaPreview() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const logicalWidthRef = useRef(800);
   const cursorRef = useRef<RouteCursor>(createRouteCursor());
   const playerRef = useRef<RoutePreviewPlayer>({ manualX: 0, y: 240 });
   const pointerRef = useRef<{ x: number; y: number } | null>(null);
@@ -28,7 +29,7 @@ export default function WorldRouteQaPreview() {
 
   const repaint = () => {
     const ctx = canvasRef.current?.getContext("2d", { alpha: false });
-    if (ctx) drawWorldRouteQaScene(ctx, cursorRef.current, playerRef.current);
+    if (ctx) drawWorldRouteQaScene(ctx, cursorRef.current, playerRef.current, logicalWidthRef.current);
     const cursor = cursorRef.current;
     setTelemetry({
       ordinal: cursor.segmentOrdinal,
@@ -44,9 +45,25 @@ export default function WorldRouteQaPreview() {
     const ctx = canvas.getContext("2d", { alpha: false });
     if (!ctx) return;
     const dpr = Math.min(2, Math.max(1, window.devicePixelRatio || 1));
-    canvas.width = Math.round(800 * dpr);
-    canvas.height = Math.round(480 * dpr);
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const onResize = () => {
+      // Expand the logical WORLD width with screen aspect ratio; preserve the
+      // same 480-unit vertical scale and equal X/Y unit sizes on all devices.
+      const compact = window.matchMedia("(orientation: landscape) and (max-height: 440px)").matches;
+      const availableWidth = Math.min(1020, Math.max(320, window.innerWidth - (compact ? 12 : 24)));
+      const maxHeight = compact ? window.innerHeight * .56 :
+        Math.min(window.innerHeight * .64, 640);
+      const stageHeight = Math.min(maxHeight, availableWidth * 480 / 800);
+      const logicalWidth = Math.min(2400, Math.max(800,
+        Math.round(480 * availableWidth / Math.max(1, stageHeight))));
+      logicalWidthRef.current = logicalWidth;
+      canvas.dataset.logicalWidth = String(logicalWidth);
+      canvas.dataset.logicalHeight = "480";
+      canvas.width = Math.round(logicalWidth * dpr);
+      canvas.height = Math.round(480 * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      drawWorldRouteQaScene(ctx, cursorRef.current, playerRef.current, logicalWidth);
+    };
+    onResize();
     let frame = 0;
     let last = 0;
     let lastPaint = 0;
@@ -93,11 +110,11 @@ export default function WorldRouteQaPreview() {
         x += pointer.x;y += pointer.y;
       }
       playerRef.current = stepRoutePreviewPlayer(
-        playerRef.current, { x, y }, dt, { width: 800, height: 480 }, active,
+        playerRef.current, { x, y }, dt, { width: logicalWidthRef.current, height: 480 }, active,
       );
       if (now - lastPaint >= 1000 / 30) {
         lastPaint = now;
-        drawWorldRouteQaScene(ctx, cursorRef.current, playerRef.current);
+        drawWorldRouteQaScene(ctx, cursorRef.current, playerRef.current, logicalWidthRef.current);
         if (++paintCounter % 9 === 0) {
           const cursor = cursorRef.current;
           setTelemetry({ ordinal: cursor.segmentOrdinal,
@@ -106,16 +123,18 @@ export default function WorldRouteQaPreview() {
         }
       }
     };
+    window.addEventListener("resize", onResize);
     window.addEventListener("keydown", onKeyDown);
     window.addEventListener("keyup", onKeyUp);
     window.addEventListener("blur", blur);
     document.addEventListener("visibilitychange", onVisibility);
     canvas.addEventListener("pointercancel", blur);
-    drawWorldRouteQaScene(ctx, cursorRef.current, playerRef.current);
+    drawWorldRouteQaScene(ctx, cursorRef.current, playerRef.current, logicalWidthRef.current);
     frame = requestAnimationFrame(tick);
     return () => {
       disposed = true;
       cancelAnimationFrame(frame);
+      window.removeEventListener("resize", onResize);
       window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("keyup", onKeyUp);
       window.removeEventListener("blur", blur);
