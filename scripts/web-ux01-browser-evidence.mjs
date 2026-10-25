@@ -369,6 +369,15 @@ async function runAsteriaCombat(name,width,height,touch){
     check(await canvas.getAttribute("data-ux15-live-combat")==="true",
       name+": only preview background rendered, no live combat contract");
     check(begin>10,name+": route is not scrolling within real combat");
+    // UX15-C2B acceptance: not enough to show fallback/old geometric blocks.
+    // Verify that the approved real WebP panorama decoded and painted inside
+    // actual combat in BOTH desktop and touch-landscape Chromium.
+    await page.waitForFunction(()=>document.querySelector("#game-canvas")
+      ?.dataset.ux15Visual==="premium-webp",null,{timeout:12000});
+    check(await canvas.getAttribute("data-ux15-visual")==="premium-webp",
+      name+": approved premium ASTERIA assets did not render");
+    check(await canvas.getAttribute("data-ux15-scene")==="ARRIVAL_GATE",
+      name+": incorrect premium opening scene");
     check(await page.locator(".orbi-game-root").isVisible(),
       name+": real EnergySwarmGame root missing");
     await shot(page,name+"-asteria-live-combat");
@@ -383,8 +392,8 @@ async function runAsteriaCombat(name,width,height,touch){
     check(await page.getByTestId("orbi-ux11d-energy-preview").isVisible(),
       name+": authentic ENERGY status module missing in ASTERIA mode");
 
-    evidence.cases.push({name,pass:true,ux15c1:true,
-      liveCombat:true,scrollDistance:begin,pausedDistance:paused});
+    evidence.cases.push({name,pass:true,ux15c1:true,ux15c2b:true,
+      premiumWorld:true,liveCombat:true,scrollDistance:begin,pausedDistance:paused});
   }finally{await context.close();}
 }
 
