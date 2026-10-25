@@ -896,9 +896,27 @@ async function runRouteOverdriveQa(name,width,height,touch){
       const cdp=await context.newCDPSession(page);
       const x=bounds.x+bounds.width*.5,y=bounds.y+bounds.height*.64;
       await cdp.send("Input.dispatchTouchEvent",{type:"touchStart",touchPoints:[{x,y}]});
+      // Headless Chromium can coalesce adjacent CDP start/move packets.
+      // Span three render frames so React receives the initial pointer
+      // capture and real native motion before the pointer is released.
+      await page.waitForTimeout(110);
+      await cdp.send("Input.dispatchTouchEvent",{type:"touchMove",touchPoints:[{x:x+45,y:y-40}]});
+      await page.waitForTimeout(120);
       await cdp.send("Input.dispatchTouchEvent",{type:"touchMove",touchPoints:[{x:x+90,y:y-100}]});
-      await page.waitForTimeout(550);
+      await page.waitForTimeout(650);
       await cdp.send("Input.dispatchTouchEvent",{type:"touchEnd",touchPoints:[]});
+      // A real native second attempt is preferable to falsely accepting a
+      // zero-displacement mobile gesture if a render frame was dropped.
+      if(Number(await lab.getAttribute("data-player-local-y"))>=initialY-12){
+        const altX=bounds.x+bounds.width*.35,altY=bounds.y+bounds.height*.8;
+        await cdp.send("Input.dispatchTouchEvent",{type:"touchStart",touchPoints:[{x:altX,y:altY}]});
+        await page.waitForTimeout(160);
+        await cdp.send("Input.dispatchTouchEvent",{type:"touchMove",touchPoints:[{x:altX+20,y:altY-35}]});
+        await page.waitForTimeout(140);
+        await cdp.send("Input.dispatchTouchEvent",{type:"touchMove",touchPoints:[{x:altX+45,y:altY-75}]});
+        await page.waitForTimeout(750);
+        await cdp.send("Input.dispatchTouchEvent",{type:"touchEnd",touchPoints:[]});
+      }
       await cdp.detach();
     }else{
       await page.keyboard.down("w");
@@ -935,6 +953,107 @@ async function runRouteOverdriveQa(name,width,height,touch){
   }finally{await context.close();}
 }
 
+/** C3B6 canonical finite-ray Convergence in Chromium desktop/native touch. */
+async function runRouteConvergenceQa(name,width,height,touch){
+  const context=await browser.newContext({viewport:{width,height},
+    isMobile:touch,hasTouch:touch,deviceScaleFactor:touch?2:1,
+    reducedMotion:"no-preference",serviceWorkers:"block"});
+  const page=await context.newPage();
+  page.on("pageerror",e=>diagnostics.push(name+": "+String(e)));
+  page.on("console",msg=>{if(msg.type()==="error")diagnostics.push(name+": "+msg.text());});
+  try{
+    await page.goto(url+"/?ux15-physical-qa=1&ux15-c3b=1&ux15-c3b2=1&ux15-c3b3=1&ux15-c3b4=1&ux15-c3b5=1&ux15-c3b6=1",
+      {waitUntil:"domcontentloaded",timeout:30000});
+    const lab=page.getByTestId("ux15-physical-qa");
+    await lab.waitFor({state:"visible",timeout:15000});
+    check(await lab.getAttribute("data-qa-mode")==="PHYSICAL_ROUTE_C3B6_QA",
+      name+": Convergence feature-gate absent");
+    check(await page.locator(".orbi-game-root").count()===0,
+      name+": public game leaked into isolated Convergence");
+    check(Number(await lab.getAttribute("data-c3b6-activations"))===0,
+      name+": Convergence activated without gesture");
+    await page.getByTestId("ux15-c3b5-charge").click();
+    await page.waitForFunction(()=>document.querySelector(
+      '[data-testid="ux15-physical-qa"]')?.dataset.c3b6Ready==="true",
+      null,{timeout:touch?15000:10000});
+    if(touch)await page.getByTestId("ux15-c3b6-convergence").click();
+    else await page.keyboard.press("c");
+    await page.waitForFunction(()=>Number(document.querySelector(
+      '[data-testid="ux15-physical-qa"]')?.dataset.c3b6Activations)===1,
+      null,{timeout:touch?12000:8000});
+    check(Number(await lab.getAttribute("data-c3b5-resonance"))<100,
+      name+": Convergence did not consume 100 readiness");
+    check(Number(await lab.getAttribute("data-c3b5-overdrive-activations"))===0,
+      name+": illegal Overdrive stacking");
+    await page.waitForFunction(()=>Number(document.querySelector(
+      '[data-testid="ux15-physical-qa"]')?.dataset.c3b6Beams)>=1,
+      null,{timeout:touch?18000:12000});
+    const beams=Number(await lab.getAttribute("data-c3b6-beams"));
+    const hits=Number(await lab.getAttribute("data-c3b6-hits"));
+    check(beams===1,name+": expected exactly one beam");
+    check(hits>=1&&hits<=6,name+": hit count outside 1-6");
+    check(await lab.getAttribute("data-c3b6-used-wave")==="true",
+      name+": once-per-segment not consumed");
+    await shot(page,name+"-canonical-convergence");
+    const initialY=Number(await lab.getAttribute("data-player-local-y"));
+    if(touch){
+      await page.getByTestId("ux15-physical-canvas").scrollIntoViewIfNeeded();
+      const bounds=await page.getByTestId("ux15-physical-canvas").boundingBox();
+      check(Boolean(bounds),name+": missing canvas");
+      const cdp=await context.newCDPSession(page);
+      const x=bounds.x+bounds.width*.5,y=bounds.y+bounds.height*.62;
+      await cdp.send("Input.dispatchTouchEvent",{type:"touchStart",touchPoints:[{x,y}]});
+      await page.waitForTimeout(110);
+      await cdp.send("Input.dispatchTouchEvent",{type:"touchMove",touchPoints:[{x:x+45,y:y-40}]});
+      await page.waitForTimeout(120);
+      await cdp.send("Input.dispatchTouchEvent",{type:"touchMove",touchPoints:[{x:x+95,y:y-105}]});
+      await page.waitForTimeout(650);
+      await cdp.send("Input.dispatchTouchEvent",{type:"touchEnd",touchPoints:[]});
+      if(Number(await lab.getAttribute("data-player-local-y"))>=initialY-12){
+        const altX=bounds.x+bounds.width*.35,altY=bounds.y+bounds.height*.8;
+        await cdp.send("Input.dispatchTouchEvent",{type:"touchStart",touchPoints:[{x:altX,y:altY}]});
+        await page.waitForTimeout(160);
+        await cdp.send("Input.dispatchTouchEvent",{type:"touchMove",touchPoints:[{x:altX+20,y:altY-35}]});
+        await page.waitForTimeout(140);
+        await cdp.send("Input.dispatchTouchEvent",{type:"touchMove",touchPoints:[{x:altX+45,y:altY-75}]});
+        await page.waitForTimeout(750);
+        await cdp.send("Input.dispatchTouchEvent",{type:"touchEnd",touchPoints:[]});
+      }
+      await cdp.detach();
+    }else{
+      await page.keyboard.down("w");
+      await page.waitForTimeout(550);
+      await page.keyboard.up("w");
+    }
+    await page.waitForFunction(y=>Number(document.querySelector(
+      '[data-testid="ux15-physical-qa"]')?.dataset.playerLocalY)<y-12,
+      initialY,{timeout:8000});
+    await page.getByTestId("ux15-physical-pause").click();
+    await page.waitForTimeout(450);
+    const frozen={
+      ticks:await lab.getAttribute("data-physics-ticks"),
+      beams:await lab.getAttribute("data-c3b6-beams"),
+      cooldown:await lab.getAttribute("data-c3b6-cooldown-ms"),
+    };
+    await page.waitForTimeout(650);
+    check(frozen.ticks===await lab.getAttribute("data-physics-ticks"),
+      name+": physics continued during pause");
+    check(frozen.beams===await lab.getAttribute("data-c3b6-beams"),
+      name+": beam fired during pause");
+    check(frozen.cooldown===await lab.getAttribute("data-c3b6-cooldown-ms"),
+      name+": Convergence clock continued during pause");
+    await page.getByTestId("ux15-physical-reset").click();
+    check(Number(await lab.getAttribute("data-c3b6-activations"))===0,
+      name+": reset did not clear Convergence");
+    check(Number(await lab.getAttribute("data-c3b6-beams"))===0,
+      name+": reset did not clear beams");
+    check(await lab.getAttribute("data-c3b6-channeling")==="false",
+      name+": reset left channel active");
+    evidence.cases.push({name,pass:true,ux15c3b6:true,beams,hits,
+      input:touch?"native-touch":"keyboard"});
+  }finally{await context.close();}
+}
+
 await mkdir(output,{recursive:true});
 try {
   await startServer();
@@ -963,6 +1082,8 @@ try {
   await runRouteOrbiImpactQa("ux15c3b4-impact-mobile-844x390",844,390,true);
   await runRouteOverdriveQa("ux15c3b5-overdrive-desktop-1440x900",1440,900,false);
   await runRouteOverdriveQa("ux15c3b5-overdrive-mobile-844x390",844,390,true);
+  await runRouteConvergenceQa("ux15c3b6-convergence-desktop-1440x900",1440,900,false);
+  await runRouteConvergenceQa("ux15c3b6-convergence-mobile-844x390",844,390,true);
 }catch(error){evidence.failures.push({message:String(error),stack:error?.stack||""});process.exitCode=1;}
 finally{
   evidence.errors=diagnostics;

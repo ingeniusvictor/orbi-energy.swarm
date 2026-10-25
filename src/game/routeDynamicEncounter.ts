@@ -141,7 +141,9 @@ export function stepRouteDynamicQaEncounter(
   combatBridgeEnabled=false,
   orbiWeaponsEnabled=false,
   impactFxEnabled=false,
-):{encounter:RouteQaEncounter; dynamic:RouteDynamicQaState; defeats:CombatResonanceDefeatEvent[]} {
+  convergenceEnabled=false,
+):{encounter:RouteQaEncounter; dynamic:RouteDynamicQaState;
+   defeats:CombatResonanceDefeatEvent[]; convergenceHits:number; convergenceKills:number} {
   if(impactFxEnabled && (!combatBridgeEnabled || !orbiWeaponsEnabled))
     throw new Error("Canonical impact FX requires C3B-2 and C3B-3 QA gates");
   if(impactFxEnabled&&(encounter.boss!==null||encounter.architectQaBoss!==null||
@@ -151,13 +153,14 @@ export function stepRouteDynamicQaEncounter(
   if (![deltaMs,simulatedMs,player.x,player.y].every(Number.isFinite) ||
       deltaMs<0 || deltaMs>50+1e-7 || simulatedMs<0)
     throw new RangeError("Invalid physical QA encounter clock");
-  if(deltaMs===0) return {encounter,dynamic:prior,defeats:[]};
+  if(deltaMs===0) return {encounter,dynamic:prior,defeats:[],convergenceHits:0,convergenceKills:0};
   const rect=getRouteWorldRect(camera,viewport);
   const dt=deltaMs/1000;
   const enemies=encounter.enemies.map(e=>({...e}));
   const projectiles=encounter.projectiles.map(p=>({...p}));
   const resources=encounter.resources.map(r=>({...r}));
   const defeats:CombatResonanceDefeatEvent[]=[];
+  let convergenceHits=0,convergenceKills=0;
   let {spawned,culled,hits,destroyed,pickups,
     splashHits,slowedHits,pushes,magneticPulls,areaKills,
     nextSpawnMs,nextFireMs,nextProjectileOrdinal,nextResourceOrdinal}=prior;
@@ -220,6 +223,33 @@ export function stepRouteDynamicQaEncounter(
     }
   }
   for(const shot of projectiles){
+    // The UX14-B live engine creates 1ms target-pinned, one-frame bolts.
+    // Resolve by explicit target ID BEFORE life decay/swept collision, so
+    // beam slots cannot accidentally strike another nearby actor or trigger
+    // splash/magnetism. This branch is impossible without the C3B-6 gate.
+    if(shot.convergenceTargetId){
+      if(!convergenceEnabled)
+        throw new Error("Uncertified target-pinned Convergence projectile");
+      shot.life=0;
+      const target=enemies.find(e=>e.id===shot.convergenceTargetId &&
+        !e.isDead&&e.health>0);
+      if(!target)continue;
+      target.health=Math.max(0,target.health-shot.damage);
+      target.flashTicks=4;
+      hits++;convergenceHits++;
+      if(target.health===0){
+        target.isDead=true;destroyed++;convergenceKills++;
+        defeats.push({occurredAtMs:simulatedMs,baseScore:0});
+        if(resources.length<Math.min(MAX_RESOURCES,ROUTE_QA_RESOURCE_CAP)){
+          resources.push({
+            id:`route-qa-drop-${nextResourceOrdinal++}`,type:"ENERGY",
+            x:target.x,y:target.y,size:9,color:"#67e8f9",amount:1,
+            spawnTime:simulatedMs,
+          });
+        }
+      }
+      continue;
+    }
     const oldX=shot.x,oldY=shot.y;
     const nextX=oldX+shot.vx*dt,nextY=oldY+shot.vy*dt;
     shot.x=nextX;shot.y=nextY;shot.life-=deltaMs;
@@ -286,7 +316,7 @@ export function stepRouteDynamicQaEncounter(
   return {
     encounter:{...encounter,enemies:remainingEnemies,
       projectiles:remainingShots,resources:remainingDrops},
-    defeats,
+    defeats,convergenceHits,convergenceKills,
     dynamic:{spawned,culled:Math.max(0,culled),hits,destroyed,pickups,
       splashHits,slowedHits,pushes,magneticPulls,areaKills,nextSpawnMs,
       nextFireMs,nextProjectileOrdinal,nextResourceOrdinal},

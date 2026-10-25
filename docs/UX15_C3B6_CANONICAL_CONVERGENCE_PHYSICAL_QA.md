@@ -1,0 +1,16 @@
+# UX15-C3B-6 — Convergencia ORBI en ruta física ASTERIA, laboratorio aislado
+
+Continuación de C3B-5 (PR #758) dentro de issues #749 y #742. **No modifica `EnergySwarmGame.tsx` ni los cuatro modos públicos.** La activación requiere siete flags: `/?ux15-physical-qa=1&ux15-c3b=1&ux15-c3b2=1&ux15-c3b3=1&ux15-c3b4=1&ux15-c3b5=1&ux15-c3b6=1`. Laboratorios anteriores conservan sus condiciones.
+
+## Autoridad original reutilizada
+- `orbiConvergence.ts`: `activateConvergence`, `canActivateConvergence`, `selectConvergenceTargets`, `finishConvergence`, `cancelConvergence`, `convergenceHitDamage`, `projectConvergence`. 8 ORBI mínimos, 100 resonancia, objetivo válido, prohibido con Overdrive, **800 ms canal**, **60.000 ms cooldown**, solo una activación por waveKey, rayo finito de 600 unidades / ancho 22, hasta 6 blancos y reducción de daño 100/85/70/60/50/40%.
+- `orbiConvergenceRenderer.ts`: efecto visual **canónico** de la canalización y rayo, sin rehacer efectos ni sprites. El trail `x` se registra como **extraWorldAnchor** dentro de la misma transacción atómica de origen flotante; la prueba comprueba delta exacta, sin mutar snapshot previo.
+- `routeConvergenceQa.ts`: proyección del estado oficial con *waveKey QA provisional por segmento ASTERIA* (`ASTERIA_QA_SEGMENT:<ordinal>`). Esto **NO** equivale al sistema real de oleadas; se conserva un uso por segmento y 60s de cooldown. Un objetivo CRAWLER de alta vida (`route-qa-convergence-calibration`) aparece **solo en C3B-6** para permitir probar el rayo y el seguimiento 800 ms en Chrome móvil y escritorio; no existe en ningún modo normal.
+- `physicalRouteQaSimulation.ts`: consume resonancia QA únicamente tras admisión; durante canal reduce desplazamiento manual al 70%, rechaza activaciones Dash y Overdrive (sin inmunidad especial), cancela si segmento cambia, escudo llega a 0 o queda sin ORBI suficientes; mantiene reloj simulado y pausa/hidden/hitstop/modal.
+- `routeDynamicEncounter.ts`: proyectiles especiales 1 ms / target ID, iguales en intención a UX14-B; se resuelven una sola vez por objetivo ID dentro del resolver QA, sin barrido extra ni splash, magnetismo, pushback o impacto accidental a otro objetivo. Muerte/recurso/afinidad cero y Resonancia QA quedan en circuito físico; sin puntos, créditos, boss ni progresión. Se reserva capacidad en máximo 24 disparos QA, descartando las balas ordinarias más antiguas si falta espacio; no se amplía ningún límite.
+- Los efectos de rayos siguen estrictamente el mismo rango/ancho y hasta seis blancos únicos. **No** se autoriza boss, elite, hazards, fase, Convergencia contra jefes, weakpoints, hitstop/sonido completo, evolución, puntuaciones, progresión ni balance de oleadas.
+
+## QA y puertas de fusión
+- Pruebas: estado vacío, 100 de resonancia, sin Overdrive y 8 ORBI, segment key, canal 800ms, una vez por segmento, cooldown 60s, seis blancos finitos, rayos con reducción oficial, impacto con ID exacto y 0 score, no splash accidental, capacidad 24, movimientos Dash/Overdrive excluidos, Trail rebase atómico, cancelación, pausa/reset, determinismo y 20+ rebases.
+- CI todo: test repositorio, gameplay y platform, TypeScript, build y contratos de release; Android debug APK; Chromium **23 escenas**, incluyendo C3B-6 en escritorio 1440×900 y móvil horizontal táctil 844×390.
+- Android en hardware (#248) sigue pendiente.
