@@ -8,6 +8,11 @@ interface MobileTouchOverlayProps {
   onVectorChange: (vector: AnalogVector) => void;
   onDash: () => void;
   onOverdrive: () => void;
+  onConvergence: () => void;
+  convergenceReady: boolean;
+  convergenceChanneling: boolean;
+  convergenceUsedThisWave: boolean;
+  convergenceCooldownRemainingMs: number;
   overdriveReady: boolean;
   overdriveActive: boolean;
   overdriveRemainingMs: number;
@@ -18,7 +23,9 @@ interface MobileTouchOverlayProps {
 }
 
 export const MobileTouchOverlay: React.FC<MobileTouchOverlayProps> = ({
-  onVectorChange, onDash, onOverdrive, overdriveReady, overdriveActive, overdriveRemainingMs, dashActive, dashReady, dashCooldownRemainingMs, disabled = false,
+  onVectorChange, onDash, onOverdrive, onConvergence, convergenceReady, convergenceChanneling,
+  convergenceUsedThisWave, convergenceCooldownRemainingMs,
+  overdriveReady, overdriveActive, overdriveRemainingMs, dashActive, dashReady, dashCooldownRemainingMs, disabled = false,
 }) => {
   const { language } = useGameTranslation();
   const dashStatus = dashActive ? (language === "es" ? "IMPULSO" : "BOOST")
@@ -27,6 +34,11 @@ export const MobileTouchOverlay: React.FC<MobileTouchOverlayProps> = ({
   const overdriveStatus = overdriveActive ? (language === "es" ? "ACTIVO" : "ACTIVE")
     : overdriveReady ? (language === "es" ? "LISTO" : "READY")
     : overdriveRemainingMs > 0 ? `${Math.ceil(overdriveRemainingMs / 1000)}s` : (language === "es" ? "CARGANDO" : "CHARGING");
+  const convergenceStatus = convergenceChanneling ? (language === "es" ? "CARGA" : "CHARGE")
+    : convergenceUsedThisWave ? (language === "es" ? "USADO" : "USED")
+    : convergenceCooldownRemainingMs > 0 ? `${Math.ceil(convergenceCooldownRemainingMs / 1000)}s`
+    : convergenceReady ? (language === "es" ? "LISTO" : "READY")
+    : (language === "es" ? "BLOQUEADO" : "LOCKED");
   const activePointer = useRef<number | null>(null);
   const latestCallback = useRef(onVectorChange);
   const [vector, setVector] = useState<AnalogVector>({ x: 0, y: 0 });
@@ -125,6 +137,27 @@ export const MobileTouchOverlay: React.FC<MobileTouchOverlayProps> = ({
           aria-label={language === "es" ? `Activar Dash de propulsión. ${dashStatus}` : `Activate propulsion Dash. ${dashStatus}`}>
           <ChevronsRight size={25} aria-hidden="true" />
           <strong>DASH</strong><span>{dashStatus}</span>
+        </button>
+        <button type="button" className="orbi-touch-skill orbi-touch-convergence"
+          data-testid="orbi-touch-convergence"
+          data-ready={convergenceReady ? "true" : "false"}
+          data-channeling={convergenceChanneling ? "true" : "false"}
+          disabled={disabled || !convergenceReady}
+          onPointerDown={event => {
+            event.stopPropagation();
+            if (event.pointerType !== "mouse") {
+              event.preventDefault();
+              if (!disabled && convergenceReady) onConvergence();
+            }
+          }}
+          onClick={event => {
+            event.stopPropagation();
+            if (event.detail === 0 || (event.nativeEvent as PointerEvent).pointerType === "mouse") onConvergence();
+          }}
+          aria-label={language === "es" ? `Convergencia ORBI. ${convergenceStatus}. Tecla Q.` :
+            `ORBI Convergence. ${convergenceStatus}. Q key.`}>
+          <Zap size={21} aria-hidden="true"/>
+          <strong>Q</strong><span>{convergenceStatus}</span>
         </button>
       </div>
     </div>

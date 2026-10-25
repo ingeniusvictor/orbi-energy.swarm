@@ -1,0 +1,65 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+import {readFileSync} from "node:fs";
+const read = path => readFileSync(new URL("../"+path,import.meta.url),"utf8");
+const game=read("src/game/EnergySwarmGame.tsx");
+const hud=read("src/components/GameHud.tsx");
+const touch=read("src/components/MobileTouchOverlay.tsx");
+const audio=read("src/game/audio.ts");
+const browser=read("scripts/web-ux01-browser-evidence.mjs");
+const renderer=read("src/game/orbiConvergenceRenderer.ts");
+
+test("UX14-B uses canonical resonance, simulation time, wave key and one-time admission",()=>{
+  assert.match(game,/activateConvergence\(convergenceRef\.current/);
+  assert.match(game,/combatResonanceRef\.current\.resonance/);
+  assert.match(game,/timeElapsedRef\.current/);
+  assert.match(game,/getConvergenceWaveKey\(\)/);
+  assert.match(game,/if \(!next\) return false/);
+  assert.match(game,/resonance: 0/);
+  assert.match(game,/phaseTransitionTimerRef\.current > 0/);
+  assert.match(game,/architectQaBossRef\.current !== null/);
+  assert.match(game,/getRuntimeWaveNumber\(runtime\)/);
+  assert.match(game,/swarmRef\.current\.length >= 8/);
+  assert.match(game,/charge\.waveKey === getConvergenceWaveKey\(\)/);
+});
+test("UX14-B resolves unique hit tickets through the original collision and progression path",()=>{
+  assert.match(game,/aim\.targets\.forEach\(\(enemy, index\)/);
+  assert.match(game,/convergenceTargetId: enemy\.id/);
+  assert.match(game,/enemy\.id === proj\.convergenceTargetId/);
+  assert.match(game,/registerCombatDefeat\(enemy, proj\.affinity\);/);
+  assert.match(game,/resonanceBeforeConvergenceDefeat/);
+  assert.match(game,/bossDefeatedSequenceActiveRef\.current = true/);
+  assert.match(game,/spawnResource\(enemy\.x, enemy\.y\)/);
+  assert.match(game,/persistInfiniteMilestoneDefeat\(enemy\)/);
+  assert.match(game,/if \(!proj\.convergenceTargetId\) observeLegacyPlayerHit/);
+  assert.match(game,/damageToApply = capConvergenceBossDamage/);
+  assert.match(game,/shieldNodesRef\.current\.length > 0/);
+  assert.doesNotMatch(renderer,/enemy\.health|registerCombatDefeat|spawnResource/);
+});
+test("UX14-B maintains OD / Dash separation and accessible ES/EN keyboard + multitouch controls",()=>{
+  assert.match(game,/if \(isConvergenceChanneling\(convergenceRef\.current\)\) return false/);
+  assert.match(game,/if \(key === "Q"\)/);
+  assert.match(game,/if \(!e\.repeat\) handleConvergenceActivation\(\)/);
+  assert.match(game,/\.70 : 1/);
+  assert.match(game,/onConvergence=\{handleConvergenceActivation\}/);
+  assert.match(hud,/data-testid="orbi-convergence-action"/);
+  assert.match(hud,/data-testid="orbi-convergence-action-desktop"/);
+  assert.match(touch,/data-testid="orbi-touch-convergence"/);
+  assert.match(touch,/event\.pointerType !== "mouse"/);
+  assert.match(touch,/onConvergence\(\)/);
+  assert.match(hud,/CONVERGENCIA ORBI/);
+  assert.match(hud,/ORBI CONVERGENCE/);
+  assert.match(browser,/dedicated mobile Q action absent/);
+  assert.match(browser,/Q illegally enabled without resonance/);
+  assert.match(browser,/UX14-B three independent touch skills overlap/);
+});
+test("UX14-B effect respects accessibility, 16 segments, muted audio and no permanent FX",()=>{
+  assert.match(renderer,/segment <= 16/);
+  assert.match(renderer,/\.45\) \* fade/);
+  assert.match(renderer,/reduced \? 0 : 14/);
+  assert.doesNotMatch(renderer,/createParticle|requestAnimationFrame|Math\.random/);
+  assert.match(audio,/playOrbiConvergenceSound/);
+  assert.match(audio,/if \(!ctx \|\| isMuted \|\| !soundEffectsEnabled\) return/);
+  assert.match(read("src/styles/ux12CombatCockpit.css"),/orbi-touch-convergence/);
+  assert.match(game,/drawOrbiConvergence\(/);
+});

@@ -108,10 +108,12 @@ async function run(name,width,height,coarse,immersive,webImmersive) {
         name+": Estado must display live swarm, score and credits");
       const energyPreview=premium.getByTestId("orbi-ux11d-energy-preview");
       check(await energyPreview.isVisible(),name+": ENERGY 3D status module absent");
-      check(await premium.locator(".orbi-ux11d-ability-deck article").count()===3,
+      check(await premium.locator(".orbi-ux11d-ability-deck article").count()===4,
         name+": Estado combat ability cards missing");
       check((await premium.locator(".orbi-ux11d-ability-deck").innerText()).includes("OVERDRIVE"),
         name+": Overdrive details missing");
+      check((await premium.locator(".orbi-ux11d-ability-deck").innerText()).includes("CONVERGEN"),
+        name+": Convergence details missing");
       check((await energyPreview.getAttribute("aria-label")).includes("ENERGY"),
         name+": hero identity is not ENERGY");
       await page.waitForFunction(() => {
@@ -195,9 +197,26 @@ async function run(name,width,height,coarse,immersive,webImmersive) {
         check(await overdrive.isVisible(),name+": right thumb Overdrive absent");
         const overdriveRect=await overdrive.boundingBox();
         const dashRect=await dash.boundingBox();
-        check(overdriveRect && dashRect && overdriveRect.y+overdriveRect.height<=dashRect.y-2,name+": abilities overlap");
+        const convergence=page.getByTestId("orbi-touch-convergence");
+        check(await convergence.isVisible(),name+": dedicated mobile Q action absent");
+        check(!await page.getByTestId("orbi-convergence-action").isVisible(),
+          name+": duplicate top Q action visible over thumb dock");
+        const qRect=await convergence.boundingBox();
+        check(overdriveRect && dashRect && qRect &&
+          overdriveRect.x+overdriveRect.width<=dashRect.x-2 &&
+          Math.max(overdriveRect.y+overdriveRect.height,dashRect.y+dashRect.height)<=qRect.y-2 &&
+          qRect.width>=44 && qRect.height>=44,
+          name+": UX14-B three independent touch skills overlap or are too small");
+        check(!await convergence.isEnabled(),name+": Convergence illegally ready without 8 ORBIs and resonance");
       }
       check(await dash.isEnabled(),name+": Dash not initially ready");
+      if (webImmersive) {
+        const convergence=page.getByTestId("orbi-convergence-action");
+        check(await convergence.isVisible(),name+": desktop Q action absent");
+        check(!await convergence.isEnabled(),name+": Q illegally enabled without resonance");
+        await page.keyboard.press("Q");
+        check(!await convergence.isEnabled(),name+": Q bypassed admission requirements");
+      }
       if(webImmersive) {
         await page.keyboard.press("E");
       } else {

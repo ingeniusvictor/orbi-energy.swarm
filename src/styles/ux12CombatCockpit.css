@@ -127,3 +127,44 @@
 @media (orientation:landscape) and (max-height:520px) {
   .orbi-ux10c[data-layer="DETAIL"] .orbi-ux10c-mode-start {min-height:44px!important;flex-shrink:0;}
 }
+
+/* UX14-B — three independent skills in a two-column thumb dock.
+   All controls remain pointer-owned and never cover the left joystick. */
+.orbi-game-root[data-immersive-landscape="true"][data-touch-controls="recommended"]
+  .orbi-immersive-actions .orbi-convergence-action {display:none!important;}
+.orbi-touch-abilities {
+  display:grid;
+  grid-template-columns:repeat(2,60px);
+  width:156px;
+  justify-content:center;
+  justify-items:center;
+  align-items:center;
+  gap:7px;
+}
+.orbi-touch-abilities>.orbi-touch-convergence {
+  grid-column:1 / 3;
+  justify-self:center;
+}
+.orbi-touch-convergence {
+  border-color:rgba(135,226,255,.84);
+  color:#f4e9b8;
+  background:radial-gradient(circle at 45% 25%,rgba(41,124,175,.76),rgba(12,16,49,.96));
+}
+.orbi-touch-convergence[data-channeling="true"] {
+  border-color:rgba(255,232,168,.95);
+  box-shadow:0 0 14px rgba(112,224,255,.42);
+}
+.orbi-convergence-action-compact {
+  color:#a5f3fc;
+  border-color:rgba(103,232,249,.5);
+}
+.orbi-immersive-actions .orbi-convergence-action {
+  border-color:rgba(103,232,249,.55);
+  color:#b9eafa;
+}
+@media (orientation:landscape) and (max-height:520px) {
+  .orbi-touch-abilities {grid-template-columns:repeat(2,52px);width:126px;gap:4px;}
+}
+@media (prefers-reduced-motion:reduce) {
+  .orbi-touch-convergence {animation:none!important;transition:none!important;}
+}

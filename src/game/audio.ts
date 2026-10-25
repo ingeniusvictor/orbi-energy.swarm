@@ -933,3 +933,23 @@ export const playPropulsionDashSound = () => {
   osc.start(now);
   osc.stop(now + duration);
 };
+
+
+/** UX14-B isolated lightning discharge. Bounded, mix-aware; no persistent voices. */
+export const playOrbiConvergenceSound = (phase: "CHARGE" | "FIRE") => {
+  const ctx = initAudio();
+  if (!ctx || isMuted || !soundEffectsEnabled) return;
+  if (phase === "FIRE") beginTacticalPriority(ctx, .4);
+  const now = ctx.currentTime;
+  const duration = phase === "FIRE" ? .28 : .36;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = phase === "FIRE" ? "sawtooth" : "triangle";
+  osc.frequency.setValueAtTime(phase === "FIRE" ? 1200 : 185, now);
+  osc.frequency.exponentialRampToValueAtTime(phase === "FIRE" ? 95 : 760, now + duration);
+  gain.gain.setValueAtTime(.0001, now);
+  gain.gain.linearRampToValueAtTime(laneGain(ctx, phase === "FIRE" ? .09 : .04, "TACTICAL"), now + .019);
+  gain.gain.exponentialRampToValueAtTime(.0001, now + duration);
+  osc.connect(gain); gain.connect(ctx.destination);
+  osc.start(now); osc.stop(now + duration);
+};
