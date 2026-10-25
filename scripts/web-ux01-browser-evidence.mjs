@@ -329,7 +329,28 @@ async function runRouteQa(name,width,height,touch){
     await page.getByTestId("ux15-route-reset").click();
     check(Number(await lab.getAttribute("data-route-distance"))===0,
       name+": reset did not return to segment zero");
-    evidence.cases.push({name,pass:true,routePreview:true,advancedUnits:advanced});
+    // Certified art tour: all six sections must render real approved WebPs,
+    // with screenshots of four distinct original panoramas (no geometric QA
+    // fallback considered acceptable for UX15-C2B).
+    const canvasArt=page.getByTestId("ux15-route-canvas");
+    const artworkProof=[];
+    for (let section=0; section<6; section++) {
+      if (section>0) await page.getByTestId("ux15-route-next-section").click();
+      await page.waitForFunction((section)=>{
+        const lab=document.querySelector('[data-testid="ux15-route-qa"]');
+        const canvas=document.querySelector('[data-testid="ux15-route-canvas"]');
+        return Number(lab?.getAttribute("data-segment-ordinal"))===section &&
+          canvas?.getAttribute("data-ux15-art")==="premium";
+      },section,{timeout:15000});
+      check(await canvasArt.getAttribute("data-ux15-art")==="premium",
+        name+": section "+section+" never displayed approved art");
+      artworkProof.push(section);
+      if ([0,1,3,4].includes(section)) {
+        await shot(page,name+"-premium-section-"+section);
+      }
+    }
+    evidence.cases.push({name,pass:true,routePreview:true,
+      premiumArtSections:artworkProof,advancedUnits:advanced});
   }finally{await context.close();}
 }
 
@@ -368,6 +389,12 @@ async function runAsteriaCombat(name,width,height,touch){
       name+": opt-in live battle did not render ASTERIA");
     check(await canvas.getAttribute("data-ux15-live-combat")==="true",
       name+": only preview background rendered, no live combat contract");
+    // UX15-C2B cannot pass based on a fallback illustration: verify the four
+    // approved WebP assets render for actual gameplay (not just a lab image).
+    await page.waitForFunction(()=>document.querySelector("#game-canvas")?.dataset.ux15Art === "premium",
+      undefined, {timeout:15000});
+    check(await canvas.getAttribute("data-ux15-art")==="premium",
+      name+": official ASTERIA WebP panorama did not load in live combat");
     check(begin>10,name+": route is not scrolling within real combat");
     check(await page.locator(".orbi-game-root").isVisible(),
       name+": real EnergySwarmGame root missing");
@@ -384,7 +411,7 @@ async function runAsteriaCombat(name,width,height,touch){
       name+": authentic ENERGY status module missing in ASTERIA mode");
 
     evidence.cases.push({name,pass:true,ux15c1:true,
-      liveCombat:true,scrollDistance:begin,pausedDistance:paused});
+      liveCombat:true,approvedWebpArt:true,scrollDistance:begin,pausedDistance:paused});
   }finally{await context.close();}
 }
 
