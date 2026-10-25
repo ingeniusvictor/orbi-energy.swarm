@@ -219,14 +219,24 @@ test("C3B6: rebase registers beam trail as owned physical X and preserves immuta
   assert.equal(state.convergenceQa?.beams,1);
   const trail=state.convergenceQa!.convergence.trail!;
   assert.ok(trail);
-  // Advance with large physical X to force floating-origin shift while the
-  // beam trail is still in its 280ms visibility window.
-  const previous=state;
-  const shifted=stepPhysicalRouteQa(previous,50,{x:1,y:0},view,gates,
-    true,false,false,false);
+  // Inject one controlled physical shift at the tick boundary, forcing
+  // the floating-origin 512-quantum transaction while the trail is visible.
+  // Explicitly register ALL other actor owners in the real rebase adapter.
+  const previous={
+    ...state,
+    player:{...state.player,x:state.player.x+900},
+    camera:{...state.camera,localX:state.camera.localX+900},
+    frame:{...state.frame,
+      travelAnchorLocalX:state.frame.travelAnchorLocalX+900},
+  };
+  const shifted=stepPhysicalRouteQa(previous,50,{x:0,y:0},view,gates);
+  const dx=shifted.frame.originOffsetX-previous.frame.originOffsetX;
+  assert.equal(dx,512);
+  assert.equal(shifted.rebases,previous.rebases+1);
   assert.ok(shifted.convergenceQa?.convergence.trail);
+  near(shifted.convergenceQa!.convergence.trail!.x,trail.x-dx);
   assert.equal(previous.convergenceQa!.convergence.trail!.x,trail.x);
-  assert.ok(shifted.encounter.swarm.length===30);
+  assert.equal(shifted.encounter.swarm.length,30);
   assert.equal(sourceX,800);
 });
 
