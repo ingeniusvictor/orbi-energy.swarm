@@ -18,6 +18,10 @@ import {
   createPhysicalRouteQaState,stepPhysicalRouteQa,
 } from "../../src/game/physicalRouteQaSimulation";
 import { localRouteDistanceSquared } from "../../src/game/physicalRouteSpace";
+import {
+  createRouteDynamicQaState,
+  stepRouteDynamicQaEncounter,
+} from "../../src/game/routeDynamicEncounter";
 import { EnemyType } from "../../src/game/types";
 import type { RouteRunGates } from "../../src/game/worldRouteClock";
 
@@ -133,6 +137,34 @@ test("UX15-C3B2: Dash on physical ENERGY preserves 30 ORBI, old snapshot and no 
     {...gates,paused:true},true);
   assert.equal(blocked,dash);
   assert.equal(blocked.bridge!.shield,dash.bridge!.shield);
+});
+
+test("UX15-C3B2: enemies can physically contact ENERGY only in bridge QA, not in C3B1 preview",()=>{
+  const origin=createPhysicalRouteQaState(viewport);
+  const enemy={
+    ...origin.encounter.enemies[0],
+    x:origin.player.x+40,y:origin.player.y,
+    speed:65,health:100,maxHealth:100,
+  };
+  const scene={...origin.encounter,enemies:[enemy],projectiles:[],resources:[],
+    hazardZones:[]};
+  const clock=createRouteDynamicQaState();
+  const legacy=stepRouteDynamicQaEncounter(
+    scene,clock,origin.player,origin.camera,viewport,50,50,false,
+  );
+  assert.equal(legacy.encounter.enemies[0].x,enemy.x);
+  const bridge=stepRouteDynamicQaEncounter(
+    scene,clock,origin.player,origin.camera,viewport,50,50,true,
+  );
+  assert.ok(bridge.encounter.enemies[0].x<enemy.x);
+  const twice=stepRouteDynamicQaEncounter(
+    bridge.encounter,bridge.dynamic,origin.player,origin.camera,viewport,50,100,true,
+  );
+  const contact=stepRouteCombatBridge({
+    ...twice.encounter,hazardZones:[],
+  },createRouteCombatBridgeState(),origin.player,100);
+  assert.equal(contact.contactHits,1);
+  assert.equal(contact.shield,92);
 });
 
 test("UX15-C3B2: 18s cooldown, no repeated activation, and actual 180ms displacement",()=>{
