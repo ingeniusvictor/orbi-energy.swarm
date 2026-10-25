@@ -25,13 +25,13 @@ import "../styles/ux15RouteQa.css";
 
 type QaTelemetry = {
   distance: number; ordinal: number; playerX: number; playerY: number;
-  cameraX: number; originEpoch: number; rebases: number;
+  cameraX: number; originEpoch: number; originOffsetX: number; rebases: number;
   physicsTicks: number; glb: string;
   orbiX: number; enemyX: number; shotX: number; resourceX: number;
 };
 const initialTelemetry = (): QaTelemetry => ({
   distance: 0, ordinal: 0, playerX: 800, playerY: 480,
-  cameraX: 464, originEpoch: 0, rebases: 0, physicsTicks: 0, glb: "LOADING",
+  cameraX: 464, originEpoch: 0, originOffsetX: 0, rebases: 0, physicsTicks: 0, glb: "LOADING",
   orbiX: 0, enemyX: 0, shotX: 0, resourceX: 0,
 });
 const arrowKeys = new Set(["w","a","s","d","arrowup","arrowdown","arrowleft","arrowright"]);
@@ -63,6 +63,7 @@ export default function PhysicalRouteQa() {
       ordinal:s.frame.cursor.segmentOrdinal,
       playerX:s.player.x, playerY:s.player.y,
       cameraX:s.camera.localX, originEpoch:s.frame.originEpoch,
+      originOffsetX:s.frame.originOffsetX,
       rebases:s.rebases,physicsTicks:s.physicsTicks,
       glb:getFotonGameplay3DStatus(),
       orbiX:s.encounter.swarm[0].x,
@@ -246,6 +247,7 @@ export default function PhysicalRouteQa() {
       data-player-local-y={telemetry.playerY.toFixed(2)}
       data-camera-local-x={telemetry.cameraX.toFixed(2)}
       data-origin-epoch={telemetry.originEpoch}
+      data-origin-offset-x={telemetry.originOffsetX.toFixed(2)}
       data-rebase-count={telemetry.rebases}
       data-orbi-local-x={telemetry.orbiX.toFixed(2)}
       data-enemy-local-x={telemetry.enemyX.toFixed(2)}
