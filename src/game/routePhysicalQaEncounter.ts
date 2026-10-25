@@ -1,6 +1,7 @@
 import { createLiveEnemyFormationDirectorState } from "./liveEnemyFormationDirector";
+import { calculateSwarmOffset } from "./formations";
 import type { RouteCoordinateOwners, RouteMutablePoint } from "./routeCoordinateOwners";
-import { EnemyType, OrbiType, ParticleType, type Enemy, type OrbiMember, type Particle, type Projectile, type Resource } from "./types";
+import { EnemyType, FormationType, OrbiType, ParticleType, type Enemy, type OrbiMember, type Particle, type Projectile, type Resource } from "./types";
 
 /** A bounded, fixed QA encounter: real game entity shapes, NO combat authority.
  * No spawn director, damage, loot claiming, boss phases or scoring are run here.
@@ -15,13 +16,9 @@ export type RouteQaEncounter = Omit<
   resources: Resource[];
 };
 
-export const qaOrbiOffset = (index: number): RouteMutablePoint => {
-  const ring = Math.floor(index / 10);
-  const theta = (index % 10) / 10 * Math.PI * 2;
-  const radiusX = 82 + ring * 54;
-  const radiusY = 65 + ring * 44;
-  return { x: -38 + Math.cos(theta) * radiusX, y: Math.sin(theta) * radiusY };
-};
+export const qaOrbiOffset = (index: number): RouteMutablePoint =>
+  // Official Defensive Ring geometry; no new invented ORBI formation.
+  calculateSwarmOffset(FormationType.LINE,index,30,0,0);
 
 export function createRouteQaEncounter(player: RouteMutablePoint): RouteQaEncounter {
   const swarm: OrbiMember[] = Array.from({length:30},(_,i)=>{
