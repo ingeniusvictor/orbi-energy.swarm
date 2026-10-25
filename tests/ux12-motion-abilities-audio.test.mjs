@@ -39,7 +39,7 @@ test("UX12 lower-right OD and DASH are accessible real two-finger touch actions;
  assert.match(browser,/duplicate top Dash button still visible/);
  assert.match(browser,/right thumb Overdrive absent/);
  assert.match(game,/onOverdrive=\{handleOverdriveActivation\}/);
- assert.match(physics,/DASH_COOLDOWN_MS = 10_000/);
+ assert.match(physics,/DASH_COOLDOWN_MS = 18_000/);
 });
 
 test("UX12 battle logo is game-only and creator label no longer obscures combat",()=>{
