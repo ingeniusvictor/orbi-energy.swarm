@@ -1341,6 +1341,55 @@ async function runPhysicalEliteQa(name,width,height,touch){
  }finally{await context.close();}
 }
 
+
+/** C3B10: read-only Drone Lock preflight must never adopt living DRONE actors. */
+async function runDroneLockTrajectoryPreflight(name,width,height,touch){
+ const context=await browser.newContext({viewport:{width,height},
+   isMobile:touch,hasTouch:touch,deviceScaleFactor:touch?2:1,
+   reducedMotion:"no-preference",serviceWorkers:"block"});
+ const page=await context.newPage();
+ page.on("pageerror",e=>diagnostics.push(name+": "+String(e)));
+ page.on("console",msg=>{if(msg.type()==="error")diagnostics.push(name+": "+msg.text());});
+ try {
+  await page.goto(url+"/?ux15-physical-qa=1&ux15-c3b=1&ux15-c3b2=1&ux15-c3b3=1&ux15-c3b4=1&ux15-c3b5=1&ux15-c3b6=1&ux15-c3b7=1&ux15-c3b8=1&ux15-c3b9=1&ux15-c3b10=1",
+    {waitUntil:"domcontentloaded",timeout:30000});
+  const lab=page.getByTestId("ux15-physical-qa");
+  await lab.waitFor({state:"visible",timeout:15000});
+  check(await lab.getAttribute("data-qa-mode")==="PHYSICAL_ROUTE_C3B10_QA",
+    name+": C3B10 gate not adopted");
+  check(await page.locator(".orbi-game-root").count()===0,
+    name+": gameplay engine loaded under isolated preflight");
+  check(await lab.getAttribute("data-c3b10-drone-spawn-authorized")==="false",
+    name+": live DRONE accidentally licensed");
+  check(Number(await lab.getAttribute("data-c3b10-shadow-shot"))===1,
+    name+": offline plasma projection not available");
+  const speed=Number(await lab.getAttribute("data-c3b10-shadow-speed"));
+  check(Math.abs(speed-2.2*1000/16.6)<.01,
+    name+": production plasma speed projection changed");
+  check(Number(await lab.getAttribute("data-c3b10-live-drone-count"))===0,
+    name+": a live DRONE was spawned before Wave3 certification");
+  check(await lab.getAttribute("data-c3b9-wave3-name")==="Drone Lock",
+    name+": wrong authoritative descriptor");
+  await page.getByTestId("ux15-c3b8-skip-wave1").click({timeout:30000});
+  await page.waitForFunction(()=>Number(document.querySelector(
+    '[data-testid="ux15-physical-qa"]')?.dataset.c3b9EliteRolls)>=7,
+    null,{timeout:17000});
+  check(Number(await lab.getAttribute("data-c3b10-live-drone-count"))===0,
+    name+": Wave2 generated an uncertified DRONE");
+  check(await lab.getAttribute("data-c3b8-wave-status")==="ACTIVE",
+    name+": Wave2 state regressed");
+  await shot(page,name+"-drone-preflight");
+  await page.getByTestId("ux15-physical-reset").click({timeout:10000});
+  check(Number(await lab.getAttribute("data-c3b9-elite-rolls"))===0,
+    name+": reset did not clear Wave2 RNG QA");
+  check(Number(await lab.getAttribute("data-c3b10-live-drone-count"))===0,
+    name+": reset left a DRONE actor");
+  evidence.cases.push({name,pass:true,ux15c3b10:true,
+    shadowOnly:true,plasmaSpeed:speed,wave3Enabled:false,
+    input:touch?"native-touch":"keyboard"});
+ }finally{await context.close();}
+}
+
 await mkdir(output,{recursive:true});
 try {
   await startServer();
@@ -1377,6 +1426,8 @@ try {
   await runPhysicalParasiteDriftQa("ux15c3b8-wave2-mobile-844x390",844,390,true);
   await runPhysicalEliteQa("ux15c3b9-elite-desktop-1440x900",1440,900,false);
   await runPhysicalEliteQa("ux15c3b9-elite-mobile-844x390",844,390,true);
+  await runDroneLockTrajectoryPreflight("ux15c3b10-drone-desktop-1440x900",1440,900,false);
+  await runDroneLockTrajectoryPreflight("ux15c3b10-drone-mobile-844x390",844,390,true);
 }catch(error){evidence.failures.push({message:String(error),stack:error?.stack||""});process.exitCode=1;}
 finally{
   evidence.errors=diagnostics;
