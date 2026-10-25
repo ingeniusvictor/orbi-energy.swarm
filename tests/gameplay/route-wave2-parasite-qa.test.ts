@@ -4,9 +4,10 @@ import { createCampaignRuntimeWaveDescriptor } from "../../src/game/runtimeWaveD
 import {
   createRouteWave2QaState,stepRouteWave2Qa,makeRouteWave2Enemy,
   projectRouteParasiteMotion,routeWave2RemainingMs,countWave2Live,
-  ROUTE_WAVE2_START_MS,ROUTE_WAVE2_QA_KEY,ROUTE_WAVE2_QA_ENEMY_PREFIX,
+  ROUTE_WAVE2_QA_KEY,ROUTE_WAVE2_QA_ENEMY_PREFIX,
 } from "../../src/game/routeWave2Qa";
 import { EnemyType,type Enemy,type Projectile } from "../../src/game/types";
+import type { RouteQaEncounter } from "../../src/game/routePhysicalQaEncounter";
 import { createPhysicalRouteQaState,stepPhysicalRouteQa } from "../../src/game/physicalRouteQaSimulation";
 import { applyRouteCanonicalImpactEffects } from "../../src/game/routeOrbiImpactFxQa";
 import { beginRouteOverdriveQa } from "../../src/game/routeOverdriveQa";
@@ -65,7 +66,7 @@ test("C3B8: Wave2 starts strictly at 35s, then first 110-frame shot at 36.826s",
 });
 test("C3B8: alternating ordinary PARASITE/CRAWLER budget 18 with cap 12 and Wave3 gate",()=>{
  const s=base();
- let w=s.wave2Qa!,actors={...s.encounter,enemies:[]};
+ let w=s.wave2Qa!,actors:RouteQaEncounter={...s.encounter,enemies:[]};
  for(let i=0;i<18;i++){
    actors={...actors,enemies:[]};
    const next=stepRouteWave2Qa(w,actors,s.player,s.camera,viewport,w.nextSpawnAtMs);
