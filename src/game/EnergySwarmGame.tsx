@@ -191,7 +191,7 @@ import {
   playDisruptorPulseSound, playHeavyImpactSound, playShieldDeflectSound,
   playCriticalHitSound,
   playBossArrivalSound, playBossPhaseTransitionSound, playBossChargeSound,
-  playBossShardsSound, playBossPulseSound, playOverdriveActivationSound, playPropulsionDashSound
+  playBossShardsSound, playBossPulseSound, playOverdriveActivationSound, playPropulsionDashSound, playOrbiConvergenceSound
 } from "./audio";
 
 import { 
@@ -238,6 +238,12 @@ import PerformanceDiagnosticsOverlay from "../components/PerformanceDiagnosticsO
 import { createTouchDirectionState, getTouchMovementVector } from "./touchControls";
 import { projectAnalogMotion, type AnalogVector } from "./analogJoystick";
 import { activatePropulsionDash, createPropulsionDashState, projectPropulsionDash, stepPropulsionDash, DASH_PLAYER_RADIUS } from "./propulsionDash";
+import {
+  activateConvergence, cancelConvergence, capConvergenceBossDamage,
+  convergenceHitDamage, createConvergenceState, finishConvergence,
+  isConvergenceChanneling, projectConvergence, selectConvergenceTargets,
+} from "./orbiConvergence";
+import { drawOrbiConvergence } from "./orbiConvergenceRenderer";
 import {
   FOTON_THREAT_REFRESH_MS,
   projectFotonThreatDirection,
@@ -422,6 +428,9 @@ export const EnergySwarmGame: React.FC = () => {
   const [dashView, setDashView] = useState(() =>
     projectPropulsionDash(createPropulsionDashState(), 0),
   );
+  const [convergenceView, setConvergenceView] = useState(() =>
+    projectConvergence(createConvergenceState(), 0, "CAMPAIGN:1", 0, 0, false, false, false),
+  );
 
   // Stats persisting
   const [stats, setStats] = useState<GameStats>({ ...DEFAULT_STATS });
@@ -502,6 +511,7 @@ export const EnergySwarmGame: React.FC = () => {
   const combatResonanceRef = useRef(createCombatResonanceState());
   const combatOverdriveRef = useRef(createCombatOverdriveState());
   const propulsionDashRef = useRef(createPropulsionDashState());
+  const convergenceRef = useRef(createConvergenceState());
   const lastDashDirectionRef = useRef<AnalogVector>({ x: 0, y: -1 });
   const energyThrusterPoseRef = useRef(createEnergyThrusterPose());
 
@@ -1145,8 +1155,16 @@ export const EnergySwarmGame: React.FC = () => {
     }
   };
 
-  // UX11-E: movement-only impulse, unrelated to Combat Resonance/Overdrive.
+  const getConvergenceWaveKey = () => {
+    const runtime = runtimeProgressionRef.current;
+    return runtime.mode === "INFINITE"
+      ? `INFINITE:${getRuntimeSector(runtime)}:${getRuntimeWaveNumber(runtime)}`
+      : `CAMPAIGN:${currentWaveRef.current}`;
+  };
+
+  // Dash's original physics is untouched; do not stack it over channeling.
   const handleDashActivation = () => {
+    if (isConvergenceChanneling(convergenceRef.current)) return false;
     if (!isPlaying || isGameOver || isPausedRef.current || isPhotoMode ||
         isUpgradeSelectionOpenRef.current || bossIntroTimeRef.current !== null ||
         bossDefeatedSequenceActiveRef.current ||
@@ -1175,6 +1193,7 @@ export const EnergySwarmGame: React.FC = () => {
   };
 
   const handleOverdriveActivation = () => {
+    if (isConvergenceChanneling(convergenceRef.current)) return false;
     if (
       !isPlaying ||
       isGameOver ||
@@ -1233,6 +1252,35 @@ export const EnergySwarmGame: React.FC = () => {
       resonance: combatResonanceRef.current.resonance,
       ...consumedResonanceProjection,
     });
+    return true;
+  };
+
+  // UX14-B: real target scan only on activation; no target, no cost.
+  const handleConvergenceActivation = () => {
+    if (!isPlaying || isGameOver || isPausedRef.current || isPhotoMode ||
+        isUpgradeSelectionOpenRef.current || bossIntroTimeRef.current !== null ||
+        phaseTransitionTimerRef.current > 0 ||
+        bossDefeatedSequenceActiveRef.current || architectQaBossRef.current !== null ||
+        (!waveActiveRef.current && !bossActiveRef.current)) return false;
+    const aim = selectConvergenceTargets(playerPosRef.current, enemiesRef.current);
+    const nowMs = timeElapsedRef.current;
+    const next = activateConvergence(convergenceRef.current, {
+      nowMs, waveKey: getConvergenceWaveKey(), orbiCount: swarmRef.current.length,
+      resonance: combatResonanceRef.current.resonance,
+      overdriveActive: projectCombatOverdrive(combatOverdriveRef.current, nowMs, true).active,
+      gameplayActive: true, targetAvailable: Boolean(aim?.targets.length),
+    });
+    if (!next) return false;
+    convergenceRef.current = next;
+    combatResonanceRef.current = { ...combatResonanceRef.current, resonance: 0 };
+    setCombatResonanceView({
+      chain: combatResonanceRef.current.chain,
+      resonance: combatResonanceRef.current.resonance,
+      ...projectCombatResonance(combatResonanceRef.current),
+    });
+    setConvergenceView(projectConvergence(next, nowMs, getConvergenceWaveKey(),
+      swarmRef.current.length, 0, false, true, true));
+    playOrbiConvergenceSound("CHARGE");
     return true;
   };
 
@@ -1530,6 +1578,11 @@ export const EnergySwarmGame: React.FC = () => {
       if (key === "E") {
         e.preventDefault();
         if (!e.repeat) handleDashActivation();
+        return;
+      }
+      if (key === "Q") {
+        e.preventDefault();
+        if (!e.repeat) handleConvergenceActivation();
         return;
       }
 
@@ -1848,6 +1901,9 @@ export const EnergySwarmGame: React.FC = () => {
       projectCombatOverdrive(resetOverdriveState, 0, false),
     );
     propulsionDashRef.current = createPropulsionDashState();
+    convergenceRef.current = createConvergenceState();
+    setConvergenceView(projectConvergence(convergenceRef.current, 0, "CAMPAIGN:1",
+      0, 0, false, false, false));
     lastDashDirectionRef.current = { x: 0, y: -1 };
     energyThrusterPoseRef.current = createEnergyThrusterPose();
     setDashView(projectPropulsionDash(propulsionDashRef.current, 0));
@@ -4754,6 +4810,14 @@ export const EnergySwarmGame: React.FC = () => {
       });
       setCombatOverdriveView(liveOverdriveProjection);
       setDashView(projectPropulsionDash(propulsionDashRef.current, timeElapsedRef.current));
+      setConvergenceView(projectConvergence(
+        convergenceRef.current, timeElapsedRef.current, getConvergenceWaveKey(),
+        swarmRef.current.length, combatResonanceRef.current.resonance,
+        liveOverdriveProjection.active, (waveActiveRef.current || bossActiveRef.current) &&
+        !isPausedRef.current && !bossDefeatedSequenceActiveRef.current &&
+        bossIntroTimeRef.current === null && phaseTransitionTimerRef.current <= 0 &&
+        architectQaBossRef.current === null, enemiesRef.current.length > 0,
+      ));
       setScore(scoreRef.current);
       setShield(shieldRef.current);
       setSwarmSize(swarmRef.current.length + 1);
@@ -5201,7 +5265,8 @@ export const EnergySwarmGame: React.FC = () => {
 
     const pSpeedBase = PLAYER_BASE_SPEED * FORMATIONS[activeFormationRef.current].speedMod * (1.0 + (upgradesLevel.quantum_core || 0) * 0.1);
     const speedUpgradeMultiplier = 1.0 + (activeRunUpgradesRef.current.quantum_stabilization || 0) * 0.15;
-    const pSpeed = pSpeedBase * speedUpgradeMultiplier * disruptRecoveryRef.current;
+    const pSpeed = pSpeedBase * speedUpgradeMultiplier * disruptRecoveryRef.current *
+      (isConvergenceChanneling(convergenceRef.current) ? .70 : 1);
 
     if (hasKeyboardMovement) {
       lastInputTypeRef.current = "KEYBOARD";
