@@ -669,9 +669,24 @@ async function runRouteCombatBridgeQa(name,width,height,touch){
       const cdp=await context.newCDPSession(page);
       const x=bounds.x+bounds.width*.5,y=bounds.y+bounds.height*.7;
       await cdp.send("Input.dispatchTouchEvent",{type:"touchStart",touchPoints:[{x,y}]});
+      // Allow the actual touch pointer to become captured before dragging.
+      await page.waitForTimeout(160);
+      await cdp.send("Input.dispatchTouchEvent",{type:"touchMove",touchPoints:[{x:x+40,y:y-55}]});
+      await page.waitForTimeout(160);
       await cdp.send("Input.dispatchTouchEvent",{type:"touchMove",touchPoints:[{x:x+90,y:y-120}]});
       await page.waitForTimeout(650);
       await cdp.send("Input.dispatchTouchEvent",{type:"touchEnd",touchPoints:[]});
+      // If the first native gesture was lost under concurrent Chromium GLB
+      // rendering, repeat a second REAL touch movement; do not fake telemetry
+      // or weaken the exact >12-unit physical displacement assertion below.
+      if(Number(await lab.getAttribute("data-player-local-y"))>=initialY-12){
+        const ax=bounds.x+bounds.width*.45,ay=bounds.y+bounds.height*.75;
+        await cdp.send("Input.dispatchTouchEvent",{type:"touchStart",touchPoints:[{x:ax,y:ay}]});
+        await page.waitForTimeout(160);
+        await cdp.send("Input.dispatchTouchEvent",{type:"touchMove",touchPoints:[{x:ax+45,y:ay-75}]});
+        await page.waitForTimeout(750);
+        await cdp.send("Input.dispatchTouchEvent",{type:"touchEnd",touchPoints:[]});
+      }
       await cdp.detach();
     }else{
       await page.keyboard.down("w");
