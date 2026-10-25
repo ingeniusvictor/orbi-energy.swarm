@@ -10,7 +10,7 @@ const main=read("src/main.tsx");
 const browser=read("scripts/android-ux09-premium-browser.mjs");
 
 test("UX11-F ten unique premium scenes are native, text-free source art",()=>{
-  const scenes=["modes","hangar","tactics","codex","controls","settings","about","campaign","score","infinite"];
+  const scenes=["modes","hangar","tactics","codex","controls","settings","about","campaign","score","route","infinite"];
   for(const scene of scenes){
     assert.ok(art.includes('"'+scene+'"'),"missing scene "+scene);
     assert.match(art,new RegExp('scene==="'+scene+'"|scene--'+scene+'|"'+scene+'":'));
@@ -35,7 +35,7 @@ test("UX11-F native Command Center and modes preserve all real callbacks, locali
   assert.match(nav,/<PremiumMissionArtwork scene=\{item\.key\}/);
   assert.match(nav,/<PremiumMissionArtwork scene=\{mode\.key\}/);
   assert.match(nav,/onClick=\{\(\) => onOpen\(item\.tab, item\.section\)\}/);
-  assert.match(nav,/onClick=\{mode\.key === "campaign" \? onPlay : onScoreAttack\}/);
+  assert.match(nav,/onClick=\{mode\.key === "campaign" \? onPlay : mode\.key === "route" \? onWorldRoute : onScoreAttack\}/);
   assert.match(nav,/data-testid=\{mode\.testId\}/);
   assert.match(nav,/mode\.lock \? \(/);
   assert.match(nav,/hasInfiniteRecord/);
