@@ -12,6 +12,7 @@ import { projectPanoramicCanvasViewport } from "./panoramicCanvasViewport";
 import { createRouteCursor, projectRouteDistance } from "./worldRouteCore";
 import { stepRouteClock, ROUTE_QA_SPEED_UNITS_PER_SECOND } from "./worldRouteClock";
 import { drawWorldRouteQaScene } from "./worldRoutePreviewRenderer";
+import { prefetchAsteriaArtwork } from "./asteriaPremiumArtwork";
 import { projectImmersiveBattlefieldMode } from "./immersiveBattlefieldPolicy";
 import { nonNegativeAnimationFrameDelta } from "./animationFrameDelta";
 import { 
@@ -2034,6 +2035,11 @@ export const EnergySwarmGame: React.FC = () => {
     // A stable run-owned identity survives upgrade cards, wave transitions,
     // Estado, pause, restart and eventual campaign→Infinite handoff.
     worldRouteRunActiveRef.current = mode === "CAMPAIGN" && worldRoute;
+    if (worldRouteRunActiveRef.current) {
+      // Start native WebP decoding before the first live battle frame.
+      // No artwork is fetched or decoded in any other game mode.
+      prefetchAsteriaArtwork(createRouteCursor("asteria-campaign-qa"));
+    }
     setWorldRouteSelected(worldRouteRunActiveRef.current);
     scoreAttackActivationRef.current = activation;
     setPresentationMode(mode);
@@ -7729,8 +7735,9 @@ export const EnergySwarmGame: React.FC = () => {
     // origin-rebase/camera integration is certified in UX15-C2/D.
     const asteriaCombatVisualActive = worldRouteRunActiveRef.current;
     if (asteriaCombatVisualActive) {
-      drawWorldRouteQaScene(ctx, asteriaLiveCursorRef.current,
+      const premiumArtReady = drawWorldRouteQaScene(ctx, asteriaLiveCursorRef.current,
         { manualX: 0, y: 240 }, panoramicViewport.width, false);
+      canvas.dataset.ux15Art = premiumArtReady ? "premium" : "fallback";
       canvas.dataset.ux15World = "ASTERIA_ORBITAL";
       canvas.dataset.ux15RouteDistance = String(
         Math.floor(projectRouteDistance(asteriaLiveCursorRef.current)));
@@ -7738,6 +7745,7 @@ export const EnergySwarmGame: React.FC = () => {
       canvas.dataset.ux15LiveCombat = "true";
     } else {
       delete canvas.dataset.ux15World;
+      delete canvas.dataset.ux15Art;
       delete canvas.dataset.ux15RouteDistance;
       delete canvas.dataset.ux15Segment;
       delete canvas.dataset.ux15LiveCombat;
