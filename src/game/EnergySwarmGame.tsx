@@ -10,6 +10,10 @@ import {
 
 import { projectPanoramicCanvasViewport } from "./panoramicCanvasViewport";
 import { createRouteCursor, projectRouteDistance } from "./worldRouteCore";
+import {
+  createRailcutterAttack, selectAsteriaRailcutterSpawn,
+  shouldSpawnAsteriaRailcutter, stepAsteriaRailcutter,
+} from "./asteriaRailcutter";
 import { stepRouteClock, ROUTE_QA_SPEED_UNITS_PER_SECOND } from "./worldRouteClock";
 import { drawWorldRouteQaScene } from "./worldRoutePreviewRenderer";
 import {
@@ -3211,8 +3215,22 @@ export const EnergySwarmGame: React.FC = () => {
             spawnOrdinal: waveBudgetSpawnedRef.current,
           })
         : null;
-    const type =
-      spawningMiniboss && minibossProfile
+    const routeCamera = cameraStateRef.current;
+    const railcutterSpawn = shouldSpawnAsteriaRailcutter(
+      worldRouteRunActiveRef.current,descriptor.sourceMode,
+      descriptor.waveNumber,waveBudgetSpawnedRef.current,
+      Boolean(forcedType),spawningMiniboss,
+      enemiesRef.current.some(enemy=>
+        enemy.type===EnemyType.RAILCUTTER && !enemy.isDead),
+    )
+      ? selectAsteriaRailcutterSpawn(
+          routeCamera,playerPosRef.current,WORLD_WIDTH,WORLD_HEIGHT,
+          Math.max(170,combatPressure.spawnSafetyRadius),
+        )
+      : null;
+    const type = railcutterSpawn
+      ? EnemyType.RAILCUTTER
+      : spawningMiniboss && minibossProfile
         ? minibossProfile.enemyType
         : forcedType ||
           tacticalType ||
@@ -3240,7 +3258,7 @@ export const EnergySwarmGame: React.FC = () => {
       mutatorEffects.enemySpeedMultiplier;
 
     // Pick spawn boundaries (coherently outside the camera viewport but within 1600x960 world)
-    const cam = cameraStateRef.current;
+    const cam = routeCamera;
     const margin = 100; // spawn 100px outside the camera viewport
 
     let ex = 0;
@@ -3287,6 +3305,12 @@ export const EnergySwarmGame: React.FC = () => {
       ex = Math.max(16, Math.min(WORLD_WIDTH - 16, playerPosRef.current.x + Math.cos(angle) * relocationRadius));
       ey = Math.max(16, Math.min(WORLD_HEIGHT - 16, playerPosRef.current.y + Math.sin(angle) * relocationRadius));
     }
+    // Replace the legacy position ONLY for the new ASTERIA-native actor.
+    // All other modes retain the existing four-side camera spawn policy.
+    if (railcutterSpawn) {
+      ex = railcutterSpawn.x;
+      ey = railcutterSpawn.y;
+    }
 
     // Class Attributes
     let health = 15 * healthMultiplier;
@@ -3303,6 +3327,11 @@ export const EnergySwarmGame: React.FC = () => {
       speed = baseSpeed;
       size = 8;
       color = "#f43f5e"; // rose pink parasite
+    } else if (type === EnemyType.RAILCUTTER) {
+      health = 26 * healthMultiplier;
+      speed = 0.95 * biomeCfg.enemySpeedMultiplier * movementSpeedMultiplier;
+      size = 12;
+      color = "#22d3ee";
     } else if (type === EnemyType.DRONE) {
       health = 20 * healthMultiplier;
       speed = 0.7 * biomeCfg.enemySpeedMultiplier * movementSpeedMultiplier;
@@ -3458,6 +3487,8 @@ export const EnergySwarmGame: React.FC = () => {
       contactDamageCooldown: 0,
       isDead: false,
       isBoss: false,
+      railcutterAttack: type===EnemyType.RAILCUTTER
+        ?createRailcutterAttack():undefined,
       enemyFormation: enemyFormation ?? undefined,
       flashTicks: 0,
       evolvedVariantId: evolvedProfile?.id,
@@ -5905,7 +5936,22 @@ export const EnergySwarmGame: React.FC = () => {
         const dy = ty - enemy.y;
         const dist = Math.sqrt(dx * dx + dy * dy) || 1;
 
-        if (enemy.type === EnemyType.RIFT_HUNTER) {
+        if (enemy.type === EnemyType.RAILCUTTER && enemy.railcutterAttack) {
+          const next=stepAsteriaRailcutter(
+            enemy.railcutterAttack,enemy,playerPosRef.current,
+            enemy.speed,delta,
+          );
+          const previousPhase=enemy.railcutterAttack.phase;
+          enemy.x=Math.max(16,Math.min(WORLD_WIDTH-16,next.x));
+          enemy.y=Math.max(16,Math.min(WORLD_HEIGHT-16,next.y));
+          enemy.vx=next.vx;
+          enemy.vy=next.vy;
+          enemy.railcutterAttack=next.attack;
+          if(previousPhase==="APPROACH" && next.attack.phase==="AIM"){
+            playDroneChargeSound();
+            addFloatingText("RAIL LOCK",enemy.x,enemy.y-enemy.size-18,"#67e8f9");
+          }
+        } else if (enemy.type === EnemyType.RIFT_HUNTER) {
           enemy.pulseCooldown -= delta / 16.6;
           if ((enemy.chargeTimer ?? 0) > 0) {
             enemy.chargeTimer = Math.max(0, (enemy.chargeTimer ?? 0) - delta);
