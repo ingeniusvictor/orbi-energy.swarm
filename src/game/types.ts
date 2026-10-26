@@ -3,6 +3,7 @@ import type { RailcutterAttack } from "./asteriaRailcutter";
 import type { SpanWardenAttack } from "./asteriaSpanWarden";
 import type { ShadeGearAttack,M9WelderAttack } from "./ferrumOriginalFoes";
 import type {FoundryClawAttack,OxideModulatorAttack} from "./ferrumAdvancedFoes";
+import type {ForemanAttack} from "./ferrumForeman";
 import type { ThresholdArchonAttack } from "./asteriaThresholdArchon";
 import type { SkySpecterAttack,BeaconPrismAttack,IonSailAttack } from "./asteriaOriginalFoes";
 import type { SiegeVolleyTelegraphState } from "./siegeVolleyTelegraph";
@@ -160,6 +161,7 @@ export enum EnemyType {
   M9_WELDER = "M9_WELDER",
   FOUNDRY_CLAW = "FOUNDRY_CLAW",
   OXIDE_MODULATOR = "OXIDE_MODULATOR",
+  FERRITE_FOREMAN = "FERRITE_FOREMAN",
   SPLITTER = "SPLITTER",
   DISRUPTOR = "DISRUPTOR",
   BLACKOUT_ELITE = "BLACKOUT_ELITE",
@@ -257,6 +259,10 @@ export interface Enemy {
   m9WelderAttack?: M9WelderAttack;
   foundryClawAttack?: FoundryClawAttack;
   oxideModulatorAttack?: OxideModulatorAttack;
+  ferriteForemanAttack?: ForemanAttack;
+  /** Native Ferrum machine movement cue, valid only while the linked Foreman lives. */
+  ferriteCommandSourceId?: string;
+  ferriteCommandUntilMs?: number;
   oxideArmorSourceId?: string;
   oxideArmoredUntilMs?: number;
   /** ASTERIA-only boss pattern state, using original boss HP, damage and loot. */

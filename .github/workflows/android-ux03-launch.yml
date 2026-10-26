@@ -4,6 +4,8 @@ on:
     branches: [main, fix/android-ux03-landscape-launch-menu]
     paths:
       - 'src/components/StartScreen.tsx'
+      - 'src/game/EnergySwarmGame.tsx'
+      - 'src/game/EnergySwarmCanvas.tsx'
       - 'src/styles/androidImmersive.css'
       - 'scripts/android-ux03-launch-browser.mjs'
       - '.github/workflows/android-ux03-launch.yml'
@@ -11,6 +13,8 @@ on:
     branches: [main]
     paths:
       - 'src/components/StartScreen.tsx'
+      - 'src/game/EnergySwarmGame.tsx'
+      - 'src/game/EnergySwarmCanvas.tsx'
       - 'src/styles/androidImmersive.css'
       - 'scripts/android-ux03-launch-browser.mjs'
       - '.github/workflows/android-ux03-launch.yml'
