@@ -360,10 +360,19 @@ export default function PhysicalRouteQa() {
         canvas.dataset.c3b12Thrust=thrust.mode;
         canvas.dataset.c3b12ThrustLength=thrust.length.toFixed(2);
         canvas.dataset.c3b12ThrustAnimated=String(thrust.animated);
+        // Retain proof that a *real drawn frame* used Dash. A 180ms impulse
+        // can end before Playwright receives its next DOM observation on
+        // software-rendered mobile; this is Canvas evidence, not a fake Dash.
+        if(boosting){
+          canvas.dataset.c3b12BoostObserved="true";
+          canvas.dataset.c3b12BoostPeakLength=thrust.length.toFixed(2);
+        }
       }else{
         delete canvas.dataset.c3b12Thrust;
         delete canvas.dataset.c3b12ThrustLength;
         delete canvas.dataset.c3b12ThrustAnimated;
+        delete canvas.dataset.c3b12BoostObserved;
+        delete canvas.dataset.c3b12BoostPeakLength;
       }
       drawFoton(ctx,s.player,0,s.frame.cursor.simulatedMs,
         {x:s.player.x+120,y:s.player.y},
@@ -505,6 +514,10 @@ export default function PhysicalRouteQa() {
   },[]);
 
   const reset=()=>{
+    if(canvasRef.current){
+      delete canvasRef.current.dataset.c3b12BoostObserved;
+      delete canvasRef.current.dataset.c3b12BoostPeakLength;
+    }
     stateRef.current=createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled,c3b2Enabled,c3b3Enabled,c3b4Enabled,c3b5Enabled,c3b6Enabled,c3b7Enabled,c3b8Enabled,c3b9Enabled,c3b11Enabled);
     controlsRef.current.clear();
     pointerRef.current=null;
