@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Play, Cpu, Volume2, VolumeX, Globe } from "lucide-react";
 import { GameStats, QualityPreset } from "../game/types";
+import {FERRUM_WORLD_ID,type PlayableWorld} from "../game/ferrumWorld";
 import { playClickSound } from "../game/audio";
 import { getAdditionalGameModeProfile } from "../game/scoreAttackModeContract";
 import { SCORE_ATTACK_DURATION_MS } from "../game/scoreAttackTimeboxProjection";
@@ -18,7 +19,7 @@ interface StartScreenProps {
   stats: GameStats;
   onStartGame: () => void;
   onStartScoreAttack: () => void;
-  onStartWorldRoute: () => void;
+  onStartWorldRoute: (world?: PlayableWorld) => void;
   onResetStats: () => void;
   onChangePreset: (preset: QualityPreset) => void;
   onToggleMute: () => void;
@@ -396,8 +397,24 @@ export const StartScreen: React.FC<StartScreenProps> = ({
                 <button type="button" data-world-route-start-cta="true"
                   onClick={() => { playClickSound(); onStartWorldRoute(); }}
                   className="mt-2 w-full rounded-lg border border-emerald-400/50 bg-emerald-500/20 px-3 py-2.5 text-[10px] font-black uppercase tracking-[.1em] text-emerald-100 hover:bg-emerald-500/30">
-                  {language === "es" ? "INICIAR TRAVESÍA" : "START TRAVERSAL"}
+                  {language === "es" ? "INICIAR ASTERIA" : "START ASTERIA"}
                 </button>
+                <div className="mt-3 border-t border-amber-400/25 pt-3">
+                  <div className="text-[10px] font-black text-amber-200 tracking-wide">
+                    {language === "es" ? "MUNDO 02 · FERRUM — CIUDAD MECÁNICA"
+                      : "WORLD 02 · FERRUM — MECHANICAL CITY"}
+                  </div>
+                  <p className="mt-1 text-[9px] leading-relaxed text-amber-100/75">
+                    {language === "es"
+                      ? "Nueva travesía industrial jugable: Engranaje Sombra y Soldador M-9, mecánicas originales en combate real."
+                      : "Playable industrial traversal with original Shade Gear and M-9 Welder enemies in real combat."}
+                  </p>
+                  <button type="button" data-ferrum-world-start-cta="true"
+                    onClick={() => { playClickSound(); onStartWorldRoute(FERRUM_WORLD_ID); }}
+                    className="mt-2 w-full rounded-lg border border-amber-400/60 bg-amber-500/15 px-3 py-2.5 text-[10px] font-black uppercase tracking-[.1em] text-amber-100 hover:bg-amber-500/30">
+                    {language === "es" ? "INICIAR FERRUM" : "START FERRUM"}
+                  </button>
+                </div>
               </div>
 
               <div
