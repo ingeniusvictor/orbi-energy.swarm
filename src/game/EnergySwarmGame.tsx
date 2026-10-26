@@ -3238,7 +3238,7 @@ export const EnergySwarmGame: React.FC = () => {
       worldRouteRunActiveRef.current,descriptor.sourceMode,
       descriptor.waveNumber,waveBudgetSpawnedRef.current,
       Boolean(forcedType),spawningMiniboss,
-      candidate=>enemiesRef.current.some(e=>e.type===candidate && !e.isDead),
+      candidate=>enemiesRef.current.some(e=>e.type===EnemyType[candidate] && !e.isDead),
     );
     const originalFoeSpawn=originalFoe
       ?selectAsteriaNewFoeSpawn(
