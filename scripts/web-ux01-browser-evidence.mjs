@@ -369,6 +369,12 @@ async function runAsteriaCombat(name,width,height,touch){
     check(await canvas.getAttribute("data-ux15-live-combat")==="true",
       name+": only preview background rendered, no live combat contract");
     check(begin>10,name+": route is not scrolling within real combat");
+    check(await canvas.getAttribute("data-wbe01-railcutter-scope")==="WORLD_ROUTE_ONLY",
+      name+": WBE-01A did not attach to authentic Mundo Nuevo engine");
+    check(Number(await canvas.getAttribute("data-wbe01-railcutter-count"))===0,
+      name+": RAILCUTTER improperly spawned during protected Wave 1");
+    check(await canvas.getAttribute("data-wbe01-railcutter-phase")==="NONE",
+      name+": live Railcutter activated before World Route Wave 2");
     // UX15-C2B acceptance: not enough to show fallback/old geometric blocks.
     // Verify that the approved real WebP panorama decoded and painted inside
     // actual combat in BOTH desktop and touch-landscape Chromium.
