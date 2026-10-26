@@ -1105,6 +1105,37 @@ export function drawEnemiesList(
         targetDy - 28,
       );
       ctx.restore();
+    } else if (enemy.type === EnemyType.RAILCUTTER && enemy.railcutterAttack) {
+      const {phase,directionX,directionY,remainingMs}=enemy.railcutterAttack;
+      if(phase==="AIM"){
+        // Player can see and leave this fixed strike lane before collision.
+        ctx.save();
+        const glow=.58+.22*Math.sin(time*.014);
+        ctx.strokeStyle=`rgba(103,232,249,${glow.toFixed(3)})`;
+        ctx.lineWidth=2.2;
+        ctx.setLineDash([9,6]);
+        ctx.beginPath();
+        ctx.moveTo(0,0);
+        ctx.lineTo(directionX*230,directionY*230);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.strokeStyle="#fef08a";
+        ctx.lineWidth=1.7;
+        ctx.beginPath();
+        ctx.arc(directionX*230,directionY*230,7+(remainingMs/850)*3,
+          0,Math.PI*2);
+        ctx.stroke();
+        ctx.restore();
+      }else if(phase==="CHARGE"){
+        ctx.save();
+        ctx.strokeStyle="rgba(34,211,238,.7)";
+        ctx.lineWidth=3.5;
+        ctx.beginPath();
+        ctx.moveTo(-directionX*13,-directionY*13);
+        ctx.lineTo(-directionX*52,-directionY*52);
+        ctx.stroke();
+        ctx.restore();
+      }
     } else if (enemy.type === EnemyType.DRONE && enemy.shootCooldown !== undefined && enemy.shootCooldown <= 35 && enemy.shootCooldown > 0) {
       // Fine target line to Foton leader (Section 3.1)
       ctx.save();
@@ -1172,6 +1203,50 @@ export function drawEnemiesList(
     ctx.fillStyle = enemy.color;
 
     switch (enemy.type) {
+      case EnemyType.RAILCUTTER: {
+        const attack=enemy.railcutterAttack;
+        const dirX=attack?.directionX??-1;
+        const dirY=attack?.directionY??0;
+        ctx.save();
+        ctx.rotate(Math.atan2(dirY,dirX));
+        const s=enemy.size;
+        const vibrating=(attack?.phase==="CHARGE")
+          ?1.08+.09*Math.sin(time*.09):1;
+        ctx.scale(vibrating,vibrating);
+        // Original orbital rail glider: paired cyan scythe blades and
+        // armoured arrow chassis, legible against the ASTERIA panorama.
+        ctx.shadowColor="#22d3ee";
+        ctx.shadowBlur=13;
+        ctx.fillStyle="#0c4a6e";
+        ctx.strokeStyle="#a5f3fc";
+        ctx.lineWidth=1.8;
+        ctx.beginPath();
+        ctx.moveTo(s*1.5,0);
+        ctx.lineTo(s*.12,-s*.52);
+        ctx.lineTo(-s*1.1,-s*.4);
+        ctx.lineTo(-s*.66,0);
+        ctx.lineTo(-s*1.1,s*.4);
+        ctx.lineTo(s*.12,s*.52);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        for(const side of [-1,1]){
+          ctx.fillStyle="#22d3ee";
+          ctx.beginPath();
+          ctx.moveTo(s*.8,side*s*.63);
+          ctx.lineTo(-s*.18,side*s*1.24);
+          ctx.lineTo(-s*1.32,side*s*.72);
+          ctx.lineTo(-s*.3,side*s*.82);
+          ctx.closePath();
+          ctx.fill();
+        }
+        ctx.fillStyle=attack?.phase==="AIM"?"#fef08a":"#f8fafc";
+        ctx.beginPath();
+        ctx.arc(s*.32,0,s*.25,0,Math.PI*2);
+        ctx.fill();
+        ctx.restore();
+        break;
+      }
       case EnemyType.CRAWLER: {
         // Hexagonal heavy body with metallic borders and blackout eyes (Section 2.1)
         const pulse = Math.sin(time * 0.008) * 1.2;
