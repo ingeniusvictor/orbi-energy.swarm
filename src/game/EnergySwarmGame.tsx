@@ -6741,8 +6741,8 @@ export const EnergySwarmGame: React.FC = () => {
 
     if (
       enemy.type === EnemyType.DRONE ||
-      enemy.type === EnemyType.BEACON_PRISM ||
       enemy.type === EnemyType.BOSS_DEVOURER ||
+      enemy.type === EnemyType.BEACON_PRISM ||
       enemy.type === EnemyType.SIEGE_PRISM ||
       enemy.type === EnemyType.MINE_WEAVER ||
       enemy.type === EnemyType.MIRROR_WARDEN ||
@@ -6799,19 +6799,27 @@ export const EnergySwarmGame: React.FC = () => {
           const vy =
             Math.sin(shotAngle) * projectileSpeed;
 
-          projectilesRef.current.push({
+          // Preserve the canonical normal/boss projectile template and
+          // its historical exact 12 damage. Only the new ASTERIA Prism
+          // changes its own projectile instance AFTER creation.
+          const plasma = {
             id: Math.random().toString(),
             x: enemy.x,
             y: enemy.y,
             vx,
             vy,
-            damage: enemy.type===EnemyType.BEACON_PRISM?8:12,
-            color: enemy.type===EnemyType.BEACON_PRISM?"#fde68a":"#f43f5e",
+            damage: 12,
+            color: "#f43f5e",
             size: enemy.isBoss ? 5 : 3.5,
             fromPlayer: false,
             life: 2500,
             maxLife: 2500
-          });
+          };
+          if (enemy.type === EnemyType.BEACON_PRISM) {
+            plasma.damage = 8;
+            plasma.color = "#fde68a";
+          }
+          projectilesRef.current.push(plasma);
         }
 
         hostileBudgetState.count += projectileCount;
