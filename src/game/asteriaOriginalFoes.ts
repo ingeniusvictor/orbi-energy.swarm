@@ -113,16 +113,23 @@ export function selectAsteriaNewFoeSpawn(
 }
 export function stepSkySpecter(
   attack:SkySpecterAttack,pos:RailcutterSpawn,target:RailcutterSpawn,
-  speed:number,dt:number,
+  speed:number,dt:number,worldWidth=1600,worldHeight=960,
 ):AsteriaFoeStep<SkySpecterAttack>{
-  if(!validate(pos,target,speed,dt)||!Number.isFinite(attack.remainingMs))
+  if(!validate(pos,target,speed,dt)||!Number.isFinite(attack.remainingMs)||
+     ![worldWidth,worldHeight].every(Number.isFinite)||
+     worldWidth<=64||worldHeight<=64)
     throw new RangeError("Invalid Skydive Specter tick");
   const staticStep=(state:SkySpecterAttack):AsteriaFoeStep<SkySpecterAttack>=>({
     x:pos.x,y:pos.y,vx:0,vy:0,attack:state,
   });
   if(attack.phase==="CLIMB"){
-    const dx=target.x+120-pos.x;
-    const dy=target.y+attack.flankSide*190-pos.y;
+    // The live campaign remains in 1600x960 legacy combat bounds.
+    // Prevent a permanent CLIMB when ENERGY is near its right/top/bottom wall.
+    const goalX=Math.max(32,Math.min(worldWidth-32,target.x+120));
+    const goalY=Math.max(32,Math.min(worldHeight-32,
+      target.y+attack.flankSide*190));
+    const dx=goalX-pos.x;
+    const dy=goalY-pos.y;
     if(Math.hypot(dx,dy)<55){
       const aim=unit(target.x-pos.x,target.y-pos.y);
       return staticStep({phase:"LOCK",remainingMs:SKY_SPECTER_WARNING_MS,
