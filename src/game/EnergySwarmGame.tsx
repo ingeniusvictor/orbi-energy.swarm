@@ -29,6 +29,9 @@ import {createFoundryClawAttack,createOxideModulatorAttack,
   oxideArmorDamageMultiplier,shouldArmorOxideAlly,
   OXIDE_ARMOR_DURATION_MS} from "./ferrumAdvancedFoes";
 import {createForemanAttack,shouldSpawnForeman,selectForemanSpawn,stepForeman,foremanSectorHit,foremanDamageMultiplier,selectForemanCommandTargets,FOREMAN_COMMAND_LINK_MS,FOREMAN_COMMAND_MOVE_SCALE} from "./ferrumForeman";
+import {resolveOmegaFoundryEncounter,createOmegaFoundryAttack,
+  getOmegaFoundryPhase,stepOmegaFoundry,omegaAttackContact,omegaGearSlots,
+  omegaFoundryDamageMultiplier,OMEGA_ATTACK_NAMES} from "./ferrumOmegaFoundry";
 import {resolveAsteriaArchonEncounter,createThresholdArchonAttack,
   stepThresholdArchon,getThresholdArchonPhase,thresholdArchonDamageMultiplier,
   ARCHON_ATTACK_NAMES} from "./asteriaThresholdArchon";
@@ -3070,15 +3073,18 @@ export const EnergySwarmGame: React.FC = () => {
 
           if (currentWaveRef.current === BOSS_WAVE_NUMBER) {
             // Warning before boss entry!
-            setWaveName(worldRouteRunActiveRef.current
-              ? "BOSS WARNING: THRESHOLD ARCHON APPROACHING"
-              : "BOSS WARNING: DEVOURER APPROACHING");
-            postDialogue(
-              "COMPANION",
-              worldRouteRunActiveRef.current
+            const ferrumBoss=isFerrum(worldRouteRunActiveRef.current,worldRouteThemeRef.current);
+            const asteriaBoss=isAsteria(worldRouteRunActiveRef.current,worldRouteThemeRef.current);
+            setWaveName(ferrumBoss
+              ? "BOSS WARNING: OMEGA FOUNDRY APPROACHING"
+              : asteriaBoss
+                ? "BOSS WARNING: THRESHOLD ARCHON APPROACHING"
+                : "BOSS WARNING: DEVOURER APPROACHING");
+            postDialogue("COMPANION",ferrumBoss
+              ? "¡ALERTA FERRUM! La Factoría Omega camina hacia el sector con sus pistones y cintas activos."
+              : asteriaBoss
                 ? "¡ALERTA ASTERIA! El Arconte del Umbral despierta entre sus anillos orbitales."
-                : "¡ALERTA MÁXIMA! Firma del Blackout Devourer detectada en el sector.",
-            );
+                : "¡ALERTA MÁXIMA! Firma del Blackout Devourer detectada en el sector.");
             startBgm("BOSS");
           } else {
             setWaveName("PREPARATION BREAK");
@@ -3137,8 +3143,10 @@ export const EnergySwarmGame: React.FC = () => {
             worldRouteRunActiveRef.current, descriptor,
           ),
         );
+        const omegaWaveIntro=isFerrum(worldRouteRunActiveRef.current,worldRouteThemeRef.current) &&
+          Boolean(resolveOmegaFoundryEncounter(worldRouteRunActiveRef.current,descriptor));
         const activeWaveName = archonWaveIntro
-          ? "Threshold Archon" : descriptor.display.name;
+          ? "Threshold Archon" : omegaWaveIntro ? "Omega Foundry" : descriptor.display.name;
         setWaveName(activeWaveName);
 
         postDialogue("SYSTEM", `OLEADA ${currentWaveRef.current} ACTIVA: ${activeWaveName}`);
@@ -3164,6 +3172,12 @@ export const EnergySwarmGame: React.FC = () => {
           description: "Two giant orbital rings awaken above ASTERIA. Break the Archon's three defensive phases.",
           tacticalAdvice: "Dodge announced beams and cross between beacon lanes; focus ORBI on the exposed core.",
           introColor: "#facc15",
+        } : omegaWaveIntro && cfg ? {
+          ...cfg,name:"Omega Foundry",displayName:"Omega Foundry",
+          subtitle:"FERRUM // Walking Assembly Sovereign",
+          description:"Fábrica caminante con pistones extensibles, engranajes y reactor superior.",
+          tacticalAdvice:"Evita los pistones; destruye engranajes y cruza entre las cintas.",
+          introColor:"#fb923c",
         } : cfg);
         setTimeout(() => {
           setWaveIntroConfig(null);
@@ -3759,7 +3773,11 @@ export const EnergySwarmGame: React.FC = () => {
     const archonEncounter=!isRematch && stage==="PRIMARY"
       ?resolveAsteriaArchonEncounter(isAsteria(worldRouteRunActiveRef.current,worldRouteThemeRef.current),
         getCurrentRuntimeDescriptor()):null;
-    const chassisId=archonEncounter?"ASTERIA_ARCHON":(raidProfile?.chassis??"DEVOURER");
+    const omegaEncounter=!isRematch && stage==="PRIMARY"
+      ?resolveOmegaFoundryEncounter(isFerrum(worldRouteRunActiveRef.current,worldRouteThemeRef.current),
+        getCurrentRuntimeDescriptor()):null;
+    const chassisId=omegaEncounter?"FERRUM_OMEGA":
+      archonEncounter?"ASTERIA_ARCHON":(raidProfile?.chassis??"DEVOURER");
     const chassisProfile = getBossChassisProfile(chassisId);
     const familyProfile =
       rematchProfile && stage === "PRIMARY"
@@ -3799,7 +3817,7 @@ export const EnergySwarmGame: React.FC = () => {
           ? `${chassisId.toLowerCase()}_${rematchProfile?.sector ?? "infinite"}`
           : isRematch
             ? `${rematchProfile?.bossIdentity.toLowerCase() ?? "infinite_boss"}_${rematchProfile?.sector ?? "infinite"}`
-            : archonEncounter ?? "blackout_devourer_boss",
+            : omegaEncounter ?? archonEncounter ?? "blackout_devourer_boss",
       type: chassisProfile.enemyType,
       x: WORLD_WIDTH / 2,
       y: -80,
@@ -3824,6 +3842,7 @@ export const EnergySwarmGame: React.FC = () => {
         stage === "PRIMARY" ? rematchProfile?.bossIdentity : undefined,
       bossChassis: chassisId,
       archonAttack:archonEncounter?createThresholdArchonAttack():undefined,
+      omegaAttack:omegaEncounter?createOmegaFoundryAttack():undefined,
       bossEncounterStage: stage,
       milestoneContactDamageMultiplier: damageMultiplier,
       milestoneDamageMultiplier: damageMultiplier,
@@ -3896,7 +3915,9 @@ export const EnergySwarmGame: React.FC = () => {
           ? (familyProfile?.introDialogue ?? "¡RESONANCIA HOSTIL RECURRENTE!")
           : archonEncounter
             ? "¡ARCONTE DEL UMBRAL! Tres fases orbitales. Esquiva las líneas anunciadas y concentra ORBI en su núcleo expuesto."
-            : "¡ALERTA! Concentración de energía Blackout masiva en el sector central. ¡El Devorador está entrando!",
+            : omegaEncounter
+              ? "¡FACTORÍA OMEGA! Pistones, producción de engranajes y barridos de cintas; ataca el reactor al abrirse."
+              : "¡ALERTA! Concentración de energía Blackout masiva en el sector central. ¡El Devorador está entrando!",
     );
 
     if (stage === "RAID_ESCALATION") {
