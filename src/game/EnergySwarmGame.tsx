@@ -29,6 +29,9 @@ import {createFoundryClawAttack,createOxideModulatorAttack,
   oxideArmorDamageMultiplier,shouldArmorOxideAlly,
   OXIDE_ARMOR_DURATION_MS} from "./ferrumAdvancedFoes";
 import {createForemanAttack,shouldSpawnForeman,selectForemanSpawn,stepForeman,foremanSectorHit,foremanDamageMultiplier,selectForemanCommandTargets,FOREMAN_COMMAND_LINK_MS,FOREMAN_COMMAND_MOVE_SCALE} from "./ferrumForeman";
+import {resolveOmegaFoundryEncounter,createOmegaFoundryAttack,
+  getOmegaFoundryPhase,stepOmegaFoundry,omegaAttackContact,omegaGearSlots,
+  omegaFoundryDamageMultiplier,OMEGA_ATTACK_NAMES} from "./ferrumOmegaFoundry";
 import {resolveAsteriaArchonEncounter,createThresholdArchonAttack,
   stepThresholdArchon,getThresholdArchonPhase,thresholdArchonDamageMultiplier,
   ARCHON_ATTACK_NAMES} from "./asteriaThresholdArchon";
@@ -3070,15 +3073,18 @@ export const EnergySwarmGame: React.FC = () => {
 
           if (currentWaveRef.current === BOSS_WAVE_NUMBER) {
             // Warning before boss entry!
-            setWaveName(worldRouteRunActiveRef.current
-              ? "BOSS WARNING: THRESHOLD ARCHON APPROACHING"
-              : "BOSS WARNING: DEVOURER APPROACHING");
-            postDialogue(
-              "COMPANION",
-              worldRouteRunActiveRef.current
+            const ferrumBoss=isFerrum(worldRouteRunActiveRef.current,worldRouteThemeRef.current);
+            const asteriaBoss=isAsteria(worldRouteRunActiveRef.current,worldRouteThemeRef.current);
+            setWaveName(ferrumBoss
+              ? "BOSS WARNING: OMEGA FOUNDRY APPROACHING"
+              : asteriaBoss
+                ? "BOSS WARNING: THRESHOLD ARCHON APPROACHING"
+                : "BOSS WARNING: DEVOURER APPROACHING");
+            postDialogue("COMPANION",ferrumBoss
+              ? "¡ALERTA FERRUM! La Factoría Omega camina hacia el sector con sus pistones y cintas activos."
+              : asteriaBoss
                 ? "¡ALERTA ASTERIA! El Arconte del Umbral despierta entre sus anillos orbitales."
-                : "¡ALERTA MÁXIMA! Firma del Blackout Devourer detectada en el sector.",
-            );
+                : "¡ALERTA MÁXIMA! Firma del Blackout Devourer detectada en el sector.");
             startBgm("BOSS");
           } else {
             setWaveName("PREPARATION BREAK");
@@ -3137,8 +3143,10 @@ export const EnergySwarmGame: React.FC = () => {
             worldRouteRunActiveRef.current, descriptor,
           ),
         );
+        const omegaWaveIntro=isFerrum(worldRouteRunActiveRef.current,worldRouteThemeRef.current) &&
+          Boolean(resolveOmegaFoundryEncounter(worldRouteRunActiveRef.current,descriptor));
         const activeWaveName = archonWaveIntro
-          ? "Threshold Archon" : descriptor.display.name;
+          ? "Threshold Archon" : omegaWaveIntro ? "Omega Foundry" : descriptor.display.name;
         setWaveName(activeWaveName);
 
         postDialogue("SYSTEM", `OLEADA ${currentWaveRef.current} ACTIVA: ${activeWaveName}`);
@@ -3164,6 +3172,12 @@ export const EnergySwarmGame: React.FC = () => {
           description: "Two giant orbital rings awaken above ASTERIA. Break the Archon's three defensive phases.",
           tacticalAdvice: "Dodge announced beams and cross between beacon lanes; focus ORBI on the exposed core.",
           introColor: "#facc15",
+        } : omegaWaveIntro && cfg ? {
+          ...cfg,name:"Omega Foundry",displayName:"Omega Foundry",
+          subtitle:"FERRUM // Walking Assembly Sovereign",
+          description:"Fábrica caminante con pistones extensibles, engranajes y reactor superior.",
+          tacticalAdvice:"Evita los pistones; destruye engranajes y cruza entre las cintas.",
+          introColor:"#fb923c",
         } : cfg);
         setTimeout(() => {
           setWaveIntroConfig(null);
@@ -3759,7 +3773,11 @@ export const EnergySwarmGame: React.FC = () => {
     const archonEncounter=!isRematch && stage==="PRIMARY"
       ?resolveAsteriaArchonEncounter(isAsteria(worldRouteRunActiveRef.current,worldRouteThemeRef.current),
         getCurrentRuntimeDescriptor()):null;
-    const chassisId=archonEncounter?"ASTERIA_ARCHON":(raidProfile?.chassis??"DEVOURER");
+    const omegaEncounter=!isRematch && stage==="PRIMARY"
+      ?resolveOmegaFoundryEncounter(isFerrum(worldRouteRunActiveRef.current,worldRouteThemeRef.current),
+        getCurrentRuntimeDescriptor()):null;
+    const chassisId=omegaEncounter?"FERRUM_OMEGA":
+      archonEncounter?"ASTERIA_ARCHON":(raidProfile?.chassis??"DEVOURER");
     const chassisProfile = getBossChassisProfile(chassisId);
     const familyProfile =
       rematchProfile && stage === "PRIMARY"
@@ -3799,7 +3817,7 @@ export const EnergySwarmGame: React.FC = () => {
           ? `${chassisId.toLowerCase()}_${rematchProfile?.sector ?? "infinite"}`
           : isRematch
             ? `${rematchProfile?.bossIdentity.toLowerCase() ?? "infinite_boss"}_${rematchProfile?.sector ?? "infinite"}`
-            : archonEncounter ?? "blackout_devourer_boss",
+            : omegaEncounter ?? archonEncounter ?? "blackout_devourer_boss",
       type: chassisProfile.enemyType,
       x: WORLD_WIDTH / 2,
       y: -80,
@@ -3824,6 +3842,7 @@ export const EnergySwarmGame: React.FC = () => {
         stage === "PRIMARY" ? rematchProfile?.bossIdentity : undefined,
       bossChassis: chassisId,
       archonAttack:archonEncounter?createThresholdArchonAttack():undefined,
+      omegaAttack:omegaEncounter?createOmegaFoundryAttack():undefined,
       bossEncounterStage: stage,
       milestoneContactDamageMultiplier: damageMultiplier,
       milestoneDamageMultiplier: damageMultiplier,
@@ -3896,7 +3915,9 @@ export const EnergySwarmGame: React.FC = () => {
           ? (familyProfile?.introDialogue ?? "¡RESONANCIA HOSTIL RECURRENTE!")
           : archonEncounter
             ? "¡ARCONTE DEL UMBRAL! Tres fases orbitales. Esquiva las líneas anunciadas y concentra ORBI en su núcleo expuesto."
-            : "¡ALERTA! Concentración de energía Blackout masiva en el sector central. ¡El Devorador está entrando!",
+            : omegaEncounter
+              ? "¡FACTORÍA OMEGA! Pistones, producción de engranajes y barridos de cintas; ataca el reactor al abrirse."
+              : "¡ALERTA! Concentración de energía Blackout masiva en el sector central. ¡El Devorador está entrando!",
     );
 
     if (stage === "RAID_ESCALATION") {
@@ -4071,6 +4092,82 @@ export const EnergySwarmGame: React.FC = () => {
         step.attack.stage!=="WARNING")setIsCoreExposed(false);
       if(step.contact)damagePlayerFromBoss(phase===3?14:phase===2?12:11,
         phase===1?"archon_rail_sweep":phase===2?"archon_tri_beacon":"archon_ring_overload");
+      return;
+    }
+
+
+    // FERRUM-04: original attack director; shared boss core remains the sole
+    // authority over player health/cooldowns, ORBI hits, score and victory.
+    if(boss.type===EnemyType.BOSS_OMEGA && boss.omegaAttack){
+      if(phaseTransitionTimerRef.current>0){
+        phaseTransitionTimerRef.current=Math.max(0,phaseTransitionTimerRef.current-delta);
+        if(phaseTransitionTimerRef.current===0)setBossTransitionName(null);
+        return;
+      }
+      const phase=getOmegaFoundryPhase(boss.health,boss.maxHealth);
+      const step=stepOmegaFoundry(boss.omegaAttack,boss,playerPosRef.current,delta,phase);
+      boss.omegaAttack=step.attack;
+      if(step.phaseChanged){
+        boss.bossPhase=phase;setBossPhase(phase);
+        bossMaxPhaseReachedRef.current=Math.max(bossMaxPhaseReachedRef.current,phase);
+        phaseTransitionTimerRef.current=1550;
+        setBossTransitionName(phase===2?"FASE II: CADENA DE ENSAMBLAJE":"FASE III: REACTOR Y CINTAS");
+        setBossAttackName(null);setIsCoreExposed(false);
+        playBossPhaseTransitionSound();
+        addFloatingText(phase===2?"GEAR PRODUCTION":"REACTOR SWEEP",boss.x,boss.y-85,"#fb923c");
+        return;
+      }
+      if(step.announced){
+        setBossAttackName(OMEGA_ATTACK_NAMES[phase]);
+        playBossChargeSound();
+        addFloatingText(phase===1?"PISTON ARMS":phase===2?"GEARS INBOUND":"CONVEYORS",
+          boss.x,boss.y-90,"#fbbf24");
+      }
+      if(step.committed)playDisruptorPulseSound();
+      if(step.assemblyPulse){
+        let living=0;
+        for(const ally of enemiesRef.current){
+          if(!ally.isDead&&ally.omegaGearSourceId===boss.id)living++;
+        }
+        const count=Math.min(omegaGearSlots(living),Math.max(0,MAX_ENEMIES-enemiesRef.current.length));
+        for(let i=0;i<count;i++){
+          const side=i%2===0?-1:1;
+          enemiesRef.current.push({
+            id:`${boss.id}:gear:${step.attack.cycle}:${i}`,
+            type:EnemyType.SHADE_GEAR,
+            x:boss.x+side*90,y:boss.y+52,
+            vx:0,vy:0,health:46,maxHealth:46,speed:1.05,
+            size:13,color:"#fb923c",
+            shootCooldown:100,pulseCooldown:110,contactDamageCooldown:0,
+            isDead:false,isBoss:false,isMinion:true,flashTicks:0,
+            shadeGearAttack:createShadeGearAttack(),omegaGearSourceId:boss.id,
+          });
+        }
+        if(count>0){
+          playBossShardsSound();
+          addFloatingText(`ASSEMBLY +${count} / 4`,boss.x,boss.y+85,"#fdba74");
+        }
+      }
+      if(step.exposed){
+        setIsCoreExposed(true);setBossAttackName(null);
+        playEliteChargeSound();
+        addFloatingText("REACTOR EXPUESTO",boss.x,boss.y-98,"#fef08a");
+      }
+      if(!["EXPOSED","ACTIVE","WARNING"].includes(step.attack.stage))
+        setIsCoreExposed(false);
+      if(omegaAttackContact(step.attack,boss,playerPosRef.current))
+        damagePlayerFromBoss(phase===3?15:12,phase===1?"omega_piston_arms":"omega_conveyor_sweep");
+      // The giant walking factory advances slowly only between locked attacks.
+      // Keeping it stationary through WARNING/ACTIVE preserves readable lanes.
+      if(step.attack.stage==="PREPARE"||step.attack.stage==="RECOVER"){
+        const dx=playerPosRef.current.x-boss.x,dy=playerPosRef.current.y-boss.y;
+        const distance=Math.hypot(dx,dy);
+        if(distance>300){
+          const travel=Math.min(delta*.032,distance-300);
+          boss.x=Math.max(WORLD_BOUNDS.minX+85,Math.min(WORLD_BOUNDS.maxX-85,boss.x+dx/distance*travel));
+          boss.y=Math.max(WORLD_BOUNDS.minY+85,Math.min(WORLD_BOUNDS.maxY-85,boss.y+dy/distance*travel));
+        }
+      }
       return;
     }
 
@@ -6086,7 +6183,8 @@ export const EnergySwarmGame: React.FC = () => {
         enemy.type === EnemyType.BOSS_DEVOURER ||
         enemy.type === EnemyType.BOSS_TITAN ||
         enemy.type === EnemyType.BOSS_WORM ||
-        enemy.type === EnemyType.BOSS_ARCHON
+        enemy.type === EnemyType.BOSS_ARCHON ||
+        enemy.type === EnemyType.BOSS_OMEGA
       ) {
         updateBossAI(enemy, delta);
         enemy.speed = originalSpeed;
@@ -7359,12 +7457,17 @@ export const EnergySwarmGame: React.FC = () => {
               enemy.type === EnemyType.BOSS_DEVOURER ||
               enemy.type === EnemyType.BOSS_TITAN ||
               enemy.type === EnemyType.BOSS_WORM ||
-              enemy.type === EnemyType.BOSS_ARCHON
+              enemy.type === EnemyType.BOSS_ARCHON ||
+        enemy.type === EnemyType.BOSS_OMEGA
             ) {
               const chassis = getBossChassisProfile(
                 enemy.bossChassis ?? "DEVOURER",
               );
-              if(enemy.type===EnemyType.BOSS_ARCHON && enemy.archonAttack){
+              if(enemy.type===EnemyType.BOSS_OMEGA && enemy.omegaAttack){
+                damageToApply*=omegaFoundryDamageMultiplier(enemy.omegaAttack);
+                if(enemy.omegaAttack.stage==="EXPOSED"&&!proj.convergenceTargetId)isCrit=true;
+                if(enemy.omegaAttack.stage==="WARNING")isShieldBlock=true;
+              } else if(enemy.type===EnemyType.BOSS_ARCHON && enemy.archonAttack){
                 damageToApply*=thresholdArchonDamageMultiplier(enemy.archonAttack);
                 if(enemy.archonAttack.stage==="EXPOSED"&&!proj.convergenceTargetId)isCrit=true;
                 if(enemy.archonAttack.stage==="WARNING")isShieldBlock=true;
@@ -7652,6 +7755,8 @@ export const EnergySwarmGame: React.FC = () => {
                       ? "¡EL ARCONTE HA CAÍDO! Los anillos de ASTERIA colapsan y el corredor queda liberado."
                       : enemy.type===EnemyType.BOSS_ARCHON
                       ? "¡EL ARCONTE HA CAÍDO! Los anillos de ASTERIA colapsan y el corredor queda liberado."
+                      : otherEnemy.type===EnemyType.BOSS_OMEGA || enemy.type===EnemyType.BOSS_OMEGA
+                      ? "¡FACTORÍA OMEGA DERROTADA! Las cadenas mecánicas se detienen y el reactor se apaga."
                       : "¡SISTEMAS DEL DEVORADOR CRÍTICAS! Reacción en cadena termodinámica detectada. ¡Sincronizando pulso de purga final!",
                       );
                     } else {
@@ -7733,7 +7838,9 @@ export const EnergySwarmGame: React.FC = () => {
                   "COMPANION",
                   rematch
                     ? "¡REMATCH DEL DEVORADOR COLAPSANDO! Mantén sincronía mientras sellamos esta recurrencia."
-                    : "¡SISTEMAS DEL DEVORADOR CRÍTICAS! Reacción en cadena termodinámica detectada. ¡Sincronizando pulso de purga final!",
+                    : enemy.type===EnemyType.BOSS_OMEGA
+                      ? "¡FACTORÍA OMEGA DERROTADA! Las cadenas mecánicas se detienen y el reactor se apaga."
+                      : "¡SISTEMAS DEL DEVORADOR CRÍTICAS! Reacción en cadena termodinámica detectada. ¡Sincronizando pulso de purga final!",
                 );
               } else {
                 // Only spawn resource or splits if NOT a minion (Section 2.4)
@@ -7799,7 +7906,8 @@ export const EnergySwarmGame: React.FC = () => {
         enemy.type === EnemyType.BOSS_DEVOURER ||
         enemy.type === EnemyType.BOSS_TITAN ||
         enemy.type === EnemyType.BOSS_WORM ||
-        enemy.type === EnemyType.BOSS_ARCHON;
+        enemy.type === EnemyType.BOSS_ARCHON ||
+        enemy.type === EnemyType.BOSS_OMEGA;
       const baseDamage = isBossChassis ? 25 : 15;
       if (isBossChassis) {
         const attackType =
