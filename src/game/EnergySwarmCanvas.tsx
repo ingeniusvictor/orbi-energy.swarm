@@ -1402,6 +1402,17 @@ export function drawEnemiesList(
         ctx.lineTo(a.dirX*240,a.dirY*240);ctx.stroke();
         ctx.restore();
       }
+    } else if(enemy.type===EnemyType.EMBER_SKATER&&enemy.emberSkaterAttack){
+      const a=enemy.emberSkaterAttack;
+      if(a.stage==="WARNING"){
+        ctx.save();ctx.strokeStyle="rgba(253,230,138,.87)";
+        ctx.fillStyle="rgba(249,115,22,.12)";ctx.lineWidth=2.5;
+        ctx.shadowColor="#fb923c";ctx.shadowBlur=13;
+        ctx.setLineDash([9,6]);
+        ctx.beginPath();ctx.arc(a.lockedX-enemy.x,a.lockedY-enemy.y,
+          26+Math.sin(time*.012)*2,0,Math.PI*2);
+        ctx.fill();ctx.stroke();ctx.setLineDash([]);ctx.restore();
+      }
     } else if (enemy.type === EnemyType.DRONE && enemy.shootCooldown !== undefined && enemy.shootCooldown <= 35 && enemy.shootCooldown > 0) {
       // Fine target line to Foton leader (Section 3.1)
       ctx.save();
@@ -1479,6 +1490,30 @@ export function drawEnemiesList(
     ctx.fillStyle = enemy.color;
 
     switch (enemy.type) {
+      case EnemyType.EMBER_SKATER: {
+        const a=enemy.emberSkaterAttack,r=enemy.size;
+        ctx.save();ctx.rotate(time*.006*(a?.side??1));
+        ctx.shadowColor="#f97316";ctx.shadowBlur=18;
+        // Obsidian skating disc, five heat fins and a molten reactor eye.
+        ctx.fillStyle="#1c1917";ctx.strokeStyle="#fb923c";ctx.lineWidth=3;
+        ctx.beginPath();
+        for(let i=0;i<20;i++){
+          const angle=i*Math.PI/10,rad=r*(i%4===0?1.4:.93);
+          if(i===0)ctx.moveTo(rad*Math.cos(angle),rad*Math.sin(angle));
+          else ctx.lineTo(rad*Math.cos(angle),rad*Math.sin(angle));
+        }
+        ctx.closePath();ctx.fill();ctx.stroke();
+        for(let i=0;i<5;i++){
+          const angle=i*Math.PI*2/5;
+          ctx.fillStyle="#9a3412";ctx.beginPath();
+          ctx.arc(Math.cos(angle)*r*.74,Math.sin(angle)*r*.74,r*.13,0,Math.PI*2);
+          ctx.fill();
+        }
+        ctx.fillStyle=a?.stage==="WARNING"?"#fef08a":"#fb923c";
+        ctx.beginPath();ctx.arc(0,0,r*.49,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle="#450a0a";ctx.beginPath();ctx.arc(0,0,r*.19,0,Math.PI*2);ctx.fill();
+        ctx.restore();break;
+      }
       case EnemyType.FERRITE_FOREMAN: {
         const a=enemy.ferriteForemanAttack,r=enemy.size;
         ctx.save();ctx.rotate(Math.atan2(a?.facingY??0,a?.facingX??-1));

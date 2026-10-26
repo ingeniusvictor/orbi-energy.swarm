@@ -24,6 +24,8 @@ import {createSpanWardenAttack,shouldSpawnSpanWarden,selectSpanWardenSpawn,
   stepSpanWarden,resolveSpanWardenHit,SPAN_WARDEN_PROJECTILE_SPREAD} from "./asteriaSpanWarden";
 import {ASTERIA_WORLD_CHOICE,FERRUM_WORLD_ID,PYRA_WORLD_ID,drawFerrumWorld,ferrumSceneAt,isAsteria,isFerrum,isPyra,type PlayableWorld} from "./ferrumWorld";
 import {drawPyraWorld,pyraSceneAt} from "./pyraWorld";
+import {shouldSpawnEmberSkater,selectEmberSkaterSpawn,createEmberSkaterAttack,
+  stepEmberSkater,EMBER_PATCH_LIFE_MS,EMBER_PATCH_DAMAGE,EMBER_PATCH_RADIUS} from "./pyraEmberSkater";
 import {resolveFerrumFoe,selectFerrumFoeSpawn,createShadeGearAttack,createM9WelderAttack,stepShadeGear,stepM9Welder,M9_WELDER_PROJECTILE_SPEED} from "./ferrumOriginalFoes";
 import {createFoundryClawAttack,createOxideModulatorAttack,
   stepFoundryClaw,stepOxideModulator,projectFoundryTetherPull,
@@ -3335,7 +3337,16 @@ export const EnergySwarmGame: React.FC = () => {
     const ferrumSpawn=ferrumFoe?selectFerrumFoeSpawn(routeCamera,
       playerPosRef.current,WORLD_WIDTH,WORLD_HEIGHT,
       Math.max(170,combatPressure.spawnSafetyRadius)):null;
-    const type = foremanSpawn?EnemyType.FERRITE_FOREMAN:
+    // PYRA replaces one genuine ordinary Campaign spawn slot, never rematches.
+    const emberSpawn=shouldSpawnEmberSkater(
+      isPyra(worldRouteRunActiveRef.current,worldRouteThemeRef.current),
+      descriptor.sourceMode,descriptor.waveNumber,waveBudgetSpawnedRef.current,
+      Boolean(forcedType),spawningMiniboss,
+      enemiesRef.current.some(e=>e.type===EnemyType.EMBER_SKATER&&!e.isDead))
+      ?selectEmberSkaterSpawn(routeCamera,playerPosRef.current,
+        WORLD_WIDTH,WORLD_HEIGHT,combatPressure.spawnSafetyRadius):null;
+    const type = emberSpawn?EnemyType.EMBER_SKATER:
+      foremanSpawn?EnemyType.FERRITE_FOREMAN:
       ferrumFoe&&ferrumSpawn?EnemyType[ferrumFoe]:spanWardenSpawn
       ? EnemyType.SPAN_WARDEN
       : railcutterSpawn
@@ -3352,7 +3363,7 @@ export const EnergySwarmGame: React.FC = () => {
       spawningMiniboss || type===EnemyType.SPAN_WARDEN ||
       type===EnemyType.SHADE_GEAR || type===EnemyType.M9_WELDER ||
       type===EnemyType.FOUNDRY_CLAW || type===EnemyType.OXIDE_MODULATOR ||
-      type===EnemyType.FERRITE_FOREMAN
+      type===EnemyType.FERRITE_FOREMAN || type===EnemyType.EMBER_SKATER
         ? null
         : resolveEvolvedEnemySpawn({
             descriptor,
@@ -3418,7 +3429,8 @@ export const EnergySwarmGame: React.FC = () => {
     }
     // Replace the legacy position ONLY for the new ASTERIA-native actor.
     // All other modes retain the existing four-side camera spawn policy.
-    if(foremanSpawn){ex=foremanSpawn.x;ey=foremanSpawn.y;
+    if(emberSpawn){ex=emberSpawn.x;ey=emberSpawn.y;
+    }else if(foremanSpawn){ex=foremanSpawn.x;ey=foremanSpawn.y;
     }else if(ferrumFoe&&ferrumSpawn){
       ex=ferrumSpawn.x;ey=ferrumSpawn.y;
     }else if (spanWardenSpawn) {
@@ -3490,6 +3502,10 @@ export const EnergySwarmGame: React.FC = () => {
       health=148*healthMultiplier;
       speed=.62*biomeCfg.enemySpeedMultiplier*movementSpeedMultiplier;
       size=29;color="#fbbf24";
+    } else if(type===EnemyType.EMBER_SKATER){
+      health=27*healthMultiplier;
+      speed=1.12*biomeCfg.enemySpeedMultiplier*movementSpeedMultiplier;
+      size=13;color="#fb923c";
     } else if (type === EnemyType.DRONE) {
       health = 20 * healthMultiplier;
       speed = 0.7 * biomeCfg.enemySpeedMultiplier * movementSpeedMultiplier;
@@ -3569,7 +3585,7 @@ export const EnergySwarmGame: React.FC = () => {
       type!==EnemyType.SPAN_WARDEN &&
       type!==EnemyType.SHADE_GEAR && type!==EnemyType.M9_WELDER &&
       type!==EnemyType.FOUNDRY_CLAW && type!==EnemyType.OXIDE_MODULATOR &&
-      type!==EnemyType.FERRITE_FOREMAN &&
+      type!==EnemyType.FERRITE_FOREMAN && type!==EnemyType.EMBER_SKATER &&
       Math.random() < effectiveEliteChance;
     if (isElite) {
       health *= 1.8;
@@ -3598,7 +3614,7 @@ export const EnergySwarmGame: React.FC = () => {
             type !== EnemyType.SPAN_WARDEN &&
             type !== EnemyType.SHADE_GEAR && type !== EnemyType.M9_WELDER &&
             type !== EnemyType.FOUNDRY_CLAW && type !== EnemyType.OXIDE_MODULATOR &&
-            type !== EnemyType.FERRITE_FOREMAN,
+            type !== EnemyType.FERRITE_FOREMAN && type !== EnemyType.EMBER_SKATER,
           remainingCapacity:
             Math.min(
               MAX_ENEMIES,
@@ -3672,6 +3688,7 @@ export const EnergySwarmGame: React.FC = () => {
       foundryClawAttack:type===EnemyType.FOUNDRY_CLAW?createFoundryClawAttack():undefined,
       oxideModulatorAttack:type===EnemyType.OXIDE_MODULATOR?createOxideModulatorAttack():undefined,
       ferriteForemanAttack:type===EnemyType.FERRITE_FOREMAN?createForemanAttack():undefined,
+      emberSkaterAttack:type===EnemyType.EMBER_SKATER?createEmberSkaterAttack():undefined,
       enemyFormation: enemyFormation ?? undefined,
       flashTicks: 0,
       evolvedVariantId: evolvedProfile?.id,
@@ -6257,7 +6274,34 @@ export const EnergySwarmGame: React.FC = () => {
         const dy = ty - enemy.y;
         const dist = Math.sqrt(dx * dx + dy * dy) || 1;
 
-        if (enemy.type === EnemyType.RAILCUTTER && enemy.railcutterAttack) {
+        if(enemy.type===EnemyType.EMBER_SKATER&&enemy.emberSkaterAttack){
+          const previous=enemy.emberSkaterAttack;
+          const step=stepEmberSkater(previous,enemy,playerPosRef.current,enemy.speed,delta);
+          enemy.x=Math.max(16,Math.min(WORLD_WIDTH-16,step.x));
+          enemy.y=Math.max(16,Math.min(WORLD_HEIGHT-16,step.y));
+          enemy.vx=step.vx;enemy.vy=step.vy;enemy.emberSkaterAttack=step.attack;
+          if(step.warned){
+            playDroneChargeSound();
+            addFloatingText("EMBER PATCH / WARNING",enemy.x,enemy.y-31,"#fdba74");
+          }
+          // Heat exists only after an announced warning; original hostile
+          // projectile index, budget, lifetime and player damage remain owners.
+          if(step.releaseHeat &&
+             Math.hypot(previous.lockedX-playerPosRef.current.x,
+               previous.lockedY-playerPosRef.current.y)>50 &&
+             projectilesRef.current.length<MAX_PROJECTILES &&
+             hostileProjectileBudgetState.count<
+               (simulationCombatPressure.projectileBudget??MAX_PROJECTILES)){
+            projectilesRef.current.push({
+              id:Math.random().toString(),
+              x:previous.lockedX,y:previous.lockedY,vx:0,vy:0,
+              damage:EMBER_PATCH_DAMAGE,color:"#fb923c",size:EMBER_PATCH_RADIUS,
+              fromPlayer:false,life:EMBER_PATCH_LIFE_MS,
+              maxLife:EMBER_PATCH_LIFE_MS,
+            });
+            hostileProjectileBudgetState.count++;
+          }
+        } else if (enemy.type === EnemyType.RAILCUTTER && enemy.railcutterAttack) {
           const next=stepAsteriaRailcutter(
             enemy.railcutterAttack,enemy,playerPosRef.current,
             enemy.speed,delta,

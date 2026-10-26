@@ -6,6 +6,7 @@ import type {FoundryClawAttack,OxideModulatorAttack} from "./ferrumAdvancedFoes"
 import type {ForemanAttack} from "./ferrumForeman";
 import type { ThresholdArchonAttack } from "./asteriaThresholdArchon";
 import type { OmegaFoundryAttack } from "./ferrumOmegaFoundry";
+import type { EmberSkaterAttack } from "./pyraEmberSkater";
 import type { SkySpecterAttack,BeaconPrismAttack,IonSailAttack } from "./asteriaOriginalFoes";
 import type { SiegeVolleyTelegraphState } from "./siegeVolleyTelegraph";
 import type { BlackoutArchitectEngineIdentityTag } from "./blackoutArchitectEngineIdentityLifecycle";
@@ -163,6 +164,7 @@ export enum EnemyType {
   FOUNDRY_CLAW = "FOUNDRY_CLAW",
   OXIDE_MODULATOR = "OXIDE_MODULATOR",
   FERRITE_FOREMAN = "FERRITE_FOREMAN",
+  EMBER_SKATER = "EMBER_SKATER",
   SPLITTER = "SPLITTER",
   DISRUPTOR = "DISRUPTOR",
   BLACKOUT_ELITE = "BLACKOUT_ELITE",
@@ -262,6 +264,8 @@ export interface Enemy {
   foundryClawAttack?: FoundryClawAttack;
   oxideModulatorAttack?: OxideModulatorAttack;
   ferriteForemanAttack?: ForemanAttack;
+  /** PYRA native heated skid, with deterministic warning window. */
+  emberSkaterAttack?: EmberSkaterAttack;
   /** Native Ferrum machine movement cue, valid only while the linked Foreman lives. */
   ferriteCommandSourceId?: string;
   ferriteCommandUntilMs?: number;
