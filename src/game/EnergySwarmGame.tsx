@@ -3115,9 +3115,18 @@ export const EnergySwarmGame: React.FC = () => {
         pendingCommandLinkBreakRef.current = null;
         pendingCommandLinkPulseRef.current = null;
         setIsWaveBreak(false);
-        setWaveName(descriptor.display.name);
+        // Presentation-only override: the common Campaign descriptor is never
+        // mutated. Legacy Campaign continues to announce Blackout Devourer.
+        const archonWaveIntro = Boolean(
+          resolveAsteriaArchonEncounter(
+            worldRouteRunActiveRef.current, descriptor,
+          ),
+        );
+        const activeWaveName = archonWaveIntro
+          ? "Threshold Archon" : descriptor.display.name;
+        setWaveName(activeWaveName);
 
-        postDialogue("SYSTEM", `OLEADA ${currentWaveRef.current} ACTIVA: ${descriptor.display.name}`);
+        postDialogue("SYSTEM", `OLEADA ${currentWaveRef.current} ACTIVA: ${activeWaveName}`);
 
         // Set up hazards if applicable
         if (descriptor.modifiers.includes("BLACKOUT_HAZARD_ZONES")) {
@@ -3132,7 +3141,15 @@ export const EnergySwarmGame: React.FC = () => {
         }
 
         // Trigger visual cinematic Wave Intro overlay for handcrafted campaign waves.
-        setWaveIntroConfig(cfg);
+        setWaveIntroConfig(archonWaveIntro && cfg ? {
+          ...cfg,
+          name: "Threshold Archon",
+          displayName: "Threshold Archon",
+          subtitle: "ASTERIA // Guardian of the Orbital Threshold",
+          description: "Two giant orbital rings awaken above ASTERIA. Break the Archon's three defensive phases.",
+          tacticalAdvice: "Dodge announced beams and cross between beacon lanes; focus ORBI on the exposed core.",
+          introColor: "#facc15",
+        } : cfg);
         setTimeout(() => {
           setWaveIntroConfig(null);
         }, 2500);
