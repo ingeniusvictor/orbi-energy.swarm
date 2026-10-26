@@ -7797,11 +7797,16 @@ export const EnergySwarmGame: React.FC = () => {
       canvas.dataset.ux15Segment = String(asteriaLiveCursorRef.current.segmentOrdinal);
       canvas.dataset.ux15LiveCombat = "true";
       // Read-only evidence from the ACTUAL campaign actors. No QA spawner.
-      const worldRailcutter=enemiesRef.current.find(e=>
-        e.type===EnemyType.RAILCUTTER && !e.isDead);
+      let worldRailcutter:Enemy|undefined;
+      let railcutterActiveCount=0;
+      for(const actor of enemiesRef.current){
+        if(actor.type===EnemyType.RAILCUTTER && !actor.isDead){
+          railcutterActiveCount++;
+          worldRailcutter??=actor;
+        }
+      }
       canvas.dataset.wbe01RailcutterScope = "WORLD_ROUTE_ONLY";
-      canvas.dataset.wbe01RailcutterCount = String(
-        enemiesRef.current.filter(e=>e.type===EnemyType.RAILCUTTER&&!e.isDead).length);
+      canvas.dataset.wbe01RailcutterCount = String(railcutterActiveCount);
       canvas.dataset.wbe01RailcutterPhase =
         worldRailcutter?.railcutterAttack?.phase??"NONE";
     } else {
