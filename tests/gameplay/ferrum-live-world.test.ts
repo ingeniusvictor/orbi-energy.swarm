@@ -104,7 +104,7 @@ test("FERRUM-01: World Route executes native ORBI, projectiles and two distinct 
  const mobile=readFileSync(new URL("../../src/components/MobileLaunchNavigation.tsx",import.meta.url),"utf8");
  const landscape=readFileSync(new URL("../../src/components/PremiumNativeNavigation.tsx",import.meta.url),"utf8");
  assert.match(start,/data-ferrum-world-start-cta/);
- assert.match(start,/onStartWorldRoute\(FERRUM_WORLD_ID\)/);
+ assert.match(start,/onStartFerrumRoute\(\)/);
  assert.match(mobile,/data-testid="orbi-mobile-ferrum-world"/);
  assert.match(landscape,/data-testid="orbi-mobile-ferrum-world"/);
  assert.match(game,/const ferrumFoe=resolveFerrumFoe/);
@@ -116,7 +116,8 @@ test("FERRUM-01: World Route executes native ORBI, projectiles and two distinct 
  assert.match(game,/stepM9Welder\(/);
  assert.match(game,/shootFromEnemy\(enemy,hostileProjectileBudgetState/);
  assert.match(game,/registerCombatDefeat\(enemy, proj.affinity\)/);
- assert.match(game,/const startWorldRouteGame = \(world:PlayableWorld=ASTERIA_WORLD_CHOICE\)/);
+ assert.match(game,/const startWorldRouteGame = \(\) =>/);
+ assert.match(game,/const startFerrumWorldRouteGame = \(\) =>/);
  assert.match(game,/resolveAsteriaArchonEncounter\(isAsteria\(/);
  assert.match(canvas,/case EnemyType.SHADE_GEAR/);
  assert.match(canvas,/case EnemyType.M9_WELDER/);
