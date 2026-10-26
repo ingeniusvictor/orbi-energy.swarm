@@ -127,7 +127,7 @@ test("WBE-01F: real boss instance uses the existing core, collision, HUD, reward
   const hud=readFileSync(new URL("../../src/components/BossHudOverlay.tsx",import.meta.url),"utf8");
   const descriptorSrc=readFileSync(new URL(root+"runtimeWaveDescriptor.ts",import.meta.url),"utf8");
   const director=readFileSync(new URL(root+"waveDirector.ts",import.meta.url),"utf8");
-  for(const keyword of ["spawnBoss(","bossRef.current = boss","updateBossAI(boss",
+  for(const keyword of ["spawnBoss(","bossRef.current = boss","updateBossAI(enemy, delta)",
     "registerCombatDefeat(enemy, proj.affinity)","enterInfiniteAfterCampaignVictory()",
     "damagePlayerFromBoss(","bossDefeatedSequenceActiveRef.current = true",
     "capConvergenceBossDamage(", "EnemyType.BOSS_ARCHON",
