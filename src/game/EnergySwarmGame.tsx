@@ -6169,7 +6169,8 @@ export const EnergySwarmGame: React.FC = () => {
         enemy.type === EnemyType.BOSS_DEVOURER ||
         enemy.type === EnemyType.BOSS_TITAN ||
         enemy.type === EnemyType.BOSS_WORM ||
-        enemy.type === EnemyType.BOSS_ARCHON
+        enemy.type === EnemyType.BOSS_ARCHON ||
+        enemy.type === EnemyType.BOSS_OMEGA
       ) {
         updateBossAI(enemy, delta);
         enemy.speed = originalSpeed;
@@ -7442,12 +7443,17 @@ export const EnergySwarmGame: React.FC = () => {
               enemy.type === EnemyType.BOSS_DEVOURER ||
               enemy.type === EnemyType.BOSS_TITAN ||
               enemy.type === EnemyType.BOSS_WORM ||
-              enemy.type === EnemyType.BOSS_ARCHON
+              enemy.type === EnemyType.BOSS_ARCHON ||
+        enemy.type === EnemyType.BOSS_OMEGA
             ) {
               const chassis = getBossChassisProfile(
                 enemy.bossChassis ?? "DEVOURER",
               );
-              if(enemy.type===EnemyType.BOSS_ARCHON && enemy.archonAttack){
+              if(enemy.type===EnemyType.BOSS_OMEGA && enemy.omegaAttack){
+                damageToApply*=omegaFoundryDamageMultiplier(enemy.omegaAttack);
+                if(enemy.omegaAttack.stage==="EXPOSED"&&!proj.convergenceTargetId)isCrit=true;
+                if(enemy.omegaAttack.stage==="WARNING")isShieldBlock=true;
+              } else if(enemy.type===EnemyType.BOSS_ARCHON && enemy.archonAttack){
                 damageToApply*=thresholdArchonDamageMultiplier(enemy.archonAttack);
                 if(enemy.archonAttack.stage==="EXPOSED"&&!proj.convergenceTargetId)isCrit=true;
                 if(enemy.archonAttack.stage==="WARNING")isShieldBlock=true;
@@ -7735,6 +7741,8 @@ export const EnergySwarmGame: React.FC = () => {
                       ? "¡EL ARCONTE HA CAÍDO! Los anillos de ASTERIA colapsan y el corredor queda liberado."
                       : enemy.type===EnemyType.BOSS_ARCHON
                       ? "¡EL ARCONTE HA CAÍDO! Los anillos de ASTERIA colapsan y el corredor queda liberado."
+                      : otherEnemy.type===EnemyType.BOSS_OMEGA || enemy.type===EnemyType.BOSS_OMEGA
+                      ? "¡FACTORÍA OMEGA DERROTADA! Las cadenas mecánicas se detienen y el reactor se apaga."
                       : "¡SISTEMAS DEL DEVORADOR CRÍTICAS! Reacción en cadena termodinámica detectada. ¡Sincronizando pulso de purga final!",
                       );
                     } else {
@@ -7816,7 +7824,9 @@ export const EnergySwarmGame: React.FC = () => {
                   "COMPANION",
                   rematch
                     ? "¡REMATCH DEL DEVORADOR COLAPSANDO! Mantén sincronía mientras sellamos esta recurrencia."
-                    : "¡SISTEMAS DEL DEVORADOR CRÍTICAS! Reacción en cadena termodinámica detectada. ¡Sincronizando pulso de purga final!",
+                    : enemy.type===EnemyType.BOSS_OMEGA
+                      ? "¡FACTORÍA OMEGA DERROTADA! Las cadenas mecánicas se detienen y el reactor se apaga."
+                      : "¡SISTEMAS DEL DEVORADOR CRÍTICAS! Reacción en cadena termodinámica detectada. ¡Sincronizando pulso de purga final!",
                 );
               } else {
                 // Only spawn resource or splits if NOT a minion (Section 2.4)
@@ -7882,7 +7892,8 @@ export const EnergySwarmGame: React.FC = () => {
         enemy.type === EnemyType.BOSS_DEVOURER ||
         enemy.type === EnemyType.BOSS_TITAN ||
         enemy.type === EnemyType.BOSS_WORM ||
-        enemy.type === EnemyType.BOSS_ARCHON;
+        enemy.type === EnemyType.BOSS_ARCHON ||
+        enemy.type === EnemyType.BOSS_OMEGA;
       const baseDamage = isBossChassis ? 25 : 15;
       if (isBossChassis) {
         const attackType =
