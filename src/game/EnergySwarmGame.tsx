@@ -24,6 +24,10 @@ import {createSpanWardenAttack,shouldSpawnSpanWarden,selectSpanWardenSpawn,
   stepSpanWarden,resolveSpanWardenHit,SPAN_WARDEN_PROJECTILE_SPREAD} from "./asteriaSpanWarden";
 import {ASTERIA_WORLD_CHOICE,FERRUM_WORLD_ID,drawFerrumWorld,ferrumSceneAt,isAsteria,isFerrum,type PlayableWorld} from "./ferrumWorld";
 import {resolveFerrumFoe,selectFerrumFoeSpawn,createShadeGearAttack,createM9WelderAttack,stepShadeGear,stepM9Welder,M9_WELDER_PROJECTILE_SPEED} from "./ferrumOriginalFoes";
+import {createFoundryClawAttack,createOxideModulatorAttack,
+  stepFoundryClaw,stepOxideModulator,projectFoundryTetherPull,
+  oxideArmorDamageMultiplier,shouldArmorOxideAlly,
+  OXIDE_ARMOR_DURATION_MS} from "./ferrumAdvancedFoes";
 import {resolveAsteriaArchonEncounter,createThresholdArchonAttack,
   stepThresholdArchon,getThresholdArchonPhase,thresholdArchonDamageMultiplier,
   ARCHON_ATTACK_NAMES} from "./asteriaThresholdArchon";
@@ -3316,7 +3320,8 @@ export const EnergySwarmGame: React.FC = () => {
             EnemyType.CRAWLER);
     const evolvedProfile =
       spawningMiniboss || type===EnemyType.SPAN_WARDEN ||
-      type===EnemyType.SHADE_GEAR || type===EnemyType.M9_WELDER
+      type===EnemyType.SHADE_GEAR || type===EnemyType.M9_WELDER ||
+      type===EnemyType.FOUNDRY_CLAW || type===EnemyType.OXIDE_MODULATOR
         ? null
         : resolveEvolvedEnemySpawn({
             descriptor,
@@ -3441,6 +3446,14 @@ export const EnergySwarmGame: React.FC = () => {
       health=34*healthMultiplier;
       speed=.72*biomeCfg.enemySpeedMultiplier*movementSpeedMultiplier;
       size=15;color="#fb923c";
+    } else if(type===EnemyType.FOUNDRY_CLAW){
+      health=47*healthMultiplier;
+      speed=.84*biomeCfg.enemySpeedMultiplier*movementSpeedMultiplier;
+      size=18;color="#fda4af";
+    } else if(type===EnemyType.OXIDE_MODULATOR){
+      health=56*healthMultiplier;
+      speed=.6*biomeCfg.enemySpeedMultiplier*movementSpeedMultiplier;
+      size=18;color="#a3e635";
     } else if (type === EnemyType.DRONE) {
       health = 20 * healthMultiplier;
       speed = 0.7 * biomeCfg.enemySpeedMultiplier * movementSpeedMultiplier;
@@ -3519,6 +3532,7 @@ export const EnergySwarmGame: React.FC = () => {
       !tacticalType &&
       type!==EnemyType.SPAN_WARDEN &&
       type!==EnemyType.SHADE_GEAR && type!==EnemyType.M9_WELDER &&
+      type!==EnemyType.FOUNDRY_CLAW && type!==EnemyType.OXIDE_MODULATOR &&
       Math.random() < effectiveEliteChance;
     if (isElite) {
       health *= 1.8;
@@ -3545,7 +3559,8 @@ export const EnergySwarmGame: React.FC = () => {
             type !== EnemyType.BEACON_PRISM &&
             type !== EnemyType.ION_SAIL &&
             type !== EnemyType.SPAN_WARDEN &&
-            type !== EnemyType.SHADE_GEAR && type !== EnemyType.M9_WELDER,
+            type !== EnemyType.SHADE_GEAR && type !== EnemyType.M9_WELDER &&
+            type !== EnemyType.FOUNDRY_CLAW && type !== EnemyType.OXIDE_MODULATOR,
           remainingCapacity:
             Math.min(
               MAX_ENEMIES,
@@ -3616,6 +3631,8 @@ export const EnergySwarmGame: React.FC = () => {
         ?createSpanWardenAttack():undefined,
       shadeGearAttack:type===EnemyType.SHADE_GEAR?createShadeGearAttack():undefined,
       m9WelderAttack:type===EnemyType.M9_WELDER?createM9WelderAttack():undefined,
+      foundryClawAttack:type===EnemyType.FOUNDRY_CLAW?createFoundryClawAttack():undefined,
+      oxideModulatorAttack:type===EnemyType.OXIDE_MODULATOR?createOxideModulatorAttack():undefined,
       enemyFormation: enemyFormation ?? undefined,
       flashTicks: 0,
       evolvedVariantId: evolvedProfile?.id,
@@ -6230,6 +6247,49 @@ export const EnergySwarmGame: React.FC = () => {
           }
           if(next.fire)shootFromEnemy(enemy,hostileProjectileBudgetState,
             {x:prior.lockedX,y:prior.lockedY});
+        } else if(enemy.type===EnemyType.FOUNDRY_CLAW&&enemy.foundryClawAttack){
+          const previous=enemy.foundryClawAttack;
+          const step=stepFoundryClaw(previous,enemy,playerPosRef.current,enemy.speed,delta);
+          enemy.x=Math.max(16,Math.min(WORLD_WIDTH-16,step.x));
+          enemy.y=Math.max(16,Math.min(WORLD_HEIGHT-16,step.y));
+          enemy.vx=step.vx;enemy.vy=step.vy;
+          enemy.foundryClawAttack=step.attack;
+          if(previous.phase==="APPROACH"&&step.attack.phase==="ANCHOR"){
+            playDroneChargeSound();
+            addFloatingText("CLAW ANCHOR",enemy.x,enemy.y-28,"#fda4af");
+          }
+          if(step.tetherActive){
+            const p=projectFoundryTetherPull(enemy,playerPosRef.current,delta);
+            // Same original ENERGY coordinates/arena limits as the canonical
+            // Gravity Well, always less than one world unit per frame. This
+            // tug never disables controls, Dash, Overdrive or any ORBI.
+            playerPosRef.current.x=Math.max(16,Math.min(WORLD_WIDTH-16,
+              playerPosRef.current.x+p.x));
+            playerPosRef.current.y=Math.max(16,Math.min(WORLD_HEIGHT-16,
+              playerPosRef.current.y+p.y));
+          }
+        } else if(enemy.type===EnemyType.OXIDE_MODULATOR&&enemy.oxideModulatorAttack){
+          const previous=enemy.oxideModulatorAttack;
+          const step=stepOxideModulator(previous,enemy,playerPosRef.current,enemy.speed,delta);
+          enemy.x=Math.max(16,Math.min(WORLD_WIDTH-16,step.x));
+          enemy.y=Math.max(16,Math.min(WORLD_HEIGHT-16,step.y));
+          enemy.vx=step.vx;enemy.vy=step.vy;
+          enemy.oxideModulatorAttack=step.attack;
+          if(previous.phase==="POSITION"&&step.attack.phase==="ARMOR"){
+            playDisruptorChargeSound();
+            addFloatingText("OXIDE ARMOR LINK",enemy.x,enemy.y-32,"#bef264");
+          }
+          if(step.armorPulse){
+            // Single active Modulator maximum, bounded by existing 80 enemy
+            // entities. Each pulse grants a short native damage modifier.
+            for(const ally of enemiesRef.current){
+              if(!ally.isDead&&shouldArmorOxideAlly(enemy,ally,
+                 ally.isBoss||Boolean(ally.milestoneKind),ally===enemy)){
+                ally.oxideArmorSourceId=enemy.id;
+                ally.oxideArmoredUntilMs=timeElapsedRef.current+OXIDE_ARMOR_DURATION_MS;
+              }
+            }
+          }
         } else if (enemy.type === EnemyType.RIFT_HUNTER) {
           enemy.pulseCooldown -= delta / 16.6;
           if ((enemy.chargeTimer ?? 0) > 0) {
@@ -7045,6 +7105,16 @@ export const EnergySwarmGame: React.FC = () => {
     enemy.milestoneKind === "MINIBOSS";
 
   const registerCombatDefeat = (enemy: Enemy, affinity?: OrbiAffinity) => {
+    // Destruction instantly severs FERRUM Oxide protection even if the
+    // Modulator dies to an ORBI splash. No interval or delayed cleanup.
+    if(enemy.type===EnemyType.OXIDE_MODULATOR){
+      for(const ally of enemiesRef.current){
+        if(ally.oxideArmorSourceId===enemy.id){
+          ally.oxideArmorSourceId=undefined;
+          ally.oxideArmoredUntilMs=0;
+        }
+      }
+    }
     const commandLinkBreakIntent = enemy.enemyFormation
       ? resolveLiveCommandLinkBreakIntent(enemy.enemyFormation)
       : null;
@@ -7273,6 +7343,15 @@ export const EnergySwarmGame: React.FC = () => {
                 isCrit = true;
                 damageToApply *= 1.4;
               }
+            }
+
+            // Native ORBI impact resolver respects the ally's temporal
+            // Oxide plating without changing formation, loot or projectiles.
+            if(!enemy.isBoss && enemy.oxideArmoredUntilMs!==undefined &&
+              enemy.oxideArmoredUntilMs>timeElapsedRef.current){
+              damageToApply*=oxideArmorDamageMultiplier(
+                enemy.oxideArmoredUntilMs,timeElapsedRef.current);
+              isShieldBlock=true;
             }
 
             if (proj.convergenceTargetId) {
@@ -8139,7 +8218,7 @@ export const EnergySwarmGame: React.FC = () => {
       canvas.dataset.wbe01RailcutterCount = String(railcutterActiveCount);
       canvas.dataset.wbe01RailcutterPhase =
         worldRailcutter?.railcutterAttack?.phase??"NONE";
-      let sky=0,beacons=0,sails=0,wardens=0,gear=0,welders=0;
+      let sky=0,beacons=0,sails=0,wardens=0,gear=0,welders=0,claws=0,oxides=0;
       for(const actor of enemiesRef.current){
         if(actor.isDead)continue;
         if(actor.type===EnemyType.SKY_SPECTER)sky++;
@@ -8148,6 +8227,8 @@ export const EnergySwarmGame: React.FC = () => {
         else if(actor.type===EnemyType.SPAN_WARDEN)wardens++;
         else if(actor.type===EnemyType.SHADE_GEAR)gear++;
         else if(actor.type===EnemyType.M9_WELDER)welders++;
+        else if(actor.type===EnemyType.FOUNDRY_CLAW)claws++;
+        else if(actor.type===EnemyType.OXIDE_MODULATOR)oxides++;
       }
       canvas.dataset.wbe01AsteriaExclusiveCounts =
         sky+","+beacons+","+sails;
@@ -8157,9 +8238,13 @@ export const EnergySwarmGame: React.FC = () => {
       if(ferrumActive){
         canvas.dataset.ferrumShadeGearCount=String(gear);
         canvas.dataset.ferrumWelderCount=String(welders);
+        canvas.dataset.ferrumFoundryClawCount=String(claws);
+        canvas.dataset.ferrumOxideModulatorCount=String(oxides);
       }else{
         delete canvas.dataset.ferrumShadeGearCount;
         delete canvas.dataset.ferrumWelderCount;
+        delete canvas.dataset.ferrumFoundryClawCount;
+        delete canvas.dataset.ferrumOxideModulatorCount;
       }
     } else {
       delete canvas.dataset.wbe01RailcutterScope;
@@ -8176,6 +8261,8 @@ export const EnergySwarmGame: React.FC = () => {
       delete canvas.dataset.ux15LiveCombat;
       delete canvas.dataset.ferrumShadeGearCount;
       delete canvas.dataset.ferrumWelderCount;
+      delete canvas.dataset.ferrumFoundryClawCount;
+      delete canvas.dataset.ferrumOxideModulatorCount;
       // Stable existing background for all default and other-mode sessions.
       const quality = getQualityConfig(stats.qualityPreset);
       backgroundRenderer.render(
