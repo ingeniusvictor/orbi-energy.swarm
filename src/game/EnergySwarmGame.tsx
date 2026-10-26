@@ -228,7 +228,7 @@ import { ResultScreen } from "../components/ResultScreen";
 import { CompanionPanel } from "../components/CompanionPanel";
 import { UpgradeSelector } from "../components/UpgradeSelector";
 import { MobileTouchOverlay } from "../components/MobileTouchOverlay";
-import { createEnergyThrusterPose, projectEnergyThrusterPose, drawEnergyThrusterJets } from "./energyThrusters";
+import { createEnergyThrusterPose, projectEnergyThrusterPose, drawEnergyThrusterJets, drawEnergyDashStreaks } from "./energyThrusters";
 import { WebPhotoReturn } from "../components/WebPhotoReturn";
 import { MobileFormationCarousel } from "../components/MobileFormationCarousel";
 import { OrientationHint } from "../components/OrientationHint";
@@ -7996,28 +7996,12 @@ export const EnergySwarmGame: React.FC = () => {
       playerPosRef.current, swarmRef.current, flashProfile.mode === "REDUCED",
     );
 
-    // UX11-E: bounded propulsion streaks, no Dyson rings, no gameplay immunity.
-    if (projectPropulsionDash(propulsionDashRef.current, timeElapsedRef.current).active) {
-      const direction = propulsionDashRef.current.direction;
-      const pos = playerPosRef.current;
-      ctx.save();
-      ctx.lineCap = "round";
-      ctx.shadowColor = "#67e8f9";
-      ctx.shadowBlur = 12;
-      for (const lateral of [-11, 0, 11]) {
-        const sideX = -direction.y * lateral;
-        const sideY = direction.x * lateral;
-        ctx.beginPath();
-        ctx.moveTo(pos.x - direction.x * 16 + sideX, pos.y - direction.y * 16 + sideY);
-        ctx.lineTo(pos.x - direction.x * (lateral === 0 ? 86 : 60) + sideX,
-          pos.y - direction.y * (lateral === 0 ? 86 : 60) + sideY);
-        ctx.strokeStyle = lateral === 0 ? "#fde68a" : "#67e8f9";
-        ctx.globalAlpha = lateral === 0 ? 0.85 : 0.55;
-        ctx.lineWidth = lateral === 0 ? 4 : 2;
-        ctx.stroke();
-      }
-      ctx.restore();
-    }
+    // UX11-E: draw the EXACT certified three-streak Dash presentation.
+    // Refactored into shared UX12 renderer, no change in geometry or timing.
+    drawEnergyDashStreaks(
+      ctx,playerPosRef.current,propulsionDashRef.current.direction,
+      projectPropulsionDash(propulsionDashRef.current,timeElapsedRef.current).active,
+    );
 
     // 8. Draw active floating text feedback (such as CRITICAL or BLOCK)
     ctx.save();
