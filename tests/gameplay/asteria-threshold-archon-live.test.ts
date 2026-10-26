@@ -131,7 +131,7 @@ test("WBE-01F: real boss instance uses the existing core, collision, HUD, reward
     "registerCombatDefeat(enemy, proj.affinity)","enterInfiniteAfterCampaignVictory()",
     "damagePlayerFromBoss(","bossDefeatedSequenceActiveRef.current = true",
     "capConvergenceBossDamage(", "EnemyType.BOSS_ARCHON",
-    "resolveAsteriaArchonEncounter(worldRouteRunActiveRef.current"]){
+    "resolveAsteriaArchonEncounter(isAsteria(worldRouteRunActiveRef.current,worldRouteThemeRef.current)"]){
     assert.ok(game.includes(keyword),keyword);
   }
   assert.match(game,/archonAttack:archonEncounter\?createThresholdArchonAttack/);
@@ -141,7 +141,7 @@ test("WBE-01F: real boss instance uses the existing core, collision, HUD, reward
   assert.match(canvas,/case EnemyType.BOSS_ARCHON/);
   // The real wave intro is ASTERIA-exclusive; the shared Classic descriptor
   // keeps its Blackout Devourer identity for the original campaign.
-  assert.match(game,/const archonWaveIntro = Boolean/);
+  assert.match(game,/const archonWaveIntro = isAsteria\(/);
   assert.match(game,/const activeWaveName = archonWaveIntro/);
   assert.match(game,/setWaveName\(activeWaveName\)/);
   assert.match(game,/setWaveIntroConfig\(archonWaveIntro && cfg/);

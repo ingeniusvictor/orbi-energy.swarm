@@ -117,7 +117,7 @@ test("WBE-01E: real engine only; native projectile budget, ORBI damage and rewar
   assert.match(types,/SPAN_WARDEN = "SPAN_WARDEN"/);
   assert.match(types,/spanWardenAttack\?: SpanWardenAttack/);
   assert.match(game,/shouldSpawnSpanWarden\(/);
-  assert.match(game,/worldRouteRunActiveRef.current,descriptor.sourceMode/);
+  assert.match(game,/isAsteria\(worldRouteRunActiveRef.current,worldRouteThemeRef.current\),descriptor.sourceMode/);
   assert.match(game,/EnemyType.SPAN_WARDEN/);
   assert.match(game,/stepSpanWarden\(/);
   assert.match(game,/resolveSpanWardenHit\(/);

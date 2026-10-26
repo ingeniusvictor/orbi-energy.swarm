@@ -403,6 +403,59 @@ async function runAsteriaCombat(name,width,height,touch){
   }finally{await context.close();}
 }
 
+/** FERRUM-01: real second Mundo Nuevo selection, no lab or mock enemies. */
+async function runFerrumLiveCombat(name,width,height,touch){
+  const context=await browser.newContext({viewport:{width,height},
+    isMobile:touch,hasTouch:touch,deviceScaleFactor:touch?2:1,
+    reducedMotion:"reduce",serviceWorkers:"block"});
+  const page=await context.newPage();
+  page.on("pageerror",e=>diagnostics.push(name+": "+String(e)));
+  page.on("console",msg=>{if(msg.type()==="error")diagnostics.push(name+": "+msg.text());});
+  try{
+    await page.clock.install({time:new Date("2026-10-26T10:00:00Z")});
+    await page.goto(url+"/",{waitUntil:"domcontentloaded",timeout:30000});
+    const mobileEnter=page.getByTestId("orbi-mobile-enter");
+    if(await mobileEnter.isVisible()){
+      await mobileEnter.click();
+      await page.getByTestId("orbi-mobile-menu-main-play").click();
+      await page.getByTestId("orbi-mobile-ferrum-world").click();
+    }else{
+      await page.locator('[data-ferrum-world-start-cta="true"]').click();
+    }
+    const canvas=page.locator("#game-canvas");
+    await canvas.waitFor({state:"visible",timeout:15000});
+    check(await page.locator('[data-selected-game-mode="WORLD_ROUTE"]').count()===1,
+      name+": FERRUM did not open the actual Mundo Nuevo run");
+    check(await page.getByTestId("ux15-route-qa").count()===0,
+      name+": FERRUM launched the lab instead of production combat");
+    await page.clock.runFor(6800);
+    await page.waitForFunction(()=>document.querySelector("#game-canvas")
+      ?.dataset.ux15World==="FERRUM_MECHANICA",null,{timeout:12000});
+    const world=await canvas.getAttribute("data-ux15-world");
+    const scene=await canvas.getAttribute("data-ux15-scene");
+    const visual=await canvas.getAttribute("data-ux15-visual");
+    const distance=Number(await canvas.getAttribute("data-ux15-route-distance"));
+    check(world==="FERRUM_MECHANICA",name+": wrong real world selected");
+    check(visual==="ferrum-industrial-canvas",name+": ASTERIA art leaked into FERRUM");
+    check(scene==="GEAR_GATE",name+": FERRUM first industrial segment missing");
+    check(Number.isFinite(distance)&&distance>10,
+      name+": the original simulated route clock failed in FERRUM");
+    check(await canvas.getAttribute("data-ux15-live-combat")==="true",
+      name+": false decorative-only FERRUM mode");
+    check((await canvas.getAttribute("data-ferrum-shade-gear-count"))!==null,
+      name+": Shade Gear not registered with real enemy director");
+    check((await canvas.getAttribute("data-ferrum-welder-count"))!==null,
+      name+": M-9 Welder not registered with real enemy director");
+    check(Number(await canvas.getAttribute("data-wbe01-railcutter-count"))===0,
+      name+": ASTERIA Railcutter escaped into FERRUM");
+    check(Number(await canvas.getAttribute("data-wbe01-span-warden-count"))===0,
+      name+": ASTERIA elite escaped into FERRUM");
+    await shot(page,name+"-ferrum-world-live");
+    evidence.cases.push({name,pass:true,world,scene,visual,distance,
+      liveCombat:true,ferrumExclusive:true});
+  }finally{await context.close();}
+}
+
 /** UX15-C3A-2: isolated PHYSICAL player/camera, not the legacy gameplay.
  * Ground acceptance in real simulation-owned player, camera and origin epoch.
  */
@@ -1607,6 +1660,8 @@ try {
   await runRouteQa("ux15b-route-mobile-844x390",844,390,true);
   await runAsteriaCombat("ux15c1-real-game-desktop-1440x900",1440,900,false);
   await runAsteriaCombat("ux15c1-real-game-mobile-844x390",844,390,true);
+  await runFerrumLiveCombat("ferrum01-real-game-desktop-1440x900",1440,900,false);
+  await runFerrumLiveCombat("ferrum01-real-game-mobile-844x390",844,390,true);
   await runPhysicalRouteQa("ux15c3a2-physical-desktop-1440x900",1440,900,false);
   await runPhysicalRouteQa("ux15c3a2-physical-mobile-844x390",844,390,true);
   await runDynamicRouteQa("ux15c3b1-dynamic-desktop-1440x900",1440,900,false);

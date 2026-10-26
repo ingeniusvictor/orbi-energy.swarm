@@ -57,7 +57,7 @@ test("UX15-C2B: runtime keeps default arena path and does not introduce second W
   const engine = readFileSync(new URL("../../src/game/EnergySwarmGame.tsx",import.meta.url),"utf8");
   const renderer = readFileSync(new URL("../../src/game/asteriaPremiumRenderer.ts",import.meta.url),"utf8");
   const browser = readFileSync(new URL("../../scripts/web-ux01-browser-evidence.mjs",import.meta.url),"utf8");
-  assert.match(engine,/if \(worldRouteRunActiveRef\.current\) preloadAsteriaPremiumWorld\(\)/);
+  assert.match(engine,/if\(isAsteria\(worldRouteRunActiveRef\.current,worldRouteThemeRef\.current\)\) preloadAsteriaPremiumWorld\(\)/);
   assert.match(engine,/const asteriaCombatVisualActive = worldRouteRunActiveRef\.current/);
   assert.match(engine,/drawAsteriaPremiumWorld\(/);
   assert.match(engine,/if \(!asteriaPremiumReady\) \{[\s\S]*drawWorldRouteQaScene\(/);
