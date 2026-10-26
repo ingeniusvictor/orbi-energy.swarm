@@ -1914,7 +1914,9 @@ export const EnergySwarmGame: React.FC = () => {
 
     // UX15-C1: restarting a campaign restarts only visual scenery, never
     // the actual wave budget, combat timers, physical coordinates or loot.
-    asteriaLiveCursorRef.current = createRouteCursor(worldRouteThemeRef.current===FERRUM_WORLD_ID?"ferrum-world-02":"asteria-campaign-qa");
+    asteriaLiveCursorRef.current = createRouteCursor("asteria-campaign-qa");
+    if(worldRouteThemeRef.current===FERRUM_WORLD_ID)
+      asteriaLiveCursorRef.current = createRouteCursor("ferrum-world-02");
     // Initial cleanups
     playerPosRef.current = { x: WORLD_WIDTH / 2, y: WORLD_HEIGHT / 2 };
     pointerRef.current = { x: WORLD_WIDTH / 2, y: WORLD_HEIGHT / 2 };
@@ -3125,7 +3127,7 @@ export const EnergySwarmGame: React.FC = () => {
         setIsWaveBreak(false);
         // Presentation-only override: the common Campaign descriptor is never
         // mutated. Legacy Campaign continues to announce Blackout Devourer.
-        const archonWaveIntro = Boolean(
+        const archonWaveIntro = isAsteria(worldRouteRunActiveRef.current,worldRouteThemeRef.current) && Boolean(
           resolveAsteriaArchonEncounter(
             worldRouteRunActiveRef.current, descriptor,
           ),
@@ -8109,12 +8111,13 @@ export const EnergySwarmGame: React.FC = () => {
         canvas.dataset.ux15Scene=ferrumSceneAt(asteriaLiveCursorRef.current.segmentOrdinal);
         canvas.dataset.ux15World=FERRUM_WORLD_ID;
       }else{
-        const asteriaPremiumReady=drawAsteriaPremiumWorld(
-          ctx,asteriaLiveCursorRef.current,panoramicViewport.width);
-        if(!asteriaPremiumReady)
-          drawWorldRouteQaScene(ctx,asteriaLiveCursorRef.current,
-            {manualX:0,y:240},panoramicViewport.width,false);
-        canvas.dataset.ux15Visual=asteriaPremiumReady?"premium-webp":"fallback-canvas";
+        const asteriaPremiumReady = drawAsteriaPremiumWorld(
+          ctx, asteriaLiveCursorRef.current, panoramicViewport.width);
+        if (!asteriaPremiumReady) {
+          drawWorldRouteQaScene(ctx, asteriaLiveCursorRef.current,
+            { manualX: 0, y: 240 }, panoramicViewport.width, false);
+        }
+        canvas.dataset.ux15Visual = asteriaPremiumReady ? "premium-webp" : "fallback-canvas";
         canvas.dataset.ux15Scene=getAsteriaPremiumScene(
           asteriaLiveCursorRef.current.segmentOrdinal).kind;
         canvas.dataset.ux15World="ASTERIA_ORBITAL";
