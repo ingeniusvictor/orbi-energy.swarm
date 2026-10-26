@@ -3466,6 +3466,9 @@ export const EnergySwarmGame: React.FC = () => {
       !spawningMiniboss &&
       !evolvedProfile &&
       !tacticalType &&
+      // The original Warden already has custom elite scale and cyan chassis;
+      // never let legacy random elite scaling recolor it rose or double HP.
+      type !== EnemyType.SPAN_WARDEN &&
       Math.random() < effectiveEliteChance;
     if (isElite) {
       health *= 1.8;
