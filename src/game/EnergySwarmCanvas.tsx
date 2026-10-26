@@ -1170,6 +1170,25 @@ export function drawEnemiesList(
           Math.sin(time*.009)*5,0,Math.PI*2);ctx.stroke();
         ctx.restore();
       }
+    } else if(enemy.type===EnemyType.FERRITE_FOREMAN&&enemy.ferriteForemanAttack){
+      const a=enemy.ferriteForemanAttack;
+      if(a.stage==="WARNING"||a.stage==="SHOCK"){
+        const angle=Math.atan2(a.facingY,a.facingX)+a.sector*.78;
+        const active=a.stage==="SHOCK";
+        ctx.save();ctx.shadowColor=active?"#f97316":"#facc15";ctx.shadowBlur=17;
+        ctx.fillStyle=active?"rgba(249,115,22,.18)":"rgba(250,204,21,.065)";
+        ctx.strokeStyle=active?"#fb923c":"#fde68a";ctx.lineWidth=active?4:2;
+        ctx.setLineDash(active?[]:[9,7]);
+        ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,240,angle-.24,angle+.24);
+        ctx.closePath();ctx.fill();ctx.stroke();
+        ctx.setLineDash([]);ctx.restore();
+      }
+      if(a.stage==="EXPOSED"){
+        ctx.save();ctx.strokeStyle="#a3e635";ctx.lineWidth=3.5;
+        ctx.shadowColor="#bef264";ctx.shadowBlur=20;
+        ctx.beginPath();ctx.arc(0,0,enemy.size*1.38+Math.sin(time*.01)*3,0,Math.PI*2);
+        ctx.stroke();ctx.restore();
+      }
     } else if(enemy.type===EnemyType.FOUNDRY_CLAW&&enemy.foundryClawAttack){
       const a=enemy.foundryClawAttack;
       if(a.phase==="ANCHOR"||a.phase==="TETHER"){
@@ -1406,6 +1425,36 @@ export function drawEnemiesList(
     ctx.fillStyle = enemy.color;
 
     switch (enemy.type) {
+      case EnemyType.FERRITE_FOREMAN: {
+        const a=enemy.ferriteForemanAttack,r=enemy.size;
+        ctx.save();ctx.rotate(Math.atan2(a?.facingY??0,a?.facingX??-1));
+        ctx.shadowColor="#f59e0b";ctx.shadowBlur=16;
+        // Armored mechanical foreman with hydraulic hammer arm.
+        ctx.fillStyle="#243346";ctx.strokeStyle="#fbbf24";ctx.lineWidth=3.2;
+        ctx.beginPath();
+        for(let i=0;i<8;i++){
+          const phi=i*Math.PI/4,radius=i%2===0?r*1.05:r*.84;
+          if(i===0)ctx.moveTo(Math.cos(phi)*radius,Math.sin(phi)*radius);
+          else ctx.lineTo(Math.cos(phi)*radius,Math.sin(phi)*radius);
+        }
+        ctx.closePath();ctx.fill();ctx.stroke();
+        for(const side of [-1,1]){
+          ctx.fillStyle="#475569";ctx.strokeStyle="#fdba74";ctx.lineWidth=2;
+          ctx.beginPath();ctx.roundRect(-r*.54,side*r*.63-r*.22,r*.93,r*.44,3);
+          ctx.fill();ctx.stroke();
+        }
+        ctx.strokeStyle="#94a3b8";ctx.lineWidth=7;
+        ctx.beginPath();ctx.moveTo(r*.2,-r*.46);ctx.lineTo(r*1.35,-r*.88);
+        ctx.stroke();
+        ctx.fillStyle="#9ca3af";ctx.strokeStyle="#f97316";ctx.lineWidth=3;
+        ctx.fillRect(r*1.1,-r*1.36,r*.85,r*.86);
+        ctx.strokeRect(r*1.1,-r*1.36,r*.85,r*.86);
+        ctx.shadowColor=a?.stage==="EXPOSED"?"#a3e635":"#facc15";
+        ctx.fillStyle=a?.stage==="EXPOSED"?"#d9f99d":"#fbbf24";
+        ctx.beginPath();ctx.arc(0,0,r*.35,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle="#0f172a";ctx.beginPath();ctx.arc(0,0,r*.15,0,Math.PI*2);ctx.fill();
+        ctx.restore();break;
+      }
       case EnemyType.FOUNDRY_CLAW: {
         const a=enemy.foundryClawAttack;
         const r=enemy.size;
