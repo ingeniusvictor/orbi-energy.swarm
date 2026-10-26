@@ -1,5 +1,6 @@
 import React from "react";
 import { BLACKOUT_DEVOURER_CANON } from "../game/waveDirector";
+import {ARCHON_ATTACK_NAMES} from "../game/asteriaThresholdArchon";
 import { getBossChassisProfile } from "../game/bossChassis";
 import { getInfiniteBossFamilyProfile } from "../game/infiniteBossFamily";
 import type {
@@ -28,7 +29,8 @@ interface BossHudOverlayProps {
 
 const isImportantBossAttack = (attackName: string) => {
   const normalized = attackName.toLowerCase();
-  return ["devourer_charge", "singularity_pulse", "rotating_eclipse_lanes"].some(
+  return ["devourer_charge", "singularity_pulse", "rotating_eclipse_lanes",
+    "telescopic", "beacon", "overload"].some(
     (id) =>
       normalized.includes(id.replace(/_/g, " ")) ||
       normalized.includes("carga") ||
@@ -68,7 +70,15 @@ export const BossHudOverlay: React.FC<BossHudOverlayProps> = ({
     bossAttackName,
     BLACKOUT_DEVOURER_CANON.attacks,
   );
-  const counterHint = getBossCounterHint(bossAttackId, language);
+  const archonHint=bossChassis==="ASTERIA_ARCHON" && bossAttackName
+    ?bossAttackName===ARCHON_ATTACK_NAMES[1]
+      ?(language==="es"?"Sal de la línea antes del barrido telescópico.":"Leave the marked line before the telescopic sweep.")
+      :bossAttackName===ARCHON_ATTACK_NAMES[2]
+        ?(language==="es"?"Muévete entre las tres líneas: los corredores cian son seguros.":"Move between the three lines: cyan corridors remain safe.")
+        :bossAttackName===ARCHON_ATTACK_NAMES[3]
+          ?(language==="es"?"Cruza la onda anular; vuelve al núcleo cuando se abra.":"Cross the ring wave, then strike the exposed core.")
+          :null:null;
+  const counterHint = archonHint ?? getBossCounterHint(bossAttackId, language);
   const healthPercent = Math.max(0, Math.min(100, Math.round(healthRatio * 100)));
   const showAttack =
     Boolean(bossAttackName) &&
@@ -85,7 +95,9 @@ export const BossHudOverlay: React.FC<BossHudOverlayProps> = ({
     >
       <div className="orbi-boss-heading">
         <span className="orbi-boss-kicker">
-          {bossChassis === "DEVOURER" ? "⚠ MAJOR COLLAPSE DETECTED" : "⚠ RAID ESCALATION DETECTED"}
+          {bossChassis === "ASTERIA_ARCHON"
+            ? "⚠ ASTERIA // ORBITAL THRESHOLD"
+            : bossChassis === "DEVOURER" ? "⚠ MAJOR COLLAPSE DETECTED" : "⚠ RAID ESCALATION DETECTED"}
         </span>
         <div className="orbi-boss-title-row">
           <h2 id="orbi-boss-title" className="orbi-boss-title">{displayName}</h2>

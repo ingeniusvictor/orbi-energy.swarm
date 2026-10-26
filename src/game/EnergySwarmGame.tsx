@@ -22,6 +22,9 @@ import {
 } from "./asteriaOriginalFoes";
 import {createSpanWardenAttack,shouldSpawnSpanWarden,selectSpanWardenSpawn,
   stepSpanWarden,resolveSpanWardenHit,SPAN_WARDEN_PROJECTILE_SPREAD} from "./asteriaSpanWarden";
+import {resolveAsteriaArchonEncounter,createThresholdArchonAttack,
+  stepThresholdArchon,getThresholdArchonPhase,thresholdArchonDamageMultiplier,
+  ARCHON_ATTACK_NAMES} from "./asteriaThresholdArchon";
 import { stepRouteClock, ROUTE_QA_SPEED_UNITS_PER_SECOND } from "./worldRouteClock";
 import { drawWorldRouteQaScene } from "./worldRoutePreviewRenderer";
 import {
@@ -3052,10 +3055,14 @@ export const EnergySwarmGame: React.FC = () => {
 
           if (currentWaveRef.current === BOSS_WAVE_NUMBER) {
             // Warning before boss entry!
-            setWaveName("BOSS WARNING: DEVOURER APPROACHING");
+            setWaveName(worldRouteRunActiveRef.current
+              ? "BOSS WARNING: THRESHOLD ARCHON APPROACHING"
+              : "BOSS WARNING: DEVOURER APPROACHING");
             postDialogue(
               "COMPANION",
-              "¡ALERTA MÁXIMA! Firma del Blackout Devourer detectada en el sector.",
+              worldRouteRunActiveRef.current
+                ? "¡ALERTA ASTERIA! El Arconte del Umbral despierta entre sus anillos orbitales."
+                : "¡ALERTA MÁXIMA! Firma del Blackout Devourer detectada en el sector.",
             );
             startBgm("BOSS");
           } else {
@@ -3108,9 +3115,18 @@ export const EnergySwarmGame: React.FC = () => {
         pendingCommandLinkBreakRef.current = null;
         pendingCommandLinkPulseRef.current = null;
         setIsWaveBreak(false);
-        setWaveName(descriptor.display.name);
+        // Presentation-only override: the common Campaign descriptor is never
+        // mutated. Legacy Campaign continues to announce Blackout Devourer.
+        const archonWaveIntro = Boolean(
+          resolveAsteriaArchonEncounter(
+            worldRouteRunActiveRef.current, descriptor,
+          ),
+        );
+        const activeWaveName = archonWaveIntro
+          ? "Threshold Archon" : descriptor.display.name;
+        setWaveName(activeWaveName);
 
-        postDialogue("SYSTEM", `OLEADA ${currentWaveRef.current} ACTIVA: ${descriptor.display.name}`);
+        postDialogue("SYSTEM", `OLEADA ${currentWaveRef.current} ACTIVA: ${activeWaveName}`);
 
         // Set up hazards if applicable
         if (descriptor.modifiers.includes("BLACKOUT_HAZARD_ZONES")) {
@@ -3125,7 +3141,15 @@ export const EnergySwarmGame: React.FC = () => {
         }
 
         // Trigger visual cinematic Wave Intro overlay for handcrafted campaign waves.
-        setWaveIntroConfig(cfg);
+        setWaveIntroConfig(archonWaveIntro && cfg ? {
+          ...cfg,
+          name: "Threshold Archon",
+          displayName: "Threshold Archon",
+          subtitle: "ASTERIA // Guardian of the Orbital Threshold",
+          description: "Two giant orbital rings awaken above ASTERIA. Break the Archon's three defensive phases.",
+          tacticalAdvice: "Dodge announced beams and cross between beacon lanes; focus ORBI on the exposed core.",
+          introColor: "#facc15",
+        } : cfg);
         setTimeout(() => {
           setWaveIntroConfig(null);
         }, 2500);
@@ -3662,7 +3686,11 @@ export const EnergySwarmGame: React.FC = () => {
         : null;
     if (stage === "RAID_ESCALATION" && !raidProfile) return;
 
-    const chassisId = raidProfile?.chassis ?? "DEVOURER";
+    // Exclusive world encounter identity; shared Campaign descriptor stays untouched.
+    const archonEncounter=!isRematch && stage==="PRIMARY"
+      ?resolveAsteriaArchonEncounter(worldRouteRunActiveRef.current,
+        getCurrentRuntimeDescriptor()):null;
+    const chassisId=archonEncounter?"ASTERIA_ARCHON":(raidProfile?.chassis??"DEVOURER");
     const chassisProfile = getBossChassisProfile(chassisId);
     const familyProfile =
       rematchProfile && stage === "PRIMARY"
@@ -3702,7 +3730,7 @@ export const EnergySwarmGame: React.FC = () => {
           ? `${chassisId.toLowerCase()}_${rematchProfile?.sector ?? "infinite"}`
           : isRematch
             ? `${rematchProfile?.bossIdentity.toLowerCase() ?? "infinite_boss"}_${rematchProfile?.sector ?? "infinite"}`
-            : "blackout_devourer_boss",
+            : archonEncounter ?? "blackout_devourer_boss",
       type: chassisProfile.enemyType,
       x: WORLD_WIDTH / 2,
       y: -80,
@@ -3726,6 +3754,7 @@ export const EnergySwarmGame: React.FC = () => {
       infiniteBossIdentity:
         stage === "PRIMARY" ? rematchProfile?.bossIdentity : undefined,
       bossChassis: chassisId,
+      archonAttack:archonEncounter?createThresholdArchonAttack():undefined,
       bossEncounterStage: stage,
       milestoneContactDamageMultiplier: damageMultiplier,
       milestoneDamageMultiplier: damageMultiplier,
@@ -3796,7 +3825,9 @@ export const EnergySwarmGame: React.FC = () => {
         ? `¡RAID ESCALATION! ${chassisProfile.displayName} ha entrado. Destruye ${chassisProfile.weakpoints.count} ${chassisProfile.weakpoints.hudLabel.toLowerCase()} y abre el núcleo.`
         : isRematch
           ? (familyProfile?.introDialogue ?? "¡RESONANCIA HOSTIL RECURRENTE!")
-          : "¡ALERTA! Concentración de energía Blackout masiva en el sector central. ¡El Devorador está entrando!",
+          : archonEncounter
+            ? "¡ARCONTE DEL UMBRAL! Tres fases orbitales. Esquiva las líneas anunciadas y concentra ORBI en su núcleo expuesto."
+            : "¡ALERTA! Concentración de energía Blackout masiva en el sector central. ¡El Devorador está entrando!",
     );
 
     if (stage === "RAID_ESCALATION") {
@@ -3929,6 +3960,48 @@ export const EnergySwarmGame: React.FC = () => {
         playHeavyImpactSound();
         postDialogue("COMPANION", `¡ANOMALÍA ESTABILIZADA! Firma de ${chassisProfile.displayName} confirmada.`);
       }
+      return;
+    }
+
+    // WBE-01F: the current boss entity, cooldown, hit resolver and rewards
+    // remain authoritative. Only ASTERIA's phase choreography is original.
+    if(boss.type===EnemyType.BOSS_ARCHON && boss.archonAttack){
+      if(phaseTransitionTimerRef.current>0){
+        phaseTransitionTimerRef.current=Math.max(0,phaseTransitionTimerRef.current-delta);
+        if(phaseTransitionTimerRef.current===0)setBossTransitionName(null);
+        return;
+      }
+      const phase=getThresholdArchonPhase(boss.health,boss.maxHealth);
+      const step=stepThresholdArchon(boss.archonAttack,boss,
+        playerPosRef.current,delta,phase);
+      boss.archonAttack=step.attack;
+      if(step.phaseChanged){
+        boss.bossPhase=phase;
+        setBossPhase(phase);
+        bossMaxPhaseReachedRef.current=Math.max(bossMaxPhaseReachedRef.current,phase);
+        phaseTransitionTimerRef.current=1700;
+        setBossTransitionName(phase===2?"FASE II: CORREDORES DE BALIZAS":"FASE III: SOBRECARGA DE ANILLOS");
+        setBossAttackName(null);setIsCoreExposed(false);
+        playBossPhaseTransitionSound();
+        addFloatingText(phase===2?"TRI-BEACON":"RING OVERLOAD",boss.x,boss.y-72,"#facc15");
+        return;
+      }
+      if(step.announced){
+        setBossAttackName(ARCHON_ATTACK_NAMES[phase]);
+        playBossChargeSound();
+        addFloatingText(phase===1?"TELESCOPIC SWEEP":phase===2?"THREE BEACONS":"RING OVERLOAD",
+          boss.x,boss.y-80,"#fde68a");
+      }
+      if(step.committed)playDisruptorPulseSound();
+      if(step.openedCore){
+        setIsCoreExposed(true);setBossAttackName(null);
+        playEliteChargeSound();
+        addFloatingText("NUCLEO EXPUESTO",boss.x,boss.y-83,"#67e8f9");
+      }
+      if(step.attack.stage!=="EXPOSED" && step.attack.stage!=="ACTIVE" &&
+        step.attack.stage!=="WARNING")setIsCoreExposed(false);
+      if(step.contact)damagePlayerFromBoss(phase===3?14:phase===2?12:11,
+        phase===1?"archon_rail_sweep":phase===2?"archon_tri_beacon":"archon_ring_overload");
       return;
     }
 
@@ -5943,7 +6016,8 @@ export const EnergySwarmGame: React.FC = () => {
       if (
         enemy.type === EnemyType.BOSS_DEVOURER ||
         enemy.type === EnemyType.BOSS_TITAN ||
-        enemy.type === EnemyType.BOSS_WORM
+        enemy.type === EnemyType.BOSS_WORM ||
+        enemy.type === EnemyType.BOSS_ARCHON
       ) {
         updateBossAI(enemy, delta);
         enemy.speed = originalSpeed;
@@ -7094,12 +7168,17 @@ export const EnergySwarmGame: React.FC = () => {
             if (
               enemy.type === EnemyType.BOSS_DEVOURER ||
               enemy.type === EnemyType.BOSS_TITAN ||
-              enemy.type === EnemyType.BOSS_WORM
+              enemy.type === EnemyType.BOSS_WORM ||
+              enemy.type === EnemyType.BOSS_ARCHON
             ) {
               const chassis = getBossChassisProfile(
                 enemy.bossChassis ?? "DEVOURER",
               );
-              if (shieldNodesRef.current.length > 0) {
+              if(enemy.type===EnemyType.BOSS_ARCHON && enemy.archonAttack){
+                damageToApply*=thresholdArchonDamageMultiplier(enemy.archonAttack);
+                if(enemy.archonAttack.stage==="EXPOSED"&&!proj.convergenceTargetId)isCrit=true;
+                if(enemy.archonAttack.stage==="WARNING")isShieldBlock=true;
+              } else if (shieldNodesRef.current.length > 0) {
                 isShieldBlock = true;
                 damageToApply = proj.convergenceTargetId ? 0 :
                   damageToApply * chassis.weakpoints.protectedDamageMultiplier;
@@ -7367,7 +7446,11 @@ export const EnergySwarmGame: React.FC = () => {
                         "COMPANION",
                         rematch
                           ? "¡REMATCH DEL DEVORADOR COLAPSANDO! Mantén sincronía mientras sellamos esta recurrencia."
-                          : "¡SISTEMAS DEL DEVORADOR CRÍTICAS! Reacción en cadena termodinámica detectada. ¡Sincronizando pulso de purga final!",
+                          : otherEnemy.type===EnemyType.BOSS_ARCHON
+                      ? "¡EL ARCONTE HA CAÍDO! Los anillos de ASTERIA colapsan y el corredor queda liberado."
+                      : enemy.type===EnemyType.BOSS_ARCHON
+                      ? "¡EL ARCONTE HA CAÍDO! Los anillos de ASTERIA colapsan y el corredor queda liberado."
+                      : "¡SISTEMAS DEL DEVORADOR CRÍTICAS! Reacción en cadena termodinámica detectada. ¡Sincronizando pulso de purga final!",
                       );
                     } else {
                       // Only spawn drops & splits if not a minion (Section 2.4 - sin recompensa duplicada)
@@ -7513,7 +7596,8 @@ export const EnergySwarmGame: React.FC = () => {
       const isBossChassis =
         enemy.type === EnemyType.BOSS_DEVOURER ||
         enemy.type === EnemyType.BOSS_TITAN ||
-        enemy.type === EnemyType.BOSS_WORM;
+        enemy.type === EnemyType.BOSS_WORM ||
+        enemy.type === EnemyType.BOSS_ARCHON;
       const baseDamage = isBossChassis ? 25 : 15;
       if (isBossChassis) {
         const attackType =

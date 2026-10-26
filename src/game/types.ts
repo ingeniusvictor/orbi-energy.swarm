@@ -1,6 +1,7 @@
 import type { LiveEnemyFormationAssignment } from "./liveEnemyFormationDirector";
 import type { RailcutterAttack } from "./asteriaRailcutter";
 import type { SpanWardenAttack } from "./asteriaSpanWarden";
+import type { ThresholdArchonAttack } from "./asteriaThresholdArchon";
 import type { SkySpecterAttack,BeaconPrismAttack,IonSailAttack } from "./asteriaOriginalFoes";
 import type { SiegeVolleyTelegraphState } from "./siegeVolleyTelegraph";
 import type { BlackoutArchitectEngineIdentityTag } from "./blackoutArchitectEngineIdentityLifecycle";
@@ -165,6 +166,7 @@ export enum EnemyType {
   BOSS_DEVOURER = "BOSS_DEVOURER",
   BOSS_TITAN = "BOSS_TITAN",
   BOSS_WORM = "BOSS_WORM",
+  BOSS_ARCHON = "BOSS_ARCHON",
   BOSS_ARCHITECT = "BOSS_ARCHITECT"
 }
 
@@ -190,7 +192,7 @@ export type InfiniteBossIdentity =
   | "RIFT_MATRIARCH"
   | "SIEGE_CATHEDRAL";
 
-export type BossChassisId = "DEVOURER" | "TITAN_CORE" | "WORM_SEGMENTS";
+export type BossChassisId = "DEVOURER" | "TITAN_CORE" | "WORM_SEGMENTS" | "ASTERIA_ARCHON";
 export type BossEncounterStage = "PRIMARY" | "RAID_ESCALATION";
 
 export interface Enemy {
@@ -245,6 +247,8 @@ export interface Enemy {
   ionSailAttack?: IonSailAttack;
   /** Original ASTERIA elite; canonical combat owns its damage and rewards. */
   spanWardenAttack?: SpanWardenAttack;
+  /** ASTERIA-only boss pattern state, using original boss HP, damage and loot. */
+  archonAttack?: ThresholdArchonAttack;
 }
 
 export interface Projectile {
