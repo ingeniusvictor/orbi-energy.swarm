@@ -3,7 +3,8 @@ import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 import {shouldSpawnForeman,selectForemanSpawn,createForemanAttack,
  stepForeman,foremanSectorHit,foremanDamageMultiplier,FOREMAN_WARNING_MS,
- FOREMAN_EXPOSED_MS} from "../../src/game/ferrumForeman";
+ FOREMAN_EXPOSED_MS,selectForemanCommandTargets,FOREMAN_COMMAND_LINK_RADIUS,
+ FOREMAN_COMMAND_LINK_MS,FOREMAN_COMMAND_MOVE_SCALE} from "../../src/game/ferrumForeman";
 
 const origin={x:750,y:400},energy={x:550,y:400};
 test("FERRUM-03: Foreman is unique to selected Ferrum regular wave 5+",()=>{
@@ -63,4 +64,25 @@ test("FERRUM-03: live native engine and visuals, no duplicate combat",()=>{
  assert.match(game,/registerCombatDefeat\(enemy, proj.affinity\)/);
  assert.match(canvas,/case EnemyType.FERRITE_FOREMAN/);
  assert.match(canvas,/stage==="WARNING"\|\|a.stage==="SHOCK"/);
+});
+
+test("FERRUM-03: command links at most two real machine types",()=>{
+ const center={x:400,y:400};
+ const candidates=[
+  {id:"gear-near",type:"SHADE_GEAR",x:410,y:450,isDead:false},
+  {id:"gear-far",type:"SHADE_GEAR",x:500,y:500,isDead:false},
+  {id:"welder",type:"M9_WELDER",x:440,y:470,isDead:false},
+  {id:"dead",type:"M9_WELDER",x:401,y:401,isDead:true},
+  {id:"boss",type:"M9_WELDER",x:402,y:402,isDead:false,isBoss:true},
+  {id:"offscreen",type:"SHADE_GEAR",x:1000,y:1000,isDead:false},
+ ];
+ assert.deepEqual(selectForemanCommandTargets(center,candidates),["gear-near","welder"]);
+ assert.deepEqual(selectForemanCommandTargets({x:NaN,y:0},candidates),[]);
+ assert.equal(FOREMAN_COMMAND_LINK_RADIUS,320);
+ assert.ok(FOREMAN_COMMAND_LINK_MS<FOREMAN_WARNING_MS+FOREMAN_EXPOSED_MS);
+ assert.ok(FOREMAN_COMMAND_MOVE_SCALE>1&&FOREMAN_COMMAND_MOVE_SCALE<=1.15);
+ const game=readFileSync(new URL("../../src/game/EnergySwarmGame.tsx",import.meta.url),"utf8");
+ assert.match(game,/selectForemanCommandTargets\(enemy,enemiesRef.current\)/);
+ assert.match(game,/e.type===EnemyType.FERRITE_FOREMAN&&!e.isDead/);
+ assert.match(game,/enemy.type === EnemyType.SPAN_WARDEN \|\| enemy.type === EnemyType.FERRITE_FOREMAN/);
 });

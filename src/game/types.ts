@@ -260,6 +260,9 @@ export interface Enemy {
   foundryClawAttack?: FoundryClawAttack;
   oxideModulatorAttack?: OxideModulatorAttack;
   ferriteForemanAttack?: ForemanAttack;
+  /** Native Ferrum machine movement cue, valid only while the linked Foreman lives. */
+  ferriteCommandSourceId?: string;
+  ferriteCommandUntilMs?: number;
   oxideArmorSourceId?: string;
   oxideArmoredUntilMs?: number;
   /** ASTERIA-only boss pattern state, using original boss HP, damage and loot. */

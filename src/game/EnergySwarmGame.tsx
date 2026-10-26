@@ -28,7 +28,7 @@ import {createFoundryClawAttack,createOxideModulatorAttack,
   stepFoundryClaw,stepOxideModulator,projectFoundryTetherPull,
   oxideArmorDamageMultiplier,shouldArmorOxideAlly,
   OXIDE_ARMOR_DURATION_MS} from "./ferrumAdvancedFoes";
-import {createForemanAttack,shouldSpawnForeman,selectForemanSpawn,stepForeman,foremanSectorHit,foremanDamageMultiplier} from "./ferrumForeman";
+import {createForemanAttack,shouldSpawnForeman,selectForemanSpawn,stepForeman,foremanSectorHit,foremanDamageMultiplier,selectForemanCommandTargets,FOREMAN_COMMAND_LINK_MS,FOREMAN_COMMAND_MOVE_SCALE} from "./ferrumForeman";
 import {resolveAsteriaArchonEncounter,createThresholdArchonAttack,
   stepThresholdArchon,getThresholdArchonPhase,thresholdArchonDamageMultiplier,
   ARCHON_ATTACK_NAMES} from "./asteriaThresholdArchon";
@@ -6243,7 +6243,12 @@ export const EnergySwarmGame: React.FC = () => {
           }
         } else if(enemy.type===EnemyType.SHADE_GEAR&&enemy.shadeGearAttack){
           const prior=enemy.shadeGearAttack;
-          const next=stepShadeGear(prior,enemy,playerPosRef.current,enemy.speed,delta);
+          const crewBoost=prior.phase==="SEEK" &&
+            (enemy.ferriteCommandUntilMs??0)>timeElapsedRef.current &&
+            enemiesRef.current.some(e=>e.id===enemy.ferriteCommandSourceId &&
+              e.type===EnemyType.FERRITE_FOREMAN&&!e.isDead);
+          const next=stepShadeGear(prior,enemy,playerPosRef.current,
+            enemy.speed*(crewBoost?FOREMAN_COMMAND_MOVE_SCALE:1),delta);
           enemy.x=Math.max(16,Math.min(WORLD_WIDTH-16,next.x));
           enemy.y=Math.max(16,Math.min(WORLD_HEIGHT-16,next.y));
           enemy.vx=next.vx;enemy.vy=next.vy;enemy.shadeGearAttack=next.attack;
@@ -6255,7 +6260,12 @@ export const EnergySwarmGame: React.FC = () => {
             addFloatingText("RE-ROLL",enemy.x,enemy.y-26,"#fdba74");
         } else if(enemy.type===EnemyType.M9_WELDER&&enemy.m9WelderAttack){
           const prior=enemy.m9WelderAttack;
-          const next=stepM9Welder(prior,enemy,playerPosRef.current,enemy.speed,delta);
+          const crewBoost=prior.phase==="POSITION" &&
+            (enemy.ferriteCommandUntilMs??0)>timeElapsedRef.current &&
+            enemiesRef.current.some(e=>e.id===enemy.ferriteCommandSourceId &&
+              e.type===EnemyType.FERRITE_FOREMAN&&!e.isDead);
+          const next=stepM9Welder(prior,enemy,playerPosRef.current,
+            enemy.speed*(crewBoost?FOREMAN_COMMAND_MOVE_SCALE:1),delta);
           enemy.x=Math.max(16,Math.min(WORLD_WIDTH-16,next.x));
           enemy.y=Math.max(16,Math.min(WORLD_HEIGHT-16,next.y));
           enemy.vx=next.vx;enemy.vy=next.vy;enemy.m9WelderAttack=next.attack;
@@ -6316,7 +6326,15 @@ export const EnergySwarmGame: React.FC = () => {
           enemy.vx=step.vx;enemy.vy=step.vy;enemy.ferriteForemanAttack=step.attack;
           if(previous.stage==="APPROACH"&&step.attack.stage==="COMMAND"){
             playEliteChargeSound();
+            const crewIds=new Set(selectForemanCommandTargets(enemy,enemiesRef.current));
+            for(const ally of enemiesRef.current){
+              if(!crewIds.has(ally.id))continue;
+              ally.ferriteCommandSourceId=enemy.id;
+              ally.ferriteCommandUntilMs=timeElapsedRef.current+FOREMAN_COMMAND_LINK_MS;
+            }
             addFloatingText("FERRITE FOREMAN",enemy.x,enemy.y-45,"#fde68a");
+            if(crewIds.size) addFloatingText(`CREW LINK ${crewIds.size}/2`,enemy.x,
+              enemy.y-63,"#7dd3fc");
           }
           if(previous.stage==="COMMAND"&&step.attack.stage==="WARNING"){
             playDisruptorChargeSound();
@@ -7120,7 +7138,7 @@ export const EnergySwarmGame: React.FC = () => {
   const getEnemyScoreReward = (enemy: Enemy) => {
     const baseReward = enemy.isBoss
       ? 1500
-      : enemy.type === EnemyType.SPAN_WARDEN
+      : enemy.type === EnemyType.SPAN_WARDEN || enemy.type === EnemyType.FERRITE_FOREMAN
         ? 360
       : enemy.type === EnemyType.BLACKOUT_ELITE
         ? 250

@@ -1422,6 +1422,16 @@ export function drawEnemiesList(
     // Set normal enemy shadows & glow
     ctx.shadowBlur = enemy.size * 1.4;
     ctx.shadowColor = enemy.color;
+    // Foreman crew command is a bounded native movement cue (no new actors).
+    if((enemy.type===EnemyType.SHADE_GEAR||enemy.type===EnemyType.M9_WELDER) &&
+       (enemy.ferriteCommandUntilMs??0)>time &&
+       enemies.some(e=>e.id===enemy.ferriteCommandSourceId &&
+         e.type===EnemyType.FERRITE_FOREMAN&&!e.isDead)){
+      ctx.save();ctx.strokeStyle="#7dd3fc";ctx.lineWidth=2;
+      ctx.shadowColor="#38bdf8";ctx.shadowBlur=11;
+      ctx.beginPath();ctx.arc(0,0,enemy.size*1.58,0,Math.PI*2);
+      ctx.stroke();ctx.restore();
+    }
     ctx.fillStyle = enemy.color;
 
     switch (enemy.type) {

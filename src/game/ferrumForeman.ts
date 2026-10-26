@@ -64,3 +64,30 @@ export function foremanSectorHit(a:ForemanAttack,enemy:RailcutterSpawn,
 }
 export const foremanDamageMultiplier=(a:ForemanAttack)=>
  a.stage==="EXPOSED"?1.95:a.stage==="COMMAND"||a.stage==="WARNING"?.58:1;
+
+/** FERRUM-03 crew signal: at most one of each native machine, no extra spawns. */
+export const FOREMAN_COMMAND_LINK_RADIUS=320;
+export const FOREMAN_COMMAND_LINK_MS=2900;
+export const FOREMAN_COMMAND_MOVE_SCALE=1.12;
+export interface ForemanCommandCandidate {
+ readonly id:string; readonly type:string; readonly x:number;readonly y:number;
+ readonly isDead:boolean;readonly isBoss?:boolean;
+}
+export function selectForemanCommandTargets(
+ origin:RailcutterSpawn,candidates:readonly ForemanCommandCandidate[],
+):string[]{
+ if(!Number.isFinite(origin.x)||!Number.isFinite(origin.y))return [];
+ const targets:string[]=[];
+ for(const type of ["SHADE_GEAR","M9_WELDER"] as const){
+   let bestId:string|null=null;
+   let bestDistanceSq=FOREMAN_COMMAND_LINK_RADIUS**2;
+   for(const candidate of candidates){
+     if(candidate.isDead||candidate.isBoss||candidate.type!==type||
+       !Number.isFinite(candidate.x)||!Number.isFinite(candidate.y))continue;
+     const distanceSq=(candidate.x-origin.x)**2+(candidate.y-origin.y)**2;
+     if(distanceSq<=bestDistanceSq){bestId=candidate.id;bestDistanceSq=distanceSq;}
+   }
+   if(bestId!==null)targets.push(bestId);
+ }
+ return targets;
+}
