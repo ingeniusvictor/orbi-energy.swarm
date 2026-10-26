@@ -1170,6 +1170,39 @@ export function drawEnemiesList(
           Math.sin(time*.009)*5,0,Math.PI*2);ctx.stroke();
         ctx.restore();
       }
+    } else if(enemy.type===EnemyType.FOUNDRY_CLAW&&enemy.foundryClawAttack){
+      const a=enemy.foundryClawAttack;
+      if(a.phase==="ANCHOR"||a.phase==="TETHER"){
+        const tethered=a.phase==="TETHER";
+        const targetX=tethered?playerPos.x:a.targetX;
+        const targetY=tethered?playerPos.y:a.targetY;
+        ctx.save();
+        ctx.lineWidth=tethered?3.5:1.9;
+        ctx.strokeStyle=tethered?"rgba(251,113,133,.91)":"rgba(253,186,116,.87)";
+        ctx.shadowColor="#fb7185";ctx.shadowBlur=tethered?14:6;
+        ctx.setLineDash(tethered?[]:[10,8]);
+        ctx.beginPath();ctx.moveTo(0,0);
+        ctx.lineTo(targetX-enemy.x,targetY-enemy.y);ctx.stroke();
+        ctx.setLineDash([]);
+        if(!tethered){
+          ctx.strokeStyle="#fdba74";ctx.lineWidth=2;
+          ctx.beginPath();ctx.arc(targetX-enemy.x,targetY-enemy.y,21,0,Math.PI*2);ctx.stroke();
+          ctx.beginPath();ctx.moveTo(targetX-enemy.x-26,targetY-enemy.y);
+          ctx.lineTo(targetX-enemy.x+26,targetY-enemy.y);
+          ctx.moveTo(targetX-enemy.x,targetY-enemy.y-26);
+          ctx.lineTo(targetX-enemy.x,targetY-enemy.y+26);ctx.stroke();
+        }
+        ctx.restore();
+      }
+    } else if(enemy.type===EnemyType.OXIDE_MODULATOR&&enemy.oxideModulatorAttack){
+      const a=enemy.oxideModulatorAttack;
+      if(a.phase==="ARMOR"){
+        ctx.save();ctx.strokeStyle="rgba(163,230,53,.47)";
+        ctx.fillStyle="rgba(101,163,13,.045)";ctx.lineWidth=2.3;
+        ctx.shadowColor="#bef264";ctx.shadowBlur=10;
+        ctx.beginPath();ctx.arc(0,0,195,0,Math.PI*2);ctx.fill();ctx.stroke();
+        ctx.restore();
+      }
     } else if(enemy.type===EnemyType.SHADE_GEAR&&enemy.shadeGearAttack){
       const a=enemy.shadeGearAttack;
       if(a.phase==="SPARK"||a.phase==="BRAKE"){
@@ -1373,6 +1406,64 @@ export function drawEnemiesList(
     ctx.fillStyle = enemy.color;
 
     switch (enemy.type) {
+      case EnemyType.FOUNDRY_CLAW: {
+        const a=enemy.foundryClawAttack;
+        const r=enemy.size;
+        ctx.save();
+        ctx.shadowColor="#fb7185";ctx.shadowBlur=13;
+        // Twin opposing forge pincers, suspended from a central anchor.
+        ctx.fillStyle="#2c2430";ctx.strokeStyle="#cbd5e1";ctx.lineWidth=2.5;
+        ctx.beginPath();
+        ctx.moveTo(-r*.8,-r*.65);ctx.lineTo(r*.7,-r*.74);
+        ctx.lineTo(r*1.05,0);ctx.lineTo(r*.7,r*.74);
+        ctx.lineTo(-r*.8,r*.65);ctx.lineTo(-r*1.05,0);
+        ctx.closePath();ctx.fill();ctx.stroke();
+        for(const side of [-1,1]){
+          const flex=a?.phase==="TETHER"?.25:.04;
+          ctx.save();ctx.translate(side*r*.46,0);
+          ctx.rotate(side*flex);
+          ctx.strokeStyle="#94a3b8";ctx.lineWidth=5;
+          ctx.beginPath();ctx.moveTo(0,0);
+          ctx.lineTo(side*r*.9,-r*.15);ctx.lineTo(side*r*1.46,-r*.7);ctx.stroke();
+          ctx.strokeStyle="#fb7185";ctx.lineWidth=4;
+          ctx.beginPath();ctx.moveTo(side*r*1.46,-r*.7);
+          ctx.lineTo(side*r*1.88,-r*.16);ctx.stroke();
+          ctx.restore();
+        }
+        ctx.fillStyle=a?.phase==="TETHER"?"#fef08a":"#fb7185";
+        ctx.beginPath();ctx.arc(0,0,r*.33,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle="#0f172a";ctx.beginPath();ctx.arc(0,0,r*.13,0,Math.PI*2);ctx.fill();
+        ctx.restore();break;
+      }
+      case EnemyType.OXIDE_MODULATOR: {
+        const a=enemy.oxideModulatorAttack;
+        const r=enemy.size;
+        const active=a?.phase==="ARMOR";
+        ctx.save();ctx.rotate(time*.00043);
+        ctx.shadowColor="#bef264";ctx.shadowBlur=active?22:9;
+        ctx.fillStyle="#17291d";ctx.strokeStyle="#a3e635";ctx.lineWidth=2.5;
+        ctx.beginPath();
+        for(let i=0;i<6;i++){
+          const angle=i*Math.PI/3;
+          const x=Math.cos(angle)*r*1.15,y=Math.sin(angle)*r*1.15;
+          if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+        }
+        ctx.closePath();ctx.fill();ctx.stroke();
+        for(let i=0;i<6;i++){
+          const angle=i*Math.PI/3;
+          const x=Math.cos(angle)*r*.7,y=Math.sin(angle)*r*.7;
+          ctx.strokeStyle="#65a30d";ctx.lineWidth=4;
+          ctx.beginPath();ctx.moveTo(x,y);
+          ctx.lineTo(x*1.23,y*1.23);ctx.stroke();
+          ctx.fillStyle="#bef264";ctx.beginPath();
+          ctx.arc(x*1.23,y*1.23,2.7,0,Math.PI*2);ctx.fill();
+        }
+        ctx.fillStyle=active?"#d9f99d":"#84cc16";
+        ctx.beginPath();ctx.arc(0,0,r*.48,0,Math.PI*2);ctx.fill();
+        ctx.strokeStyle="#365314";ctx.lineWidth=2;
+        ctx.beginPath();ctx.arc(0,0,r*.27,0,Math.PI*2);ctx.stroke();
+        ctx.restore();break;
+      }
       case EnemyType.SHADE_GEAR: {
         const a=enemy.shadeGearAttack;
         const r=enemy.size;
@@ -2189,6 +2280,17 @@ export function drawEnemiesList(
         }
         break;
       }
+    }
+
+    // Distinct, bounded visual coating on allies linked by the live Modulator.
+    // No duplicate collision bodies or extra projectiles.
+    if(enemy.oxideArmoredUntilMs!==undefined && enemy.oxideArmoredUntilMs>time){
+      ctx.save();
+      ctx.strokeStyle="rgba(190,242,100,.93)";ctx.lineWidth=2.6;
+      ctx.shadowColor="#a3e635";ctx.shadowBlur=10;
+      ctx.setLineDash([6,3]);
+      ctx.beginPath();ctx.arc(0,0,enemy.size*1.35,0,Math.PI*2);ctx.stroke();
+      ctx.setLineDash([]);ctx.restore();
     }
 
     const commandCorePresentation = projectLiveCommandCorePresentation(

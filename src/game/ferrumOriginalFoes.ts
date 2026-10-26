@@ -1,7 +1,7 @@
 /** FERRUM original machine attackers on Mundo Nuevo's canonical budget. */
 import {selectAsteriaRailcutterSpawn,type RailcutterSpawn,
  type RailcutterViewport} from "./asteriaRailcutter";
-export type FerrumFoe="SHADE_GEAR"|"M9_WELDER";
+export type FerrumFoe="SHADE_GEAR"|"M9_WELDER"|"FOUNDRY_CLAW"|"OXIDE_MODULATOR";
 export type ShadePhase="SEEK"|"SPARK"|"ROLL"|"BRAKE"|"SECOND_ROLL"|"RECOVER";
 export type WelderPhase="POSITION"|"WARN"|"ARC"|"RECOVER";
 export interface ShadeGearAttack{
@@ -42,7 +42,9 @@ export function resolveFerrumFoe(
    !Number.isInteger(wave)||!Number.isInteger(ordinal)||wave<1||ordinal<0)
    return null;
  const mod=ordinal%5;
- const type:FerrumFoe|null=wave>=2&&mod===2?"M9_WELDER":
+ const type:FerrumFoe|null=wave>=4&&mod===0?"OXIDE_MODULATOR":
+   wave>=3&&mod===4?"FOUNDRY_CLAW":
+   wave>=2&&mod===2?"M9_WELDER":
    mod===1||mod===3?"SHADE_GEAR":null;
  return type&&!active(type)?type:null;
 }
