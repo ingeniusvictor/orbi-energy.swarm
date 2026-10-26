@@ -7174,6 +7174,12 @@ export const EnergySwarmGame: React.FC = () => {
     enemy.milestoneKind === "MINIBOSS";
 
   const registerCombatDefeat = (enemy: Enemy, affinity?: OrbiAffinity) => {
+    const commandLinkBreakIntent = enemy.enemyFormation
+      ? resolveLiveCommandLinkBreakIntent(enemy.enemyFormation)
+      : null;
+    if (commandLinkBreakIntent) {
+      pendingCommandLinkBreakRef.current = commandLinkBreakIntent;
+    }
     // Destruction instantly severs FERRUM Oxide protection even if the
     // Modulator dies to an ORBI splash. No interval or delayed cleanup.
     if(enemy.type===EnemyType.FERRITE_FOREMAN){
@@ -7191,12 +7197,6 @@ export const EnergySwarmGame: React.FC = () => {
           ally.oxideArmoredUntilMs=0;
         }
       }
-    }
-    const commandLinkBreakIntent = enemy.enemyFormation
-      ? resolveLiveCommandLinkBreakIntent(enemy.enemyFormation)
-      : null;
-    if (commandLinkBreakIntent) {
-      pendingCommandLinkBreakRef.current = commandLinkBreakIntent;
     }
 
     const resolution = registerCombatResonanceDefeat(
