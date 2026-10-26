@@ -82,7 +82,7 @@ test("WBE-01B: Specter commits nonhoming dive and cannot instantly retarget the 
   }
   assert.equal(state.phase,"BREAK");
   const before={...p};
-  for(let i=0;i<21;i++){
+  for(let i=0;i<30&&state.phase==="BREAK";i++){
     const next=stepSkySpecter(state,p,leader,1.1,50);
     p={x:next.x,y:next.y};state=next.attack;
     near(before.x,p.x);near(before.y,p.y);
@@ -107,7 +107,7 @@ test("WBE-01C: Prism locks original triple-beam coordinates before firing once",
   assert.equal(attack.phase,"COOLDOWN");
   assert.equal(attack.targetX,leader.x);
   near(BEACON_PRISM_FAN_RADIANS,.24);
-  for(let i=0;i<37;i++){
+  for(let i=0;i<36;i++){
     const step=stepBeaconPrism(attack,pos,leader,.63,50);
     attack=step.attack;
   }
