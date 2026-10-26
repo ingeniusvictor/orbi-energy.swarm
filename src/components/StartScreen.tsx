@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Play, Cpu, Volume2, VolumeX, Globe } from "lucide-react";
 import { GameStats, QualityPreset } from "../game/types";
-import {FERRUM_WORLD_ID,type PlayableWorld} from "../game/ferrumWorld";
 import { playClickSound } from "../game/audio";
 import { getAdditionalGameModeProfile } from "../game/scoreAttackModeContract";
 import { SCORE_ATTACK_DURATION_MS } from "../game/scoreAttackTimeboxProjection";
@@ -19,7 +18,8 @@ interface StartScreenProps {
   stats: GameStats;
   onStartGame: () => void;
   onStartScoreAttack: () => void;
-  onStartWorldRoute: (world?: PlayableWorld) => void;
+  onStartWorldRoute: () => void;
+  onStartFerrumRoute: () => void;
   onResetStats: () => void;
   onChangePreset: (preset: QualityPreset) => void;
   onToggleMute: () => void;
@@ -33,6 +33,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({
   onStartGame,
   onStartScoreAttack,
   onStartWorldRoute,
+  onStartFerrumRoute,
   onResetStats,
   onChangePreset,
   onToggleMute,
@@ -81,7 +82,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({
         onPlay={() => { playClickSound(); onStartGame(); }}
         onScoreAttack={() => { playClickSound(); onStartScoreAttack(); }}
         onWorldRoute={() => { playClickSound(); onStartWorldRoute(); }}
-        onFerrumRoute={() => { playClickSound(); onStartWorldRoute(FERRUM_WORLD_ID); }}
+        onFerrumRoute={() => { playClickSound(); onStartFerrumRoute(); }}
         hasInfiniteRecord={hasInfiniteRecord}
         audioMuted={stats.audioMuted} musicEnabled={stats.musicEnabled !== false}
         soundEffectsEnabled={stats.soundEffectsEnabled !== false}
@@ -411,7 +412,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({
                       : "Playable industrial traversal with original Shade Gear and M-9 Welder enemies in real combat."}
                   </p>
                   <button type="button" data-ferrum-world-start-cta="true"
-                    onClick={() => { playClickSound(); onStartWorldRoute(FERRUM_WORLD_ID); }}
+                    onClick={() => { playClickSound(); onStartFerrumRoute(); }}
                     className="mt-2 w-full rounded-lg border border-amber-400/60 bg-amber-500/15 px-3 py-2.5 text-[10px] font-black uppercase tracking-[.1em] text-amber-100 hover:bg-amber-500/30">
                     {language === "es" ? "INICIAR FERRUM" : "START FERRUM"}
                   </button>
