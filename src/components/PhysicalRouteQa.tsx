@@ -24,7 +24,7 @@ import {
 import { QualityPreset } from "../game/types";
 import { projectRouteDistance } from "../game/worldRouteCore";
 import { projectPropulsionDash } from "../game/propulsionDash";
-import { drawFotonPropulsionQa,projectFotonPropulsionQa } from "../game/fotonPropulsionQa";
+import { drawEnergyThrusterJets,drawEnergyDashStreaks,projectEnergyThrusterJetReach } from "../game/energyThrusters";
 import { projectRouteOverdriveQa } from "../game/routeOverdriveQa";
 import { drawOrbiConvergence } from "../game/orbiConvergenceRenderer";
 import { projectRouteConvergenceQa,routeConvergenceWaveKey } from "../game/routeConvergenceQa";
@@ -125,7 +125,7 @@ const arrowKeys = new Set(["w","a","s","d","arrowup","arrowdown","arrowleft","ar
 export default function PhysicalRouteQa() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const viewportRef = useRef<RoutePhysicalViewport>({ width: 800, height: 480, zoom: 1 });
-  const stateRef = useRef<PhysicalRouteQaState>(createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled,c3b2Enabled,c3b3Enabled,c3b4Enabled,c3b5Enabled,c3b6Enabled,c3b7Enabled,c3b8Enabled,c3b9Enabled,c3b11Enabled));
+  const stateRef = useRef<PhysicalRouteQaState>(createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled,c3b2Enabled,c3b3Enabled,c3b4Enabled,c3b5Enabled,c3b6Enabled,c3b7Enabled,c3b8Enabled,c3b9Enabled,c3b11Enabled,c3b12Enabled));
   const controlsRef = useRef(new Set<string>());
   const dashRequestedRef=useRef(false);
   const overdriveRequestedRef=useRef(false);
@@ -349,35 +349,46 @@ export default function PhysicalRouteQa() {
           ctx.restore();
         }
       }
-      if(c3b12Enabled){
-        // Genuine QA Dash core governs the visual boost. Base cruise flame
-        // follows the auto-advancing +X player and the same physical camera.
+      if(c3b12Enabled && s.energyThrusterPose){
         const boosting=s.bridge!==null && projectPropulsionDash(
           s.bridge.dash,s.frame.cursor.simulatedMs).active;
-        const thrust=projectFotonPropulsionQa(
-          s.frame.cursor.simulatedMs,boosting,prefersReduce);
-        drawFotonPropulsionQa(ctx,s.player,thrust);
-        canvas.dataset.c3b12Thrust=thrust.mode;
-        canvas.dataset.c3b12ThrustLength=thrust.length.toFixed(2);
-        canvas.dataset.c3b12ThrustAnimated=String(thrust.animated);
-        // Retain proof that a *real drawn frame* used Dash. A 180ms impulse
-        // can end before Playwright receives its next DOM observation on
-        // software-rendered mobile; this is Canvas evidence, not a fake Dash.
-        if(boosting){
+        // EXACT production system: original UX12 RCS jets, projected from
+        // actual pre-rebase player displacement in the physics tick.
+        drawEnergyThrusterJets(
+          ctx,s.player,s.energyThrusterPose,s.frame.cursor.simulatedMs,boosting,
+        );
+        const reach=projectEnergyThrusterJetReach(
+          s.energyThrusterPose,s.frame.cursor.simulatedMs,boosting);
+        canvas.dataset.c3b12Thrust=boosting?"DASH":"CRUISE";
+        canvas.dataset.c3b12ThrustLength=reach.toFixed(2);
+        canvas.dataset.c3b12ThrustAnimated=String(s.energyThrusterPose.throttle>.035);
+        canvas.dataset.c3b12ThrustSource="CANONICAL_UX12";
+        canvas.dataset.c3b12ThrusterDirectionX=s.energyThrusterPose.directionX.toFixed(3);
+        canvas.dataset.c3b12ThrusterDirectionY=s.energyThrusterPose.directionY.toFixed(3);
+        if(boosting && reach>0){
           canvas.dataset.c3b12BoostObserved="true";
-          canvas.dataset.c3b12BoostPeakLength=thrust.length.toFixed(2);
+          canvas.dataset.c3b12BoostPeakLength=reach.toFixed(2);
         }
       }else{
         delete canvas.dataset.c3b12Thrust;
         delete canvas.dataset.c3b12ThrustLength;
         delete canvas.dataset.c3b12ThrustAnimated;
+        delete canvas.dataset.c3b12ThrustSource;
+        delete canvas.dataset.c3b12ThrusterDirectionX;
+        delete canvas.dataset.c3b12ThrusterDirectionY;
         delete canvas.dataset.c3b12BoostObserved;
         delete canvas.dataset.c3b12BoostPeakLength;
       }
       drawFoton(ctx,s.player,0,s.frame.cursor.simulatedMs,
         {x:s.player.x+120,y:s.player.y},
         false,undefined,(s.bridge?.shield??100)/100,QualityPreset.MEDIUM,false,
-        {x:-1,y:0},0,0);
+        {x:-1,y:0},0,s.energyThrusterPose?.bankRadians??0);
+      if(c3b12Enabled && s.bridge){
+        drawEnergyDashStreaks(
+          ctx,s.player,s.bridge.dash.direction,
+          projectPropulsionDash(s.bridge.dash,s.frame.cursor.simulatedMs).active,
+        );
+      }
       ctx.restore();
 
       ctx.save();
@@ -386,7 +397,7 @@ export default function PhysicalRouteQa() {
       ctx.fillRect(12,11,330,32);
       ctx.fillStyle="#8ff5ec";
       ctx.fillText(c3b12Enabled
-        ? "C3B-12 · FOTON PROPULSION · PHYSICAL QA"
+        ? "C3B-12A · UX12 CANONICAL RCS · PHYSICAL QA"
         :c3b11Enabled
         ? "C3B-11 · DRONE DUEL · PHYSICAL QA ONLY"
         :c3b10Enabled
@@ -422,7 +433,7 @@ export default function PhysicalRouteQa() {
         Math.round(480*availableWidth/Math.max(1,stageHeight))));
       viewportRef.current={width:logicalWidth,height:480,zoom:1};
       if(stateRef.current.physicsTicks===0) {
-        stateRef.current=createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled,c3b2Enabled,c3b3Enabled,c3b4Enabled,c3b5Enabled,c3b6Enabled,c3b7Enabled,c3b8Enabled,c3b9Enabled,c3b11Enabled);
+        stateRef.current=createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled,c3b2Enabled,c3b3Enabled,c3b4Enabled,c3b5Enabled,c3b6Enabled,c3b7Enabled,c3b8Enabled,c3b9Enabled,c3b11Enabled,c3b12Enabled);
       }
       canvas.dataset.logicalWidth=String(logicalWidth);
       canvas.dataset.logicalHeight="480";
@@ -518,7 +529,7 @@ export default function PhysicalRouteQa() {
       delete canvasRef.current.dataset.c3b12BoostObserved;
       delete canvasRef.current.dataset.c3b12BoostPeakLength;
     }
-    stateRef.current=createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled,c3b2Enabled,c3b3Enabled,c3b4Enabled,c3b5Enabled,c3b6Enabled,c3b7Enabled,c3b8Enabled,c3b9Enabled,c3b11Enabled);
+    stateRef.current=createPhysicalRouteQaState(viewportRef.current,undefined,c3bPreviewEnabled,c3b2Enabled,c3b3Enabled,c3b4Enabled,c3b5Enabled,c3b6Enabled,c3b7Enabled,c3b8Enabled,c3b9Enabled,c3b11Enabled,c3b12Enabled);
     controlsRef.current.clear();
     pointerRef.current=null;
     dashRequestedRef.current=false;
@@ -571,6 +582,7 @@ export default function PhysicalRouteQa() {
     <main className="ux15-route-qa ux15-physical-qa" data-testid="ux15-physical-qa"
       data-qa-mode={c3b12Enabled?"PHYSICAL_ROUTE_C3B12_QA":c3b11Enabled?"PHYSICAL_ROUTE_C3B11_QA":c3b10Enabled?"PHYSICAL_ROUTE_C3B10_QA":c3b9Enabled?"PHYSICAL_ROUTE_C3B9_QA":c3b8Enabled?"PHYSICAL_ROUTE_C3B8_QA":c3b7Enabled?"PHYSICAL_ROUTE_C3B7_QA":c3b6Enabled?"PHYSICAL_ROUTE_C3B6_QA":c3b5Enabled?"PHYSICAL_ROUTE_C3B5_QA":c3b4Enabled?"PHYSICAL_ROUTE_C3B4_QA":c3b3Enabled?"PHYSICAL_ROUTE_C3B3_QA":c3b2Enabled?"PHYSICAL_ROUTE_C3B2_QA":c3bPreviewEnabled?"PHYSICAL_ROUTE_C3B1_QA":"PHYSICAL_ROUTE_ISOLATED"}
       data-c3b12-propulsion-enabled={String(c3b12Enabled)}
+      data-c3b12-canonical-source={c3b12Enabled?"src/game/energyThrusters.ts":"DISABLED"}
       data-c3b11-status={telemetry.droneDuelStatus}
       data-c3b11-shots={telemetry.droneDuelShots}
       data-c3b11-hits={telemetry.droneDuelHits}
@@ -665,11 +677,11 @@ export default function PhysicalRouteQa() {
       data-glb-status={telemetry.glb}>
       <header className="ux15-route-qa__header">
         <div>
-          <span className="ux15-route-qa__eyebrow">ORBI ENERGY SWARM · {c3b12Enabled?"UX15-C3B-12":c3b11Enabled?"UX15-C3B-11":c3b10Enabled?"UX15-C3B-10":c3b9Enabled?"UX15-C3B-9":c3b8Enabled?"UX15-C3B-8":c3b7Enabled?"UX15-C3B-7":c3b6Enabled?"UX15-C3B-6":c3b5Enabled?"UX15-C3B-5":c3b4Enabled?"UX15-C3B-4":c3b3Enabled?"UX15-C3B-3":c3b2Enabled?"UX15-C3B-2":c3bPreviewEnabled?"UX15-C3B-1":"UX15-C3A-3"}</span>
+          <span className="ux15-route-qa__eyebrow">ORBI ENERGY SWARM · {c3b12Enabled?"UX15-C3B-12A":c3b11Enabled?"UX15-C3B-11":c3b10Enabled?"UX15-C3B-10":c3b9Enabled?"UX15-C3B-9":c3b8Enabled?"UX15-C3B-8":c3b7Enabled?"UX15-C3B-7":c3b6Enabled?"UX15-C3B-6":c3b5Enabled?"UX15-C3B-5":c3b4Enabled?"UX15-C3B-4":c3b3Enabled?"UX15-C3B-3":c3b2Enabled?"UX15-C3B-2":c3bPreviewEnabled?"UX15-C3B-1":"UX15-C3A-3"}</span>
           <h1>{locale==="es"?"LABORATORIO DE TRAVESÍA FÍSICA":"PHYSICAL TRAVERSAL LAB"}</h1>
           <p>{locale==="es"
             ?(c3b12Enabled
-              ?"ENERGY ahora muestra propulsión azul-cian durante el avance y un impulso visual reforzado con Dash (QA)."
+              ?"ENERGY utiliza los mismos motores RCS del juego normal, con empuje según su desplazamiento real y estelas originales de Dash (QA)."
               :c3b11Enabled
               ?"Duelo físico DRONE experimental: plasma, impacto y escudo QA; Wave 3 sigue bloqueada."
               :c3b10Enabled
@@ -694,7 +706,7 @@ export default function PhysicalRouteQa() {
               ?"Encuentro físico QA: enemigos aparecen fuera de cámara, persiguen a ENERGY y reciben impactos. Sin recompensas ni combate de campaña."
               :"ENERGY, cámara y 30 ORBI recorren ASTERIA junto a enemigos, balas y recursos controlados. Sin daño ni recompensas.")
               :(c3b12Enabled
-              ?"ENERGY now shows blue-cyan cruise exhaust and a stronger visual burst during Dash (QA)."
+              ?"ENERGY uses the same canonical RCS thrusters as the normal game, driven by real displacement with original Dash streaks (QA)."
               :c3b11Enabled
               ?"Physical DRONE duel with QA plasma and shield impacts; Wave3 remains locked."
               :c3b10Enabled
@@ -741,9 +753,9 @@ export default function PhysicalRouteQa() {
         <div><span>{locale==="es"?"Segmento":"Segment"}</span><strong>{telemetry.ordinal+1}</strong></div>
         <div><span>Origin epoch</span><strong>{telemetry.originEpoch}</strong></div>
         {c3b12Enabled && <>
-          <div><span>Propulsión ENERGY</span><strong>AZUL-CIAN · CRUCERO</strong></div>
-          <div><span>Impulso Dash</span><strong>EFECTO VISUAL ×2,2 · 180 ms</strong></div>
-          <div><span>Movimiento reducido</span><strong>{reduced?"BRILLO FIJO":"PULSO SUAVE"}</strong></div>
+          <div><span>Propulsión ENERGY</span><strong>RCS UX12 · ORIGINAL</strong></div>
+          <div><span>Impulso Dash</span><strong>ESTELAS ORIGINALES · 180 ms</strong></div>
+          <div><span>Orientación motores</span><strong>SEGÚN MOVIMIENTO FÍSICO</strong></div>
         </>}
         {c3b11Enabled && <>
           <div><span>DRONE · recinto físico</span><strong>{telemetry.droneDuelStatus}</strong></div>
