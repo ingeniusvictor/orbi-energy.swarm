@@ -53,14 +53,12 @@ export const drawEnergyThrusterJets=(
   const ux=dx/length,uy=dy/length;
   const tangentX=-uy,tangentY=ux;
   const power=pose.throttle;
-  const surge=dashActive?1.45:1;
-  const flicker=.88+.12*Math.sin(nowMs*.036);
   ctx.save();
   ctx.lineCap="round";
   for(const side of [-1,1]){
     const nozzleX=position.x-ux*10+tangentX*(side*8);
     const nozzleY=position.y-uy*10+tangentY*(side*8);
-    const reach=(8+15*power)*surge*flicker;
+    const reach=projectEnergyThrusterJetReach(pose,nowMs,dashActive);
     // Nozzle mounts and golden-ion exhaust stay behind leader silhouette.
     ctx.strokeStyle="#d6eef7";ctx.lineWidth=2.9;ctx.shadowBlur=0;
     ctx.beginPath();ctx.moveTo(nozzleX+ux*3,nozzleY+uy*3);
@@ -74,6 +72,49 @@ export const drawEnergyThrusterJets=(
     ctx.strokeStyle="#fff2bf";ctx.lineWidth=1.1;
     ctx.beginPath();ctx.moveTo(nozzleX,nozzleY);
     ctx.lineTo(nozzleX-ux*reach*.6,nozzleY-uy*reach*.6);ctx.stroke();
+  }
+  ctx.restore();
+};
+
+/**
+ * Canonical UX12 jet length: shared between both render clients and their
+ * evidence. This is the original (8+15*power)*surge*flicker formula.
+ */
+export const projectEnergyThrusterJetReach=(
+  pose:EnergyThrusterPose,nowMs:number,dashActive:boolean,
+):number=>{
+  if(pose.throttle<.035 || Math.hypot(pose.directionX,pose.directionY)<.035)
+    return 0;
+  const surge=dashActive?1.45:1;
+  const flicker=.88+.12*Math.sin(nowMs*.036);
+  return (8+15*pose.throttle)*surge*flicker;
+};
+
+/** Exact UX11-E canonical three-streak Dash visual, now shared with ASTERIA.
+ * Render AFTER the FOTON body, inside the same world/camera transform.
+ */
+export const drawEnergyDashStreaks=(
+  ctx:CanvasRenderingContext2D,
+  pos:{x:number;y:number},
+  direction:{x:number;y:number},
+  dashActive:boolean,
+):void=>{
+  if(!dashActive)return;
+  ctx.save();
+  ctx.lineCap = "round";
+  ctx.shadowColor = "#67e8f9";
+  ctx.shadowBlur = 12;
+  for (const lateral of [-11, 0, 11]) {
+    const sideX = -direction.y * lateral;
+    const sideY = direction.x * lateral;
+    ctx.beginPath();
+    ctx.moveTo(pos.x - direction.x * 16 + sideX, pos.y - direction.y * 16 + sideY);
+    ctx.lineTo(pos.x - direction.x * (lateral === 0 ? 86 : 60) + sideX,
+      pos.y - direction.y * (lateral === 0 ? 86 : 60) + sideY);
+    ctx.strokeStyle = lateral === 0 ? "#fde68a" : "#67e8f9";
+    ctx.globalAlpha = lateral === 0 ? 0.85 : 0.55;
+    ctx.lineWidth = lateral === 0 ? 4 : 2;
+    ctx.stroke();
   }
   ctx.restore();
 };

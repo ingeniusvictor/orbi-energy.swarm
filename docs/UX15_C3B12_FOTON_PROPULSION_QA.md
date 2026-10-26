@@ -1,3 +1,5 @@
+> **Actualización UX15-C3B-12A:** este diseño visual QA duplicado fue sustituido por la propulsión canónica de `energyThrusters.ts`. Consulta [hotfix C3B-12A](./UX15_C3B12A_CANONICAL_THRUSTERS_HOTFIX.md). El contenido siguiente se conserva como registro histórico de C3B-12 y ya no describe el renderizador actual.
+
 # UX15-C3B-12 — Propulsión visible de FOTON en ASTERIA QA
 
 Continuidad de PR #765 (panoramas sin retroceso) y PR #764 (Drone Duel C3B-11), sin reabrir mecánicas públicas.
