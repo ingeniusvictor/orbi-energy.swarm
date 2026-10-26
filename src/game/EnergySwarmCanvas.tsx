@@ -1189,6 +1189,33 @@ export function drawEnemiesList(
         ctx.lineTo(a.dirX*240,a.dirY*240);ctx.stroke();
         ctx.restore();
       }
+    } else if(enemy.type===EnemyType.SPAN_WARDEN && enemy.spanWardenState){
+      const a=enemy.spanWardenState;
+      ctx.save();
+      const theta=Math.atan2(a.facingY,a.facingX);
+      if(a.phase==="WINDUP"){
+        const pulse=.64+.2*Math.sin(time*.018);
+        ctx.strokeStyle=`rgba(103,232,249,${pulse.toFixed(2)})`;
+        ctx.shadowColor="#22d3ee";ctx.shadowBlur=13;
+        ctx.setLineDash([9,5]);ctx.lineWidth=3;
+        ctx.beginPath();ctx.moveTo(0,0);
+        ctx.lineTo(a.facingX*300,a.facingY*300);ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.strokeStyle="#fde68a";ctx.lineWidth=2;
+        ctx.beginPath();ctx.arc(Math.cos(theta)*35,Math.sin(theta)*35,
+          5+a.remainingMs/160,0,Math.PI*2);ctx.stroke();
+      }else if(a.phase==="SWEEP"){
+        ctx.strokeStyle="rgba(103,232,249,.7)";
+        ctx.lineWidth=7;ctx.beginPath();
+        ctx.moveTo(-a.facingX*20,-a.facingY*20);
+        ctx.lineTo(-a.facingX*75,-a.facingY*75);ctx.stroke();
+      }else if(a.phase==="EXPOSE"){
+        ctx.strokeStyle="rgba(253,230,138,.77)";
+        ctx.lineWidth=2.5;ctx.beginPath();
+        ctx.arc(0,0,enemy.size*1.55+4*Math.sin(time*.01),
+          0,Math.PI*2);ctx.stroke();
+      }
+      ctx.restore();
     } else if (enemy.type === EnemyType.DRONE && enemy.shootCooldown !== undefined && enemy.shootCooldown <= 35 && enemy.shootCooldown > 0) {
       // Fine target line to Foton leader (Section 3.1)
       ctx.save();
@@ -1327,6 +1354,51 @@ export function drawEnemiesList(
         ctx.fill();ctx.stroke();
         ctx.fillStyle=a?.phase==="SWEEP"?"#fef08a":"#5eead4";
         ctx.beginPath();ctx.arc(0,0,q*.23,0,Math.PI*2);ctx.fill();
+        ctx.restore();break;
+      }
+      case EnemyType.SPAN_WARDEN: {
+        const a=enemy.spanWardenState;
+        const t=Math.atan2(a?.facingY??0,a?.facingX??-1);
+        const r=enemy.size;
+        ctx.save();ctx.rotate(t);
+        ctx.shadowColor="#22d3ee";ctx.shadowBlur=19;
+        // Heavy orbital gate sentinel: four-arm broad-shouldered armor.
+        for(const side of [-1,1]){
+          ctx.fillStyle="#164e63";ctx.strokeStyle="#67e8f9";
+          ctx.lineWidth=2.8;ctx.beginPath();
+          ctx.moveTo(r*.7,side*r*.58);
+          ctx.lineTo(-r*.24,side*r*1.35);
+          ctx.lineTo(-r*.9,side*r*1.1);
+          ctx.lineTo(-r*.36,side*r*.3);ctx.closePath();
+          ctx.fill();ctx.stroke();
+          ctx.fillStyle="#155e75";ctx.beginPath();
+          ctx.moveTo(-r*.2,side*r*.62);
+          ctx.lineTo(-r*1.2,side*r*.86);
+          ctx.lineTo(-r*.9,side*r*.42);
+          ctx.closePath();ctx.fill();ctx.stroke();
+        }
+        ctx.fillStyle="#0f172a";ctx.strokeStyle="#a5f3fc";
+        ctx.lineWidth=2.7;ctx.beginPath();
+        ctx.moveTo(r*1.05,0);
+        ctx.lineTo(r*.5,-r*.75);
+        ctx.lineTo(-r*.65,-r*.75);
+        ctx.lineTo(-r*.92,0);
+        ctx.lineTo(-r*.65,r*.75);
+        ctx.lineTo(r*.5,r*.75);
+        ctx.closePath();ctx.fill();ctx.stroke();
+        const exposed=a?.phase==="EXPOSE";
+        if(!exposed){
+          // Directional frontal armor is also enforced by game damage.
+          ctx.fillStyle="rgba(34,211,238,.23)";
+          ctx.strokeStyle="#22d3ee";ctx.lineWidth=2.4;
+          ctx.beginPath();ctx.arc(0,0,r*1.15,-Math.PI*.38,Math.PI*.38);
+          ctx.stroke();
+        }
+        ctx.shadowColor=exposed?"#fde68a":"#67e8f9";
+        ctx.shadowBlur=exposed?26:10;
+        ctx.fillStyle=exposed?"#fef08a":"#0891b2";
+        ctx.beginPath();ctx.arc(r*.06,0,r*(exposed?0.4:0.27),0,Math.PI*2);
+        ctx.fill();
         ctx.restore();break;
       }
       case EnemyType.RAILCUTTER: {

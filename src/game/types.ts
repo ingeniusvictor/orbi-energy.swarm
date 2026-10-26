@@ -1,5 +1,6 @@
 import type { LiveEnemyFormationAssignment } from "./liveEnemyFormationDirector";
 import type { RailcutterAttack } from "./asteriaRailcutter";
+import type { SpanWardenState } from "./asteriaSpanWarden";
 import type { SkySpecterAttack,BeaconPrismAttack,IonSailAttack } from "./asteriaOriginalFoes";
 import type { SiegeVolleyTelegraphState } from "./siegeVolleyTelegraph";
 import type { BlackoutArchitectEngineIdentityTag } from "./blackoutArchitectEngineIdentityLifecycle";
@@ -151,6 +152,7 @@ export enum EnemyType {
   SKY_SPECTER = "SKY_SPECTER",
   BEACON_PRISM = "BEACON_PRISM",
   ION_SAIL = "ION_SAIL",
+  SPAN_WARDEN = "SPAN_WARDEN",
   SPLITTER = "SPLITTER",
   DISRUPTOR = "DISRUPTOR",
   BLACKOUT_ELITE = "BLACKOUT_ELITE",
@@ -241,6 +243,8 @@ export interface Enemy {
   skySpecterAttack?: SkySpecterAttack;
   beaconPrismAttack?: BeaconPrismAttack;
   ionSailAttack?: IonSailAttack;
+  /** WBE-01E: ASTERIA bridge field elite, separate from BLACKOUT_ELITE. */
+  spanWardenState?: SpanWardenState;
 }
 
 export interface Projectile {
