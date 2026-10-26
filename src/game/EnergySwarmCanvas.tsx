@@ -913,8 +913,9 @@ export function drawResources(
 }
 
 /**
- * Draws Crawlers, Parasites, Drones, and Boss.
+ * Draws Crawlers, Parasites, Drones, ASTERIA exclusives, and Boss.
  */
+const SPAN_WARDEN_SHOT_ANGLE=0.56;
 export function drawEnemiesList(
   ctx: CanvasRenderingContext2D,
   enemies: Enemy[],
@@ -1105,6 +1106,27 @@ export function drawEnemiesList(
         targetDy - 28,
       );
       ctx.restore();
+    } else if(enemy.type===EnemyType.SPAN_WARDEN&&enemy.spanWardenAttack){
+      const a=enemy.spanWardenAttack;
+      const angle=Math.atan2(a.facingY,a.facingX);
+      if(a.phase==="WINDUP"||a.phase==="STRIKE"){
+        ctx.save();ctx.setLineDash(a.phase==="WINDUP"?[10,7]:[]);
+        ctx.strokeStyle=a.phase==="WINDUP"?"rgba(253,230,138,.85)":"rgba(103,232,249,.75)";
+        ctx.lineWidth=a.phase==="WINDUP"?2.1:3;
+        ctx.shadowColor="#facc15";ctx.shadowBlur=7;
+        for(const lateral of [-SPAN_WARDEN_SHOT_ANGLE,SPAN_WARDEN_SHOT_ANGLE]){
+          const ray=angle+lateral;
+          ctx.beginPath();ctx.moveTo(0,0);
+          ctx.lineTo(Math.cos(ray)*330,Math.sin(ray)*330);ctx.stroke();
+        }
+        ctx.setLineDash([]);ctx.restore();
+      }
+      if(a.phase==="EXPOSED"){
+        ctx.save();ctx.strokeStyle="#fde68a";ctx.lineWidth=2.2;
+        ctx.shadowColor="#facc15";ctx.shadowBlur=10;
+        ctx.beginPath();ctx.arc(0,0,enemy.size*1.5+3*Math.sin(time*.012),0,Math.PI*2);
+        ctx.stroke();ctx.restore();
+      }
     } else if (enemy.type === EnemyType.RAILCUTTER && enemy.railcutterAttack) {
       const {phase,directionX,directionY,remainingMs}=enemy.railcutterAttack;
       if(phase==="AIM"){
@@ -1256,6 +1278,50 @@ export function drawEnemiesList(
     ctx.fillStyle = enemy.color;
 
     switch (enemy.type) {
+      case EnemyType.SPAN_WARDEN: {
+        const a=enemy.spanWardenAttack;
+        const s=enemy.size;
+        ctx.save();ctx.rotate(Math.atan2(a?.facingY??0,a?.facingX??-1));
+        ctx.shadowColor="#22d3ee";ctx.shadowBlur=14;
+        // Four distinct jointed arms and bright golden armor attachments.
+        for(const side of [-1,1])for(const front of [-1,1]){
+          const ax=front*s*.54,ay=side*s*.53;
+          ctx.strokeStyle="#94a3b8";ctx.lineWidth=4.4;
+          ctx.beginPath();ctx.moveTo(ax,ay);
+          ctx.lineTo(front*s*1.22,side*s*1.04);
+          ctx.lineTo(front*s*1.52,side*s*.68);ctx.stroke();
+          ctx.fillStyle=front===1?"#facc15":"#22d3ee";
+          ctx.beginPath();ctx.arc(front*s*1.22,side*s*1.04,3,0,Math.PI*2);ctx.fill();
+          ctx.strokeStyle="#67e8f9";ctx.lineWidth=2.1;
+          ctx.beginPath();ctx.moveTo(front*s*1.52,side*s*.68);
+          ctx.lineTo(front*s*1.7,side*s*.92);ctx.stroke();
+        }
+        ctx.fillStyle="#10263f";ctx.strokeStyle="#cbd5e1";ctx.lineWidth=2.4;
+        ctx.beginPath();ctx.moveTo(s*1.05,0);
+        ctx.lineTo(s*.59,-s*.76);ctx.lineTo(-s*.62,-s*.83);
+        ctx.lineTo(-s*1.05,0);ctx.lineTo(-s*.62,s*.83);
+        ctx.lineTo(s*.59,s*.76);ctx.closePath();ctx.fill();ctx.stroke();
+        for(const side of [-1,1]){
+          ctx.fillStyle="#1e4866";ctx.strokeStyle="#38bdf8";ctx.lineWidth=1.8;
+          ctx.beginPath();ctx.moveTo(-s*.38,side*s*.19);
+          ctx.lineTo(s*.58,side*s*.16);ctx.lineTo(s*.3,side*s*.53);
+          ctx.lineTo(-s*.42,side*s*.48);ctx.closePath();ctx.fill();ctx.stroke();
+        }
+        if(a?.phase==="GUARD"||a?.phase==="WINDUP"){
+          ctx.strokeStyle="#fde68a";ctx.lineWidth=6;
+          ctx.shadowColor="#facc15";ctx.shadowBlur=15;
+          ctx.beginPath();ctx.arc(0,0,s*1.33,-Math.PI*.38,Math.PI*.38);ctx.stroke();
+          ctx.fillStyle="rgba(253,230,138,.10)";ctx.beginPath();
+          ctx.moveTo(0,0);ctx.arc(0,0,s*1.35,-Math.PI*.38,Math.PI*.38);
+          ctx.closePath();ctx.fill();
+        }
+        ctx.shadowColor=a?.phase==="EXPOSED"?"#facc15":"#22d3ee";
+        ctx.shadowBlur=a?.phase==="EXPOSED"?22:11;
+        ctx.fillStyle=a?.phase==="EXPOSED"?"#fef08a":"#22d3ee";
+        ctx.beginPath();ctx.arc(0,0,s*.4,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle="#0f172a";ctx.beginPath();ctx.arc(0,0,s*.14,0,Math.PI*2);ctx.fill();
+        ctx.restore();break;
+      }
       case EnemyType.SKY_SPECTER: {
         const a=enemy.skySpecterAttack;
         const dive=a?.phase==="DIVE";
