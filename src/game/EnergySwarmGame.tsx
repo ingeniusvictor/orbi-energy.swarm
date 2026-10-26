@@ -20,6 +20,7 @@ import {
   stepSkySpecter,stepBeaconPrism,stepIonSail,
   ION_SAIL_TRAIL_DAMAGE,ION_SAIL_TRAIL_LIFE_MS,
 } from "./asteriaOriginalFoes";
+import {createSpanWardenState,shouldSpawnSpanWarden,stepSpanWarden,projectSpanWardenImpact} from "./asteriaSpanWarden";
 import { stepRouteClock, ROUTE_QA_SPEED_UNITS_PER_SECOND } from "./worldRouteClock";
 import { drawWorldRouteQaScene } from "./worldRoutePreviewRenderer";
 import {
@@ -3246,7 +3247,18 @@ export const EnergySwarmGame: React.FC = () => {
           WORLD_WIDTH,WORLD_HEIGHT,Math.max(170,combatPressure.spawnSafetyRadius),
         )
       :null;
-    const type = railcutterSpawn
+    const wardenSpawn=shouldSpawnSpanWarden(
+      worldRouteRunActiveRef.current,descriptor.sourceMode,
+      descriptor.waveNumber,waveBudgetSpawnedRef.current,
+      Boolean(forcedType),spawningMiniboss,
+      enemiesRef.current.some(e=>e.type===EnemyType.SPAN_WARDEN&&!e.isDead),
+    )?selectAsteriaRailcutterSpawn(
+      routeCamera,playerPosRef.current,WORLD_WIDTH,WORLD_HEIGHT,
+      Math.max(190,combatPressure.spawnSafetyRadius),
+    ):null;
+    const type = wardenSpawn
+      ? EnemyType.SPAN_WARDEN
+      : railcutterSpawn
       ? EnemyType.RAILCUTTER
       : originalFoeSpawn&&originalFoe
         ? EnemyType[originalFoe]
@@ -3327,7 +3339,10 @@ export const EnergySwarmGame: React.FC = () => {
     }
     // Replace the legacy position ONLY for the new ASTERIA-native actor.
     // All other modes retain the existing four-side camera spawn policy.
-    if (railcutterSpawn) {
+    if (wardenSpawn) {
+      ex = wardenSpawn.x;
+      ey = wardenSpawn.y;
+    } else if (railcutterSpawn) {
       ex = railcutterSpawn.x;
       ey = railcutterSpawn.y;
     } else if (originalFoeSpawn) {
@@ -3370,6 +3385,11 @@ export const EnergySwarmGame: React.FC = () => {
       speed = 1.15 * biomeCfg.enemySpeedMultiplier * movementSpeedMultiplier;
       size = 12;
       color = "#2dd4bf";
+    } else if (type === EnemyType.SPAN_WARDEN) {
+      health = 95 * healthMultiplier;
+      speed = 0.62 * biomeCfg.enemySpeedMultiplier * movementSpeedMultiplier;
+      size = 20;
+      color = "#67e8f9";
     } else if (type === EnemyType.DRONE) {
       health = 20 * healthMultiplier;
       speed = 0.7 * biomeCfg.enemySpeedMultiplier * movementSpeedMultiplier;
@@ -3470,7 +3490,8 @@ export const EnergySwarmGame: React.FC = () => {
             type !== EnemyType.RAILCUTTER &&
             type !== EnemyType.SKY_SPECTER &&
             type !== EnemyType.BEACON_PRISM &&
-            type !== EnemyType.ION_SAIL,
+            type !== EnemyType.ION_SAIL &&
+            type !== EnemyType.SPAN_WARDEN,
           remainingCapacity:
             Math.min(
               MAX_ENEMIES,
@@ -3537,6 +3558,8 @@ export const EnergySwarmGame: React.FC = () => {
         ?createBeaconPrismAttack():undefined,
       ionSailAttack: type===EnemyType.ION_SAIL
         ?createIonSailAttack():undefined,
+      spanWardenState: type===EnemyType.SPAN_WARDEN
+        ?createSpanWardenState():undefined,
       enemyFormation: enemyFormation ?? undefined,
       flashTicks: 0,
       evolvedVariantId: evolvedProfile?.id,
@@ -5999,6 +6022,20 @@ export const EnergySwarmGame: React.FC = () => {
             playDroneChargeSound();
             addFloatingText("RAIL LOCK",enemy.x,enemy.y-enemy.size-18,"#67e8f9");
           }
+        } else if (enemy.type === EnemyType.SPAN_WARDEN && enemy.spanWardenState) {
+          const previous=enemy.spanWardenState;
+          const frame=stepSpanWarden(previous,enemy,playerPosRef.current,enemy.speed,delta);
+          enemy.x=Math.max(16,Math.min(WORLD_WIDTH-16,frame.x));
+          enemy.y=Math.max(16,Math.min(WORLD_HEIGHT-16,frame.y));
+          enemy.vx=frame.vx;enemy.vy=frame.vy;
+          enemy.spanWardenState=frame.state;
+          if(previous.phase==="GUARD" && frame.state.phase==="WINDUP"){
+            playEliteChargeSound();
+            addFloatingText("SPAN STRIKE",enemy.x,enemy.y-35,"#67e8f9");
+          }else if(previous.phase==="SWEEP" && frame.state.phase==="EXPOSE"){
+            playShieldDeflectSound();
+            addFloatingText("CORE EXPOSED",enemy.x,enemy.y-35,"#fde68a");
+          }
         } else if (enemy.type === EnemyType.SKY_SPECTER && enemy.skySpecterAttack) {
           const prior=enemy.skySpecterAttack;
           const step=stepSkySpecter(prior,enemy,playerPosRef.current,
@@ -7054,6 +7091,13 @@ export const EnergySwarmGame: React.FC = () => {
                 if (!proj.convergenceTargetId) isCrit = true;
                 damageToApply *= chassis.weakpoints.exposedDamageMultiplier;
               }
+            } else if (enemy.type === EnemyType.SPAN_WARDEN && enemy.spanWardenState) {
+              const impact=projectSpanWardenImpact(
+                enemy.spanWardenState,enemy,proj,
+              );
+              damageToApply *= impact.damageMultiplier;
+              isShieldBlock=impact.shieldBlock;
+              if(impact.exposed&&!proj.convergenceTargetId)isCrit=true;
             } else if (enemy.type === EnemyType.BLACKOUT_ELITE) {
               const faceX = enemy.vx || (playerPosRef.current.x - enemy.x);
               const faceY = enemy.vy || (playerPosRef.current.y - enemy.y);
@@ -7923,15 +7967,16 @@ export const EnergySwarmGame: React.FC = () => {
       canvas.dataset.wbe01RailcutterCount = String(railcutterActiveCount);
       canvas.dataset.wbe01RailcutterPhase =
         worldRailcutter?.railcutterAttack?.phase??"NONE";
-      let sky=0,beacons=0,sails=0;
+      let sky=0,beacons=0,sails=0,wardens=0;
       for(const actor of enemiesRef.current){
         if(actor.isDead)continue;
         if(actor.type===EnemyType.SKY_SPECTER)sky++;
         else if(actor.type===EnemyType.BEACON_PRISM)beacons++;
         else if(actor.type===EnemyType.ION_SAIL)sails++;
+        else if(actor.type===EnemyType.SPAN_WARDEN)wardens++;
       }
       canvas.dataset.wbe01AsteriaExclusiveCounts =
-        sky+","+beacons+","+sails;
+        sky+","+beacons+","+sails+","+wardens;
     } else {
       delete canvas.dataset.wbe01RailcutterScope;
       delete canvas.dataset.wbe01RailcutterCount;
