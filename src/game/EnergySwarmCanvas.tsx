@@ -1170,6 +1170,37 @@ export function drawEnemiesList(
           Math.sin(time*.009)*5,0,Math.PI*2);ctx.stroke();
         ctx.restore();
       }
+    } else if(enemy.type===EnemyType.FERRITE_FOREMAN&&enemy.ferriteForemanAttack){
+      const a=enemy.ferriteForemanAttack;
+      if(a.phase==="WARNING"||a.phase==="STRIKE"){
+        // The same three-sector fan angles used by native shootFromEnemy.
+        const locked=Math.atan2(a.facingY,a.facingX);
+        const firing=a.phase==="STRIKE";
+        ctx.save();
+        ctx.setLineDash(firing?[]:[12,8]);
+        ctx.lineWidth=firing?4:2.2;
+        ctx.strokeStyle=firing?"rgba(251,191,36,.95)":"rgba(251,146,60,.75)";
+        ctx.shadowColor="#f59e0b";ctx.shadowBlur=12;
+        for(const offset of [-.52,0,.52]){
+          const angle=locked+offset;
+          ctx.beginPath();ctx.moveTo(0,0);
+          ctx.lineTo(Math.cos(angle)*330,Math.sin(angle)*330);ctx.stroke();
+        }
+        ctx.setLineDash([]);ctx.restore();
+      }
+      if(a.phase==="COMMAND"){
+        ctx.save();ctx.strokeStyle="rgba(253,230,138,.78)";ctx.lineWidth=2;
+        ctx.shadowColor="#fbbf24";ctx.shadowBlur=16;
+        ctx.setLineDash([5,9]);
+        ctx.beginPath();ctx.arc(0,0,205,0,Math.PI*2);ctx.stroke();
+        ctx.setLineDash([]);ctx.restore();
+      }
+      if(a.phase==="EXPOSED"){
+        ctx.save();ctx.strokeStyle="#d9f99d";ctx.lineWidth=3;
+        ctx.shadowColor="#a3e635";ctx.shadowBlur=20;
+        ctx.beginPath();ctx.arc(0,0,enemy.size*1.3+Math.sin(time*.015)*3,
+          0,Math.PI*2);ctx.stroke();ctx.restore();
+      }
     } else if(enemy.type===EnemyType.FOUNDRY_CLAW&&enemy.foundryClawAttack){
       const a=enemy.foundryClawAttack;
       if(a.phase==="ANCHOR"||a.phase==="TETHER"){
@@ -1406,6 +1437,67 @@ export function drawEnemiesList(
     ctx.fillStyle = enemy.color;
 
     switch (enemy.type) {
+      case EnemyType.FERRITE_FOREMAN: {
+        const a=enemy.ferriteForemanAttack;
+        const r=enemy.size;
+        const open=a?.phase==="EXPOSED";
+        ctx.save();
+        ctx.rotate(Math.atan2(a?.facingY??0,a?.facingX??-1));
+        ctx.shadowColor="#fbbf24";ctx.shadowBlur=14;
+        // Ferrita Consortium command-grade armored exoskeleton.
+        ctx.fillStyle="#202739";ctx.strokeStyle="#fcd34d";ctx.lineWidth=3;
+        ctx.beginPath();ctx.moveTo(r*1.12,0);
+        ctx.lineTo(r*.65,-r*.75);ctx.lineTo(-r*.75,-r*.75);
+        ctx.lineTo(-r*1.1,0);ctx.lineTo(-r*.75,r*.75);
+        ctx.lineTo(r*.65,r*.75);ctx.closePath();ctx.fill();ctx.stroke();
+        // Two articulated legs with bright hydraulic pistons.
+        for(const side of [-1,1]){
+          ctx.strokeStyle="#64748b";ctx.lineWidth=6;
+          ctx.beginPath();ctx.moveTo(-r*.35,side*r*.66);
+          ctx.lineTo(-r*.65,side*r*1.22);
+          ctx.lineTo(-r*.12,side*r*1.52);ctx.stroke();
+          ctx.strokeStyle="#f59e0b";ctx.lineWidth=2.5;
+          ctx.beginPath();ctx.moveTo(-r*.45,side*r*.72);
+          ctx.lineTo(-r*.63,side*r*1.16);ctx.stroke();
+        }
+        // Right-hand pneumatic hammer with twin glowing strike rails.
+        ctx.strokeStyle="#9ca3af";ctx.lineWidth=8;
+        ctx.beginPath();ctx.moveTo(r*.52,-r*.35);
+        ctx.lineTo(r*1.35,-r*.9);ctx.stroke();
+        ctx.save();ctx.translate(r*1.55,-r*.92);
+        ctx.fillStyle="#343c4f";ctx.strokeStyle="#f97316";ctx.lineWidth=3;
+        ctx.fillRect(-r*.30,-r*.42,r*.60,r*.84);
+        ctx.strokeRect(-r*.30,-r*.42,r*.60,r*.84);
+        for(const yy of [-.26,.26]){
+          ctx.strokeStyle="#fde68a";ctx.lineWidth=2;
+          ctx.beginPath();ctx.moveTo(-r*.25,yy*r);
+          ctx.lineTo(r*.25,yy*r);ctx.stroke();
+        }
+        ctx.restore();
+        // Reinforced left manipulator / command antenna.
+        ctx.strokeStyle="#64748b";ctx.lineWidth=6;
+        ctx.beginPath();ctx.moveTo(r*.30,r*.46);
+        ctx.lineTo(r*1.08,r*.85);ctx.lineTo(r*1.20,r*.2);ctx.stroke();
+        ctx.strokeStyle="#fcd34d";ctx.lineWidth=2;
+        ctx.beginPath();ctx.moveTo(r*1.20,r*.2);
+        ctx.lineTo(r*1.50,-r*.05);ctx.stroke();
+        // Front armor flaps separate to expose the vulnerable lime reactor.
+        for(const side of [-1,1]){
+          ctx.save();ctx.translate(0,side*(open?r*.68:r*.30));
+          ctx.fillStyle="#334155";ctx.strokeStyle="#fbbf24";
+          ctx.lineWidth=1.6;
+          ctx.beginPath();ctx.moveTo(-r*.48,-r*.23);
+          ctx.lineTo(r*.43,-r*.23);ctx.lineTo(r*.25,r*.23);
+          ctx.lineTo(-r*.45,r*.23);ctx.closePath();ctx.fill();ctx.stroke();
+          ctx.restore();
+        }
+        ctx.shadowColor=open?"#a3e635":"#fde68a";ctx.shadowBlur=open?25:10;
+        ctx.fillStyle=open?"#d9f99d":"#fbbf24";
+        ctx.beginPath();ctx.arc(0,0,r*(open?.38:.19),0,Math.PI*2);ctx.fill();
+        ctx.fillStyle="#0f172a";ctx.beginPath();
+        ctx.arc(0,0,r*.10,0,Math.PI*2);ctx.fill();
+        ctx.restore();break;
+      }
       case EnemyType.FOUNDRY_CLAW: {
         const a=enemy.foundryClawAttack;
         const r=enemy.size;
@@ -2293,6 +2385,13 @@ export function drawEnemiesList(
       ctx.setLineDash([]);ctx.restore();
     }
 
+    if(enemy.ferriteCommandUntilMs!==undefined && enemy.ferriteCommandUntilMs>time){
+      ctx.save();ctx.strokeStyle="rgba(253,230,138,.82)";
+      ctx.lineWidth=2.2;ctx.setLineDash([3,7]);
+      ctx.shadowColor="#f59e0b";ctx.shadowBlur=12;
+      ctx.beginPath();ctx.arc(0,0,enemy.size*1.50,0,Math.PI*2);
+      ctx.stroke();ctx.setLineDash([]);ctx.restore();
+    }
     const commandCorePresentation = projectLiveCommandCorePresentation(
       enemy.enemyFormation,
       enemy.size,
