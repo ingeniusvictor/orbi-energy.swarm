@@ -1,4 +1,6 @@
 import React from "react";
+import {ARCHON_BEACON_OFFSETS,ARCHON_BEAM_RANGE,ARCHON_ACTIVE_MS,
+  projectArchonPulseRadius} from "./asteriaThresholdArchon";
 import { getEvo8WingCount } from "./orbiEvolution";
 import { prewarmEvo8Lot1Sprites, disposeEvo8Lot1Sprites, drawEvo8Lot1Sprite } from "./evo8PremiumSprite";
 import { prewarmPremiumEnemySprites, disposePremiumEnemySprites, drawPremiumEnemyBody } from "./premiumEnemySprites";
@@ -1106,6 +1108,68 @@ export function drawEnemiesList(
         targetDy - 28,
       );
       ctx.restore();
+    } else if(enemy.type===EnemyType.BOSS_ARCHON&&enemy.archonAttack){
+      const a=enemy.archonAttack;
+      const aiming=a.lockedAngle;
+      if(a.stage==="WARNING"||a.stage==="ACTIVE"){
+        const live=a.stage==="ACTIVE";
+        const progress=live?Math.min(1,Math.max(0,
+          (ARCHON_ACTIVE_MS-a.remainingMs)/ARCHON_ACTIVE_MS)):0;
+        ctx.save();
+        ctx.strokeStyle=live?"rgba(103,232,249,.84)":"rgba(253,230,138,.82)";
+        ctx.lineWidth=live?6:2.2;
+        ctx.shadowColor=live?"#22d3ee":"#facc15";
+        ctx.shadowBlur=live?17:9;
+        ctx.setLineDash(live?[]:[11,8]);
+        if(a.phase===1){
+          const ray=aiming-.24+progress*.48;
+          ctx.beginPath();ctx.moveTo(Math.cos(ray)*14,Math.sin(ray)*14);
+          ctx.lineTo(Math.cos(ray)*ARCHON_BEAM_RANGE,
+            Math.sin(ray)*ARCHON_BEAM_RANGE);ctx.stroke();
+          if(!live){
+            // The wedge explicitly marks the entire pending sweep.
+            for(const outer of [aiming-.24,aiming+.24]){
+              ctx.beginPath();ctx.moveTo(0,0);
+              ctx.lineTo(Math.cos(outer)*ARCHON_BEAM_RANGE,
+                Math.sin(outer)*ARCHON_BEAM_RANGE);ctx.stroke();
+            }
+          }
+        }else if(a.phase===2){
+          // Three narrow beacon lanes, with broad fully traversable corridors
+          // between them. Identical geometry to physical contact projection.
+          ctx.rotate(aiming);
+          for(const offset of ARCHON_BEACON_OFFSETS){
+            ctx.beginPath();ctx.moveTo(14,offset);
+            ctx.lineTo(ARCHON_BEAM_RANGE,offset);ctx.stroke();
+            ctx.fillStyle="#fde68a";
+            ctx.beginPath();ctx.arc(36,offset,9,0,Math.PI*2);ctx.fill();
+          }
+          ctx.setLineDash([]);
+          if(!live){
+            ctx.strokeStyle="rgba(94,234,212,.65)";
+            ctx.lineWidth=2;
+            for(const safeY of [-72.5,72.5]){
+              ctx.beginPath();ctx.moveTo(50,safeY);
+              ctx.lineTo(ARCHON_BEAM_RANGE*.85,safeY);ctx.stroke();
+            }
+          }
+        }else{
+          ctx.beginPath();
+          ctx.arc(0,0,live?projectArchonPulseRadius(a.remainingMs):400,
+            0,Math.PI*2);ctx.stroke();
+          if(!live){
+            ctx.beginPath();ctx.arc(0,0,70,0,Math.PI*2);ctx.stroke();
+          }
+        }
+        ctx.setLineDash([]);ctx.restore();
+      }
+      if(a.stage==="EXPOSED"){
+        ctx.save();ctx.strokeStyle="#fef08a";ctx.lineWidth=3;
+        ctx.shadowColor="#facc15";ctx.shadowBlur=20;
+        ctx.beginPath();ctx.arc(0,0,enemy.size*1.45+
+          Math.sin(time*.009)*5,0,Math.PI*2);ctx.stroke();
+        ctx.restore();
+      }
     } else if(enemy.type===EnemyType.SPAN_WARDEN&&enemy.spanWardenAttack){
       const a=enemy.spanWardenAttack;
       const angle=Math.atan2(a.facingY,a.facingX);
@@ -1807,6 +1871,64 @@ export function drawEnemiesList(
         break;
       }
 
+      case EnemyType.BOSS_ARCHON: {
+        const a=enemy.archonAttack;
+        const s=enemy.size;
+        const exposed=a?.stage==="EXPOSED";
+        ctx.save();
+        const orbit=time*.0007;
+        // Two unmistakable independently rotating complete orbital rings:
+        // electric cyan outside, polished gold inside. No Devourer assets.
+        for(const [radiusX,radiusY,color,tilt,weight] of [
+          [s*2.12,s*.86,"#22d3ee",orbit,5],
+          [s*1.56,s*.98,"#fde68a",-orbit*.8,4],
+        ] as const){
+          ctx.save();ctx.rotate(tilt);
+          ctx.strokeStyle=color;ctx.shadowColor=color;ctx.shadowBlur=20;
+          ctx.lineWidth=weight;
+          ctx.beginPath();ctx.ellipse(0,0,radiusX,radiusY,0,0,Math.PI*2);ctx.stroke();
+          // Floating sapphire/gold anchors orbit with the hoops.
+          for(const shift of [0,Math.PI]){
+            const px=Math.cos(time*.0012+shift)*radiusX;
+            const py=Math.sin(time*.0012+shift)*radiusY;
+            ctx.fillStyle=color;ctx.beginPath();ctx.arc(px,py,6,0,Math.PI*2);ctx.fill();
+          }
+          ctx.restore();
+        }
+        ctx.shadowColor="#67e8f9";ctx.shadowBlur=19;
+        ctx.fillStyle="#0c1b38";ctx.strokeStyle="#94a3b8";
+        ctx.lineWidth=3;
+        ctx.beginPath();
+        for(let i=0;i<8;i++){
+          const theta=i*Math.PI/4-Math.PI/8;
+          const radius=s*(i%2===0?.95:.72);
+          const x=Math.cos(theta)*radius,y=Math.sin(theta)*radius;
+          if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+        }
+        ctx.closePath();ctx.fill();ctx.stroke();
+        for(let i=0;i<4;i++){
+          const theta=i*Math.PI/2+Math.PI/4;
+          ctx.strokeStyle="#facc15";ctx.lineWidth=3;
+          ctx.beginPath();ctx.moveTo(Math.cos(theta)*s*.48,Math.sin(theta)*s*.48);
+          ctx.lineTo(Math.cos(theta)*s*.86,Math.sin(theta)*s*.86);ctx.stroke();
+        }
+        const core=ctx.createRadialGradient(0,0,0,0,0,s*.5);
+        core.addColorStop(0,exposed?"#ffffff":"#fef08a");
+        core.addColorStop(.38,exposed?"#fde047":"#67e8f9");
+        core.addColorStop(1,"rgba(8,47,73,.1)");
+        ctx.fillStyle=core;ctx.shadowColor=exposed?"#facc15":"#22d3ee";
+        ctx.shadowBlur=exposed?28:15;
+        ctx.beginPath();ctx.arc(0,0,s*.5,0,Math.PI*2);ctx.fill();
+        ctx.strokeStyle=exposed?"#fef9c3":"#38bdf8";
+        ctx.lineWidth=2.3;
+        ctx.beginPath();ctx.arc(0,0,s*.28,0,Math.PI*2);ctx.stroke();
+        if(a){
+          ctx.fillStyle="#e2e8f0";ctx.font="bold 8px monospace";
+          ctx.textAlign="center";
+          ctx.fillText("ARCHON // PHASE "+a.phase,0,-s*1.35);
+        }
+        ctx.restore();break;
+      }
       case EnemyType.BOSS_WORM: {
         const wormPulse = 0.9 + Math.sin(time * 0.0035) * 0.1;
         ctx.save();
