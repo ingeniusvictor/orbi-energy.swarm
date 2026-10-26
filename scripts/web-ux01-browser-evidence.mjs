@@ -1510,8 +1510,17 @@ async function runFotonPropulsionQa(name,width,height,touch){
   await page.waitForFunction(()=>document.querySelector(
     '[data-testid="ux15-physical-canvas"]')?.dataset.c3b12Thrust==="CRUISE",
     null,{timeout:15000});
+  check(await canvas.getAttribute("data-c3b12-thrust-source")==="CANONICAL_UX12",
+    name+": new LAB is not using the original game RCS renderer");
+  check(await lab.getAttribute("data-c3b12-canonical-source")==="src/game/energyThrusters.ts",
+    name+": original propulsion source missing");
+  await page.waitForFunction(()=>Number(document.querySelector(
+    '[data-testid="ux15-physical-canvas"]')?.dataset.c3b12ThrustLength)>0,
+    null,{timeout:20000});
   const initialLength=Number(await canvas.getAttribute("data-c3b12-thrust-length"));
-  check(initialLength>25&&initialLength<34,name+": cruising exhaust not sized correctly");
+  check(initialLength>0&&initialLength<24,name+": actual canonical RCS cruise reach out of range");
+  check(Number(await canvas.getAttribute("data-c3b12-thruster-direction-x"))>.8,
+    name+": thrusters did not follow positive physical X motion");
   // The actor's LOCAL x may decrease during a legitimate floating-origin
   // rebase. Certify monotonic forward physical travel in the reconstituted
   // world coordinate, without accepting any backwards player movement.
@@ -1539,7 +1548,8 @@ async function runFotonPropulsionQa(name,width,height,touch){
   // The latch is only set by an ACTUAL rendered Dash frame in the Canvas.
   // The 180ms plume may already have returned to cruise by the next poll.
   const boostedLength=Number(await canvas.getAttribute("data-c3b12-boost-peak-length"));
-  check(boostedLength>55,name+": canonical Dash did not amplify cyan exhaust");
+  check(boostedLength>initialLength*1.15 && boostedLength<35,
+    name+": original UX12 Dash surge not observed in Canvas");
   await shot(page,name+"-cyan-propulsion-dash");
   await page.waitForFunction(()=>document.querySelector(
     '[data-testid="ux15-physical-canvas"]')?.dataset.c3b12Thrust==="CRUISE",
@@ -1562,7 +1572,8 @@ async function runFotonPropulsionQa(name,width,height,touch){
   check(await canvas.getAttribute("data-c3b12-boost-observed")===null,
     name+": reset retained old rendered Dash evidence");
   evidence.cases.push({name,pass:true,ux15c3b12:true,
-    cruiseLength:initialLength,boostedLength,paused:true,
+    source:"src/game/energyThrusters.ts",cruiseLength:initialLength,
+    boostedLength,paused:true,
     wave3Enabled:false,input:touch?"native-touch":"keyboard"});
  }finally{await context.close();}
 }
