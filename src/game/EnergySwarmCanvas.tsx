@@ -1136,6 +1136,59 @@ export function drawEnemiesList(
         ctx.stroke();
         ctx.restore();
       }
+    } else if(enemy.type===EnemyType.SKY_SPECTER && enemy.skySpecterAttack){
+      const a=enemy.skySpecterAttack;
+      if(a.phase==="LOCK"){
+        ctx.save();
+        ctx.strokeStyle="rgba(165,180,252,.83)";
+        ctx.shadowColor="#a5b4fc";
+        ctx.shadowBlur=10;
+        ctx.lineWidth=2;
+        ctx.setLineDash([7,5]);
+        ctx.beginPath();ctx.moveTo(0,0);
+        ctx.lineTo(a.dirX*260,a.dirY*260);ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.strokeStyle="#e0e7ff";
+        ctx.beginPath();ctx.arc(0,0,enemy.size*1.6+
+          (a.remainingMs/780)*6,0,Math.PI*2);ctx.stroke();
+        ctx.restore();
+      }else if(a.phase==="DIVE"){
+        ctx.save();ctx.strokeStyle="rgba(196,181,253,.67)";
+        ctx.lineWidth=3.4;ctx.beginPath();
+        ctx.moveTo(-a.dirX*enemy.size,-a.dirY*enemy.size);
+        ctx.lineTo(-a.dirX*63,-a.dirY*63);ctx.stroke();ctx.restore();
+      }
+    } else if(enemy.type===EnemyType.BEACON_PRISM && enemy.beaconPrismAttack){
+      const a=enemy.beaconPrismAttack;
+      if(a.phase==="MARK"){
+        const angle=Math.atan2(a.targetY-enemy.y,a.targetX-enemy.x);
+        ctx.save();
+        ctx.strokeStyle="rgba(253,230,138,.68)";
+        ctx.lineWidth=1.7;ctx.setLineDash([9,6]);
+        for(const spread of [-.24,0,.24]){
+          const theta=angle+spread;
+          ctx.beginPath();ctx.moveTo(0,0);
+          ctx.lineTo(Math.cos(theta)*350,Math.sin(theta)*350);
+          ctx.stroke();
+        }
+        ctx.setLineDash([]);
+        ctx.shadowColor="#fde68a";ctx.shadowBlur=8;
+        ctx.strokeStyle="#fef08a";ctx.lineWidth=2;
+        ctx.beginPath();ctx.arc(0,0,enemy.size*1.6+
+          5*Math.sin(time*.012),0,Math.PI*2);ctx.stroke();
+        ctx.restore();
+      }
+    } else if(enemy.type===EnemyType.ION_SAIL && enemy.ionSailAttack){
+      const a=enemy.ionSailAttack;
+      if(a.phase==="WARN"||a.phase==="SWEEP"){
+        ctx.save();
+        ctx.strokeStyle="rgba(94,234,212,.75)";
+        ctx.lineWidth=a.phase==="SWEEP"?3:1.8;
+        ctx.setLineDash(a.phase==="WARN"?[12,8]:[]);
+        ctx.beginPath();ctx.moveTo(0,0);
+        ctx.lineTo(a.dirX*240,a.dirY*240);ctx.stroke();
+        ctx.restore();
+      }
     } else if (enemy.type === EnemyType.DRONE && enemy.shootCooldown !== undefined && enemy.shootCooldown <= 35 && enemy.shootCooldown > 0) {
       // Fine target line to Foton leader (Section 3.1)
       ctx.save();
@@ -1203,6 +1256,79 @@ export function drawEnemiesList(
     ctx.fillStyle = enemy.color;
 
     switch (enemy.type) {
+      case EnemyType.SKY_SPECTER: {
+        const a=enemy.skySpecterAttack;
+        const dive=a?.phase==="DIVE";
+        const heading=dive?Math.atan2(a.dirY,a.dirX):
+          Math.atan2(enemy.vy||0,enemy.vx||-1);
+        const q=enemy.size;
+        ctx.save();ctx.rotate(heading);
+        ctx.shadowBlur=dive?17:11;ctx.shadowColor="#818cf8";
+        // Translucent three-wing silhouette, unlike Railcutter's scythes.
+        for(const side of [-1,1]){
+          ctx.fillStyle="#818cf8";ctx.strokeStyle="#c7d2fe";ctx.lineWidth=1.5;
+          ctx.beginPath();ctx.moveTo(q*.9,0);
+          ctx.quadraticCurveTo(-q*.4,side*q*.7,-q*.95,side*q*1.65);
+          ctx.lineTo(-q*1.15,side*q*.32);ctx.closePath();
+          ctx.fill();ctx.stroke();
+        }
+        ctx.fillStyle="#312e81";ctx.strokeStyle="#e0e7ff";
+        ctx.beginPath();ctx.moveTo(q*1.3,0);
+        ctx.lineTo(-q*.65,-q*.42);ctx.lineTo(-q*.55,q*.42);
+        ctx.closePath();ctx.fill();ctx.stroke();
+        ctx.fillStyle=dive?"#fef08a":"#a5f3fc";
+        ctx.beginPath();ctx.arc(0,0,q*.25,0,Math.PI*2);ctx.fill();
+        ctx.restore();break;
+      }
+      case EnemyType.BEACON_PRISM: {
+        const q=enemy.size;
+        ctx.save();ctx.rotate(time*.0005);
+        ctx.shadowColor="#facc15";ctx.shadowBlur=13;
+        for(let i=0;i<3;i++){
+          const a=i*2*Math.PI/3;
+          ctx.strokeStyle="#fde68a";ctx.lineWidth=2.4;
+          ctx.beginPath();ctx.moveTo(0,0);
+          ctx.lineTo(Math.cos(a)*q*1.25,Math.sin(a)*q*1.25);
+          ctx.stroke();
+          ctx.fillStyle="#eab308";ctx.beginPath();
+          ctx.arc(Math.cos(a)*q*1.25,Math.sin(a)*q*1.25,3,0,Math.PI*2);
+          ctx.fill();
+        }
+        ctx.fillStyle="#172554";ctx.strokeStyle="#fde68a";ctx.lineWidth=2;
+        ctx.beginPath();
+        for(let k=0;k<3;k++){
+          const a=-Math.PI/2+k*2*Math.PI/3;
+          const x=Math.cos(a)*q,y=Math.sin(a)*q;
+          if(k===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+        }
+        ctx.closePath();ctx.fill();ctx.stroke();
+        ctx.fillStyle=enemy.beaconPrismAttack?.phase==="MARK"?"#fef08a":"#5eead4";
+        ctx.beginPath();ctx.arc(0,0,q*.31,0,Math.PI*2);ctx.fill();
+        ctx.restore();break;
+      }
+      case EnemyType.ION_SAIL: {
+        const q=enemy.size,a=enemy.ionSailAttack;
+        ctx.save();
+        ctx.rotate(Math.atan2(a?.dirY??0,a?.dirX??-1));
+        ctx.shadowColor="#2dd4bf";ctx.shadowBlur=12;
+        for(const side of [-1,1]){
+          ctx.strokeStyle="#99f6e4";ctx.lineWidth=1.8;
+          ctx.fillStyle="#115e59";
+          ctx.beginPath();ctx.moveTo(q*.9,0);
+          ctx.quadraticCurveTo(-q*.2,side*q*1.5,-q*1.35,side*q*1.15);
+          ctx.lineTo(-q*.55,side*q*.22);ctx.closePath();
+          ctx.fill();ctx.stroke();
+          ctx.strokeStyle="#5eead4";ctx.beginPath();
+          ctx.moveTo(q*.75,0);ctx.lineTo(-q*1.35,side*q*1.15);ctx.stroke();
+        }
+        ctx.fillStyle="#0f172a";ctx.strokeStyle="#ccfbf1";
+        ctx.beginPath();ctx.moveTo(q*1.15,0);
+        ctx.lineTo(-q*.4,-q*.35);ctx.lineTo(-q*.4,q*.35);ctx.closePath();
+        ctx.fill();ctx.stroke();
+        ctx.fillStyle=a?.phase==="SWEEP"?"#fef08a":"#5eead4";
+        ctx.beginPath();ctx.arc(0,0,q*.23,0,Math.PI*2);ctx.fill();
+        ctx.restore();break;
+      }
       case EnemyType.RAILCUTTER: {
         const attack=enemy.railcutterAttack;
         const dirX=attack?.directionX??-1;
