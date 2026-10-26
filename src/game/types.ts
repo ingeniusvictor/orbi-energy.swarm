@@ -1,4 +1,5 @@
 import type { LiveEnemyFormationAssignment } from "./liveEnemyFormationDirector";
+import type { RailcutterAttack } from "./asteriaRailcutter";
 import type { SiegeVolleyTelegraphState } from "./siegeVolleyTelegraph";
 import type { BlackoutArchitectEngineIdentityTag } from "./blackoutArchitectEngineIdentityLifecycle";
 
@@ -145,6 +146,7 @@ export enum EnemyType {
   CRAWLER = "CRAWLER",
   PARASITE = "PARASITE",
   DRONE = "DRONE",
+  RAILCUTTER = "RAILCUTTER",
   SPLITTER = "SPLITTER",
   DISRUPTOR = "DISRUPTOR",
   BLACKOUT_ELITE = "BLACKOUT_ELITE",
@@ -229,6 +231,8 @@ export interface Enemy {
   evolvedSpecialIntensity?: number;
   enemyFormation?: LiveEnemyFormationAssignment;
   siegeVolleyTelegraph?: SiegeVolleyTelegraphState;
+  /** ASTERIA-only original enemy attack state (never a boss or legacy modifier). */
+  railcutterAttack?: RailcutterAttack;
 }
 
 export interface Projectile {
