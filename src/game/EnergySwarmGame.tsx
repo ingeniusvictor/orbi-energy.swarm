@@ -3716,7 +3716,7 @@ export const EnergySwarmGame: React.FC = () => {
 
     // Exclusive world encounter identity; shared Campaign descriptor stays untouched.
     const archonEncounter=!isRematch && stage==="PRIMARY"
-      ?resolveAsteriaArchonEncounter(worldRouteRunActiveRef.current,
+      ?resolveAsteriaArchonEncounter(isAsteria(worldRouteRunActiveRef.current,worldRouteThemeRef.current),
         getCurrentRuntimeDescriptor()):null;
     const chassisId=archonEncounter?"ASTERIA_ARCHON":(raidProfile?.chassis??"DEVOURER");
     const chassisProfile = getBossChassisProfile(chassisId);
@@ -6200,6 +6200,30 @@ export const EnergySwarmGame: React.FC = () => {
               x:enemy.x+prior.facingX*230,y:enemy.y+prior.facingY*230,
             });
           }
+        } else if(enemy.type===EnemyType.SHADE_GEAR&&enemy.shadeGearAttack){
+          const prior=enemy.shadeGearAttack;
+          const next=stepShadeGear(prior,enemy,playerPosRef.current,enemy.speed,delta);
+          enemy.x=Math.max(16,Math.min(WORLD_WIDTH-16,next.x));
+          enemy.y=Math.max(16,Math.min(WORLD_HEIGHT-16,next.y));
+          enemy.vx=next.vx;enemy.vy=next.vy;enemy.shadeGearAttack=next.attack;
+          if(prior.phase==="SEEK"&&next.attack.phase==="SPARK"){
+            playDroneChargeSound();
+            addFloatingText("SHADE GEAR / SPARK",enemy.x,enemy.y-27,"#fbbf24");
+          }
+          if(prior.phase==="ROLL"&&next.attack.phase==="BRAKE")
+            addFloatingText("RE-ROLL",enemy.x,enemy.y-26,"#fdba74");
+        } else if(enemy.type===EnemyType.M9_WELDER&&enemy.m9WelderAttack){
+          const prior=enemy.m9WelderAttack;
+          const next=stepM9Welder(prior,enemy,playerPosRef.current,enemy.speed,delta);
+          enemy.x=Math.max(16,Math.min(WORLD_WIDTH-16,next.x));
+          enemy.y=Math.max(16,Math.min(WORLD_HEIGHT-16,next.y));
+          enemy.vx=next.vx;enemy.vy=next.vy;enemy.m9WelderAttack=next.attack;
+          if(prior.phase==="POSITION"&&next.attack.phase==="WARN"){
+            playDroneChargeSound();
+            addFloatingText("WELD LINE",enemy.x,enemy.y-28,"#fb923c");
+          }
+          if(next.fire)shootFromEnemy(enemy,hostileProjectileBudgetState,
+            {x:prior.lockedX,y:prior.lockedY});
         } else if (enemy.type === EnemyType.RIFT_HUNTER) {
           enemy.pulseCooldown -= delta / 16.6;
           if ((enemy.chargeTimer ?? 0) > 0) {
@@ -6891,6 +6915,7 @@ export const EnergySwarmGame: React.FC = () => {
       enemy.type === EnemyType.BOSS_DEVOURER ||
       enemy.type === EnemyType.BEACON_PRISM ||
       enemy.type === EnemyType.SPAN_WARDEN ||
+      enemy.type === EnemyType.M9_WELDER ||
       enemy.type === EnemyType.SIEGE_PRISM ||
       enemy.type === EnemyType.MINE_WEAVER ||
       enemy.type === EnemyType.MIRROR_WARDEN ||
@@ -6908,6 +6933,7 @@ export const EnergySwarmGame: React.FC = () => {
       ) {
         const projectileSpeed =
           (enemy.type === EnemyType.SPAN_WARDEN ? 2.35 :
+           enemy.type === EnemyType.M9_WELDER ? M9_WELDER_PROJECTILE_SPEED :
            enemy.type === EnemyType.BEACON_PRISM ? 2.65 :
             enemy.type === EnemyType.SIEGE_PRISM ? 4.0 :
             enemy.type === EnemyType.MINE_WEAVER ? 1.35 :
@@ -6916,6 +6942,7 @@ export const EnergySwarmGame: React.FC = () => {
           (enemy.evolvedProjectileSpeedMultiplier ?? 1);
         const requestedProjectileCount =
           enemy.type === EnemyType.SPAN_WARDEN ? 2 :
+          enemy.type === EnemyType.M9_WELDER ? 1 :
           enemy.type === EnemyType.BEACON_PRISM ? 3 :
           enemy.type === EnemyType.SIEGE_PRISM ? 3 :
           enemy.type === EnemyType.MINE_WEAVER ? 2 :
@@ -6927,6 +6954,7 @@ export const EnergySwarmGame: React.FC = () => {
         const baseAngle = Math.atan2(dy, dx);
         const spread =
           enemy.type === EnemyType.SPAN_WARDEN ? SPAN_WARDEN_PROJECTILE_SPREAD :
+          enemy.type === EnemyType.M9_WELDER ? 0 :
           enemy.type === EnemyType.BEACON_PRISM ? .48 :
           enemy.type === EnemyType.SIEGE_PRISM ? 0.12 :
           enemy.type === EnemyType.MINE_WEAVER ? 0.38 :
@@ -6971,6 +6999,8 @@ export const EnergySwarmGame: React.FC = () => {
             plasma.color = "#fde68a";
           } else if(enemy.type===EnemyType.SPAN_WARDEN){
             plasma.damage=9;plasma.color="#67e8f9";
+          } else if(enemy.type===EnemyType.M9_WELDER){
+            plasma.damage=9;plasma.color="#fb923c";
           }
           projectilesRef.current.push(plasma);
         }
