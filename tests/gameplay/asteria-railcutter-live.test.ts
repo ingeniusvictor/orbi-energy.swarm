@@ -104,7 +104,7 @@ test("WBE-01A: authentic production campaign owns Railcutter spawn, attacks, dam
   const renderer=readFileSync(new URL("../../src/game/EnergySwarmCanvas.tsx",import.meta.url),"utf8");
   const types=readFileSync(new URL("../../src/game/types.ts",import.meta.url),"utf8");
   assert.match(types,/RAILCUTTER = "RAILCUTTER"/);
-  assert.match(source,/worldRouteRunActiveRef\.current,descriptor\.sourceMode/);
+  assert.match(source,/isAsteria\(worldRouteRunActiveRef\.current,worldRouteThemeRef\.current\),descriptor\.sourceMode/);
   assert.match(source,/shouldSpawnAsteriaRailcutter\(/);
   assert.match(source,/selectAsteriaRailcutterSpawn\(/);
   assert.match(source,/type===EnemyType\.RAILCUTTER\s*\?createRailcutterAttack\(\):undefined/);
