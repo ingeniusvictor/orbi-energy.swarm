@@ -8097,16 +8097,24 @@ export const EnergySwarmGame: React.FC = () => {
     // origin-rebase/camera integration is certified in UX15-C2/D.
     const asteriaCombatVisualActive = worldRouteRunActiveRef.current;
     if (asteriaCombatVisualActive) {
-      const asteriaPremiumReady = drawAsteriaPremiumWorld(
-        ctx, asteriaLiveCursorRef.current, panoramicViewport.width);
-      if (!asteriaPremiumReady) {
-        drawWorldRouteQaScene(ctx, asteriaLiveCursorRef.current,
-          { manualX: 0, y: 240 }, panoramicViewport.width, false);
+      const ferrumActive=isFerrum(worldRouteRunActiveRef.current,worldRouteThemeRef.current);
+      if(ferrumActive){
+        drawFerrumWorld(ctx,projectRouteDistance(asteriaLiveCursorRef.current),
+          panoramicViewport.width,asteriaLiveCursorRef.current.segmentOrdinal);
+        canvas.dataset.ux15Visual="ferrum-industrial-canvas";
+        canvas.dataset.ux15Scene=ferrumSceneAt(asteriaLiveCursorRef.current.segmentOrdinal);
+        canvas.dataset.ux15World=FERRUM_WORLD_ID;
+      }else{
+        const asteriaPremiumReady=drawAsteriaPremiumWorld(
+          ctx,asteriaLiveCursorRef.current,panoramicViewport.width);
+        if(!asteriaPremiumReady)
+          drawWorldRouteQaScene(ctx,asteriaLiveCursorRef.current,
+            {manualX:0,y:240},panoramicViewport.width,false);
+        canvas.dataset.ux15Visual=asteriaPremiumReady?"premium-webp":"fallback-canvas";
+        canvas.dataset.ux15Scene=getAsteriaPremiumScene(
+          asteriaLiveCursorRef.current.segmentOrdinal).kind;
+        canvas.dataset.ux15World="ASTERIA_ORBITAL";
       }
-      canvas.dataset.ux15Visual = asteriaPremiumReady ? "premium-webp" : "fallback-canvas";
-      canvas.dataset.ux15Scene = getAsteriaPremiumScene(
-        asteriaLiveCursorRef.current.segmentOrdinal).kind;
-      canvas.dataset.ux15World = "ASTERIA_ORBITAL";
       canvas.dataset.ux15RouteDistance = String(
         Math.floor(projectRouteDistance(asteriaLiveCursorRef.current)));
       canvas.dataset.ux15Segment = String(asteriaLiveCursorRef.current.segmentOrdinal);
@@ -8137,6 +8145,13 @@ export const EnergySwarmGame: React.FC = () => {
       canvas.dataset.wbe01SpanWardenCount=String(wardens);
       canvas.dataset.wbe01SpanWardenPhase=enemiesRef.current.find(e=>
         e.type===EnemyType.SPAN_WARDEN&&!e.isDead)?.spanWardenAttack?.phase??"NONE";
+      if(ferrumActive){
+        canvas.dataset.ferrumShadeGearCount=String(enemiesRef.current.filter(e=>e.type===EnemyType.SHADE_GEAR&&!e.isDead).length);
+        canvas.dataset.ferrumWelderCount=String(enemiesRef.current.filter(e=>e.type===EnemyType.M9_WELDER&&!e.isDead).length);
+      }else{
+        delete canvas.dataset.ferrumShadeGearCount;
+        delete canvas.dataset.ferrumWelderCount;
+      }
     } else {
       delete canvas.dataset.wbe01RailcutterScope;
       delete canvas.dataset.wbe01RailcutterCount;
@@ -8150,6 +8165,8 @@ export const EnergySwarmGame: React.FC = () => {
       delete canvas.dataset.ux15RouteDistance;
       delete canvas.dataset.ux15Segment;
       delete canvas.dataset.ux15LiveCombat;
+      delete canvas.dataset.ferrumShadeGearCount;
+      delete canvas.dataset.ferrumWelderCount;
       // Stable existing background for all default and other-mode sessions.
       const quality = getQualityConfig(stats.qualityPreset);
       backgroundRenderer.render(
