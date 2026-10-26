@@ -408,8 +408,8 @@ export const StartScreen: React.FC<StartScreenProps> = ({
                   </div>
                   <p className="mt-1 text-[9px] leading-relaxed text-amber-100/75">
                     {language === "es"
-                      ? "Nueva travesía industrial jugable: Engranaje Sombra y Soldador M-9, mecánicas originales en combate real."
-                      : "Playable industrial traversal with original Shade Gear and M-9 Welder enemies in real combat."}
+                      ? "FERRUM incorpora Engranaje Sombra, Soldador M-9, Garra de Fundición y Modulador Óxido con habilidades propias en el combate real."
+                      : "Playable FERRUM with Shade Gear, M-9 Welder, Foundry Claw and Oxide Modulator, all within native combat."}
                   </p>
                   <button type="button" data-ferrum-world-start-cta="true"
                     onClick={() => { playClickSound(); onStartFerrumRoute(); }}
