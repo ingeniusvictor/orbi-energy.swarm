@@ -1518,7 +1518,16 @@ async function runFotonPropulsionQa(name,width,height,touch){
   const worldX=async()=>Number(await lab.getAttribute("data-player-local-x"))+
     Number(await lab.getAttribute("data-origin-offset-x"));
   const initialX=await worldX();
-  await page.waitForTimeout(520);
+  // Published UI telemetry is sampled at 1/8 of the Canvas paint frequency;
+  // under real GLB/SwiftShader load it may not refresh within 520ms of wall
+  // time. Observe the SAME strict, positive world displacement instead.
+  await page.waitForFunction(start=>{
+    const root=document.querySelector('[data-testid="ux15-physical-qa"]');
+    if(!root)return false;
+    const x=Number(root.getAttribute("data-player-local-x"))+
+      Number(root.getAttribute("data-origin-offset-x"));
+    return Number.isFinite(x)&&x>start+1;
+  },initialX,{timeout:30000});
   check(await worldX()>initialX,
     name+": FOTON did not advance with its physical thrusters");
   await page.getByTestId("ux15-c3b2-dash").click({timeout:15000});
