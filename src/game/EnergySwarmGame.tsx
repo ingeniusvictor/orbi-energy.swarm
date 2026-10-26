@@ -2070,8 +2070,12 @@ export const EnergySwarmGame: React.FC = () => {
     // was selected explicitly; ordinary / launches only legacy Campaign.
     void startGameWithMode("CAMPAIGN");
   };
-  const startWorldRouteGame = (world:PlayableWorld=ASTERIA_WORLD_CHOICE) => {
-    worldRouteThemeRef.current=world;
+  const startWorldRouteGame = () => {
+    worldRouteThemeRef.current=ASTERIA_WORLD_CHOICE;
+    void startGameWithMode("CAMPAIGN", true);
+  };
+  const startFerrumWorldRouteGame = () => {
+    worldRouteThemeRef.current=FERRUM_WORLD_ID;
     void startGameWithMode("CAMPAIGN", true);
   };
 
@@ -8132,13 +8136,15 @@ export const EnergySwarmGame: React.FC = () => {
       canvas.dataset.wbe01RailcutterCount = String(railcutterActiveCount);
       canvas.dataset.wbe01RailcutterPhase =
         worldRailcutter?.railcutterAttack?.phase??"NONE";
-      let sky=0,beacons=0,sails=0,wardens=0;
+      let sky=0,beacons=0,sails=0,wardens=0,gear=0,welders=0;
       for(const actor of enemiesRef.current){
         if(actor.isDead)continue;
         if(actor.type===EnemyType.SKY_SPECTER)sky++;
         else if(actor.type===EnemyType.BEACON_PRISM)beacons++;
         else if(actor.type===EnemyType.ION_SAIL)sails++;
         else if(actor.type===EnemyType.SPAN_WARDEN)wardens++;
+        else if(actor.type===EnemyType.SHADE_GEAR)gear++;
+        else if(actor.type===EnemyType.M9_WELDER)welders++;
       }
       canvas.dataset.wbe01AsteriaExclusiveCounts =
         sky+","+beacons+","+sails;
@@ -8146,8 +8152,8 @@ export const EnergySwarmGame: React.FC = () => {
       canvas.dataset.wbe01SpanWardenPhase=enemiesRef.current.find(e=>
         e.type===EnemyType.SPAN_WARDEN&&!e.isDead)?.spanWardenAttack?.phase??"NONE";
       if(ferrumActive){
-        canvas.dataset.ferrumShadeGearCount=String(enemiesRef.current.filter(e=>e.type===EnemyType.SHADE_GEAR&&!e.isDead).length);
-        canvas.dataset.ferrumWelderCount=String(enemiesRef.current.filter(e=>e.type===EnemyType.M9_WELDER&&!e.isDead).length);
+        canvas.dataset.ferrumShadeGearCount=String(gear);
+        canvas.dataset.ferrumWelderCount=String(welders);
       }else{
         delete canvas.dataset.ferrumShadeGearCount;
         delete canvas.dataset.ferrumWelderCount;
@@ -9011,6 +9017,7 @@ export const EnergySwarmGame: React.FC = () => {
           stats={stats}
           onStartGame={startCampaignGame}
           onStartWorldRoute={startWorldRouteGame}
+          onStartFerrumRoute={startFerrumWorldRouteGame}
           onStartScoreAttack={() => {
             void startGameWithMode("SCORE_ATTACK");
           }}
