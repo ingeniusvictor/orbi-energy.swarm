@@ -4095,6 +4095,68 @@ export const EnergySwarmGame: React.FC = () => {
       return;
     }
 
+
+    // FERRUM-04: original attack director; shared boss core remains the sole
+    // authority over player health/cooldowns, ORBI hits, score and victory.
+    if(boss.type===EnemyType.BOSS_OMEGA && boss.omegaAttack){
+      if(phaseTransitionTimerRef.current>0){
+        phaseTransitionTimerRef.current=Math.max(0,phaseTransitionTimerRef.current-delta);
+        if(phaseTransitionTimerRef.current===0)setBossTransitionName(null);
+        return;
+      }
+      const phase=getOmegaFoundryPhase(boss.health,boss.maxHealth);
+      const step=stepOmegaFoundry(boss.omegaAttack,boss,playerPosRef.current,delta,phase);
+      boss.omegaAttack=step.attack;
+      if(step.phaseChanged){
+        boss.bossPhase=phase;setBossPhase(phase);
+        bossMaxPhaseReachedRef.current=Math.max(bossMaxPhaseReachedRef.current,phase);
+        phaseTransitionTimerRef.current=1550;
+        setBossTransitionName(phase===2?"FASE II: CADENA DE ENSAMBLAJE":"FASE III: REACTOR Y CINTAS");
+        setBossAttackName(null);setIsCoreExposed(false);
+        playBossPhaseTransitionSound();
+        addFloatingText(phase===2?"GEAR PRODUCTION":"REACTOR SWEEP",boss.x,boss.y-85,"#fb923c");
+        return;
+      }
+      if(step.announced){
+        setBossAttackName(OMEGA_ATTACK_NAMES[phase]);
+        playBossChargeSound();
+        addFloatingText(phase===1?"PISTON ARMS":phase===2?"GEARS INBOUND":"CONVEYORS",
+          boss.x,boss.y-90,"#fbbf24");
+      }
+      if(step.committed)playDisruptorPulseSound();
+      if(step.assemblyPulse){
+        const living=enemiesRef.current.filter(e=>!e.isDead&&e.omegaGearSourceId===boss.id).length;
+        const count=Math.min(omegaGearSlots(living),Math.max(0,MAX_ENEMIES-enemiesRef.current.length));
+        for(let i=0;i<count;i++){
+          const side=i%2===0?-1:1;
+          enemiesRef.current.push({
+            id:`${boss.id}:gear:${step.attack.cycle}:${i}`,
+            type:EnemyType.SHADE_GEAR,
+            x:boss.x+side*90,y:boss.y+52,
+            vx:0,vy:0,health:46,maxHealth:46,speed:1.05,
+            size:13,color:"#fb923c",
+            shootCooldown:100,pulseCooldown:110,contactDamageCooldown:0,
+            isDead:false,isBoss:false,isMinion:true,flashTicks:0,
+            shadeGearAttack:createShadeGearAttack(),omegaGearSourceId:boss.id,
+          });
+        }
+        if(count>0){
+          playBossShardsSound();
+          addFloatingText(`ASSEMBLY +${count} / 4`,boss.x,boss.y+85,"#fdba74");
+        }
+      }
+      if(step.exposed){
+        setIsCoreExposed(true);setBossAttackName(null);
+        playEliteChargeSound();
+        addFloatingText("REACTOR EXPUESTO",boss.x,boss.y-98,"#fef08a");
+      }
+      if(!["EXPOSED","ACTIVE","WARNING"].includes(step.attack.stage))
+        setIsCoreExposed(false);
+      if(omegaAttackContact(step.attack,boss,playerPosRef.current))
+        damagePlayerFromBoss(phase===3?15:12,phase===1?"omega_piston_arms":"omega_conveyor_sweep");
+      return;
+    }
+
     // 2. PHASE TRANSITION TICK
     if (phaseTransitionTimerRef.current > 0) {
       phaseTransitionTimerRef.current -= delta;
