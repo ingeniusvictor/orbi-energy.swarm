@@ -4,7 +4,8 @@
  */
 export const FERRUM_WORLD_ID="FERRUM_MECHANICA" as const;
 export const ASTERIA_WORLD_CHOICE="ASTERIA_ORBITAL" as const;
-export type PlayableWorld=typeof FERRUM_WORLD_ID|typeof ASTERIA_WORLD_CHOICE;
+export const PYRA_WORLD_ID="PYRA_MAGMA_CORE" as const;
+export type PlayableWorld=typeof FERRUM_WORLD_ID|typeof ASTERIA_WORLD_CHOICE|typeof PYRA_WORLD_ID;
 export const FERRUM_SECTIONS=["GEAR_GATE","COPPER_AVENUE","FORGE_DISTRICT",
   "SKY_CRANES","ASSEMBLY_SPAN","REACTOR_VISTA"] as const;
 export function ferrumSceneAt(ordinal:number):typeof FERRUM_SECTIONS[number]{
@@ -15,6 +16,8 @@ export const isAsteria=(route:boolean,world:PlayableWorld)=>
   route&&world===ASTERIA_WORLD_CHOICE;
 export const isFerrum=(route:boolean,world:PlayableWorld)=>
   route&&world===FERRUM_WORLD_ID;
+export const isPyra=(route:boolean,world:PlayableWorld)=>
+  route&&world===PYRA_WORLD_ID;
 const wrap=(n:number,width:number)=>((n%width)+width)%width;
 const hash=(v:number)=>Math.imul(v^0x5f3759df,2654435761)>>>0;
 /** Backdrop-only Canvas2D at logical 480 height, sized to panoramic viewport.

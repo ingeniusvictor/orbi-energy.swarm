@@ -22,7 +22,8 @@ import {
 } from "./asteriaOriginalFoes";
 import {createSpanWardenAttack,shouldSpawnSpanWarden,selectSpanWardenSpawn,
   stepSpanWarden,resolveSpanWardenHit,SPAN_WARDEN_PROJECTILE_SPREAD} from "./asteriaSpanWarden";
-import {ASTERIA_WORLD_CHOICE,FERRUM_WORLD_ID,drawFerrumWorld,ferrumSceneAt,isAsteria,isFerrum,type PlayableWorld} from "./ferrumWorld";
+import {ASTERIA_WORLD_CHOICE,FERRUM_WORLD_ID,PYRA_WORLD_ID,drawFerrumWorld,ferrumSceneAt,isAsteria,isFerrum,isPyra,type PlayableWorld} from "./ferrumWorld";
+import {drawPyraWorld,pyraSceneAt} from "./pyraWorld";
 import {resolveFerrumFoe,selectFerrumFoeSpawn,createShadeGearAttack,createM9WelderAttack,stepShadeGear,stepM9Welder,M9_WELDER_PROJECTILE_SPEED} from "./ferrumOriginalFoes";
 import {createFoundryClawAttack,createOxideModulatorAttack,
   stepFoundryClaw,stepOxideModulator,projectFoundryTetherPull,
@@ -1925,6 +1926,8 @@ export const EnergySwarmGame: React.FC = () => {
     asteriaLiveCursorRef.current = createRouteCursor("asteria-campaign-qa");
     if(worldRouteThemeRef.current===FERRUM_WORLD_ID)
       asteriaLiveCursorRef.current = createRouteCursor("ferrum-world-02");
+    if(worldRouteThemeRef.current===PYRA_WORLD_ID)
+      asteriaLiveCursorRef.current = createRouteCursor("pyra-world-03");
     // Initial cleanups
     playerPosRef.current = { x: WORLD_WIDTH / 2, y: WORLD_HEIGHT / 2 };
     pointerRef.current = { x: WORLD_WIDTH / 2, y: WORLD_HEIGHT / 2 };
@@ -2086,6 +2089,10 @@ export const EnergySwarmGame: React.FC = () => {
   };
   const startFerrumWorldRouteGame = () => {
     worldRouteThemeRef.current=FERRUM_WORLD_ID;
+    void startGameWithMode("CAMPAIGN", true);
+  };
+  const startPyraWorldRouteGame = () => {
+    worldRouteThemeRef.current=PYRA_WORLD_ID;
     void startGameWithMode("CAMPAIGN", true);
   };
 
@@ -8350,7 +8357,13 @@ export const EnergySwarmGame: React.FC = () => {
     const asteriaCombatVisualActive = worldRouteRunActiveRef.current;
     if (asteriaCombatVisualActive) {
       const ferrumActive=isFerrum(worldRouteRunActiveRef.current,worldRouteThemeRef.current);
-      if(ferrumActive){
+      if(isPyra(worldRouteRunActiveRef.current,worldRouteThemeRef.current)){
+        drawPyraWorld(ctx,projectRouteDistance(asteriaLiveCursorRef.current),
+          panoramicViewport.width,asteriaLiveCursorRef.current.segmentOrdinal);
+        canvas.dataset.ux15Visual="pyra-magma-canvas";
+        canvas.dataset.ux15Scene=pyraSceneAt(asteriaLiveCursorRef.current.segmentOrdinal);
+        canvas.dataset.ux15World=PYRA_WORLD_ID;
+      }else if(ferrumActive){
         drawFerrumWorld(ctx,projectRouteDistance(asteriaLiveCursorRef.current),
           panoramicViewport.width,asteriaLiveCursorRef.current.segmentOrdinal);
         canvas.dataset.ux15Visual="ferrum-industrial-canvas";
@@ -9275,6 +9288,7 @@ export const EnergySwarmGame: React.FC = () => {
           onStartGame={startCampaignGame}
           onStartWorldRoute={startWorldRouteGame}
           onStartFerrumRoute={startFerrumWorldRouteGame}
+          onStartPyraRoute={startPyraWorldRouteGame}
           onStartScoreAttack={() => {
             void startGameWithMode("SCORE_ATTACK");
           }}

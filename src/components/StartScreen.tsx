@@ -20,6 +20,7 @@ interface StartScreenProps {
   onStartScoreAttack: () => void;
   onStartWorldRoute: () => void;
   onStartFerrumRoute: () => void;
+  onStartPyraRoute: () => void;
   onResetStats: () => void;
   onChangePreset: (preset: QualityPreset) => void;
   onToggleMute: () => void;
@@ -34,6 +35,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({
   onStartScoreAttack,
   onStartWorldRoute,
   onStartFerrumRoute,
+  onStartPyraRoute,
   onResetStats,
   onChangePreset,
   onToggleMute,
@@ -83,6 +85,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({
         onScoreAttack={() => { playClickSound(); onStartScoreAttack(); }}
         onWorldRoute={() => { playClickSound(); onStartWorldRoute(); }}
         onFerrumRoute={() => { playClickSound(); onStartFerrumRoute(); }}
+        onPyraRoute={() => { playClickSound(); onStartPyraRoute(); }}
         hasInfiniteRecord={hasInfiniteRecord}
         audioMuted={stats.audioMuted} musicEnabled={stats.musicEnabled !== false}
         soundEffectsEnabled={stats.soundEffectsEnabled !== false}
@@ -415,6 +418,21 @@ export const StartScreen: React.FC<StartScreenProps> = ({
                     onClick={() => { playClickSound(); onStartFerrumRoute(); }}
                     className="mt-2 w-full rounded-lg border border-amber-400/60 bg-amber-500/15 px-3 py-2.5 text-[10px] font-black uppercase tracking-[.1em] text-amber-100 hover:bg-amber-500/30">
                     {language === "es" ? "INICIAR FERRUM" : "START FERRUM"}
+                  </button>
+                </div>
+                <div className="mt-3 border-t border-orange-400/25 pt-3">
+                  <div className="text-[10px] font-black text-orange-200 tracking-wide">
+                    {language === "es" ? "MUNDO 03 · PYRA — NÚCLEO MAGMÁTICO" : "WORLD 03 · PYRA — MAGMA CORE"}
+                  </div>
+                  <p className="mt-1 text-[9px] leading-relaxed text-orange-100/75">
+                    {language === "es"
+                      ? "Ruta volcánica en desarrollo: magma, obsidiana y geometría de riesgo. El combate sigue usando ENERGY y sus ORBI."
+                      : "Volcanic route in development: magma, obsidian and readable danger geometry. Native ENERGY and ORBI combat."}
+                  </p>
+                  <button type="button" data-pyra-world-start-cta="true"
+                    onClick={() => { playClickSound(); onStartPyraRoute(); }}
+                    className="mt-2 w-full rounded-lg border border-orange-400/60 bg-orange-500/15 px-3 py-2.5 text-[10px] font-black uppercase tracking-[.1em] text-orange-100 hover:bg-orange-500/30">
+                    {language === "es" ? "INICIAR PYRA · ALFA" : "START PYRA · ALPHA"}
                   </button>
                 </div>
               </div>
