@@ -1,5 +1,6 @@
 import type { LiveEnemyFormationAssignment } from "./liveEnemyFormationDirector";
 import type { RailcutterAttack } from "./asteriaRailcutter";
+import type { SkySpecterAttack,BeaconPrismAttack,IonSailAttack } from "./asteriaOriginalFoes";
 import type { SiegeVolleyTelegraphState } from "./siegeVolleyTelegraph";
 import type { BlackoutArchitectEngineIdentityTag } from "./blackoutArchitectEngineIdentityLifecycle";
 
@@ -147,6 +148,9 @@ export enum EnemyType {
   PARASITE = "PARASITE",
   DRONE = "DRONE",
   RAILCUTTER = "RAILCUTTER",
+  SKY_SPECTER = "SKY_SPECTER",
+  BEACON_PRISM = "BEACON_PRISM",
+  ION_SAIL = "ION_SAIL",
   SPLITTER = "SPLITTER",
   DISRUPTOR = "DISRUPTOR",
   BLACKOUT_ELITE = "BLACKOUT_ELITE",
@@ -233,6 +237,10 @@ export interface Enemy {
   siegeVolleyTelegraph?: SiegeVolleyTelegraphState;
   /** ASTERIA-only original enemy attack state (never a boss or legacy modifier). */
   railcutterAttack?: RailcutterAttack;
+  /** Mundo Nuevo exclusive: independent original visual and attack cycles. */
+  skySpecterAttack?: SkySpecterAttack;
+  beaconPrismAttack?: BeaconPrismAttack;
+  ionSailAttack?: IonSailAttack;
 }
 
 export interface Projectile {
