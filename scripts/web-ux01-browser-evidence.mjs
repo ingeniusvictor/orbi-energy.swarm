@@ -1530,11 +1530,15 @@ async function runFotonPropulsionQa(name,width,height,touch){
   },initialX,{timeout:30000});
   check(await worldX()>initialX,
     name+": FOTON did not advance with its physical thrusters");
+  check(await canvas.getAttribute("data-c3b12-boost-observed")===null,
+    name+": boost activated without a Dash input");
   await page.getByTestId("ux15-c3b2-dash").click({timeout:15000});
   await page.waitForFunction(()=>document.querySelector(
-    '[data-testid="ux15-physical-canvas"]')?.dataset.c3b12Thrust==="DASH",
-    null,{polling:"raf",timeout:12000});
-  const boostedLength=Number(await canvas.getAttribute("data-c3b12-thrust-length"));
+    '[data-testid="ux15-physical-canvas"]')?.dataset.c3b12BoostObserved==="true",
+    null,{timeout:12000});
+  // The latch is only set by an ACTUAL rendered Dash frame in the Canvas.
+  // The 180ms plume may already have returned to cruise by the next poll.
+  const boostedLength=Number(await canvas.getAttribute("data-c3b12-boost-peak-length"));
   check(boostedLength>55,name+": canonical Dash did not amplify cyan exhaust");
   await shot(page,name+"-cyan-propulsion-dash");
   await page.waitForFunction(()=>document.querySelector(
@@ -1555,6 +1559,8 @@ async function runFotonPropulsionQa(name,width,height,touch){
   await page.waitForFunction(()=>document.querySelector(
     '[data-testid="ux15-physical-canvas"]')?.dataset.c3b12Thrust==="CRUISE",
     null,{timeout:10000});
+  check(await canvas.getAttribute("data-c3b12-boost-observed")===null,
+    name+": reset retained old rendered Dash evidence");
   evidence.cases.push({name,pass:true,ux15c3b12:true,
     cruiseLength:initialLength,boostedLength,paused:true,
     wave3Enabled:false,input:touch?"native-touch":"keyboard"});
