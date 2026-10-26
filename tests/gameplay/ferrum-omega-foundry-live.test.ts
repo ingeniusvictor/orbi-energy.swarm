@@ -44,7 +44,7 @@ test("FERRUM-04: three health phases and guaranteed reactor exposure",()=>{
   assert.ok(omegaFoundryDamageMultiplier(a)>2);
 });
 test("FERRUM-04: piston warning locks aim and never deals damage",()=>{
-  let a={...createOmegaFoundryAttack(),stage:"WARNING" as const,
+  let a:ReturnType<typeof createOmegaFoundryAttack>={...createOmegaFoundryAttack(),stage:"WARNING",
     remainingMs:OMEGA_WARNING_MS,lockedAngle:0};
   assert.equal(omegaAttackContact(a,{x:0,y:0},{x:240,y:0}),false);
   for(let n=0;n<14;n++)a=stepOmegaFoundry(a,boss,{x:900,y:950},100,1).attack;

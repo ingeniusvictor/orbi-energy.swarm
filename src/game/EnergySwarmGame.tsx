@@ -4125,7 +4125,10 @@ export const EnergySwarmGame: React.FC = () => {
       }
       if(step.committed)playDisruptorPulseSound();
       if(step.assemblyPulse){
-        const living=enemiesRef.current.filter(e=>!e.isDead&&e.omegaGearSourceId===boss.id).length;
+        let living=0;
+        for(const ally of enemiesRef.current){
+          if(!ally.isDead&&ally.omegaGearSourceId===boss.id)living++;
+        }
         const count=Math.min(omegaGearSlots(living),Math.max(0,MAX_ENEMIES-enemiesRef.current.length));
         for(let i=0;i<count;i++){
           const side=i%2===0?-1:1;
@@ -4154,6 +4157,17 @@ export const EnergySwarmGame: React.FC = () => {
         setIsCoreExposed(false);
       if(omegaAttackContact(step.attack,boss,playerPosRef.current))
         damagePlayerFromBoss(phase===3?15:12,phase===1?"omega_piston_arms":"omega_conveyor_sweep");
+      // The giant walking factory advances slowly only between locked attacks.
+      // Keeping it stationary through WARNING/ACTIVE preserves readable lanes.
+      if(step.attack.stage==="PREPARE"||step.attack.stage==="RECOVER"){
+        const dx=playerPosRef.current.x-boss.x,dy=playerPosRef.current.y-boss.y;
+        const distance=Math.hypot(dx,dy);
+        if(distance>300){
+          const travel=Math.min(delta*.032,distance-300);
+          boss.x=Math.max(WORLD_BOUNDS.minX+85,Math.min(WORLD_BOUNDS.maxX-85,boss.x+dx/distance*travel));
+          boss.y=Math.max(WORLD_BOUNDS.minY+85,Math.min(WORLD_BOUNDS.maxY-85,boss.y+dy/distance*travel));
+        }
+      }
       return;
     }
 
