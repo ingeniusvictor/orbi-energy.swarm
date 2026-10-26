@@ -20,6 +20,8 @@ import {
   stepSkySpecter,stepBeaconPrism,stepIonSail,
   ION_SAIL_TRAIL_DAMAGE,ION_SAIL_TRAIL_LIFE_MS,
 } from "./asteriaOriginalFoes";
+import {createSpanWardenAttack,shouldSpawnSpanWarden,selectSpanWardenSpawn,
+  stepSpanWarden,resolveSpanWardenHit,SPAN_WARDEN_PROJECTILE_SPREAD} from "./asteriaSpanWarden";
 import { stepRouteClock, ROUTE_QA_SPEED_UNITS_PER_SECOND } from "./worldRouteClock";
 import { drawWorldRouteQaScene } from "./worldRoutePreviewRenderer";
 import {
@@ -3222,6 +3224,14 @@ export const EnergySwarmGame: React.FC = () => {
           })
         : null;
     const routeCamera = cameraStateRef.current;
+    // WBE-01E: use an existing ordinary wave budget slot, NEVER a parallel encounter.
+    const spanWardenSpawn=shouldSpawnSpanWarden(
+      worldRouteRunActiveRef.current,descriptor.sourceMode,
+      descriptor.waveNumber,waveBudgetSpawnedRef.current,
+      Boolean(forcedType),spawningMiniboss,
+      enemiesRef.current.some(e=>e.type===EnemyType.SPAN_WARDEN&&!e.isDead),
+    )?selectSpanWardenSpawn(routeCamera,playerPosRef.current,
+      WORLD_WIDTH,WORLD_HEIGHT,Math.max(210,combatPressure.spawnSafetyRadius)):null;
     const railcutterSpawn = shouldSpawnAsteriaRailcutter(
       worldRouteRunActiveRef.current,descriptor.sourceMode,
       descriptor.waveNumber,waveBudgetSpawnedRef.current,
@@ -3246,7 +3256,9 @@ export const EnergySwarmGame: React.FC = () => {
           WORLD_WIDTH,WORLD_HEIGHT,Math.max(170,combatPressure.spawnSafetyRadius),
         )
       :null;
-    const type = railcutterSpawn
+    const type = spanWardenSpawn
+      ? EnemyType.SPAN_WARDEN
+      : railcutterSpawn
       ? EnemyType.RAILCUTTER
       : originalFoeSpawn&&originalFoe
         ? EnemyType[originalFoe]
@@ -3261,7 +3273,7 @@ export const EnergySwarmGame: React.FC = () => {
         enemiesRef.current,
       );
     const evolvedProfile =
-      spawningMiniboss
+      spawningMiniboss || type===EnemyType.SPAN_WARDEN
         ? null
         : resolveEvolvedEnemySpawn({
             descriptor,
@@ -3327,7 +3339,9 @@ export const EnergySwarmGame: React.FC = () => {
     }
     // Replace the legacy position ONLY for the new ASTERIA-native actor.
     // All other modes retain the existing four-side camera spawn policy.
-    if (railcutterSpawn) {
+    if (spanWardenSpawn) {
+      ex=spanWardenSpawn.x;ey=spanWardenSpawn.y;
+    } else if (railcutterSpawn) {
       ex = railcutterSpawn.x;
       ey = railcutterSpawn.y;
     } else if (originalFoeSpawn) {
@@ -3370,6 +3384,10 @@ export const EnergySwarmGame: React.FC = () => {
       speed = 1.15 * biomeCfg.enemySpeedMultiplier * movementSpeedMultiplier;
       size = 12;
       color = "#2dd4bf";
+    } else if (type === EnemyType.SPAN_WARDEN) {
+      health=112*healthMultiplier;
+      speed=.55*biomeCfg.enemySpeedMultiplier*movementSpeedMultiplier;
+      size=24;color="#67e8f9";
     } else if (type === EnemyType.DRONE) {
       health = 20 * healthMultiplier;
       speed = 0.7 * biomeCfg.enemySpeedMultiplier * movementSpeedMultiplier;
@@ -3444,6 +3462,7 @@ export const EnergySwarmGame: React.FC = () => {
     );
     const isElite =
       !spawningMiniboss &&
+      type!==EnemyType.SPAN_WARDEN &&
       !evolvedProfile &&
       !tacticalType &&
       Math.random() < effectiveEliteChance;
@@ -3470,7 +3489,8 @@ export const EnergySwarmGame: React.FC = () => {
             type !== EnemyType.RAILCUTTER &&
             type !== EnemyType.SKY_SPECTER &&
             type !== EnemyType.BEACON_PRISM &&
-            type !== EnemyType.ION_SAIL,
+            type !== EnemyType.ION_SAIL &&
+            type !== EnemyType.SPAN_WARDEN,
           remainingCapacity:
             Math.min(
               MAX_ENEMIES,
@@ -3537,6 +3557,8 @@ export const EnergySwarmGame: React.FC = () => {
         ?createBeaconPrismAttack():undefined,
       ionSailAttack: type===EnemyType.ION_SAIL
         ?createIonSailAttack():undefined,
+      spanWardenAttack: type===EnemyType.SPAN_WARDEN
+        ?createSpanWardenAttack():undefined,
       enemyFormation: enemyFormation ?? undefined,
       flashTicks: 0,
       evolvedVariantId: evolvedProfile?.id,
@@ -3571,6 +3593,10 @@ export const EnergySwarmGame: React.FC = () => {
           : undefined,
     });
 
+    if(type===EnemyType.SPAN_WARDEN){
+      playEliteChargeSound();
+      addFloatingText("SPAN WARDEN",ex,ey-44,"#a5f3fc");
+    }
     if (spawningMiniboss) {
       minibossGateRef.current =
         markRuntimeMinibossSpawned(
@@ -6054,6 +6080,25 @@ export const EnergySwarmGame: React.FC = () => {
             });
             hostileProjectileBudgetState.count++;
           }
+        } else if(enemy.type===EnemyType.SPAN_WARDEN && enemy.spanWardenAttack){
+          const prior=enemy.spanWardenAttack;
+          const step=stepSpanWarden(prior,enemy,playerPosRef.current,enemy.speed,delta);
+          enemy.x=Math.max(16,Math.min(WORLD_WIDTH-16,step.x));
+          enemy.y=Math.max(16,Math.min(WORLD_HEIGHT-16,step.y));
+          enemy.vx=step.vx;enemy.vy=step.vy;
+          enemy.spanWardenAttack=step.attack;
+          if(prior.phase==="GUARD"&&step.attack.phase==="WINDUP"){
+            playEliteChargeSound();
+            addFloatingText("LATERAL STRIKE",enemy.x,enemy.y-37,"#fde68a");
+          }
+          if(prior.phase==="STRIKE"&&step.attack.phase==="EXPOSED"){
+            addFloatingText("CORE EXPOSED",enemy.x,enemy.y-39,"#67e8f9");
+          }
+          if(step.fire){
+            shootFromEnemy(enemy,hostileProjectileBudgetState,{
+              x:enemy.x+prior.facingX*230,y:enemy.y+prior.facingY*230,
+            });
+          }
         } else if (enemy.type === EnemyType.RIFT_HUNTER) {
           enemy.pulseCooldown -= delta / 16.6;
           if ((enemy.chargeTimer ?? 0) > 0) {
@@ -6744,6 +6789,7 @@ export const EnergySwarmGame: React.FC = () => {
       enemy.type === EnemyType.DRONE ||
       enemy.type === EnemyType.BOSS_DEVOURER ||
       enemy.type === EnemyType.BEACON_PRISM ||
+      enemy.type === EnemyType.SPAN_WARDEN ||
       enemy.type === EnemyType.SIEGE_PRISM ||
       enemy.type === EnemyType.MINE_WEAVER ||
       enemy.type === EnemyType.MIRROR_WARDEN ||
@@ -6760,13 +6806,15 @@ export const EnergySwarmGame: React.FC = () => {
         (distanceSquared > 0 && distanceSquared < 320 * 320)
       ) {
         const projectileSpeed =
-          (enemy.type === EnemyType.BEACON_PRISM ? 2.65 :
+          (enemy.type === EnemyType.SPAN_WARDEN ? 2.35 :
+           enemy.type === EnemyType.BEACON_PRISM ? 2.65 :
             enemy.type === EnemyType.SIEGE_PRISM ? 4.0 :
             enemy.type === EnemyType.MINE_WEAVER ? 1.35 :
             enemy.type === EnemyType.VOID_ANCHOR ? 1.8 :
             enemy.type === EnemyType.MIRROR_WARDEN ? 2.7 : 2.2) *
           (enemy.evolvedProjectileSpeedMultiplier ?? 1);
         const requestedProjectileCount =
+          enemy.type === EnemyType.SPAN_WARDEN ? 2 :
           enemy.type === EnemyType.BEACON_PRISM ? 3 :
           enemy.type === EnemyType.SIEGE_PRISM ? 3 :
           enemy.type === EnemyType.MINE_WEAVER ? 2 :
@@ -6777,6 +6825,7 @@ export const EnergySwarmGame: React.FC = () => {
         );
         const baseAngle = Math.atan2(dy, dx);
         const spread =
+          enemy.type === EnemyType.SPAN_WARDEN ? SPAN_WARDEN_PROJECTILE_SPREAD :
           enemy.type === EnemyType.BEACON_PRISM ? .48 :
           enemy.type === EnemyType.SIEGE_PRISM ? 0.12 :
           enemy.type === EnemyType.MINE_WEAVER ? 0.38 :
@@ -6819,6 +6868,8 @@ export const EnergySwarmGame: React.FC = () => {
           if (enemy.type === EnemyType.BEACON_PRISM) {
             plasma.damage = 8;
             plasma.color = "#fde68a";
+          } else if(enemy.type===EnemyType.SPAN_WARDEN){
+            plasma.damage=9;plasma.color="#67e8f9";
           }
           projectilesRef.current.push(plasma);
         }
@@ -6835,6 +6886,8 @@ export const EnergySwarmGame: React.FC = () => {
   const getEnemyScoreReward = (enemy: Enemy) => {
     const baseReward = enemy.isBoss
       ? 1500
+      : enemy.type === EnemyType.SPAN_WARDEN
+        ? 360
       : enemy.type === EnemyType.BLACKOUT_ELITE
         ? 250
         : enemy.isMinion
@@ -6850,6 +6903,7 @@ export const EnergySwarmGame: React.FC = () => {
 
   const isCombatResonanceElite = (enemy: Enemy) =>
     enemy.type === EnemyType.BLACKOUT_ELITE ||
+    enemy.type === EnemyType.SPAN_WARDEN ||
     Boolean(enemy.evolvedVariantId) ||
     enemy.milestoneKind === "MINIBOSS";
 
@@ -7054,6 +7108,12 @@ export const EnergySwarmGame: React.FC = () => {
                 if (!proj.convergenceTargetId) isCrit = true;
                 damageToApply *= chassis.weakpoints.exposedDamageMultiplier;
               }
+            } else if(enemy.type===EnemyType.SPAN_WARDEN&&enemy.spanWardenAttack){
+              const shield=resolveSpanWardenHit(enemy.spanWardenAttack,
+                proj.vx,proj.vy,proj.x-enemy.x,proj.y-enemy.y);
+              damageToApply*=shield.multiplier;
+              if(shield.blocked)isShieldBlock=true;
+              if(shield.exposed&&!proj.convergenceTargetId)isCrit=true;
             } else if (enemy.type === EnemyType.BLACKOUT_ELITE) {
               const faceX = enemy.vx || (playerPosRef.current.x - enemy.x);
               const faceY = enemy.vy || (playerPosRef.current.y - enemy.y);
@@ -7923,20 +7983,26 @@ export const EnergySwarmGame: React.FC = () => {
       canvas.dataset.wbe01RailcutterCount = String(railcutterActiveCount);
       canvas.dataset.wbe01RailcutterPhase =
         worldRailcutter?.railcutterAttack?.phase??"NONE";
-      let sky=0,beacons=0,sails=0;
+      let sky=0,beacons=0,sails=0,wardens=0;
       for(const actor of enemiesRef.current){
         if(actor.isDead)continue;
         if(actor.type===EnemyType.SKY_SPECTER)sky++;
         else if(actor.type===EnemyType.BEACON_PRISM)beacons++;
         else if(actor.type===EnemyType.ION_SAIL)sails++;
+        else if(actor.type===EnemyType.SPAN_WARDEN)wardens++;
       }
       canvas.dataset.wbe01AsteriaExclusiveCounts =
         sky+","+beacons+","+sails;
+      canvas.dataset.wbe01SpanWardenCount=String(wardens);
+      canvas.dataset.wbe01SpanWardenPhase=enemiesRef.current.find(e=>
+        e.type===EnemyType.SPAN_WARDEN&&!e.isDead)?.spanWardenAttack?.phase??"NONE";
     } else {
       delete canvas.dataset.wbe01RailcutterScope;
       delete canvas.dataset.wbe01RailcutterCount;
       delete canvas.dataset.wbe01RailcutterPhase;
       delete canvas.dataset.wbe01AsteriaExclusiveCounts;
+      delete canvas.dataset.wbe01SpanWardenCount;
+      delete canvas.dataset.wbe01SpanWardenPhase;
       delete canvas.dataset.ux15World;
       delete canvas.dataset.ux15Visual;
       delete canvas.dataset.ux15Scene;
