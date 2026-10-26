@@ -6001,7 +6001,8 @@ export const EnergySwarmGame: React.FC = () => {
           }
         } else if (enemy.type === EnemyType.SKY_SPECTER && enemy.skySpecterAttack) {
           const prior=enemy.skySpecterAttack;
-          const step=stepSkySpecter(prior,enemy,playerPosRef.current,enemy.speed,delta);
+          const step=stepSkySpecter(prior,enemy,playerPosRef.current,
+            enemy.speed,delta,WORLD_WIDTH,WORLD_HEIGHT);
           enemy.x=Math.max(16,Math.min(WORLD_WIDTH-16,step.x));
           enemy.y=Math.max(16,Math.min(WORLD_HEIGHT-16,step.y));
           enemy.vx=step.vx;enemy.vy=step.vy;
