@@ -1,6 +1,7 @@
 import type { LiveEnemyFormationAssignment } from "./liveEnemyFormationDirector";
 import type { RailcutterAttack } from "./asteriaRailcutter";
 import type { SpanWardenAttack } from "./asteriaSpanWarden";
+import type { ShadeGearAttack,M9WelderAttack } from "./ferrumOriginalFoes";
 import type { ThresholdArchonAttack } from "./asteriaThresholdArchon";
 import type { SkySpecterAttack,BeaconPrismAttack,IonSailAttack } from "./asteriaOriginalFoes";
 import type { SiegeVolleyTelegraphState } from "./siegeVolleyTelegraph";
@@ -154,6 +155,8 @@ export enum EnemyType {
   BEACON_PRISM = "BEACON_PRISM",
   ION_SAIL = "ION_SAIL",
   SPAN_WARDEN = "SPAN_WARDEN",
+  SHADE_GEAR = "SHADE_GEAR",
+  M9_WELDER = "M9_WELDER",
   SPLITTER = "SPLITTER",
   DISRUPTOR = "DISRUPTOR",
   BLACKOUT_ELITE = "BLACKOUT_ELITE",
@@ -247,6 +250,8 @@ export interface Enemy {
   ionSailAttack?: IonSailAttack;
   /** Original ASTERIA elite; canonical combat owns its damage and rewards. */
   spanWardenAttack?: SpanWardenAttack;
+  shadeGearAttack?: ShadeGearAttack;
+  m9WelderAttack?: M9WelderAttack;
   /** ASTERIA-only boss pattern state, using original boss HP, damage and loot. */
   archonAttack?: ThresholdArchonAttack;
 }
