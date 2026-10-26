@@ -760,9 +760,22 @@ async function runCanonicalOrbiRouteQa(name,width,height,touch){
       const cdp=await context.newCDPSession(page);
       const x=bounds.x+bounds.width*.5,y=bounds.y+bounds.height*.62;
       await cdp.send("Input.dispatchTouchEvent",{type:"touchStart",touchPoints:[{x,y}]});
+      await page.waitForTimeout(160);
+      await cdp.send("Input.dispatchTouchEvent",{type:"touchMove",touchPoints:[{x:x+40,y:y-45}]});
+      await page.waitForTimeout(150);
       await cdp.send("Input.dispatchTouchEvent",{type:"touchMove",touchPoints:[{x:x+95,y:y-100}]});
       await page.waitForTimeout(650);
       await cdp.send("Input.dispatchTouchEvent",{type:"touchEnd",touchPoints:[]});
+      // A physical movement is still compulsory: retry the actual native
+      // gesture when browser GLB compositing missed the initial touch-start.
+      if(Number(await lab.getAttribute("data-player-local-y"))>=startY-12){
+        const ax=bounds.x+bounds.width*.45,ay=bounds.y+bounds.height*.75;
+        await cdp.send("Input.dispatchTouchEvent",{type:"touchStart",touchPoints:[{x:ax,y:ay}]});
+        await page.waitForTimeout(180);
+        await cdp.send("Input.dispatchTouchEvent",{type:"touchMove",touchPoints:[{x:ax+45,y:ay-75}]});
+        await page.waitForTimeout(750);
+        await cdp.send("Input.dispatchTouchEvent",{type:"touchEnd",touchPoints:[]});
+      }
       await cdp.detach();
     }else{
       await page.keyboard.down("w");
@@ -1472,6 +1485,88 @@ async function runPhysicalDroneDuelQa(name,width,height,touch){
  }finally{await context.close();}
 }
 
+
+/** C3B12: opt-in visual jets follow the actual +X physics-owned FOTON,
+ * strengthen only under a canonical Dash, and freeze with simulated time.
+ * Screenshot the genuine GLB plus Canvas2D exhaust on desktop and mobile.
+ */
+async function runFotonPropulsionQa(name,width,height,touch){
+ const context=await browser.newContext({viewport:{width,height},
+  isMobile:touch,hasTouch:touch,deviceScaleFactor:touch?2:1,
+  reducedMotion:"no-preference",serviceWorkers:"block"});
+ const page=await context.newPage();
+ page.on("pageerror",e=>diagnostics.push(name+": "+String(e)));
+ page.on("console",msg=>{if(msg.type()==="error")diagnostics.push(name+": "+msg.text());});
+ try{
+  await page.goto(url+"/?ux15-physical-qa=1&ux15-c3b=1&ux15-c3b2=1&ux15-c3b3=1&ux15-c3b4=1&ux15-c3b5=1&ux15-c3b6=1&ux15-c3b7=1&ux15-c3b8=1&ux15-c3b9=1&ux15-c3b10=1&ux15-c3b11=1&ux15-c3b12=1",
+    {waitUntil:"domcontentloaded",timeout:30000});
+  const lab=page.getByTestId("ux15-physical-qa");
+  const canvas=page.getByTestId("ux15-physical-canvas");
+  await lab.waitFor({state:"visible",timeout:15000});
+  check(await lab.getAttribute("data-qa-mode")==="PHYSICAL_ROUTE_C3B12_QA",
+    name+": new propulsion flag failed closed");
+  check(await lab.getAttribute("data-c3b12-propulsion-enabled")==="true",
+    name+": thrusters are not authorized in this opt-in lab");
+  await page.waitForFunction(()=>document.querySelector(
+    '[data-testid="ux15-physical-canvas"]')?.dataset.c3b12Thrust==="CRUISE",
+    null,{timeout:15000});
+  const initialLength=Number(await canvas.getAttribute("data-c3b12-thrust-length"));
+  check(initialLength>25&&initialLength<34,name+": cruising exhaust not sized correctly");
+  // The actor's LOCAL x may decrease during a legitimate floating-origin
+  // rebase. Certify monotonic forward physical travel in the reconstituted
+  // world coordinate, without accepting any backwards player movement.
+  const worldX=async()=>Number(await lab.getAttribute("data-player-local-x"))+
+    Number(await lab.getAttribute("data-origin-offset-x"));
+  const initialX=await worldX();
+  // Published UI telemetry is sampled at 1/8 of the Canvas paint frequency;
+  // under real GLB/SwiftShader load it may not refresh within 520ms of wall
+  // time. Observe the SAME strict, positive world displacement instead.
+  await page.waitForFunction(start=>{
+    const root=document.querySelector('[data-testid="ux15-physical-qa"]');
+    if(!root)return false;
+    const x=Number(root.getAttribute("data-player-local-x"))+
+      Number(root.getAttribute("data-origin-offset-x"));
+    return Number.isFinite(x)&&x>start+1;
+  },initialX,{timeout:30000});
+  check(await worldX()>initialX,
+    name+": FOTON did not advance with its physical thrusters");
+  check(await canvas.getAttribute("data-c3b12-boost-observed")===null,
+    name+": boost activated without a Dash input");
+  await page.getByTestId("ux15-c3b2-dash").click({timeout:15000});
+  await page.waitForFunction(()=>document.querySelector(
+    '[data-testid="ux15-physical-canvas"]')?.dataset.c3b12BoostObserved==="true",
+    null,{timeout:12000});
+  // The latch is only set by an ACTUAL rendered Dash frame in the Canvas.
+  // The 180ms plume may already have returned to cruise by the next poll.
+  const boostedLength=Number(await canvas.getAttribute("data-c3b12-boost-peak-length"));
+  check(boostedLength>55,name+": canonical Dash did not amplify cyan exhaust");
+  await shot(page,name+"-cyan-propulsion-dash");
+  await page.waitForFunction(()=>document.querySelector(
+    '[data-testid="ux15-physical-canvas"]')?.dataset.c3b12Thrust==="CRUISE",
+    null,{timeout:12000});
+  await page.getByTestId("ux15-physical-pause").click();
+  await page.waitForTimeout(450);
+  const pausedTicks=await lab.getAttribute("data-physics-ticks");
+  const pausedLength=await canvas.getAttribute("data-c3b12-thrust-length");
+  await page.waitForTimeout(550);
+  check(await lab.getAttribute("data-physics-ticks")===pausedTicks,
+    name+": clock ran during pause");
+  check(await canvas.getAttribute("data-c3b12-thrust-length")===pausedLength,
+    name+": exhaust animation ran independently of simulated clock");
+  check(await lab.getAttribute("data-c3b11-wave3-active")==="false",
+    name+": Wave3 was incorrectly unlocked by exhaust");
+  await page.getByTestId("ux15-physical-reset").click();
+  await page.waitForFunction(()=>document.querySelector(
+    '[data-testid="ux15-physical-canvas"]')?.dataset.c3b12Thrust==="CRUISE",
+    null,{timeout:10000});
+  check(await canvas.getAttribute("data-c3b12-boost-observed")===null,
+    name+": reset retained old rendered Dash evidence");
+  evidence.cases.push({name,pass:true,ux15c3b12:true,
+    cruiseLength:initialLength,boostedLength,paused:true,
+    wave3Enabled:false,input:touch?"native-touch":"keyboard"});
+ }finally{await context.close();}
+}
+
 await mkdir(output,{recursive:true});
 try {
   await startServer();
@@ -1512,6 +1607,8 @@ try {
   await runDroneLockTrajectoryPreflight("ux15c3b10-drone-mobile-844x390",844,390,true);
   await runPhysicalDroneDuelQa("ux15c3b11-duel-desktop-1440x900",1440,900,false);
   await runPhysicalDroneDuelQa("ux15c3b11-duel-mobile-844x390",844,390,true);
+  await runFotonPropulsionQa("ux15c3b12-propulsion-desktop-1440x900",1440,900,false);
+  await runFotonPropulsionQa("ux15c3b12-propulsion-mobile-844x390",844,390,true);
 }catch(error){evidence.failures.push({message:String(error),stack:error?.stack||""});process.exitCode=1;}
 finally{
   evidence.errors=diagnostics;
