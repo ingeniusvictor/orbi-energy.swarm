@@ -3428,7 +3428,8 @@ export const EnergySwarmGame: React.FC = () => {
           eligibleEnemy:
             !spawningMiniboss &&
             !evolvedProfile &&
-            !isElite,
+            !isElite &&
+            type !== EnemyType.RAILCUTTER,
           remainingCapacity:
             Math.min(
               MAX_ENEMIES,
@@ -7795,7 +7796,18 @@ export const EnergySwarmGame: React.FC = () => {
         Math.floor(projectRouteDistance(asteriaLiveCursorRef.current)));
       canvas.dataset.ux15Segment = String(asteriaLiveCursorRef.current.segmentOrdinal);
       canvas.dataset.ux15LiveCombat = "true";
+      // Read-only evidence from the ACTUAL campaign actors. No QA spawner.
+      const worldRailcutter=enemiesRef.current.find(e=>
+        e.type===EnemyType.RAILCUTTER && !e.isDead);
+      canvas.dataset.wbe01RailcutterScope = "WORLD_ROUTE_ONLY";
+      canvas.dataset.wbe01RailcutterCount = String(
+        enemiesRef.current.filter(e=>e.type===EnemyType.RAILCUTTER&&!e.isDead).length);
+      canvas.dataset.wbe01RailcutterPhase =
+        worldRailcutter?.railcutterAttack?.phase??"NONE";
     } else {
+      delete canvas.dataset.wbe01RailcutterScope;
+      delete canvas.dataset.wbe01RailcutterCount;
+      delete canvas.dataset.wbe01RailcutterPhase;
       delete canvas.dataset.ux15World;
       delete canvas.dataset.ux15Visual;
       delete canvas.dataset.ux15Scene;
