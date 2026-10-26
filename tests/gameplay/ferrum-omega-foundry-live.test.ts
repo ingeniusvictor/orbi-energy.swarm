@@ -93,7 +93,7 @@ test("FERRUM-04: finite deterministic contract and native live engine integratio
   const canvas=readFileSync(new URL(root+"EnergySwarmCanvas.tsx",import.meta.url),"utf8");
   const chassis=readFileSync(new URL(root+"bossChassis.ts",import.meta.url),"utf8");
   const hud=readFileSync(new URL("../../src/components/BossHudOverlay.tsx",import.meta.url),"utf8");
-  for(const keyword of ["resolveOmegaFoundryEncounter(","omegaAttack:createOmegaFoundryAttack()",
+  for(const keyword of ["resolveOmegaFoundryEncounter(","omegaAttack:omegaEncounter?createOmegaFoundryAttack()",
     "stepOmegaFoundry(","omegaGearSlots(","omegaAttackContact(",
     "omegaFoundryDamageMultiplier(","damagePlayerFromBoss(",
     "registerCombatDefeat(enemy, proj.affinity)","enterInfiniteAfterCampaignVictory()"])

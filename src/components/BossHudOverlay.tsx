@@ -1,6 +1,7 @@
 import React from "react";
 import { BLACKOUT_DEVOURER_CANON } from "../game/waveDirector";
 import {ARCHON_ATTACK_NAMES} from "../game/asteriaThresholdArchon";
+import {OMEGA_ATTACK_NAMES} from "../game/ferrumOmegaFoundry";
 import { getBossChassisProfile } from "../game/bossChassis";
 import { getInfiniteBossFamilyProfile } from "../game/infiniteBossFamily";
 import type {
@@ -30,7 +31,7 @@ interface BossHudOverlayProps {
 const isImportantBossAttack = (attackName: string) => {
   const normalized = attackName.toLowerCase();
   return ["devourer_charge", "singularity_pulse", "rotating_eclipse_lanes",
-    "telescopic", "beacon", "overload"].some(
+    "telescopic", "beacon", "overload", "piston", "assembly", "conveyor"].some(
     (id) =>
       normalized.includes(id.replace(/_/g, " ")) ||
       normalized.includes("carga") ||
@@ -78,7 +79,15 @@ export const BossHudOverlay: React.FC<BossHudOverlayProps> = ({
         :bossAttackName===ARCHON_ATTACK_NAMES[3]
           ?(language==="es"?"Cruza la onda anular; vuelve al núcleo cuando se abra.":"Cross the ring wave, then strike the exposed core.")
           :null:null;
-  const counterHint = archonHint ?? getBossCounterHint(bossAttackId, language);
+  const omegaHint=bossChassis==="FERRUM_OMEGA" && bossAttackName
+    ?bossAttackName===OMEGA_ATTACK_NAMES[1]
+      ?(language==="es"?"Sal de las dos trayectorias diagonales de los pistones.":"Leave both diagonal piston lanes.")
+      :bossAttackName===OMEGA_ATTACK_NAMES[2]
+        ?(language==="es"?"Destruye los engranajes: máximo cuatro simultáneos.":"Destroy assembled gears: at most four at once.")
+        :bossAttackName===OMEGA_ATTACK_NAMES[3]
+          ?(language==="es"?"Permanece entre las cintas y ataca el reactor abierto.":"Stay between belts and attack the open reactor.")
+          :null:null;
+  const counterHint = omegaHint ?? archonHint ?? getBossCounterHint(bossAttackId, language);
   const healthPercent = Math.max(0, Math.min(100, Math.round(healthRatio * 100)));
   const showAttack =
     Boolean(bossAttackName) &&
@@ -97,7 +106,9 @@ export const BossHudOverlay: React.FC<BossHudOverlayProps> = ({
         <span className="orbi-boss-kicker">
           {bossChassis === "ASTERIA_ARCHON"
             ? "⚠ ASTERIA // ORBITAL THRESHOLD"
-            : bossChassis === "DEVOURER" ? "⚠ MAJOR COLLAPSE DETECTED" : "⚠ RAID ESCALATION DETECTED"}
+            : bossChassis === "FERRUM_OMEGA"
+              ? "⚠ FERRUM // INDUSTRIAL REACTOR"
+              : bossChassis === "DEVOURER" ? "⚠ MAJOR COLLAPSE DETECTED" : "⚠ RAID ESCALATION DETECTED"}
         </span>
         <div className="orbi-boss-title-row">
           <h2 id="orbi-boss-title" className="orbi-boss-title">{displayName}</h2>
