@@ -81,6 +81,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({
         onPlay={() => { playClickSound(); onStartGame(); }}
         onScoreAttack={() => { playClickSound(); onStartScoreAttack(); }}
         onWorldRoute={() => { playClickSound(); onStartWorldRoute(); }}
+        onFerrumRoute={() => { playClickSound(); onStartWorldRoute(FERRUM_WORLD_ID); }}
         hasInfiniteRecord={hasInfiniteRecord}
         audioMuted={stats.audioMuted} musicEnabled={stats.musicEnabled !== false}
         soundEffectsEnabled={stats.soundEffectsEnabled !== false}
