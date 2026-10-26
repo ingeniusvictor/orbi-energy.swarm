@@ -2,6 +2,7 @@ import type { LiveEnemyFormationAssignment } from "./liveEnemyFormationDirector"
 import type { RailcutterAttack } from "./asteriaRailcutter";
 import type { SpanWardenAttack } from "./asteriaSpanWarden";
 import type { ShadeGearAttack,M9WelderAttack } from "./ferrumOriginalFoes";
+import type {FoundryClawAttack,OxideModulatorAttack} from "./ferrumAdvancedFoes";
 import type { ThresholdArchonAttack } from "./asteriaThresholdArchon";
 import type { SkySpecterAttack,BeaconPrismAttack,IonSailAttack } from "./asteriaOriginalFoes";
 import type { SiegeVolleyTelegraphState } from "./siegeVolleyTelegraph";
@@ -157,6 +158,8 @@ export enum EnemyType {
   SPAN_WARDEN = "SPAN_WARDEN",
   SHADE_GEAR = "SHADE_GEAR",
   M9_WELDER = "M9_WELDER",
+  FOUNDRY_CLAW = "FOUNDRY_CLAW",
+  OXIDE_MODULATOR = "OXIDE_MODULATOR",
   SPLITTER = "SPLITTER",
   DISRUPTOR = "DISRUPTOR",
   BLACKOUT_ELITE = "BLACKOUT_ELITE",
@@ -252,6 +255,10 @@ export interface Enemy {
   spanWardenAttack?: SpanWardenAttack;
   shadeGearAttack?: ShadeGearAttack;
   m9WelderAttack?: M9WelderAttack;
+  foundryClawAttack?: FoundryClawAttack;
+  oxideModulatorAttack?: OxideModulatorAttack;
+  oxideArmorSourceId?: string;
+  oxideArmoredUntilMs?: number;
   /** ASTERIA-only boss pattern state, using original boss HP, damage and loot. */
   archonAttack?: ThresholdArchonAttack;
 }
