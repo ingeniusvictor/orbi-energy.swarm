@@ -96,7 +96,7 @@ test("WBE-01B: Specter flank point remains reachable near right/top/bottom comba
     [{x:1510,y:70},{x:1560,y:32},-1],
     [{x:20,y:200},{x:1550,y:920},1],
   ] as const){
-    let p={...position};
+    let p:{x:number;y:number}={...position};
     let a=createSkySpecterAttack(flankSide);
     for(let i=0;i<1200&&a.phase==="CLIMB";i++){
       const step=stepSkySpecter(a,p,player,1.1,50,1600,960);
