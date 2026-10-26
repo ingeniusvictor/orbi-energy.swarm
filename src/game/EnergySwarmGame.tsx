@@ -3224,6 +3224,9 @@ export const EnergySwarmGame: React.FC = () => {
           })
         : null;
     const routeCamera = cameraStateRef.current;
+    // Keep the original evolution budget count allocation-free, before extra
+    // ASTERIA spawn routing; existing adoption tests inspect this early seam.
+    const activeEvolvedEnemies = countActiveEvolvedEnemies(enemiesRef.current);
     // WBE-01E: use an existing ordinary wave budget slot, NEVER a parallel encounter.
     const spanWardenSpawn=shouldSpawnSpanWarden(
       worldRouteRunActiveRef.current,descriptor.sourceMode,
@@ -3268,10 +3271,6 @@ export const EnergySwarmGame: React.FC = () => {
           tacticalType ||
           (comp[Math.floor(Math.random() * comp.length)] ||
             EnemyType.CRAWLER);
-    const activeEvolvedEnemies =
-      countActiveEvolvedEnemies(
-        enemiesRef.current,
-      );
     const evolvedProfile =
       spawningMiniboss || type===EnemyType.SPAN_WARDEN
         ? null
@@ -3462,9 +3461,9 @@ export const EnergySwarmGame: React.FC = () => {
     );
     const isElite =
       !spawningMiniboss &&
-      type!==EnemyType.SPAN_WARDEN &&
       !evolvedProfile &&
       !tacticalType &&
+      type!==EnemyType.SPAN_WARDEN &&
       Math.random() < effectiveEliteChance;
     if (isElite) {
       health *= 1.8;
