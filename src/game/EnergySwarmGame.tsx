@@ -7996,6 +7996,7 @@ export const EnergySwarmGame: React.FC = () => {
       playerPosRef.current, swarmRef.current, flashProfile.mode === "REDUCED",
     );
 
+    // UX11-E: bounded propulsion streaks, no Dyson rings, no gameplay immunity.
     // UX11-E: draw the EXACT certified three-streak Dash presentation.
     // Refactored into shared UX12 renderer, no change in geometry or timing.
     drawEnergyDashStreaks(
