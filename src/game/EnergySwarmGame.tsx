@@ -3223,6 +3223,10 @@ export const EnergySwarmGame: React.FC = () => {
           })
         : null;
     const routeCamera = cameraStateRef.current;
+    const activeEvolvedEnemies =
+      countActiveEvolvedEnemies(
+        enemiesRef.current,
+      );
     const railcutterSpawn = shouldSpawnAsteriaRailcutter(
       worldRouteRunActiveRef.current,descriptor.sourceMode,
       descriptor.waveNumber,waveBudgetSpawnedRef.current,
@@ -3268,10 +3272,6 @@ export const EnergySwarmGame: React.FC = () => {
           tacticalType ||
           (comp[Math.floor(Math.random() * comp.length)] ||
             EnemyType.CRAWLER);
-    const activeEvolvedEnemies =
-      countActiveEvolvedEnemies(
-        enemiesRef.current,
-      );
     const evolvedProfile =
       spawningMiniboss
         ? null
