@@ -182,7 +182,7 @@ test("WBE-01B-D: real engine and renderer own exclusive types; no separate QA or
     assert.match(canvas,new RegExp("case EnemyType."+type));
     assert.match(game,new RegExp("EnemyType."+type));
   }
-  assert.match(game,/worldRouteRunActiveRef.current,descriptor.sourceMode/);
+  assert.match(game,/isAsteria\(worldRouteRunActiveRef.current,worldRouteThemeRef.current\),descriptor.sourceMode/);
   assert.match(game,/shootFromEnemy\(enemy,hostileProjectileBudgetState/);
   assert.match(game,/hostileProjectileBudgetState.count\+\+/);
   assert.match(game,/projectilesRef.current.length<MAX_PROJECTILES/);
