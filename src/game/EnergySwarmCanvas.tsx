@@ -1397,7 +1397,7 @@ export function drawEnemiesList(
         ctx.shadowColor=exposed?"#fde68a":"#67e8f9";
         ctx.shadowBlur=exposed?26:10;
         ctx.fillStyle=exposed?"#fef08a":"#0891b2";
-        ctx.beginPath();ctx.arc(r*.06,0,r*(exposed?.4:.27),0,Math.PI*2);
+        ctx.beginPath();ctx.arc(r*.06,0,r*(exposed?0.4:0.27),0,Math.PI*2);
         ctx.fill();
         ctx.restore();break;
       }
