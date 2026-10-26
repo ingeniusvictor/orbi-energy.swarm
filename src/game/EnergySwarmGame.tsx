@@ -22,6 +22,8 @@ import {
 } from "./asteriaOriginalFoes";
 import {createSpanWardenAttack,shouldSpawnSpanWarden,selectSpanWardenSpawn,
   stepSpanWarden,resolveSpanWardenHit,SPAN_WARDEN_PROJECTILE_SPREAD} from "./asteriaSpanWarden";
+import {ASTERIA_WORLD_CHOICE,FERRUM_WORLD_ID,drawFerrumWorld,ferrumSceneAt,isAsteria,isFerrum,type PlayableWorld} from "./ferrumWorld";
+import {resolveFerrumFoe,selectFerrumFoeSpawn,createShadeGearAttack,createM9WelderAttack,stepShadeGear,stepM9Welder,M9_WELDER_PROJECTILE_SPEED} from "./ferrumOriginalFoes";
 import {resolveAsteriaArchonEncounter,createThresholdArchonAttack,
   stepThresholdArchon,getThresholdArchonPhase,thresholdArchonDamageMultiplier,
   ARCHON_ATTACK_NAMES} from "./asteriaThresholdArchon";
@@ -512,6 +514,7 @@ export const EnergySwarmGame: React.FC = () => {
   const timeElapsedRef = useRef(0);
   const asteriaLiveCursorRef = useRef(createRouteCursor("asteria-campaign-qa"));
   const worldRouteRunActiveRef = useRef(false);
+  const worldRouteThemeRef = useRef<PlayableWorld>(ASTERIA_WORLD_CHOICE);
   const performanceDiagnosticsEnabledRef = useRef(false);
   const performanceDiagnosticsStateRef =
     useRef<PerformanceDiagnosticsState>(
@@ -1911,7 +1914,7 @@ export const EnergySwarmGame: React.FC = () => {
 
     // UX15-C1: restarting a campaign restarts only visual scenery, never
     // the actual wave budget, combat timers, physical coordinates or loot.
-    asteriaLiveCursorRef.current = createRouteCursor("asteria-campaign-qa");
+    asteriaLiveCursorRef.current = createRouteCursor(worldRouteThemeRef.current===FERRUM_WORLD_ID?"ferrum-world-02":"asteria-campaign-qa");
     // Initial cleanups
     playerPosRef.current = { x: WORLD_WIDTH / 2, y: WORLD_HEIGHT / 2 };
     pointerRef.current = { x: WORLD_WIDTH / 2, y: WORLD_HEIGHT / 2 };
@@ -2054,7 +2057,7 @@ export const EnergySwarmGame: React.FC = () => {
     // A stable run-owned identity survives upgrade cards, wave transitions,
     // Estado, pause, restart and eventual campaign→Infinite handoff.
     worldRouteRunActiveRef.current = mode === "CAMPAIGN" && worldRoute;
-    if (worldRouteRunActiveRef.current) preloadAsteriaPremiumWorld();
+    if(isAsteria(worldRouteRunActiveRef.current,worldRouteThemeRef.current)) preloadAsteriaPremiumWorld();
     setWorldRouteSelected(worldRouteRunActiveRef.current);
     scoreAttackActivationRef.current = activation;
     setPresentationMode(mode);
@@ -2067,7 +2070,8 @@ export const EnergySwarmGame: React.FC = () => {
     // was selected explicitly; ordinary / launches only legacy Campaign.
     void startGameWithMode("CAMPAIGN");
   };
-  const startWorldRouteGame = () => {
+  const startWorldRouteGame = (world:PlayableWorld=ASTERIA_WORLD_CHOICE) => {
+    worldRouteThemeRef.current=world;
     void startGameWithMode("CAMPAIGN", true);
   };
 
@@ -3253,14 +3257,14 @@ export const EnergySwarmGame: React.FC = () => {
     const activeEvolvedEnemies = countActiveEvolvedEnemies(enemiesRef.current);
     // WBE-01E: use an existing ordinary wave budget slot, NEVER a parallel encounter.
     const spanWardenSpawn=shouldSpawnSpanWarden(
-      worldRouteRunActiveRef.current,descriptor.sourceMode,
+      isAsteria(worldRouteRunActiveRef.current,worldRouteThemeRef.current),descriptor.sourceMode,
       descriptor.waveNumber,waveBudgetSpawnedRef.current,
       Boolean(forcedType),spawningMiniboss,
       enemiesRef.current.some(e=>e.type===EnemyType.SPAN_WARDEN&&!e.isDead),
     )?selectSpanWardenSpawn(routeCamera,playerPosRef.current,
       WORLD_WIDTH,WORLD_HEIGHT,Math.max(210,combatPressure.spawnSafetyRadius)):null;
     const railcutterSpawn = shouldSpawnAsteriaRailcutter(
-      worldRouteRunActiveRef.current,descriptor.sourceMode,
+      isAsteria(worldRouteRunActiveRef.current,worldRouteThemeRef.current),descriptor.sourceMode,
       descriptor.waveNumber,waveBudgetSpawnedRef.current,
       Boolean(forcedType),spawningMiniboss,
       enemiesRef.current.some(enemy=>
@@ -3272,7 +3276,7 @@ export const EnergySwarmGame: React.FC = () => {
         )
       : null;
     const originalFoe=resolveAsteriaNewFoe(
-      worldRouteRunActiveRef.current,descriptor.sourceMode,
+      isAsteria(worldRouteRunActiveRef.current,worldRouteThemeRef.current),descriptor.sourceMode,
       descriptor.waveNumber,waveBudgetSpawnedRef.current,
       Boolean(forcedType),spawningMiniboss,
       candidate=>enemiesRef.current.some(e=>e.type===EnemyType[candidate] && !e.isDead),
@@ -3283,7 +3287,16 @@ export const EnergySwarmGame: React.FC = () => {
           WORLD_WIDTH,WORLD_HEIGHT,Math.max(170,combatPressure.spawnSafetyRadius),
         )
       :null;
-    const type = spanWardenSpawn
+    // FERRUM replaces ordinary live campaign slots; global budgets unchanged.
+    const ferrumFoe=resolveFerrumFoe(
+      isFerrum(worldRouteRunActiveRef.current,worldRouteThemeRef.current),
+      descriptor.sourceMode,descriptor.waveNumber,waveBudgetSpawnedRef.current,
+      Boolean(forcedType),spawningMiniboss,
+      candidate=>enemiesRef.current.some(e=>e.type===EnemyType[candidate]&&!e.isDead));
+    const ferrumSpawn=ferrumFoe?selectFerrumFoeSpawn(routeCamera,
+      playerPosRef.current,WORLD_WIDTH,WORLD_HEIGHT,
+      Math.max(170,combatPressure.spawnSafetyRadius)):null;
+    const type = ferrumFoe&&ferrumSpawn?EnemyType[ferrumFoe]:spanWardenSpawn
       ? EnemyType.SPAN_WARDEN
       : railcutterSpawn
       ? EnemyType.RAILCUTTER
@@ -3296,7 +3309,8 @@ export const EnergySwarmGame: React.FC = () => {
           (comp[Math.floor(Math.random() * comp.length)] ||
             EnemyType.CRAWLER);
     const evolvedProfile =
-      spawningMiniboss || type===EnemyType.SPAN_WARDEN
+      spawningMiniboss || type===EnemyType.SPAN_WARDEN ||
+      type===EnemyType.SHADE_GEAR || type===EnemyType.M9_WELDER
         ? null
         : resolveEvolvedEnemySpawn({
             descriptor,
@@ -3362,7 +3376,9 @@ export const EnergySwarmGame: React.FC = () => {
     }
     // Replace the legacy position ONLY for the new ASTERIA-native actor.
     // All other modes retain the existing four-side camera spawn policy.
-    if (spanWardenSpawn) {
+    if(ferrumFoe&&ferrumSpawn){
+      ex=ferrumSpawn.x;ey=ferrumSpawn.y;
+    }else if (spanWardenSpawn) {
       ex=spanWardenSpawn.x;ey=spanWardenSpawn.y;
     } else if (railcutterSpawn) {
       ex = railcutterSpawn.x;
@@ -3411,6 +3427,14 @@ export const EnergySwarmGame: React.FC = () => {
       health=112*healthMultiplier;
       speed=.55*biomeCfg.enemySpeedMultiplier*movementSpeedMultiplier;
       size=24;color="#67e8f9";
+    } else if(type===EnemyType.SHADE_GEAR){
+      health=29*healthMultiplier;
+      speed=1.04*biomeCfg.enemySpeedMultiplier*movementSpeedMultiplier;
+      size=14;color="#f59e0b";
+    } else if(type===EnemyType.M9_WELDER){
+      health=34*healthMultiplier;
+      speed=.72*biomeCfg.enemySpeedMultiplier*movementSpeedMultiplier;
+      size=15;color="#fb923c";
     } else if (type === EnemyType.DRONE) {
       health = 20 * healthMultiplier;
       speed = 0.7 * biomeCfg.enemySpeedMultiplier * movementSpeedMultiplier;
@@ -3488,6 +3512,7 @@ export const EnergySwarmGame: React.FC = () => {
       !evolvedProfile &&
       !tacticalType &&
       type!==EnemyType.SPAN_WARDEN &&
+      type!==EnemyType.SHADE_GEAR && type!==EnemyType.M9_WELDER &&
       Math.random() < effectiveEliteChance;
     if (isElite) {
       health *= 1.8;
@@ -3513,7 +3538,8 @@ export const EnergySwarmGame: React.FC = () => {
             type !== EnemyType.SKY_SPECTER &&
             type !== EnemyType.BEACON_PRISM &&
             type !== EnemyType.ION_SAIL &&
-            type !== EnemyType.SPAN_WARDEN,
+            type !== EnemyType.SPAN_WARDEN &&
+            type !== EnemyType.SHADE_GEAR && type !== EnemyType.M9_WELDER,
           remainingCapacity:
             Math.min(
               MAX_ENEMIES,
@@ -3582,6 +3608,8 @@ export const EnergySwarmGame: React.FC = () => {
         ?createIonSailAttack():undefined,
       spanWardenAttack: type===EnemyType.SPAN_WARDEN
         ?createSpanWardenAttack():undefined,
+      shadeGearAttack:type===EnemyType.SHADE_GEAR?createShadeGearAttack():undefined,
+      m9WelderAttack:type===EnemyType.M9_WELDER?createM9WelderAttack():undefined,
       enemyFormation: enemyFormation ?? undefined,
       flashTicks: 0,
       evolvedVariantId: evolvedProfile?.id,
