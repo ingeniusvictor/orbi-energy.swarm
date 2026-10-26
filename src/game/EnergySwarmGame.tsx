@@ -28,6 +28,7 @@ import {createFoundryClawAttack,createOxideModulatorAttack,
   stepFoundryClaw,stepOxideModulator,projectFoundryTetherPull,
   oxideArmorDamageMultiplier,shouldArmorOxideAlly,
   OXIDE_ARMOR_DURATION_MS} from "./ferrumAdvancedFoes";
+import {createForemanAttack,shouldSpawnForeman,selectForemanSpawn,stepForeman,foremanSectorHit,foremanDamageMultiplier} from "./ferrumForeman";
 import {resolveAsteriaArchonEncounter,createThresholdArchonAttack,
   stepThresholdArchon,getThresholdArchonPhase,thresholdArchonDamageMultiplier,
   ARCHON_ATTACK_NAMES} from "./asteriaThresholdArchon";
@@ -3298,6 +3299,13 @@ export const EnergySwarmGame: React.FC = () => {
         )
       :null;
     // FERRUM replaces ordinary live campaign slots; global budgets unchanged.
+    const foremanSpawn=shouldSpawnForeman(
+      isFerrum(worldRouteRunActiveRef.current,worldRouteThemeRef.current),
+      descriptor.sourceMode,descriptor.waveNumber,waveBudgetSpawnedRef.current,
+      Boolean(forcedType),spawningMiniboss,
+      enemiesRef.current.some(e=>e.type===EnemyType.FERRITE_FOREMAN&&!e.isDead))
+      ?selectForemanSpawn(routeCamera,playerPosRef.current,WORLD_WIDTH,WORLD_HEIGHT,
+        combatPressure.spawnSafetyRadius):null;
     const ferrumFoe=resolveFerrumFoe(
       isFerrum(worldRouteRunActiveRef.current,worldRouteThemeRef.current),
       descriptor.sourceMode,descriptor.waveNumber,waveBudgetSpawnedRef.current,
@@ -3306,7 +3314,8 @@ export const EnergySwarmGame: React.FC = () => {
     const ferrumSpawn=ferrumFoe?selectFerrumFoeSpawn(routeCamera,
       playerPosRef.current,WORLD_WIDTH,WORLD_HEIGHT,
       Math.max(170,combatPressure.spawnSafetyRadius)):null;
-    const type = ferrumFoe&&ferrumSpawn?EnemyType[ferrumFoe]:spanWardenSpawn
+    const type = foremanSpawn?EnemyType.FERRITE_FOREMAN:
+      ferrumFoe&&ferrumSpawn?EnemyType[ferrumFoe]:spanWardenSpawn
       ? EnemyType.SPAN_WARDEN
       : railcutterSpawn
       ? EnemyType.RAILCUTTER
@@ -3321,7 +3330,8 @@ export const EnergySwarmGame: React.FC = () => {
     const evolvedProfile =
       spawningMiniboss || type===EnemyType.SPAN_WARDEN ||
       type===EnemyType.SHADE_GEAR || type===EnemyType.M9_WELDER ||
-      type===EnemyType.FOUNDRY_CLAW || type===EnemyType.OXIDE_MODULATOR
+      type===EnemyType.FOUNDRY_CLAW || type===EnemyType.OXIDE_MODULATOR ||
+      type===EnemyType.FERRITE_FOREMAN
         ? null
         : resolveEvolvedEnemySpawn({
             descriptor,
@@ -3387,7 +3397,8 @@ export const EnergySwarmGame: React.FC = () => {
     }
     // Replace the legacy position ONLY for the new ASTERIA-native actor.
     // All other modes retain the existing four-side camera spawn policy.
-    if(ferrumFoe&&ferrumSpawn){
+    if(foremanSpawn){ex=foremanSpawn.x;ey=foremanSpawn.y;
+    }else if(ferrumFoe&&ferrumSpawn){
       ex=ferrumSpawn.x;ey=ferrumSpawn.y;
     }else if (spanWardenSpawn) {
       ex=spanWardenSpawn.x;ey=spanWardenSpawn.y;
@@ -3454,6 +3465,10 @@ export const EnergySwarmGame: React.FC = () => {
       health=56*healthMultiplier;
       speed=.6*biomeCfg.enemySpeedMultiplier*movementSpeedMultiplier;
       size=18;color="#a3e635";
+    } else if(type===EnemyType.FERRITE_FOREMAN){
+      health=148*healthMultiplier;
+      speed=.62*biomeCfg.enemySpeedMultiplier*movementSpeedMultiplier;
+      size=29;color="#fbbf24";
     } else if (type === EnemyType.DRONE) {
       health = 20 * healthMultiplier;
       speed = 0.7 * biomeCfg.enemySpeedMultiplier * movementSpeedMultiplier;
@@ -3533,6 +3548,7 @@ export const EnergySwarmGame: React.FC = () => {
       type!==EnemyType.SPAN_WARDEN &&
       type!==EnemyType.SHADE_GEAR && type!==EnemyType.M9_WELDER &&
       type!==EnemyType.FOUNDRY_CLAW && type!==EnemyType.OXIDE_MODULATOR &&
+      type!==EnemyType.FERRITE_FOREMAN &&
       Math.random() < effectiveEliteChance;
     if (isElite) {
       health *= 1.8;
@@ -3560,7 +3576,8 @@ export const EnergySwarmGame: React.FC = () => {
             type !== EnemyType.ION_SAIL &&
             type !== EnemyType.SPAN_WARDEN &&
             type !== EnemyType.SHADE_GEAR && type !== EnemyType.M9_WELDER &&
-            type !== EnemyType.FOUNDRY_CLAW && type !== EnemyType.OXIDE_MODULATOR,
+            type !== EnemyType.FOUNDRY_CLAW && type !== EnemyType.OXIDE_MODULATOR &&
+            type !== EnemyType.FERRITE_FOREMAN,
           remainingCapacity:
             Math.min(
               MAX_ENEMIES,
@@ -3633,6 +3650,7 @@ export const EnergySwarmGame: React.FC = () => {
       m9WelderAttack:type===EnemyType.M9_WELDER?createM9WelderAttack():undefined,
       foundryClawAttack:type===EnemyType.FOUNDRY_CLAW?createFoundryClawAttack():undefined,
       oxideModulatorAttack:type===EnemyType.OXIDE_MODULATOR?createOxideModulatorAttack():undefined,
+      ferriteForemanAttack:type===EnemyType.FERRITE_FOREMAN?createForemanAttack():undefined,
       enemyFormation: enemyFormation ?? undefined,
       flashTicks: 0,
       evolvedVariantId: evolvedProfile?.id,
@@ -6290,6 +6308,25 @@ export const EnergySwarmGame: React.FC = () => {
               }
             }
           }
+        } else if(enemy.type===EnemyType.FERRITE_FOREMAN&&enemy.ferriteForemanAttack){
+          const previous=enemy.ferriteForemanAttack;
+          const step=stepForeman(previous,enemy,playerPosRef.current,enemy.speed,delta);
+          enemy.x=Math.max(16,Math.min(WORLD_WIDTH-16,step.x));
+          enemy.y=Math.max(16,Math.min(WORLD_HEIGHT-16,step.y));
+          enemy.vx=step.vx;enemy.vy=step.vy;enemy.ferriteForemanAttack=step.attack;
+          if(previous.stage==="APPROACH"&&step.attack.stage==="COMMAND"){
+            playEliteChargeSound();
+            addFloatingText("FERRITE FOREMAN",enemy.x,enemy.y-45,"#fde68a");
+          }
+          if(previous.stage==="COMMAND"&&step.attack.stage==="WARNING"){
+            playDisruptorChargeSound();
+            addFloatingText("HAMMER SECTOR",enemy.x,enemy.y-48,"#fb923c");
+          }
+          if(previous.stage==="SHOCK"&&step.attack.stage==="EXPOSED"){
+            addFloatingText("REACTOR EXPOSED",enemy.x,enemy.y-49,"#a3e635");
+          }
+          if(foremanSectorHit(step.attack,enemy,playerPosRef.current))
+            damagePlayerFromBoss(10,"ferrite_foreman_sector");
         } else if (enemy.type === EnemyType.RIFT_HUNTER) {
           enemy.pulseCooldown -= delta / 16.6;
           if ((enemy.chargeTimer ?? 0) > 0) {
@@ -7101,6 +7138,7 @@ export const EnergySwarmGame: React.FC = () => {
   const isCombatResonanceElite = (enemy: Enemy) =>
     enemy.type === EnemyType.BLACKOUT_ELITE ||
     enemy.type === EnemyType.SPAN_WARDEN ||
+    enemy.type === EnemyType.FERRITE_FOREMAN ||
     Boolean(enemy.evolvedVariantId) ||
     enemy.milestoneKind === "MINIBOSS";
 
@@ -7320,6 +7358,9 @@ export const EnergySwarmGame: React.FC = () => {
                 if (!proj.convergenceTargetId) isCrit = true;
                 damageToApply *= chassis.weakpoints.exposedDamageMultiplier;
               }
+            } else if(enemy.type===EnemyType.FERRITE_FOREMAN&&enemy.ferriteForemanAttack){
+              damageToApply*=foremanDamageMultiplier(enemy.ferriteForemanAttack);
+              if(enemy.ferriteForemanAttack.stage==="EXPOSED"&&!proj.convergenceTargetId)isCrit=true;
             } else if(enemy.type===EnemyType.SPAN_WARDEN&&enemy.spanWardenAttack){
               const shield=resolveSpanWardenHit(enemy.spanWardenAttack,
                 proj.vx,proj.vy,proj.x-enemy.x,proj.y-enemy.y);
