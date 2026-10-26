@@ -1170,6 +1170,37 @@ export function drawEnemiesList(
           Math.sin(time*.009)*5,0,Math.PI*2);ctx.stroke();
         ctx.restore();
       }
+    } else if(enemy.type===EnemyType.SHADE_GEAR&&enemy.shadeGearAttack){
+      const a=enemy.shadeGearAttack;
+      if(a.phase==="SPARK"||a.phase==="BRAKE"){
+        ctx.save();ctx.strokeStyle="#fbbf24";ctx.lineWidth=2;
+        ctx.shadowColor="#fb923c";ctx.shadowBlur=13;ctx.setLineDash([8,6]);
+        ctx.beginPath();ctx.moveTo(0,0);
+        ctx.lineTo(a.dx*260,a.dy*260);ctx.stroke();ctx.setLineDash([]);
+        for(let i=0;i<5;i++){
+          const angle=time*.008+i*Math.PI*.4;
+          ctx.strokeStyle=i%2?"#fbbf24":"#fdba74";
+          ctx.beginPath();ctx.moveTo(Math.cos(angle)*enemy.size*1.3,
+            Math.sin(angle)*enemy.size*1.3);
+          ctx.lineTo(Math.cos(angle)*enemy.size*2,
+            Math.sin(angle)*enemy.size*2);ctx.stroke();
+        }
+        ctx.restore();
+      }
+    } else if(enemy.type===EnemyType.M9_WELDER&&enemy.m9WelderAttack){
+      const a=enemy.m9WelderAttack;
+      if(a.phase==="WARN"||a.phase==="ARC"){
+        const dx=a.lockedX-enemy.x,dy=a.lockedY-enemy.y;
+        const angle=Math.atan2(dy,dx),extent=Math.min(420,Math.hypot(dx,dy));
+        ctx.save();ctx.lineWidth=a.phase==="WARN"?2:5;
+        ctx.strokeStyle=a.phase==="WARN"?"rgba(251,191,36,.9)":"rgba(251,146,60,.95)";
+        ctx.shadowColor="#f97316";ctx.shadowBlur=14;
+        ctx.setLineDash(a.phase==="WARN"?[9,7]:[]);
+        ctx.beginPath();ctx.moveTo(0,0);
+        ctx.lineTo(Math.cos(angle)*extent,Math.sin(angle)*extent);ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.restore();
+      }
     } else if(enemy.type===EnemyType.SPAN_WARDEN&&enemy.spanWardenAttack){
       const a=enemy.spanWardenAttack;
       const angle=Math.atan2(a.facingY,a.facingX);
@@ -1342,6 +1373,49 @@ export function drawEnemiesList(
     ctx.fillStyle = enemy.color;
 
     switch (enemy.type) {
+      case EnemyType.SHADE_GEAR: {
+        const a=enemy.shadeGearAttack;
+        const r=enemy.size;
+        ctx.save();ctx.rotate(time*.004*(a?.side??1));
+        ctx.shadowColor="#fb923c";ctx.shadowBlur=12;
+        ctx.fillStyle="#30242a";ctx.strokeStyle="#fb923c";ctx.lineWidth=3;
+        ctx.beginPath();
+        for(let i=0;i<24;i++){
+          const theta=i*Math.PI/12,radius=r*(i%3===0?1.35:1.02);
+          const x=Math.cos(theta)*radius,y=Math.sin(theta)*radius;
+          if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+        }
+        ctx.closePath();ctx.fill();ctx.stroke();
+        ctx.fillStyle="#92400e";ctx.strokeStyle="#fcd34d";ctx.lineWidth=2;
+        ctx.beginPath();ctx.arc(0,0,r*.66,0,Math.PI*2);ctx.fill();ctx.stroke();
+        ctx.fillStyle=a?.phase==="SPARK"||a?.phase==="BRAKE"?"#fef08a":"#fb923c";
+        ctx.beginPath();ctx.arc(0,0,r*.28,0,Math.PI*2);ctx.fill();
+        ctx.restore();break;
+      }
+      case EnemyType.M9_WELDER: {
+        const a=enemy.m9WelderAttack;
+        const r=enemy.size;
+        ctx.save();ctx.shadowColor="#fb923c";ctx.shadowBlur=10;
+        ctx.fillStyle="#203443";ctx.strokeStyle="#fbbf24";ctx.lineWidth=2.6;
+        ctx.beginPath();
+        ctx.moveTo(-r*.8,-r*.8);ctx.lineTo(r*.6,-r*.8);
+        ctx.lineTo(r*.9,-r*.3);ctx.lineTo(r*.9,r*.75);
+        ctx.lineTo(-r*.8,r*.75);ctx.closePath();ctx.fill();ctx.stroke();
+        // One welding arm; exposed orange nozzle and dark face visor.
+        ctx.strokeStyle="#94a3b8";ctx.lineWidth=5;
+        ctx.beginPath();ctx.moveTo(r*.65,-r*.25);
+        ctx.lineTo(r*1.55,-r*.1);ctx.lineTo(r*1.8,-r*.63);ctx.stroke();
+        ctx.fillStyle=a?.phase==="WARN"||a?.phase==="ARC"?"#fef08a":"#f97316";
+        ctx.beginPath();ctx.arc(r*1.8,-r*.63,3.4,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle="#0f172a";ctx.fillRect(-r*.43,-r*.4,r*.75,r*.27);
+        ctx.strokeStyle="#67e8f9";ctx.lineWidth=1;
+        ctx.strokeRect(-r*.43,-r*.4,r*.75,r*.27);
+        for(const x of [-.45,.32]){
+          ctx.strokeStyle="#64748b";ctx.lineWidth=3;
+          ctx.beginPath();ctx.moveTo(x*r,r*.78);ctx.lineTo(x*r,r*1.2);ctx.stroke();
+        }
+        ctx.restore();break;
+      }
       case EnemyType.SPAN_WARDEN: {
         const a=enemy.spanWardenAttack;
         const s=enemy.size;
