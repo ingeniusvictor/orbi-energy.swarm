@@ -51,7 +51,9 @@ test("WBE-01E: Guard, windup, locked straight sweep, exposed core, recovery",()=
   assert.ok(move.x<p.x);
   near(move.y,p.y);
   p={x:move.x,y:move.y};s=move.state;
-  for(let i=0;i<11;i++){
+  // Stop exactly on the transition frame. An extra tick legitimately
+  // starts consuming the EXPOSE timer, which is not a physics defect.
+  for(let i=0;i<10;i++){
     const result=stepSpanWarden(s,p,target,.62,50);
     p={x:result.x,y:result.y};s=result.state;
   }
