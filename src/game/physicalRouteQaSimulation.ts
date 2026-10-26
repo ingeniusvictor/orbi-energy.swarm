@@ -32,6 +32,8 @@ import {
   type RouteWave1QaState,
 } from "./routeWave1Qa";
 import { rebaseRouteCoordinateOwners } from "./routeCoordinateOwners";
+import { createEnergyThrusterPose,projectEnergyThrusterPose,type EnergyThrusterPose } from "./energyThrusters";
+import { projectPropulsionDash } from "./propulsionDash";
 import { armRouteDroneDuelQa, createRouteDroneDuelQaState, stepRouteDroneDuelQa, type RouteDroneDuelQaState } from "./routeDroneDuelQa";
 import {
   beginRouteOverdriveQa,createRouteOverdriveQaState,
@@ -88,6 +90,7 @@ export interface PhysicalRouteQaState {
   readonly wave2Qa:RouteWave2QaState|null;
   readonly eliteQaEnabled:boolean;
   readonly droneDuelQa:RouteDroneDuelQaState|null;
+  readonly energyThrusterPose:EnergyThrusterPose|null;
   readonly rebases: number;
   readonly physicsTicks: number;
 }
@@ -110,7 +113,10 @@ export function createPhysicalRouteQaState(
   enableWave2Qa = false,
   enableEliteQa = false,
   enableDroneDuelQa = false,
+  enableCanonicalThrusters = false,
 ): PhysicalRouteQaState {
+  if(enableCanonicalThrusters&&!enableDroneDuelQa)
+    throw new Error("C3B12A canonical jets require prior C3B11 duel QA");
   if(enableDroneDuelQa&&!enableEliteQa)
     throw new Error("C3B11 physical duel requires C3B10 and prior Wave2 elites");
   if(enableEliteQa&&!enableWave2Qa)
@@ -174,6 +180,7 @@ export function createPhysicalRouteQaState(
     wave2Qa:enableWave2Qa?createRouteWave2QaState():null,
     eliteQaEnabled:enableEliteQa,
     droneDuelQa:enableDroneDuelQa?createRouteDroneDuelQaState():null,
+    energyThrusterPose:enableCanonicalThrusters?createEnergyThrusterPose():null,
     rebases: 0,
     physicsTicks: 0,
   };
@@ -264,6 +271,14 @@ export function stepPhysicalRouteQa(
       Math.min(960-ROUTE_PHYSICAL_QA_VERTICAL_MARGIN,
         state.player.y+(dashDisplacement?.y??manualDy))),
   };
+  // Use actual pre-rebase displacement (auto + manual + Dash) exactly like
+  // production. Do NOT infer thrust from camera motion or shifted local X.
+  // Pose has no world anchors and needs no rebase ownership registration.
+  const energyThrusterPose=state.energyThrusterPose
+    ?projectEnergyThrusterPose(
+      state.energyThrusterPose,player.x-state.player.x,player.y-state.player.y,
+      dt,bridge!==null && projectPropulsionDash(bridge.dash,nextCursor.simulatedMs).active)
+    :null;
   let camera = stepRoutePhysicalCamera(
     state.camera,player,viewport,dt,
   ).camera;
@@ -402,6 +417,7 @@ export function stepPhysicalRouteQa(
     wave2Qa,
     eliteQaEnabled:state.eliteQaEnabled,
     droneDuelQa,
+    energyThrusterPose,
     rebases,
     physicsTicks: state.physicsTicks + 1,
   };
