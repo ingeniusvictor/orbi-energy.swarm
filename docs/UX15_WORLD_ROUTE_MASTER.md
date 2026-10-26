@@ -1,4 +1,6 @@
 # ORBI ENERGY SWARM — UX15: WORLD ROUTE SYSTEM
+
+> **Actualización creativa — bestiario exclusivo por mundo:** consulta [UX15 — Mundos, enemigos y jefes originales](./UX15_WORLD_EXCLUSIVE_BESTIARY_AND_BOSSES_V1.md). Esta decisión añade **diseños conceptuales** de jefes por mundo para futuras fases. **No** cambia los jefes/oleadas actuales, las restricciones del piloto ni el Blackout Devourer de la campaña.
 ## Biblia de diseño y arquitectura v1.0 — 25 octubre 2026
 
 **Estado:** especificación formal / diseño únicamente. La dirección horizontal 2.5D procede de la visión del creador; los parámetros numéricos y la dirección artística fina siguen siendo hipótesis de ajuste para la primera prueba jugable. **Esta fase NO implementa motor ni activa mapas en producción.**
