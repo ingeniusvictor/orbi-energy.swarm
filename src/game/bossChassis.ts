@@ -43,6 +43,19 @@ export interface BossChassisProfile {
 }
 
 const PROFILES: Readonly<Record<BossChassisId, BossChassisProfile>> = {
+  ASTERIA_ARCHON: {
+    id: "ASTERIA_ARCHON",enemyType: EnemyType.BOSS_ARCHON,
+    displayName: "Threshold Archon",
+    subtitle: "ASTERIA // Sovereign of the Orbital Threshold",
+    color: "#facc15",size:55,baseHealth:1800,introDurationMs:3900,
+    weakpoints: {
+      count:0,health:0,collisionRadius:0,motion:"ANCHORED",
+      radiusX:0,radiusY:0,angularVelocityPerFrame:0,
+      protectedDamageMultiplier:0.7,exposedDamageMultiplier:2.35,
+      exposureDurationMs:2800,hudLabel:"ORBITAL RINGS",
+    },
+    attackWeights:{},
+  },
   DEVOURER: {
     id: "DEVOURER",
     enemyType: EnemyType.BOSS_DEVOURER,
