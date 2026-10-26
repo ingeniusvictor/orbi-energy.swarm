@@ -139,6 +139,13 @@ test("WBE-01F: real boss instance uses the existing core, collision, HUD, reward
   assert.match(game,/thresholdArchonDamageMultiplier\(/);
   assert.match(chassis,/ASTERIA_ARCHON:[\s\S]*enemyType: EnemyType.BOSS_ARCHON/);
   assert.match(canvas,/case EnemyType.BOSS_ARCHON/);
+  // The real wave intro is ASTERIA-exclusive; the shared Classic descriptor
+  // keeps its Blackout Devourer identity for the original campaign.
+  assert.match(game,/const archonWaveIntro = Boolean/);
+  assert.match(game,/const activeWaveName = archonWaveIntro/);
+  assert.match(game,/setWaveName\(activeWaveName\)/);
+  assert.match(game,/setWaveIntroConfig\(archonWaveIntro && cfg/);
+  assert.match(game,/displayName: "Threshold Archon"/);
   assert.match(canvas,/ARCHON_BEACON_OFFSETS/);
   assert.match(hud,/bossChassis === "ASTERIA_ARCHON"/);
   assert.match(descriptorSrc,/id: BLACKOUT_DEVOURER_CANON.id/);
