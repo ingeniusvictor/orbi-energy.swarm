@@ -23,6 +23,7 @@ interface Props {
   onPlay: () => void;
   onScoreAttack: () => void;
   onWorldRoute: () => void;
+  onFerrumRoute: () => void;
   hasInfiniteRecord: boolean;
   audioMuted: boolean;
   musicEnabled: boolean;
@@ -36,7 +37,7 @@ interface Props {
 
 export const MobileLaunchNavigation: React.FC<Props> = ({
   layer, section, tab, language, onLanguage, onEnter, onBack,
-  onOpen, onPlay, onScoreAttack, onWorldRoute, hasInfiniteRecord,
+  onOpen, onPlay, onScoreAttack, onWorldRoute, onFerrumRoute, hasInfiniteRecord,
   audioMuted, musicEnabled, soundEffectsEnabled, onAudioToggle, onMusicToggle, onEffectsToggle,
   nanoCredits = 0, purifiedEnergy = 0,
 }) => {
@@ -97,7 +98,8 @@ export const MobileLaunchNavigation: React.FC<Props> = ({
   if (artLayer) return (
     <PremiumNativeNavigation layer={layer} section={section} tab={tab} language={language}
       onLanguage={onLanguage} onEnter={onEnter} onBack={onBack} onOpen={onOpen}
-      onPlay={onPlay} onScoreAttack={onScoreAttack} onWorldRoute={onWorldRoute} hasInfiniteRecord={hasInfiniteRecord}
+      onPlay={onPlay} onScoreAttack={onScoreAttack} onWorldRoute={onWorldRoute}
+      onFerrumRoute={onFerrumRoute} hasInfiniteRecord={hasInfiniteRecord}
       audioMuted={audioMuted} musicEnabled={musicEnabled} soundEffectsEnabled={soundEffectsEnabled}
       onAudioToggle={onAudioToggle} onMusicToggle={onMusicToggle} onEffectsToggle={onEffectsToggle}
       nanoCredits={nanoCredits} purifiedEnergy={purifiedEnergy}/>
@@ -196,6 +198,13 @@ export const MobileLaunchNavigation: React.FC<Props> = ({
                         <button data-testid={mode.id === "CAMPAIGN" ? "orbi-mobile-campaign" : mode.id === "WORLD_ROUTE" ? "orbi-mobile-world-route" : "orbi-mobile-score-attack"}
                           className="orbi-ux09-mode-action" onClick={mode.action}>
                           {es ? "INICIAR" : "START"} <ChevronRight size={18}/>
+                        </button>
+                      )}
+                      {mode.id === "WORLD_ROUTE" && (
+                        <button type="button" data-testid="orbi-mobile-ferrum-world"
+                          className="orbi-ux09-mode-action" onClick={onFerrumRoute}>
+                          {es ? "FERRUM · CIUDAD MECÁNICA" : "FERRUM · MECHANICAL CITY"}
+                          <ChevronRight size={18}/>
                         </button>
                       )}
                     </div>
