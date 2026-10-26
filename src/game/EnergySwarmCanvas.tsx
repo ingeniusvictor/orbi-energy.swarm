@@ -1108,6 +1108,50 @@ export function drawEnemiesList(
         targetDy - 28,
       );
       ctx.restore();
+    } else if(enemy.type===EnemyType.BOSS_OMEGA&&enemy.omegaAttack){
+      const a=enemy.omegaAttack;
+      if(a.stage==="WARNING"||a.stage==="ACTIVE"){
+        const active=a.stage==="ACTIVE";
+        ctx.save();ctx.rotate(a.lockedAngle);
+        ctx.shadowColor=active?"#f97316":"#fbbf24";ctx.shadowBlur=active?17:9;
+        ctx.strokeStyle=active?"rgba(251,146,60,.92)":"rgba(253,230,138,.9)";
+        ctx.lineWidth=active?8:2.4;
+        ctx.setLineDash(active?[]:[12,8]);
+        if(a.phase===1){
+          for(const side of [-1,1]){
+            ctx.save();ctx.rotate(side*.36);ctx.beginPath();
+            ctx.moveTo(68,0);ctx.lineTo(530,0);ctx.stroke();ctx.restore();
+          }
+          if(!active){
+            ctx.setLineDash([]);ctx.strokeStyle="#5eead4";ctx.lineWidth=2;
+            ctx.beginPath();ctx.moveTo(100,0);ctx.lineTo(450,0);ctx.stroke();
+          }
+        }else if(a.phase===2){
+          ctx.beginPath();ctx.arc(0,0,140,0,Math.PI*2);ctx.stroke();
+          for(const side of [-1,1])ctx.strokeRect(side*90-22,46,44,36);
+        }else{
+          const shift=active?-32+64*Math.max(0,Math.min(1,
+            (1260-a.remainingMs)/1260)):0;
+          for(const offset of [-135,135]){
+            if(!active){
+              ctx.fillStyle="rgba(251,191,36,.07)";
+              ctx.fillRect(68,offset-60,572,120);
+            }
+            ctx.beginPath();ctx.moveTo(68,offset+shift);
+            ctx.lineTo(640,offset+shift);ctx.stroke();
+          }
+          ctx.setLineDash([]);ctx.strokeStyle="#5eead4";ctx.lineWidth=2;
+          ctx.beginPath();ctx.moveTo(90,0);ctx.lineTo(570,0);ctx.stroke();
+        }
+        ctx.setLineDash([]);ctx.restore();
+      }
+      if(a.stage==="EXPOSED"){
+        ctx.save();ctx.strokeStyle="#fde68a";ctx.lineWidth=3.6;
+        ctx.shadowColor="#facc15";ctx.shadowBlur=19;
+        ctx.beginPath();ctx.arc(0,-enemy.size*.66,
+          enemy.size*.72+Math.sin(time*.01)*3,0,Math.PI*2);ctx.stroke();
+        ctx.restore();
+      }
     } else if(enemy.type===EnemyType.BOSS_ARCHON&&enemy.archonAttack){
       const a=enemy.archonAttack;
       const aiming=a.lockedAngle;
@@ -2095,6 +2139,82 @@ export function drawEnemiesList(
         break;
       }
 
+      case EnemyType.BOSS_OMEGA: {
+        const a=enemy.omegaAttack,s=enemy.size;
+        const exposed=a?.stage==="EXPOSED",t=time*.0017;
+        ctx.save();
+        ctx.shadowColor="#ea580c";ctx.shadowBlur=17;
+        // Animated mechanical legs with independently suspended crawler treads.
+        for(const side of [-1,1]){
+          ctx.save();ctx.translate(side*s*.7,s*.72);
+          ctx.rotate(Math.sin(t*1.5+side)*.12);
+          ctx.fillStyle="#1c252d";ctx.strokeStyle="#fdba74";ctx.lineWidth=3;
+          ctx.fillRect(-s*.36,-s*.12,s*.72,s*.54);
+          ctx.strokeRect(-s*.36,-s*.12,s*.72,s*.54);
+          for(let n=-1;n<=1;n++){
+            ctx.fillStyle="#9a3412";ctx.beginPath();
+            ctx.arc(n*s*.23,s*.16,s*.10,0,Math.PI*2);ctx.fill();
+          }
+          ctx.restore();
+        }
+        // Smoke stacks distinguish the walking factory from every orbital boss.
+        for(const side of [-1,1]){
+          const x=side*s*.5;
+          ctx.fillStyle="#334155";ctx.strokeStyle="#fb923c";ctx.lineWidth=2.5;
+          ctx.fillRect(x-s*.16,-s*1.46,s*.32,s*.67);
+          ctx.strokeRect(x-s*.16,-s*1.46,s*.32,s*.67);
+          ctx.fillStyle="#f97316";ctx.fillRect(x-s*.2,-s*1.49,s*.4,s*.1);
+          for(let i=0;i<3;i++){
+            const sway=Math.sin(t*1.6+i+side)*5;
+            ctx.fillStyle=`rgba(148,163,184,${.24-i*.055})`;
+            ctx.beginPath();ctx.arc(x+sway,-s*(1.75+i*.21),s*(.12+i*.055),0,Math.PI*2);ctx.fill();
+          }
+        }
+        // A pair of exterior conveyors with rollers and articulated pistons.
+        for(const side of [-1,1]){
+          ctx.save();ctx.translate(side*s*.88,-s*.08);
+          ctx.rotate(side*Math.sin(t*1.25)*.06);
+          ctx.fillStyle="#292524";ctx.strokeStyle="#fb923c";ctx.lineWidth=3;
+          ctx.fillRect(side<0?-s*.72:0,-s*.17,s*.72,s*.42);
+          ctx.strokeRect(side<0?-s*.72:0,-s*.17,s*.72,s*.42);
+          for(let i=0;i<3;i++){
+            const xx=(side<0?-s*.62:s*.1)+i*s*.25;
+            ctx.strokeStyle="#fcd34d";ctx.lineWidth=1.8;
+            ctx.beginPath();ctx.arc(xx,s*.04,s*.10,0,Math.PI*2);ctx.stroke();
+          }
+          ctx.strokeStyle="#94a3b8";ctx.lineWidth=7;
+          ctx.beginPath();ctx.moveTo(0,s*.06);
+          ctx.lineTo(side*s*.38,s*.52);
+          ctx.lineTo(side*s*.8,s*.4);ctx.stroke();
+          ctx.fillStyle="#fb923c";ctx.beginPath();
+          ctx.arc(side*s*.8,s*.4,s*.13,0,Math.PI*2);ctx.fill();
+          ctx.restore();
+        }
+        ctx.fillStyle="#29313b";ctx.strokeStyle="#cbd5e1";ctx.lineWidth=3.2;
+        ctx.beginPath();ctx.moveTo(-s*.83,-s*.83);
+        ctx.lineTo(s*.83,-s*.83);ctx.lineTo(s*.96,s*.59);
+        ctx.lineTo(-s*.96,s*.59);ctx.closePath();ctx.fill();ctx.stroke();
+        ctx.fillStyle="#7c2d12";ctx.fillRect(-s*.57,-s*.43,s*1.14,s*.62);
+        ctx.strokeStyle="#fdba74";ctx.strokeRect(-s*.57,-s*.43,s*1.14,s*.62);
+        for(let i=0;i<5;i++){
+          ctx.fillStyle=i%2?"#f97316":"#fbbf24";
+          ctx.fillRect(-s*.5+i*s*.21,-s*.31,s*.12,s*.27);
+        }
+        // Upper reactor exposes the same native ORBI vulnerability window.
+        const core=ctx.createRadialGradient(0,-s*.66,1,0,-s*.66,s*.45);
+        core.addColorStop(0,exposed?"#fff":"#fef08a");
+        core.addColorStop(.48,exposed?"#fde047":"#fb923c");
+        core.addColorStop(1,"rgba(124,45,18,.05)");
+        ctx.fillStyle=core;ctx.shadowColor=exposed?"#fde047":"#f97316";
+        ctx.shadowBlur=exposed?30:17;
+        ctx.beginPath();ctx.arc(0,-s*.66,s*.4,0,Math.PI*2);ctx.fill();
+        ctx.strokeStyle=exposed?"#fef9c3":"#fdba74";ctx.lineWidth=3;
+        ctx.beginPath();ctx.arc(0,-s*.66,s*.28,0,Math.PI*2);ctx.stroke();
+        ctx.fillStyle="#e2e8f0";ctx.font="bold 9px monospace";
+        ctx.textAlign="center";
+        ctx.fillText(`OMEGA // PHASE ${a?.phase??1}`,0,s*.44);
+        ctx.restore();break;
+      }
       case EnemyType.BOSS_ARCHON: {
         const a=enemy.archonAttack;
         const s=enemy.size;
