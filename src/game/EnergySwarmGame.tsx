@@ -14,6 +14,12 @@ import {
   createRailcutterAttack, selectAsteriaRailcutterSpawn,
   shouldSpawnAsteriaRailcutter, stepAsteriaRailcutter,
 } from "./asteriaRailcutter";
+import {
+  createSkySpecterAttack,createBeaconPrismAttack,createIonSailAttack,
+  resolveAsteriaNewFoe,selectAsteriaNewFoeSpawn,
+  stepSkySpecter,stepBeaconPrism,stepIonSail,
+  ION_SAIL_TRAIL_DAMAGE,ION_SAIL_TRAIL_LIFE_MS,
+} from "./asteriaOriginalFoes";
 import { stepRouteClock, ROUTE_QA_SPEED_UNITS_PER_SECOND } from "./worldRouteClock";
 import { drawWorldRouteQaScene } from "./worldRoutePreviewRenderer";
 import {
@@ -3228,8 +3234,22 @@ export const EnergySwarmGame: React.FC = () => {
           Math.max(170,combatPressure.spawnSafetyRadius),
         )
       : null;
+    const originalFoe=resolveAsteriaNewFoe(
+      worldRouteRunActiveRef.current,descriptor.sourceMode,
+      descriptor.waveNumber,waveBudgetSpawnedRef.current,
+      Boolean(forcedType),spawningMiniboss,
+      candidate=>enemiesRef.current.some(e=>e.type===candidate && !e.isDead),
+    );
+    const originalFoeSpawn=originalFoe
+      ?selectAsteriaNewFoeSpawn(
+          originalFoe,routeCamera,playerPosRef.current,
+          WORLD_WIDTH,WORLD_HEIGHT,Math.max(170,combatPressure.spawnSafetyRadius),
+        )
+      :null;
     const type = railcutterSpawn
       ? EnemyType.RAILCUTTER
+      : originalFoeSpawn&&originalFoe
+        ? originalFoe
       : spawningMiniboss && minibossProfile
         ? minibossProfile.enemyType
         : forcedType ||
@@ -3310,6 +3330,9 @@ export const EnergySwarmGame: React.FC = () => {
     if (railcutterSpawn) {
       ex = railcutterSpawn.x;
       ey = railcutterSpawn.y;
+    } else if (originalFoeSpawn) {
+      ex = originalFoeSpawn.x;
+      ey = originalFoeSpawn.y;
     }
 
     // Class Attributes
@@ -3332,6 +3355,21 @@ export const EnergySwarmGame: React.FC = () => {
       speed = 0.95 * biomeCfg.enemySpeedMultiplier * movementSpeedMultiplier;
       size = 12;
       color = "#22d3ee";
+    } else if (type === EnemyType.SKY_SPECTER) {
+      health = 19 * healthMultiplier;
+      speed = 1.1 * biomeCfg.enemySpeedMultiplier * movementSpeedMultiplier;
+      size = 11;
+      color = "#a5b4fc";
+    } else if (type === EnemyType.BEACON_PRISM) {
+      health = 32 * healthMultiplier;
+      speed = 0.63 * biomeCfg.enemySpeedMultiplier * movementSpeedMultiplier;
+      size = 14;
+      color = "#facc15";
+    } else if (type === EnemyType.ION_SAIL) {
+      health = 22 * healthMultiplier;
+      speed = 1.15 * biomeCfg.enemySpeedMultiplier * movementSpeedMultiplier;
+      size = 12;
+      color = "#2dd4bf";
     } else if (type === EnemyType.DRONE) {
       health = 20 * healthMultiplier;
       speed = 0.7 * biomeCfg.enemySpeedMultiplier * movementSpeedMultiplier;
@@ -3429,7 +3467,10 @@ export const EnergySwarmGame: React.FC = () => {
             !spawningMiniboss &&
             !evolvedProfile &&
             !isElite &&
-            type !== EnemyType.RAILCUTTER,
+            type !== EnemyType.RAILCUTTER &&
+            type !== EnemyType.SKY_SPECTER &&
+            type !== EnemyType.BEACON_PRISM &&
+            type !== EnemyType.ION_SAIL,
           remainingCapacity:
             Math.min(
               MAX_ENEMIES,
@@ -3490,6 +3531,12 @@ export const EnergySwarmGame: React.FC = () => {
       isBoss: false,
       railcutterAttack: type===EnemyType.RAILCUTTER
         ?createRailcutterAttack():undefined,
+      skySpecterAttack: type===EnemyType.SKY_SPECTER
+        ?createSkySpecterAttack(ey>playerPosRef.current.y?1:-1):undefined,
+      beaconPrismAttack: type===EnemyType.BEACON_PRISM
+        ?createBeaconPrismAttack():undefined,
+      ionSailAttack: type===EnemyType.ION_SAIL
+        ?createIonSailAttack():undefined,
       enemyFormation: enemyFormation ?? undefined,
       flashTicks: 0,
       evolvedVariantId: evolvedProfile?.id,
@@ -5952,6 +5999,60 @@ export const EnergySwarmGame: React.FC = () => {
             playDroneChargeSound();
             addFloatingText("RAIL LOCK",enemy.x,enemy.y-enemy.size-18,"#67e8f9");
           }
+        } else if (enemy.type === EnemyType.SKY_SPECTER && enemy.skySpecterAttack) {
+          const prior=enemy.skySpecterAttack;
+          const step=stepSkySpecter(prior,enemy,playerPosRef.current,enemy.speed,delta);
+          enemy.x=Math.max(16,Math.min(WORLD_WIDTH-16,step.x));
+          enemy.y=Math.max(16,Math.min(WORLD_HEIGHT-16,step.y));
+          enemy.vx=step.vx;enemy.vy=step.vy;
+          enemy.skySpecterAttack=step.attack;
+          if(prior.phase==="CLIMB" && step.attack.phase==="LOCK"){
+            playDroneChargeSound();
+            addFloatingText("SKY DIVE",enemy.x,enemy.y-22,"#a5b4fc");
+          }
+        } else if (enemy.type === EnemyType.BEACON_PRISM && enemy.beaconPrismAttack) {
+          const prior=enemy.beaconPrismAttack;
+          const step=stepBeaconPrism(prior,enemy,playerPosRef.current,enemy.speed,delta);
+          enemy.x=Math.max(16,Math.min(WORLD_WIDTH-16,step.x));
+          enemy.y=Math.max(16,Math.min(WORLD_HEIGHT-16,step.y));
+          enemy.vx=step.vx;enemy.vy=step.vy;
+          enemy.beaconPrismAttack=step.attack;
+          if(prior.phase==="POSITION" && step.attack.phase==="MARK"){
+            playDroneChargeSound();
+            addFloatingText("TRI-BEACON",enemy.x,enemy.y-23,"#fde68a");
+          }
+          if(step.fire){
+            shootFromEnemy(enemy,hostileProjectileBudgetState,{
+              x:prior.targetX,y:prior.targetY,
+            });
+          }
+        } else if (enemy.type === EnemyType.ION_SAIL && enemy.ionSailAttack) {
+          const prior=enemy.ionSailAttack;
+          const step=stepIonSail(prior,enemy,playerPosRef.current,enemy.speed,delta);
+          enemy.x=Math.max(16,Math.min(WORLD_WIDTH-16,step.x));
+          enemy.y=Math.max(16,Math.min(WORLD_HEIGHT-16,step.y));
+          enemy.vx=step.vx;enemy.vy=step.vy;
+          enemy.ionSailAttack=step.attack;
+          if(prior.phase==="APPROACH" && step.attack.phase==="WARN"){
+            playDroneChargeSound();
+            addFloatingText("ION WAKE",enemy.x,enemy.y-19,"#5eead4");
+          }
+          // Short-lived stationary plasma remnants use the existing hostile
+          // projectile contacts/culling/budget. Never spawn directly on ENERGY.
+          if(step.placeTrail &&
+             Math.hypot(enemy.x-playerPosRef.current.x,
+               enemy.y-playerPosRef.current.y)>55 &&
+             projectilesRef.current.length<MAX_PROJECTILES &&
+             hostileProjectileBudgetState.count<
+                (simulationCombatPressure.projectileBudget??MAX_PROJECTILES)){
+            projectilesRef.current.push({
+              id:Math.random().toString(),x:enemy.x,y:enemy.y,vx:0,vy:0,
+              damage:ION_SAIL_TRAIL_DAMAGE,color:"#2dd4bf",size:6,
+              fromPlayer:false,life:ION_SAIL_TRAIL_LIFE_MS,
+              maxLife:ION_SAIL_TRAIL_LIFE_MS,
+            });
+            hostileProjectileBudgetState.count++;
+          }
         } else if (enemy.type === EnemyType.RIFT_HUNTER) {
           enemy.pulseCooldown -= delta / 16.6;
           if ((enemy.chargeTimer ?? 0) > 0) {
@@ -6640,6 +6741,7 @@ export const EnergySwarmGame: React.FC = () => {
 
     if (
       enemy.type === EnemyType.DRONE ||
+      enemy.type === EnemyType.BEACON_PRISM ||
       enemy.type === EnemyType.BOSS_DEVOURER ||
       enemy.type === EnemyType.SIEGE_PRISM ||
       enemy.type === EnemyType.MINE_WEAVER ||
@@ -6657,12 +6759,14 @@ export const EnergySwarmGame: React.FC = () => {
         (distanceSquared > 0 && distanceSquared < 320 * 320)
       ) {
         const projectileSpeed =
-          (enemy.type === EnemyType.SIEGE_PRISM ? 4.0 :
+          (enemy.type === EnemyType.BEACON_PRISM ? 2.65 :
+            enemy.type === EnemyType.SIEGE_PRISM ? 4.0 :
             enemy.type === EnemyType.MINE_WEAVER ? 1.35 :
             enemy.type === EnemyType.VOID_ANCHOR ? 1.8 :
             enemy.type === EnemyType.MIRROR_WARDEN ? 2.7 : 2.2) *
           (enemy.evolvedProjectileSpeedMultiplier ?? 1);
         const requestedProjectileCount =
+          enemy.type === EnemyType.BEACON_PRISM ? 3 :
           enemy.type === EnemyType.SIEGE_PRISM ? 3 :
           enemy.type === EnemyType.MINE_WEAVER ? 2 :
           signatureBehavior.droneVolleyProjectileCount;
@@ -6672,6 +6776,7 @@ export const EnergySwarmGame: React.FC = () => {
         );
         const baseAngle = Math.atan2(dy, dx);
         const spread =
+          enemy.type === EnemyType.BEACON_PRISM ? .48 :
           enemy.type === EnemyType.SIEGE_PRISM ? 0.12 :
           enemy.type === EnemyType.MINE_WEAVER ? 0.38 :
           enemy.type === EnemyType.MIRROR_WARDEN ? 0.18 :
@@ -6700,8 +6805,8 @@ export const EnergySwarmGame: React.FC = () => {
             y: enemy.y,
             vx,
             vy,
-            damage: 12,
-            color: "#f43f5e", // Bright rose plasma orb
+            damage: enemy.type===EnemyType.BEACON_PRISM?8:12,
+            color: enemy.type===EnemyType.BEACON_PRISM?"#fde68a":"#f43f5e",
             size: enemy.isBoss ? 5 : 3.5,
             fromPlayer: false,
             life: 2500,
@@ -7809,10 +7914,20 @@ export const EnergySwarmGame: React.FC = () => {
       canvas.dataset.wbe01RailcutterCount = String(railcutterActiveCount);
       canvas.dataset.wbe01RailcutterPhase =
         worldRailcutter?.railcutterAttack?.phase??"NONE";
+      let sky=0,beacons=0,sails=0;
+      for(const actor of enemiesRef.current){
+        if(actor.isDead)continue;
+        if(actor.type===EnemyType.SKY_SPECTER)sky++;
+        else if(actor.type===EnemyType.BEACON_PRISM)beacons++;
+        else if(actor.type===EnemyType.ION_SAIL)sails++;
+      }
+      canvas.dataset.wbe01AsteriaExclusiveCounts =
+        sky+","+beacons+","+sails;
     } else {
       delete canvas.dataset.wbe01RailcutterScope;
       delete canvas.dataset.wbe01RailcutterCount;
       delete canvas.dataset.wbe01RailcutterPhase;
+      delete canvas.dataset.wbe01AsteriaExclusiveCounts;
       delete canvas.dataset.ux15World;
       delete canvas.dataset.ux15Visual;
       delete canvas.dataset.ux15Scene;
