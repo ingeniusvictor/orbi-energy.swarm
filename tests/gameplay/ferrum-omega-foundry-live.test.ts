@@ -99,7 +99,7 @@ test("FERRUM-04: finite deterministic contract and native live engine integratio
     "registerCombatDefeat(enemy, proj.affinity)","enterInfiniteAfterCampaignVictory()"])
     assert.ok(game.includes(keyword),keyword);
   assert.match(canvas,/case EnemyType.BOSS_OMEGA/);
-  assert.match(chassis,/FERRUM_OMEGA:[\s\S]*enemyType: EnemyType.BOSS_OMEGA/);
+  assert.match(chassis,/FERRUM_OMEGA:[\s\S]*enemyType:\s*EnemyType.BOSS_OMEGA/);
   assert.match(hud,/FERRUM_OMEGA/);
   assert.match(game,/resolveAsteriaArchonEncounter\(/);
   assert.match(game,/isFerrum\(worldRouteRunActiveRef.current,worldRouteThemeRef.current\)/);
