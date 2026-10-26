@@ -43,6 +43,18 @@ export interface BossChassisProfile {
 }
 
 const PROFILES: Readonly<Record<BossChassisId, BossChassisProfile>> = {
+  FERRUM_OMEGA: {
+    id:"FERRUM_OMEGA",enemyType:EnemyType.BOSS_OMEGA,
+    displayName:"Omega Foundry",
+    subtitle:"FERRUM // Walking Assembly Sovereign",
+    color:"#fb923c",size:65,baseHealth:2500,introDurationMs:4100,
+    weakpoints:{
+      count:0,health:0,collisionRadius:0,motion:"ANCHORED",
+      radiusX:0,radiusY:0,angularVelocityPerFrame:0,
+      protectedDamageMultiplier:0.78,exposedDamageMultiplier:2.5,
+      exposureDurationMs:2450,hudLabel:"UPPER REACTOR",
+    },attackWeights:{},
+  },
   ASTERIA_ARCHON: {
     id: "ASTERIA_ARCHON",enemyType: EnemyType.BOSS_ARCHON,
     displayName: "Threshold Archon",

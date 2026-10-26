@@ -5,6 +5,7 @@ import type { ShadeGearAttack,M9WelderAttack } from "./ferrumOriginalFoes";
 import type {FoundryClawAttack,OxideModulatorAttack} from "./ferrumAdvancedFoes";
 import type {ForemanAttack} from "./ferrumForeman";
 import type { ThresholdArchonAttack } from "./asteriaThresholdArchon";
+import type { OmegaFoundryAttack } from "./ferrumOmegaFoundry";
 import type { SkySpecterAttack,BeaconPrismAttack,IonSailAttack } from "./asteriaOriginalFoes";
 import type { SiegeVolleyTelegraphState } from "./siegeVolleyTelegraph";
 import type { BlackoutArchitectEngineIdentityTag } from "./blackoutArchitectEngineIdentityLifecycle";
@@ -175,6 +176,7 @@ export enum EnemyType {
   BOSS_TITAN = "BOSS_TITAN",
   BOSS_WORM = "BOSS_WORM",
   BOSS_ARCHON = "BOSS_ARCHON",
+  BOSS_OMEGA = "BOSS_OMEGA",
   BOSS_ARCHITECT = "BOSS_ARCHITECT"
 }
 
@@ -200,7 +202,7 @@ export type InfiniteBossIdentity =
   | "RIFT_MATRIARCH"
   | "SIEGE_CATHEDRAL";
 
-export type BossChassisId = "DEVOURER" | "TITAN_CORE" | "WORM_SEGMENTS" | "ASTERIA_ARCHON";
+export type BossChassisId = "DEVOURER" | "TITAN_CORE" | "WORM_SEGMENTS" | "ASTERIA_ARCHON" | "FERRUM_OMEGA";
 export type BossEncounterStage = "PRIMARY" | "RAID_ESCALATION";
 
 export interface Enemy {
@@ -267,6 +269,10 @@ export interface Enemy {
   oxideArmoredUntilMs?: number;
   /** ASTERIA-only boss pattern state, using original boss HP, damage and loot. */
   archonAttack?: ThresholdArchonAttack;
+  /** Native FERRUM boss choreography; never mutates common runtime. */
+  omegaAttack?: OmegaFoundryAttack;
+  /** Assembly minions still use the native SHADE_GEAR combat lifecycle. */
+  omegaGearSourceId?: string;
 }
 
 export interface Projectile {
