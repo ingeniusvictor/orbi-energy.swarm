@@ -3249,7 +3249,7 @@ export const EnergySwarmGame: React.FC = () => {
     const type = railcutterSpawn
       ? EnemyType.RAILCUTTER
       : originalFoeSpawn&&originalFoe
-        ? originalFoe
+        ? EnemyType[originalFoe]
       : spawningMiniboss && minibossProfile
         ? minibossProfile.enemyType
         : forcedType ||
