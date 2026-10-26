@@ -85,9 +85,10 @@ export function stepFerriteForeman(
  if(a.phase==="EXPOSED")
    return standing(remaining<=0?{...a,phase:"RECOVER",
      remainingMs:FERRITE_FOREMAN_RECOVER_MS}:{...a,remainingMs:remaining});
- return standing(remaining<=0?{...a,phase:"COMMAND",cycle:a.cycle+1,
+ if(remaining<=0)return {...standing({...a,phase:"COMMAND",cycle:a.cycle+1,
    remainingMs:FERRITE_FOREMAN_COMMAND_MS,
-   facingX:dir.x,facingY:dir.y}:{...a,remainingMs:remaining});
+   facingX:dir.x,facingY:dir.y}),command:true};
+ return standing({...a,remainingMs:remaining});
 }
 export function ferriteForemanDamageMultiplier(phase:FerriteForemanPhase):number{
  return phase==="EXPOSED"?1.85:phase==="COMMAND"||phase==="WARNING"?.60:1;
