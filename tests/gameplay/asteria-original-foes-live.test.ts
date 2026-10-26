@@ -90,6 +90,25 @@ test("WBE-01B: Specter commits nonhoming dive and cannot instantly retarget the 
   assert.equal(state.phase,"CLIMB");
 });
 
+test("WBE-01B: Specter flank point remains reachable near right/top/bottom combat boundaries",()=>{
+  for(const [position,player,flankSide] of [
+    [{x:1530,y:700},{x:1560,y:920},1],
+    [{x:1510,y:70},{x:1560,y:32},-1],
+    [{x:20,y:200},{x:1550,y:920},1],
+  ] as const){
+    let p={...position};
+    let a=createSkySpecterAttack(flankSide);
+    for(let i=0;i<1200&&a.phase==="CLIMB";i++){
+      const step=stepSkySpecter(a,p,player,1.1,50,1600,960);
+      p={x:Math.max(16,Math.min(1584,step.x)),
+         y:Math.max(16,Math.min(944,step.y))};
+      a=step.attack;
+    }
+    assert.equal(a.phase,"LOCK","A reachable flank must always enter telegraph");
+    assert.ok(p.x>=16&&p.x<=1584&&p.y>=16&&p.y<=944);
+  }
+});
+
 test("WBE-01C: Prism locks original triple-beam coordinates before firing once",()=>{
   let attack=createBeaconPrismAttack(),pos={x:730,y:410};
   const started=stepBeaconPrism(attack,pos,leader,.63,50);
