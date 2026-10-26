@@ -11,7 +11,6 @@ import {projectPropulsionDash} from "../../src/game/propulsionDash";
 
 const viewport={width:1100,height:480,zoom:1};
 const gates={playing:true,paused:false,hidden:false,modalOpen:false,upgradeOpen:false,hitstop:false};
-const near=(x:number,y:number,tol=1e-5)=>assert.ok(Math.abs(x-y)<tol,`${x} vs ${y}`);
 const createFullQa=()=>createPhysicalRouteQaState(viewport,undefined,
   true,true,true,true,true,true,true,true,true,true,true);
 
