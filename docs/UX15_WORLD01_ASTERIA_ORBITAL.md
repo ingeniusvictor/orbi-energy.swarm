@@ -1,4 +1,6 @@
 # UX15 — Mundo 01: ASTERIA / Corredor Orbital
+
+> **Actualización creativa — bestiario exclusivo por mundo:** consulta [UX15 — Mundos, enemigos y jefes originales](./UX15_WORLD_EXCLUSIVE_BESTIARY_AND_BOSSES_V1.md). Esta decisión añade **diseños conceptuales** de jefes por mundo para futuras fases. **No** cambia los jefes/oleadas actuales, las restricciones del piloto ni el Blackout Devourer de la campaña.
 ## Primera vertical slice de travesía horizontal 2.5D — diseño v1.0
 
 **Estado:** arte, narrativa y recorrido propuestos; pendiente de revisión en juego. NO implementado ni prometido como escenario ya jugable.
