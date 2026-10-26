@@ -118,7 +118,7 @@ test("C3B12A: reverse manual movement rotates original nozzles without faking ri
 test("C3B12A: canonical thrusters are opt-in only, and a missing prior duel gate fails closed",()=>{
   assert.equal(createPhysicalRouteQaState(viewport).energyThrusterPose,null);
   assert.throws(()=>createPhysicalRouteQaState(viewport,undefined,
-    true,true,true,true,true,true,true,true,true,false,true),/requires prior/);
+    true,true,true,true,true,true,true,true,true,false,true),/require prior C3B11 duel QA/);
   const active=createFullQa();
   assert.ok(active.energyThrusterPose);
   assert.equal(active.droneDuelQa?.status,"DISARMED");
