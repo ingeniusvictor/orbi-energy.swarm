@@ -8907,6 +8907,26 @@ export const EnergySwarmGame: React.FC = () => {
             String(runCommitLedgerRef.current.campaignVictoryCommitted);
           canvas.dataset.pyraE2eVictoryCount =
             String(statsRef.current?.totalVictories ?? 0);
+          // Diagnostic readouts: why the original swarm stops acquiring targets.
+          canvas.dataset.pyraE2eBossX = String(liveBoss?.x ?? 0);
+          canvas.dataset.pyraE2eBossY = String(liveBoss?.y ?? 0);
+          canvas.dataset.pyraE2ePlayerX = String(playerPosRef.current.x);
+          canvas.dataset.pyraE2ePlayerY = String(playerPosRef.current.y);
+          canvas.dataset.pyraE2eWaveActive = String(waveActiveRef.current);
+          canvas.dataset.pyraE2eBossInEnemies = String(
+            Boolean(liveBoss && enemiesRef.current.includes(liveBoss))
+          );
+          canvas.dataset.pyraE2eNearestFollower = String(
+            liveBoss && swarmRef.current.length
+              ? Math.min(...swarmRef.current.map(m =>
+                  Math.hypot(m.x-liveBoss.x,m.y-liveBoss.y)))
+              : -1
+          );
+          canvas.dataset.pyraE2eMinCooldown = String(
+            swarmRef.current.length
+              ? Math.min(...swarmRef.current.map(m => m.shootCooldown))
+              : -1
+          );
         }
       }else{
         delete canvas.dataset.pyraLandmark;

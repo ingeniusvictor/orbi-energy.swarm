@@ -38,6 +38,7 @@ async function run(name,width,height,mobile){
  let sawIntro=false,sawFullHealth=false,sawDeath=false,sawCinematic=false;
  let first=null,final=null,maximumDamage=0,maximumShots=0,minimumHp=2200;
  let initialVictoryCount=null,maxVictoryCount=0;
+ let stalledSamples=0,lastShots=0;
  const snapshots=[];
  try{
    await page.clock.install({time:new Date("2026-10-27T10:00:00Z")});
@@ -70,7 +71,12 @@ async function run(name,width,height,mobile){
          damage:Number(d.pyraE2eDamageDealt),
          defeats:Number(d.pyraE2eDefeats),
          victory:d.pyraE2eVictoryCommitted,
-         victoryCount:Number(d.pyraE2eVictoryCount)};
+         victoryCount:Number(d.pyraE2eVictoryCount),
+         bossX:Number(d.pyraE2eBossX),bossY:Number(d.pyraE2eBossY),
+         playerX:Number(d.pyraE2ePlayerX),playerY:Number(d.pyraE2ePlayerY),
+         nearestFollower:Number(d.pyraE2eNearestFollower),
+         minCooldown:Number(d.pyraE2eMinCooldown),
+         bossInEnemies:d.pyraE2eBossInEnemies,waveActive:d.pyraE2eWaveActive};
      });
      if(!first)first=v;
      final=v;
@@ -82,6 +88,10 @@ async function run(name,width,height,mobile){
      maxVictoryCount=Math.max(maxVictoryCount,v.victoryCount);
      maximumDamage=Math.max(maximumDamage,v.damage);
      maximumShots=Math.max(maximumShots,v.shots);
+     if(tick>18 && v.shots===lastShots && v.mode==="CAMPAIGN" &&
+       v.hp>1540) stalledSamples++;
+     else stalledSamples=0;
+     lastShots=v.shots;
      if(v.id==="world:pyra:solfernax:v1"){
        sawIntro ||= v.intro==="true";
        sawFullHealth ||= v.maxHp===2200 && v.hp===2200;
@@ -107,7 +117,8 @@ async function run(name,width,height,mobile){
        }));
        break;
      }
-     if(v.shield===0 && tick>20)break;
+     // Fail fast if targeting has stalled, retaining diagnostic snapshots.
+     if(stalledSamples>=20||v.shield===0 && tick>20)break;
    }
    const screenshot=join(out,name+".png");
    await page.screenshot({path:screenshot,animations:"disabled"});
