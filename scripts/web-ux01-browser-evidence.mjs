@@ -1620,14 +1620,30 @@ async function runFotonPropulsionQa(name,width,height,touch){
   await page.waitForFunction(()=>document.querySelector(
     '[data-testid="ux15-physical-canvas"]')?.dataset.c3b12Thrust==="CRUISE",
     null,{timeout:12000});
+  const beforePausePaint=Number(await canvas.getAttribute("data-c3b12-paint-ordinal"));
   await page.getByTestId("ux15-physical-pause").click();
-  await page.waitForTimeout(450);
-  const pausedTicks=await lab.getAttribute("data-physics-ticks");
-  const pausedLength=await canvas.getAttribute("data-c3b12-thrust-length");
-  await page.waitForTimeout(550);
-  check(await lab.getAttribute("data-physics-ticks")===pausedTicks,
-    name+": clock ran during pause");
-  check(await canvas.getAttribute("data-c3b12-thrust-length")===pausedLength,
+  // Under mobile SwiftShader the 1:8 React telemetry can lag actual Canvas
+  // frames. Certify two AFTER-PAUSE paints using the SAME canvas-clock source.
+  await page.waitForFunction(previous=>{
+    const d=document.querySelector('[data-testid="ux15-physical-canvas"]')?.dataset;
+    return d&&Number(d.c3b12PaintOrdinal)>=previous+2;
+  },beforePausePaint,{timeout:20000});
+  const frozen=await canvas.evaluate(el=>({
+    clock:el.dataset.c3b12ClockMs,
+    reach:el.dataset.c3b12ThrustLength,
+    paint:Number(el.dataset.c3b12PaintOrdinal),
+  }));
+  await page.waitForFunction(previous=>{
+    const d=document.querySelector('[data-testid="ux15-physical-canvas"]')?.dataset;
+    return d&&Number(d.c3b12PaintOrdinal)>=previous+2;
+  },frozen.paint,{timeout:20000});
+  const after=await canvas.evaluate(el=>({
+    clock:el.dataset.c3b12ClockMs,
+    reach:el.dataset.c3b12ThrustLength,
+  }));
+  check(after.clock===frozen.clock,
+    name+": actual Canvas simulated clock advanced during pause");
+  check(after.reach===frozen.reach,
     name+": exhaust animation ran independently of simulated clock");
   check(await lab.getAttribute("data-c3b11-wave3-active")==="false",
     name+": Wave3 was incorrectly unlocked by exhaust");

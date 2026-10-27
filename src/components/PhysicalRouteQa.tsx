@@ -133,6 +133,8 @@ export default function PhysicalRouteQa() {
   const convergenceRequestedRef=useRef(false);
   const pointerRef = useRef<{ id:number; startX:number; startY:number; x:number; y:number } | null>(null);
   const runningRef = useRef(true);
+  // Render-only QA sequence: never impacts physics ticks or gameplay.
+  const evidenceThrusterPaintRef = useRef(0);
   const drawRef = useRef<() => void>(() => {});
   const [running, setRunning] = useState(true);
   const [locale,setLocale] = useState<"es" | "en">("es");
@@ -361,6 +363,10 @@ export default function PhysicalRouteQa() {
           s.energyThrusterPose,s.frame.cursor.simulatedMs,boosting);
         canvas.dataset.c3b12Thrust=boosting?"DASH":"CRUISE";
         canvas.dataset.c3b12ThrustLength=reach.toFixed(2);
+        // Both evidence readings are written atomically by the SAME real
+        // Canvas paint, never from React's throttled (1:8) telemetry.
+        canvas.dataset.c3b12ClockMs=String(s.frame.cursor.simulatedMs);
+        canvas.dataset.c3b12PaintOrdinal=String(++evidenceThrusterPaintRef.current);
         canvas.dataset.c3b12ThrustAnimated=String(s.energyThrusterPose.throttle>.035);
         canvas.dataset.c3b12ThrustSource="CANONICAL_UX12";
         canvas.dataset.c3b12ThrusterDirectionX=s.energyThrusterPose.directionX.toFixed(3);
@@ -372,6 +378,8 @@ export default function PhysicalRouteQa() {
       }else{
         delete canvas.dataset.c3b12Thrust;
         delete canvas.dataset.c3b12ThrustLength;
+        delete canvas.dataset.c3b12ClockMs;
+        delete canvas.dataset.c3b12PaintOrdinal;
         delete canvas.dataset.c3b12ThrustAnimated;
         delete canvas.dataset.c3b12ThrustSource;
         delete canvas.dataset.c3b12ThrusterDirectionX;
