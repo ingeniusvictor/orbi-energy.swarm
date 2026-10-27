@@ -29,6 +29,8 @@ test("PYRA-01: real route launcher in desktop, portrait and landscape + canonica
   assert.match(game,/drawPyraWorld\(ctx,projectRouteDistance/);
   assert.match(game,/canvas.dataset.ux15World=PYRA_WORLD_ID/);
   assert.match(game,/canvas.dataset.pyraCinderlingCount/);
+  assert.match(game,/canvas.dataset.pyraLandmark=PYRA_LANDMARK_IDENTITIES/);
+  assert.match(game,/delete canvas.dataset.pyraLandmark/);
   assert.match(game,/onStartPyraRoute=\{startPyraWorldRouteGame\}/);
   assert.match(game,/const asteriaCombatVisualActive = worldRouteRunActiveRef.current/);
   assert.match(game,/updateBossAI\(enemy, delta\)/);

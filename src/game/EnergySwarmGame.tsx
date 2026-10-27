@@ -24,6 +24,7 @@ import {createSpanWardenAttack,shouldSpawnSpanWarden,selectSpanWardenSpawn,
   stepSpanWarden,resolveSpanWardenHit,SPAN_WARDEN_PROJECTILE_SPREAD} from "./asteriaSpanWarden";
 import {ASTERIA_WORLD_CHOICE,FERRUM_WORLD_ID,PYRA_WORLD_ID,drawFerrumWorld,ferrumSceneAt,isAsteria,isFerrum,isPyra,type PlayableWorld} from "./ferrumWorld";
 import {drawPyraWorld,pyraSceneAt} from "./pyraWorld";
+import {PYRA_LANDMARK_IDENTITIES} from "./pyraWorldLandmarks";
 import {resolveSolfernaxEncounter,createSolfernaxAttack,getSolfernaxPhase,
  stepSolfernax,solfernaxAttackContact,solfernaxDamageMultiplier,
  SOLFERNAX_ATTACK_NAMES} from "./pyraSolfernax";
@@ -8772,7 +8773,9 @@ export const EnergySwarmGame: React.FC = () => {
         drawPyraWorld(ctx,projectRouteDistance(asteriaLiveCursorRef.current),
           panoramicViewport.width,asteriaLiveCursorRef.current.segmentOrdinal);
         canvas.dataset.ux15Visual="pyra-magma-canvas";
-        canvas.dataset.ux15Scene=pyraSceneAt(asteriaLiveCursorRef.current.segmentOrdinal);
+        const pyraScene=pyraSceneAt(asteriaLiveCursorRef.current.segmentOrdinal);
+        canvas.dataset.ux15Scene=pyraScene;
+        canvas.dataset.pyraLandmark=PYRA_LANDMARK_IDENTITIES[pyraScene];
         canvas.dataset.ux15World=PYRA_WORLD_ID;
       }else if(ferrumActive){
         drawFerrumWorld(ctx,projectRouteDistance(asteriaLiveCursorRef.current),
@@ -8842,6 +8845,7 @@ export const EnergySwarmGame: React.FC = () => {
         canvas.dataset.pyraCinderlingCount=String(cinderlings);
         canvas.dataset.pyraCalderaSeraphCount=String(seraphs);
       }else{
+        delete canvas.dataset.pyraLandmark;
         delete canvas.dataset.pyraEmberSkaterCount;
         delete canvas.dataset.pyraSlagSpearCount;
         delete canvas.dataset.pyraLavaDredgerCount;
@@ -8860,6 +8864,7 @@ export const EnergySwarmGame: React.FC = () => {
         delete canvas.dataset.ferrumOxideModulatorCount;
       }
     } else {
+      delete canvas.dataset.pyraLandmark;
       delete canvas.dataset.pyraEmberSkaterCount;
       delete canvas.dataset.pyraSlagSpearCount;
       delete canvas.dataset.pyraLavaDredgerCount;

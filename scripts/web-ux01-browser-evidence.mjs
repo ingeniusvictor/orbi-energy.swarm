@@ -490,10 +490,13 @@ async function runPyraLiveCombat(name,width,height,touch){
     const world=await canvas.getAttribute("data-ux15-world");
     const scene=await canvas.getAttribute("data-ux15-scene");
     const visual=await canvas.getAttribute("data-ux15-visual");
+    const landmark=await canvas.getAttribute("data-pyra-landmark");
     const distance=Number(await canvas.getAttribute("data-ux15-route-distance"));
     check(world==="PYRA_MAGMA_CORE",name+": selected world was not PYRA");
     check(scene==="OBSIDIAN_GATE",name+": first volcanic sector missing");
     check(visual==="pyra-magma-canvas",name+": volcanic panorama not drawn");
+    check(landmark==="FRACTURED_OBSIDIAN_ARCH",
+      name+": PYRA-07B geometric landmark not in the real combat Canvas");
     check(Number.isFinite(distance)&&distance>10,
       name+": genuine Campaign route progression not advancing");
     check(await canvas.getAttribute("data-ux15-live-combat")==="true",
@@ -509,8 +512,8 @@ async function runPyraLiveCombat(name,width,height,touch){
     check(await canvas.getAttribute("data-ferrum-shade-gear-count")===null,
       name+": FERRUM-only actor telemetry leaked into PYRA");
     await shot(page,name+"-pyra-real-campaign");
-    evidence.cases.push({name,pass:true,world,scene,visual,distance,
-      liveCombat:true,pyraExclusive:true});
+    evidence.cases.push({name,pass:true,world,scene,visual,landmark,distance,
+      liveCombat:true,pyraExclusive:true,originalScenery:true});
   }finally{await context.close();}
 }
 
