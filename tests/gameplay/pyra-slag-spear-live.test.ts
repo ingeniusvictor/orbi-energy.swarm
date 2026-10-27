@@ -16,8 +16,10 @@ test("PYRA-02: a real ordinary PYRA Campaign slot, not ASTERIA/FERRUM or a boss"
   assert.equal(shouldSpawnSlagSpear(true,m,3,3,false,false,false),false);
  for(const index of [0,1,2,4,-1])
   assert.equal(shouldSpawnSlagSpear(true,"CAMPAIGN",2,index,false,false,false),false);
- for(const flags of [[false,false,true],[true,false,false],[false,true,false]] as const)
-  assert.equal(shouldSpawnSlagSpear(true,"CAMPAIGN",2,3,...flags),false);
+ for(const [forced,miniboss,active] of [
+    [false,false,true],[true,false,false],[false,true,false],
+  ] as readonly (readonly [boolean,boolean,boolean])[])
+    assert.equal(shouldSpawnSlagSpear(true,"CAMPAIGN",2,3,forced,miniboss,active),false);
  assert.equal(shouldSpawnSlagSpear(false,"CAMPAIGN",2,3,false,false,false),false);
 });
 test("PYRA-02: fixed telegraph, no firing before 1150ms",()=>{
