@@ -11,6 +11,7 @@ import type { SlagSpearAttack } from "./pyraSlagSpear";
 import type { LavaDredgerAttack } from "./pyraLavaDredger";
 import type { CinderlingAttack } from "./pyraCinderling";
 import type { CalderaSeraphAttack } from "./pyraCalderaSeraph";
+import type { SolfernaxAttack } from "./pyraSolfernax";
 import type { SkySpecterAttack,BeaconPrismAttack,IonSailAttack } from "./asteriaOriginalFoes";
 import type { SiegeVolleyTelegraphState } from "./siegeVolleyTelegraph";
 import type { BlackoutArchitectEngineIdentityTag } from "./blackoutArchitectEngineIdentityLifecycle";
@@ -187,6 +188,7 @@ export enum EnemyType {
   BOSS_WORM = "BOSS_WORM",
   BOSS_ARCHON = "BOSS_ARCHON",
   BOSS_OMEGA = "BOSS_OMEGA",
+  BOSS_SOLFERNAX = "BOSS_SOLFERNAX",
   BOSS_ARCHITECT = "BOSS_ARCHITECT"
 }
 
@@ -212,7 +214,7 @@ export type InfiniteBossIdentity =
   | "RIFT_MATRIARCH"
   | "SIEGE_CATHEDRAL";
 
-export type BossChassisId = "DEVOURER" | "TITAN_CORE" | "WORM_SEGMENTS" | "ASTERIA_ARCHON" | "FERRUM_OMEGA";
+export type BossChassisId = "DEVOURER" | "TITAN_CORE" | "WORM_SEGMENTS" | "ASTERIA_ARCHON" | "FERRUM_OMEGA" | "PYRA_SOLFERNAX";
 export type BossEncounterStage = "PRIMARY" | "RAID_ESCALATION";
 
 export interface Enemy {
@@ -291,6 +293,8 @@ export interface Enemy {
   archonAttack?: ThresholdArchonAttack;
   /** Native FERRUM boss choreography; never mutates common runtime. */
   omegaAttack?: OmegaFoundryAttack;
+  /** PYRA final campaign boss; existing boss lifecycle owns all damage. */
+  solfernaxAttack?: SolfernaxAttack;
   /** Assembly minions still use the native SHADE_GEAR combat lifecycle. */
   omegaGearSourceId?: string;
 }

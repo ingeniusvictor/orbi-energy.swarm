@@ -43,6 +43,18 @@ export interface BossChassisProfile {
 }
 
 const PROFILES: Readonly<Record<BossChassisId, BossChassisProfile>> = {
+  PYRA_SOLFERNAX: {
+    id:"PYRA_SOLFERNAX",enemyType:EnemyType.BOSS_SOLFERNAX,
+    displayName:"Solfernax",
+    subtitle:"PYRA // Living Reactor of the Magma Core",
+    color:"#f97316",size:64,baseHealth:2200,introDurationMs:4200,
+    weakpoints:{
+      count:0,health:0,collisionRadius:0,motion:"ANCHORED",
+      radiusX:0,radiusY:0,angularVelocityPerFrame:0,
+      protectedDamageMultiplier:.82,exposedDamageMultiplier:2.55,
+      exposureDurationMs:2600,hudLabel:"MOLTEN CORE",
+    },attackWeights:{},
+  },
   FERRUM_OMEGA: {
     id:"FERRUM_OMEGA",enemyType:EnemyType.BOSS_OMEGA,
     displayName:"Omega Foundry",
