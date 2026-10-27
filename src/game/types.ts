@@ -8,6 +8,7 @@ import type { ThresholdArchonAttack } from "./asteriaThresholdArchon";
 import type { OmegaFoundryAttack } from "./ferrumOmegaFoundry";
 import type { EmberSkaterAttack } from "./pyraEmberSkater";
 import type { SlagSpearAttack } from "./pyraSlagSpear";
+import type { LavaDredgerAttack } from "./pyraLavaDredger";
 import type { SkySpecterAttack,BeaconPrismAttack,IonSailAttack } from "./asteriaOriginalFoes";
 import type { SiegeVolleyTelegraphState } from "./siegeVolleyTelegraph";
 import type { BlackoutArchitectEngineIdentityTag } from "./blackoutArchitectEngineIdentityLifecycle";
@@ -167,6 +168,7 @@ export enum EnemyType {
   FERRITE_FOREMAN = "FERRITE_FOREMAN",
   EMBER_SKATER = "EMBER_SKATER",
   SLAG_SPEAR = "SLAG_SPEAR",
+  LAVA_DREDGER = "LAVA_DREDGER",
   SPLITTER = "SPLITTER",
   DISRUPTOR = "DISRUPTOR",
   BLACKOUT_ELITE = "BLACKOUT_ELITE",
@@ -270,6 +272,8 @@ export interface Enemy {
   emberSkaterAttack?: EmberSkaterAttack;
   /** PYRA-02 native fixed-axis obsidian lance attack cycle. */
   slagSpearAttack?: SlagSpearAttack;
+  /** PYRA-03: finite, telegraphed heavy charge, heat trail and lateral opening. */
+  lavaDredgerAttack?: LavaDredgerAttack;
   /** Native Ferrum machine movement cue, valid only while the linked Foreman lives. */
   ferriteCommandSourceId?: string;
   ferriteCommandUntilMs?: number;
