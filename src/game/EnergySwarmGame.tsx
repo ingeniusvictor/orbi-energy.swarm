@@ -307,6 +307,7 @@ import {
 } from "./fotonThreatTracking";
 import {
   createShuffledCollectibleEnergyCycle,
+  ORBI_COLLECTIBLE_ENERGY_IDS,
   getCollectibleEnergyDefinition,
   getOrbiEnergyByAffinity,
   getOrbiEnergyDefinition,
@@ -2075,6 +2076,22 @@ export const EnergySwarmGame: React.FC = () => {
 
     // Recruits initial Orbi member
     addSwarmMember();
+    // PYRA-07A-2: E2E-only late-campaign fixture. Replay ordinary ORBI
+    // acquisitions through the original doctrine/EVO8/GAIA engine.
+    // Does not fabricate shots, damage, boss HP, rewards or timing.
+    if (import.meta.env.MODE === "pyra-e2e" &&
+        worldRouteRunActiveRef.current &&
+        worldRouteThemeRef.current === PYRA_WORLD_ID &&
+        new URLSearchParams(window.location.search).get("pyra-e2e-boss") === "1" &&
+        new URLSearchParams(window.location.search).get("pyra-e2e-victory") === "1") {
+      for (const energyId of ORBI_COLLECTIBLE_ENERGY_IDS) {
+        addSwarmMember(undefined, undefined, energyId);
+        for (let n=0;n<5;n++) addSwarmMember(undefined, undefined, energyId);
+      }
+      // Legal in-bounds FOTON encounter position, normal collision/AI.
+      playerPosRef.current = {x:800,y:340};
+      pointerRef.current = {x:800,y:340};
+    }
 
     // Reset run-local telemetry without mutating persistent React profile state.
     runEnemiesDestroyedRef.current = 0;
@@ -8879,6 +8896,17 @@ export const EnergySwarmGame: React.FC = () => {
           canvas.dataset.pyraE2eRuntimeMode =
             runtimeProgressionRef.current.mode;
           canvas.dataset.pyraE2eWave = String(currentWaveRef.current);
+          canvas.dataset.pyraE2eSwarmSize = String(swarmRef.current.length);
+          canvas.dataset.pyraE2eShield = String(shieldRef.current);
+          canvas.dataset.pyraE2eShots =
+            String(collisionTracePlayerShotRef.current);
+          canvas.dataset.pyraE2eDamageDealt = String(bossDamageDealtRef.current);
+          canvas.dataset.pyraE2eDefeats =
+            String(runEnemiesDestroyedRef.current);
+          canvas.dataset.pyraE2eVictoryCommitted =
+            String(runCommitLedgerRef.current.campaignVictoryCommitted);
+          canvas.dataset.pyraE2eVictoryCount =
+            String(statsRef.current?.totalVictories ?? 0);
         }
       }else{
         delete canvas.dataset.pyraLandmark;
