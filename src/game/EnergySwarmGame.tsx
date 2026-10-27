@@ -24,6 +24,11 @@ import {createSpanWardenAttack,shouldSpawnSpanWarden,selectSpanWardenSpawn,
   stepSpanWarden,resolveSpanWardenHit,SPAN_WARDEN_PROJECTILE_SPREAD} from "./asteriaSpanWarden";
 import {ASTERIA_WORLD_CHOICE,FERRUM_WORLD_ID,PYRA_WORLD_ID,drawFerrumWorld,ferrumSceneAt,isAsteria,isFerrum,isPyra,type PlayableWorld} from "./ferrumWorld";
 import {drawPyraWorld,pyraSceneAt} from "./pyraWorld";
+import {createCalderaSeraphAttack,shouldSpawnCalderaSeraph,
+ selectCalderaSeraphSpawn,stepCalderaSeraph,projectCalderaMeteorVolley,
+ advanceCalderaMeteor,calderaSeraphDamageMultiplier,
+ SERAPH_METEOR_COUNT,SERAPH_METEOR_DAMAGE,SERAPH_METEOR_LIFE_MS,SERAPH_CURVE_MS
+} from "./pyraCalderaSeraph";
 import {shouldSpawnCinderling,selectCinderlingSpawn,createCinderlingAttack,
  stepCinderling,projectCinderlingBurst,cinderlingDamageMultiplier,
  CINDERLING_BURST_LIMIT,CINDERLING_CINDER_DAMAGE,CINDERLING_CINDER_LIFE_MS
@@ -3377,7 +3382,15 @@ export const EnergySwarmGame: React.FC = () => {
       enemiesRef.current.some(e=>e.type===EnemyType.CINDERLING&&!e.isDead))
       ?selectCinderlingSpawn(routeCamera,playerPosRef.current,
         WORLD_WIDTH,WORLD_HEIGHT,combatPressure.spawnSafetyRadius):null;
-    const type = cinderlingSpawn?EnemyType.CINDERLING:
+    const seraphSpawn=shouldSpawnCalderaSeraph(
+      isPyra(worldRouteRunActiveRef.current,worldRouteThemeRef.current),
+      descriptor.sourceMode,descriptor.waveNumber,waveBudgetSpawnedRef.current,
+      Boolean(forcedType),spawningMiniboss,
+      enemiesRef.current.some(e=>e.type===EnemyType.CALDERA_SERAPH&&!e.isDead))
+      ?selectCalderaSeraphSpawn(routeCamera,playerPosRef.current,
+        WORLD_WIDTH,WORLD_HEIGHT,combatPressure.spawnSafetyRadius):null;
+    const type = seraphSpawn?EnemyType.CALDERA_SERAPH:
+      cinderlingSpawn?EnemyType.CINDERLING:
       dredgerSpawn?EnemyType.LAVA_DREDGER:
       slagSpawn?EnemyType.SLAG_SPEAR:
       emberSpawn?EnemyType.EMBER_SKATER:
@@ -3400,7 +3413,7 @@ export const EnergySwarmGame: React.FC = () => {
       type===EnemyType.FOUNDRY_CLAW || type===EnemyType.OXIDE_MODULATOR ||
       type===EnemyType.FERRITE_FOREMAN || type===EnemyType.EMBER_SKATER ||
       type===EnemyType.SLAG_SPEAR || type===EnemyType.LAVA_DREDGER ||
-      type===EnemyType.CINDERLING
+      type===EnemyType.CINDERLING || type===EnemyType.CALDERA_SERAPH
         ? null
         : resolveEvolvedEnemySpawn({
             descriptor,
@@ -3466,7 +3479,8 @@ export const EnergySwarmGame: React.FC = () => {
     }
     // Replace the legacy position ONLY for the new ASTERIA-native actor.
     // All other modes retain the existing four-side camera spawn policy.
-    if(cinderlingSpawn){ex=cinderlingSpawn.x;ey=cinderlingSpawn.y;
+    if(seraphSpawn){ex=seraphSpawn.x;ey=seraphSpawn.y;
+    }else if(cinderlingSpawn){ex=cinderlingSpawn.x;ey=cinderlingSpawn.y;
     }else if(dredgerSpawn){ex=dredgerSpawn.x;ey=dredgerSpawn.y;
     }else if(slagSpawn){ex=slagSpawn.x;ey=slagSpawn.y;
     }else if(emberSpawn){ex=emberSpawn.x;ey=emberSpawn.y;
@@ -3558,6 +3572,10 @@ export const EnergySwarmGame: React.FC = () => {
       health=24*healthMultiplier;
       speed=1.18*biomeCfg.enemySpeedMultiplier*movementSpeedMultiplier;
       size=11;color="#fbbf24";
+    } else if(type===EnemyType.CALDERA_SERAPH){
+      health=182*healthMultiplier;
+      speed=.59*biomeCfg.enemySpeedMultiplier*movementSpeedMultiplier;
+      size=32;color="#fb923c";
     } else if (type === EnemyType.DRONE) {
       health = 20 * healthMultiplier;
       speed = 0.7 * biomeCfg.enemySpeedMultiplier * movementSpeedMultiplier;
@@ -3639,7 +3657,8 @@ export const EnergySwarmGame: React.FC = () => {
       type!==EnemyType.FOUNDRY_CLAW && type!==EnemyType.OXIDE_MODULATOR &&
       type!==EnemyType.FERRITE_FOREMAN && type!==EnemyType.EMBER_SKATER &&
       type!==EnemyType.SLAG_SPEAR && type!==EnemyType.LAVA_DREDGER &&
-      type!==EnemyType.CINDERLING && Math.random() < effectiveEliteChance;
+      type!==EnemyType.CINDERLING && type!==EnemyType.CALDERA_SERAPH &&
+      Math.random() < effectiveEliteChance;
     if (isElite) {
       health *= 1.8;
       size *= 1.4;
@@ -3669,7 +3688,8 @@ export const EnergySwarmGame: React.FC = () => {
             type !== EnemyType.FOUNDRY_CLAW && type !== EnemyType.OXIDE_MODULATOR &&
             type !== EnemyType.FERRITE_FOREMAN && type !== EnemyType.EMBER_SKATER &&
             type !== EnemyType.SLAG_SPEAR && type !== EnemyType.LAVA_DREDGER &&
-            type !== EnemyType.CINDERLING,
+            type !== EnemyType.CINDERLING &&
+            type !== EnemyType.CALDERA_SERAPH,
           remainingCapacity:
             Math.min(
               MAX_ENEMIES,
@@ -3747,6 +3767,7 @@ export const EnergySwarmGame: React.FC = () => {
       slagSpearAttack:type===EnemyType.SLAG_SPEAR?createSlagSpearAttack():undefined,
       lavaDredgerAttack:type===EnemyType.LAVA_DREDGER?createLavaDredgerAttack():undefined,
       cinderlingAttack:type===EnemyType.CINDERLING?createCinderlingAttack():undefined,
+      calderaSeraphAttack:type===EnemyType.CALDERA_SERAPH?createCalderaSeraphAttack():undefined,
       enemyFormation: enemyFormation ?? undefined,
       flashTicks: 0,
       evolvedVariantId: evolvedProfile?.id,
@@ -6332,7 +6353,47 @@ export const EnergySwarmGame: React.FC = () => {
         const dy = ty - enemy.y;
         const dist = Math.sqrt(dx * dx + dy * dy) || 1;
 
-        if(enemy.type===EnemyType.CINDERLING&&enemy.cinderlingAttack){
+        if(enemy.type===EnemyType.CALDERA_SERAPH&&enemy.calderaSeraphAttack){
+          const previous=enemy.calderaSeraphAttack;
+          const step=stepCalderaSeraph(previous,enemy,playerPosRef.current,
+            enemy.speed,delta);
+          enemy.x=Math.max(36,Math.min(WORLD_WIDTH-36,step.x));
+          enemy.y=Math.max(36,Math.min(WORLD_HEIGHT-36,step.y));
+          enemy.vx=step.vx;enemy.vy=step.vy;
+          enemy.calderaSeraphAttack=step.attack;
+          if(step.warn){
+            playEliteChargeSound();
+            addFloatingText("SERAFIN / TRES RUTAS DE METEOROS",
+              enemy.x,enemy.y-58,"#fde68a");
+          }
+          if(step.fire){
+            const volley=projectCalderaMeteorVolley(enemy,previous.lockedAngle);
+            const count=Math.max(0,Math.min(
+              SERAPH_METEOR_COUNT,volley.length,
+              MAX_PROJECTILES-projectilesRef.current.length,
+              (simulationCombatPressure.projectileBudget??MAX_PROJECTILES)-
+                hostileProjectileBudgetState.count));
+            for(let n=0;n<count;n++){
+              const meteor=volley[n];
+              projectilesRef.current.push({
+                id:Math.random().toString(),x:meteor.x,y:meteor.y,
+                vx:meteor.vx,vy:meteor.vy,damage:SERAPH_METEOR_DAMAGE,
+                color:"#fbbf24",size:8,fromPlayer:false,
+                life:SERAPH_METEOR_LIFE_MS,maxLife:SERAPH_METEOR_LIFE_MS,
+                seraphMeteorCurveDirection:meteor.curveDirection,
+                seraphMeteorCurveRemainingMs:SERAPH_CURVE_MS,
+              });
+              hostileProjectileBudgetState.count++;
+            }
+            playBossShardsSound();
+            addFloatingText("CALDERA / METEORITOS",enemy.x,enemy.y-60,"#fb923c");
+          }
+          if(step.exposed){
+            playEliteChargeSound();
+            addFloatingText("NUCLEO ENFRIADO // EXPUESTO",
+              enemy.x,enemy.y-57,"#d9f99d");
+          }
+        } else if(enemy.type===EnemyType.CINDERLING&&enemy.cinderlingAttack){
           const previous=enemy.cinderlingAttack;
           const step=stepCinderling(previous,enemy,playerPosRef.current,enemy.speed,delta);
           enemy.x=Math.max(16,Math.min(WORLD_WIDTH-16,step.x));
@@ -6946,8 +7007,17 @@ export const EnergySwarmGame: React.FC = () => {
     // a finite world-space travel distance, never via independent timers.
     const slagSplitRequests:{x:number;y:number;vx:number;vy:number}[]=[];
     projectilesRef.current.forEach((proj) => {
-      proj.x += proj.vx * (delta / 16.6);
-      proj.y += proj.vy * (delta / 16.6);
+      if(!proj.fromPlayer && proj.life>0 &&
+         proj.seraphMeteorCurveDirection!==undefined &&
+         proj.seraphMeteorCurveRemainingMs!==undefined){
+        const curved=advanceCalderaMeteor(proj.x,proj.y,proj.vx,proj.vy,
+          proj.seraphMeteorCurveDirection,proj.seraphMeteorCurveRemainingMs,delta);
+        proj.x=curved.x;proj.y=curved.y;proj.vx=curved.vx;proj.vy=curved.vy;
+        proj.seraphMeteorCurveRemainingMs=curved.remainingMs;
+      }else{
+        proj.x += proj.vx * (delta / 16.6);
+        proj.y += proj.vy * (delta / 16.6);
+      }
       proj.life -= delta;
       if(!proj.fromPlayer&&proj.life>0 &&
          proj.slagSpearDistanceRemaining!==undefined){
@@ -7726,6 +7796,11 @@ export const EnergySwarmGame: React.FC = () => {
                 if (!proj.convergenceTargetId) isCrit = true;
                 damageToApply *= chassis.weakpoints.exposedDamageMultiplier;
               }
+            } else if(enemy.type===EnemyType.CALDERA_SERAPH&&enemy.calderaSeraphAttack){
+              const multiplier=calderaSeraphDamageMultiplier(enemy.calderaSeraphAttack);
+              damageToApply*=multiplier;
+              if(multiplier<1)isShieldBlock=true;
+              if(multiplier>2&&!proj.convergenceTargetId)isCrit=true;
             } else if(enemy.type===EnemyType.CINDERLING&&enemy.cinderlingAttack){
               damageToApply*=cinderlingDamageMultiplier(enemy.cinderlingAttack);
               if(enemy.cinderlingAttack.stage==="COOL"&&!proj.convergenceTargetId)
@@ -8667,23 +8742,26 @@ export const EnergySwarmGame: React.FC = () => {
       canvas.dataset.wbe01SpanWardenPhase=enemiesRef.current.find(e=>
         e.type===EnemyType.SPAN_WARDEN&&!e.isDead)?.spanWardenAttack?.phase??"NONE";
       if(pyraActive){
-        let skaters=0,lancers=0,dredgers=0,cinderlings=0;
+        let skaters=0,lancers=0,dredgers=0,cinderlings=0,seraphs=0;
         for(const actor of enemiesRef.current){
           if(actor.isDead)continue;
           if(actor.type===EnemyType.EMBER_SKATER)skaters++;
           else if(actor.type===EnemyType.SLAG_SPEAR)lancers++;
           else if(actor.type===EnemyType.LAVA_DREDGER)dredgers++;
           else if(actor.type===EnemyType.CINDERLING)cinderlings++;
+          else if(actor.type===EnemyType.CALDERA_SERAPH)seraphs++;
         }
         canvas.dataset.pyraEmberSkaterCount=String(skaters);
         canvas.dataset.pyraSlagSpearCount=String(lancers);
         canvas.dataset.pyraLavaDredgerCount=String(dredgers);
         canvas.dataset.pyraCinderlingCount=String(cinderlings);
+        canvas.dataset.pyraCalderaSeraphCount=String(seraphs);
       }else{
         delete canvas.dataset.pyraEmberSkaterCount;
         delete canvas.dataset.pyraSlagSpearCount;
         delete canvas.dataset.pyraLavaDredgerCount;
         delete canvas.dataset.pyraCinderlingCount;
+        delete canvas.dataset.pyraCalderaSeraphCount;
       }
       if(ferrumActive){
         canvas.dataset.ferrumShadeGearCount=String(gear);
@@ -8701,6 +8779,7 @@ export const EnergySwarmGame: React.FC = () => {
       delete canvas.dataset.pyraSlagSpearCount;
       delete canvas.dataset.pyraLavaDredgerCount;
       delete canvas.dataset.pyraCinderlingCount;
+      delete canvas.dataset.pyraCalderaSeraphCount;
       delete canvas.dataset.wbe01RailcutterScope;
       delete canvas.dataset.wbe01RailcutterCount;
       delete canvas.dataset.wbe01RailcutterPhase;
