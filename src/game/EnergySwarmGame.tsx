@@ -3200,13 +3200,7 @@ export const EnergySwarmGame: React.FC = () => {
         }
 
         // Trigger visual cinematic Wave Intro overlay for handcrafted campaign waves.
-        setWaveIntroConfig(solfernaxWaveIntro && cfg ? {
-          ...cfg,name:"Solfernax",displayName:"Solfernax",
-          subtitle:"PYRA // Sovereign of the Magma Core",
-          description:"Reactor vivo dentro de un anillo de magma. Tres fases con respiraderos, compuertas térmicas y colapso controlado.",
-          tacticalAdvice:"Esquiva rutas anunciadas; deja libres los pasillos centrales y enfoca ORBI en el reactor enfriado.",
-          introColor:"#fb923c",
-        } : archonWaveIntro && cfg ? {
+        setWaveIntroConfig(archonWaveIntro && cfg ? {
           ...cfg,
           name: "Threshold Archon",
           displayName: "Threshold Archon",
@@ -3219,6 +3213,12 @@ export const EnergySwarmGame: React.FC = () => {
           subtitle:"FERRUM // Walking Assembly Sovereign",
           description:"Fábrica caminante con pistones extensibles, engranajes y reactor superior.",
           tacticalAdvice:"Evita los pistones; destruye engranajes y cruza entre las cintas.",
+          introColor:"#fb923c",
+        } : solfernaxWaveIntro && cfg ? {
+          ...cfg,name:"Solfernax",displayName:"Solfernax",
+          subtitle:"PYRA // Sovereign of the Magma Core",
+          description:"Reactor vivo dentro de un anillo de magma. Tres fases con respiraderos, compuertas térmicas y colapso controlado.",
+          tacticalAdvice:"Esquiva rutas anunciadas; deja libres los pasillos centrales y enfoca ORBI en el reactor enfriado.",
           introColor:"#fb923c",
         } : cfg);
         setTimeout(() => {
