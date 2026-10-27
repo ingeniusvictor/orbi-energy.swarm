@@ -10,6 +10,7 @@ import type { EmberSkaterAttack } from "./pyraEmberSkater";
 import type { SlagSpearAttack } from "./pyraSlagSpear";
 import type { LavaDredgerAttack } from "./pyraLavaDredger";
 import type { CinderlingAttack } from "./pyraCinderling";
+import type { CalderaSeraphAttack } from "./pyraCalderaSeraph";
 import type { SkySpecterAttack,BeaconPrismAttack,IonSailAttack } from "./asteriaOriginalFoes";
 import type { SiegeVolleyTelegraphState } from "./siegeVolleyTelegraph";
 import type { BlackoutArchitectEngineIdentityTag } from "./blackoutArchitectEngineIdentityLifecycle";
@@ -171,6 +172,7 @@ export enum EnemyType {
   SLAG_SPEAR = "SLAG_SPEAR",
   LAVA_DREDGER = "LAVA_DREDGER",
   CINDERLING = "CINDERLING",
+  CALDERA_SERAPH = "CALDERA_SERAPH",
   SPLITTER = "SPLITTER",
   DISRUPTOR = "DISRUPTOR",
   BLACKOUT_ELITE = "BLACKOUT_ELITE",
@@ -278,6 +280,8 @@ export interface Enemy {
   lavaDredgerAttack?: LavaDredgerAttack;
   /** PYRA-04: locked, telegraphed ember landing and nonrecursive burst. */
   cinderlingAttack?: CinderlingAttack;
+  /** PYRA-05: exclusive six-wing manta meteor elite state. */
+  calderaSeraphAttack?: CalderaSeraphAttack;
   /** Native Ferrum machine movement cue, valid only while the linked Foreman lives. */
   ferriteCommandSourceId?: string;
   ferriteCommandUntilMs?: number;
@@ -307,6 +311,9 @@ export interface Projectile {
   slagSpearDistanceRemaining?: number;
   /** Native two-fragment cap, preventing recursive fragmentation. */
   slagSpearFragment?: boolean;
+  /** PYRA-05 curved meteor; canonical engine advances the trajectory. */
+  seraphMeteorCurveDirection?: -1 | 1;
+  seraphMeteorCurveRemainingMs?: number;
   // Engine-owned creation metadata, never a real collision/replay ticket.
   collisionTraceRunEpoch?: number;
   collisionTracePhysicsFrame?: number;
