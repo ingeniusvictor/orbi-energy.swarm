@@ -24,6 +24,9 @@ import {createSpanWardenAttack,shouldSpawnSpanWarden,selectSpanWardenSpawn,
   stepSpanWarden,resolveSpanWardenHit,SPAN_WARDEN_PROJECTILE_SPREAD} from "./asteriaSpanWarden";
 import {ASTERIA_WORLD_CHOICE,FERRUM_WORLD_ID,PYRA_WORLD_ID,drawFerrumWorld,ferrumSceneAt,isAsteria,isFerrum,isPyra,type PlayableWorld} from "./ferrumWorld";
 import {drawPyraWorld,pyraSceneAt} from "./pyraWorld";
+import {resolveSolfernaxEncounter,createSolfernaxAttack,getSolfernaxPhase,
+ stepSolfernax,solfernaxAttackContact,solfernaxDamageMultiplier,
+ SOLFERNAX_ATTACK_NAMES} from "./pyraSolfernax";
 import {createCalderaSeraphAttack,shouldSpawnCalderaSeraph,
  selectCalderaSeraphSpawn,stepCalderaSeraph,projectCalderaMeteorVolley,
  advanceCalderaMeteor,calderaSeraphDamageMultiplier,
@@ -3100,12 +3103,17 @@ export const EnergySwarmGame: React.FC = () => {
             // Warning before boss entry!
             const ferrumBoss=isFerrum(worldRouteRunActiveRef.current,worldRouteThemeRef.current);
             const asteriaBoss=isAsteria(worldRouteRunActiveRef.current,worldRouteThemeRef.current);
-            setWaveName(ferrumBoss
+            const pyraBoss=isPyra(worldRouteRunActiveRef.current,worldRouteThemeRef.current);
+            setWaveName(pyraBoss
+              ? "BOSS WARNING: SOLFERNAX AWAKENING"
+              : ferrumBoss
               ? "BOSS WARNING: OMEGA FOUNDRY APPROACHING"
               : asteriaBoss
                 ? "BOSS WARNING: THRESHOLD ARCHON APPROACHING"
                 : "BOSS WARNING: DEVOURER APPROACHING");
-            postDialogue("COMPANION",ferrumBoss
+            postDialogue("COMPANION",pyraBoss
+              ? "¡ALERTA PYRA! Solfernax despierta en el núcleo magmático. Respeta los corredores térmicos anunciados."
+              : ferrumBoss
               ? "¡ALERTA FERRUM! La Factoría Omega camina hacia el sector con sus pistones y cintas activos."
               : asteriaBoss
                 ? "¡ALERTA ASTERIA! El Arconte del Umbral despierta entre sus anillos orbitales."
@@ -3170,7 +3178,9 @@ export const EnergySwarmGame: React.FC = () => {
         );
         const omegaWaveIntro=isFerrum(worldRouteRunActiveRef.current,worldRouteThemeRef.current) &&
           Boolean(resolveOmegaFoundryEncounter(worldRouteRunActiveRef.current,descriptor));
-        const activeWaveName = archonWaveIntro
+        const solfernaxWaveIntro=isPyra(worldRouteRunActiveRef.current,worldRouteThemeRef.current) &&
+          Boolean(resolveSolfernaxEncounter(worldRouteRunActiveRef.current,descriptor));
+        const activeWaveName = solfernaxWaveIntro ? "Solfernax" : archonWaveIntro
           ? "Threshold Archon" : omegaWaveIntro ? "Omega Foundry" : descriptor.display.name;
         setWaveName(activeWaveName);
 
@@ -3189,7 +3199,13 @@ export const EnergySwarmGame: React.FC = () => {
         }
 
         // Trigger visual cinematic Wave Intro overlay for handcrafted campaign waves.
-        setWaveIntroConfig(archonWaveIntro && cfg ? {
+        setWaveIntroConfig(solfernaxWaveIntro && cfg ? {
+          ...cfg,name:"Solfernax",displayName:"Solfernax",
+          subtitle:"PYRA // Sovereign of the Magma Core",
+          description:"Reactor vivo dentro de un anillo de magma. Tres fases con respiraderos, compuertas térmicas y colapso controlado.",
+          tacticalAdvice:"Esquiva rutas anunciadas; deja libres los pasillos centrales y enfoca ORBI en el reactor enfriado.",
+          introColor:"#fb923c",
+        } : archonWaveIntro && cfg ? {
           ...cfg,
           name: "Threshold Archon",
           displayName: "Threshold Archon",
@@ -3879,7 +3895,11 @@ export const EnergySwarmGame: React.FC = () => {
     const omegaEncounter=!isRematch && stage==="PRIMARY"
       ?resolveOmegaFoundryEncounter(isFerrum(worldRouteRunActiveRef.current,worldRouteThemeRef.current),
         getCurrentRuntimeDescriptor()):null;
-    const chassisId=omegaEncounter?"FERRUM_OMEGA":
+    const solfernaxEncounter=!isRematch && stage==="PRIMARY"
+      ?resolveSolfernaxEncounter(isPyra(worldRouteRunActiveRef.current,worldRouteThemeRef.current),
+        getCurrentRuntimeDescriptor()):null;
+    const chassisId=solfernaxEncounter?"PYRA_SOLFERNAX":
+      omegaEncounter?"FERRUM_OMEGA":
       archonEncounter?"ASTERIA_ARCHON":(raidProfile?.chassis??"DEVOURER");
     const chassisProfile = getBossChassisProfile(chassisId);
     const familyProfile =
@@ -3920,7 +3940,7 @@ export const EnergySwarmGame: React.FC = () => {
           ? `${chassisId.toLowerCase()}_${rematchProfile?.sector ?? "infinite"}`
           : isRematch
             ? `${rematchProfile?.bossIdentity.toLowerCase() ?? "infinite_boss"}_${rematchProfile?.sector ?? "infinite"}`
-            : omegaEncounter ?? archonEncounter ?? "blackout_devourer_boss",
+            : solfernaxEncounter ?? omegaEncounter ?? archonEncounter ?? "blackout_devourer_boss",
       type: chassisProfile.enemyType,
       x: WORLD_WIDTH / 2,
       y: -80,
@@ -3946,6 +3966,7 @@ export const EnergySwarmGame: React.FC = () => {
       bossChassis: chassisId,
       archonAttack:archonEncounter?createThresholdArchonAttack():undefined,
       omegaAttack:omegaEncounter?createOmegaFoundryAttack():undefined,
+      solfernaxAttack:solfernaxEncounter?createSolfernaxAttack():undefined,
       bossEncounterStage: stage,
       milestoneContactDamageMultiplier: damageMultiplier,
       milestoneDamageMultiplier: damageMultiplier,
@@ -4016,6 +4037,8 @@ export const EnergySwarmGame: React.FC = () => {
         ? `¡RAID ESCALATION! ${chassisProfile.displayName} ha entrado. Destruye ${chassisProfile.weakpoints.count} ${chassisProfile.weakpoints.hudLabel.toLowerCase()} y abre el núcleo.`
         : isRematch
           ? (familyProfile?.introDialogue ?? "¡RESONANCIA HOSTIL RECURRENTE!")
+          : solfernaxEncounter
+            ? "¡SOLFERNAX! Respiraderos, compuertas y colapso controlado. Aprovecha el núcleo enfriado tras cada ataque."
           : archonEncounter
             ? "¡ARCONTE DEL UMBRAL! Tres fases orbitales. Esquiva las líneas anunciadas y concentra ORBI en su núcleo expuesto."
             : omegaEncounter
@@ -4153,6 +4176,55 @@ export const EnergySwarmGame: React.FC = () => {
         playHeavyImpactSound();
         postDialogue("COMPANION", `¡ANOMALÍA ESTABILIZADA! Firma de ${chassisProfile.displayName} confirmada.`);
       }
+      return;
+    }
+
+    // PYRA-06: real canonical boss entity and cooldowns, with original
+    // timed hazard geometry and a post-attack ORBI reactor window.
+    if(boss.type===EnemyType.BOSS_SOLFERNAX && boss.solfernaxAttack){
+      if(phaseTransitionTimerRef.current>0){
+        phaseTransitionTimerRef.current=Math.max(0,phaseTransitionTimerRef.current-delta);
+        if(phaseTransitionTimerRef.current===0)setBossTransitionName(null);
+        return;
+      }
+      const phase=getSolfernaxPhase(boss.health,boss.maxHealth);
+      const step=stepSolfernax(boss.solfernaxAttack,boss,
+        playerPosRef.current,delta,phase);
+      boss.solfernaxAttack=step.attack;
+      if(step.phaseChanged){
+        boss.bossPhase=phase;setBossPhase(phase);
+        bossMaxPhaseReachedRef.current=Math.max(bossMaxPhaseReachedRef.current,phase);
+        phaseTransitionTimerRef.current=1650;
+        setBossTransitionName(phase===2?"FASE II: COMPUERTAS TERMICAS":
+          "FASE III: COLAPSO DEL NUCLEO");
+        setBossAttackName(null);setIsCoreExposed(false);
+        playBossPhaseTransitionSound();
+        addFloatingText(phase===2?"THERMAL GATES":"CORE COLLAPSE",
+          boss.x,boss.y-98,"#fde68a");
+        return;
+      }
+      if(step.warned){
+        setBossAttackName(SOLFERNAX_ATTACK_NAMES[phase]);
+        playBossChargeSound();
+        addFloatingText(phase===1?"RESPIRADEROS":
+          phase===2?"COMPUERTAS":"COLAPSO ANUNCIADO",
+          boss.x,boss.y-98,"#fbbf24");
+      }
+      if(step.fired)playDisruptorPulseSound();
+      if(step.exposed){
+        setIsCoreExposed(true);setBossAttackName(null);
+        playEliteChargeSound();
+        addFloatingText("REACTOR ENFRIADO / EXPUESTO",
+          boss.x,boss.y-102,"#fef08a");
+      }
+      if(!["EXPOSED","WARNING","ACTIVE"].includes(step.attack.stage))
+        setIsCoreExposed(false);
+      // Attack contact and player invulnerability still belong to the
+      // existing boss-damage API. Never damage during a warning.
+      if(solfernaxAttackContact(step.attack,boss,playerPosRef.current))
+        damagePlayerFromBoss(phase===3?15:phase===2?13:11,
+          phase===1?"solfernax_molten_vents":
+          phase===2?"solfernax_thermal_gates":"solfernax_controlled_collapse");
       return;
     }
 
@@ -6287,7 +6359,8 @@ export const EnergySwarmGame: React.FC = () => {
         enemy.type === EnemyType.BOSS_TITAN ||
         enemy.type === EnemyType.BOSS_WORM ||
         enemy.type === EnemyType.BOSS_ARCHON ||
-        enemy.type === EnemyType.BOSS_OMEGA
+        enemy.type === EnemyType.BOSS_OMEGA ||
+        enemy.type === EnemyType.BOSS_SOLFERNAX
       ) {
         updateBossAI(enemy, delta);
         enemy.speed = originalSpeed;
@@ -7775,12 +7848,18 @@ export const EnergySwarmGame: React.FC = () => {
               enemy.type === EnemyType.BOSS_TITAN ||
               enemy.type === EnemyType.BOSS_WORM ||
               enemy.type === EnemyType.BOSS_ARCHON ||
-        enemy.type === EnemyType.BOSS_OMEGA
+        enemy.type === EnemyType.BOSS_OMEGA ||
+        enemy.type === EnemyType.BOSS_SOLFERNAX
             ) {
               const chassis = getBossChassisProfile(
                 enemy.bossChassis ?? "DEVOURER",
               );
-              if(enemy.type===EnemyType.BOSS_OMEGA && enemy.omegaAttack){
+              if(enemy.type===EnemyType.BOSS_SOLFERNAX && enemy.solfernaxAttack){
+                damageToApply*=solfernaxDamageMultiplier(enemy.solfernaxAttack);
+                if(enemy.solfernaxAttack.stage==="EXPOSED"&&!proj.convergenceTargetId)
+                  isCrit=true;
+                if(enemy.solfernaxAttack.stage==="WARNING")isShieldBlock=true;
+              } else if(enemy.type===EnemyType.BOSS_OMEGA && enemy.omegaAttack){
                 damageToApply*=omegaFoundryDamageMultiplier(enemy.omegaAttack);
                 if(enemy.omegaAttack.stage==="EXPOSED"&&!proj.convergenceTargetId)isCrit=true;
                 if(enemy.omegaAttack.stage==="WARNING")isShieldBlock=true;
@@ -8087,6 +8166,8 @@ export const EnergySwarmGame: React.FC = () => {
                       ? "¡EL ARCONTE HA CAÍDO! Los anillos de ASTERIA colapsan y el corredor queda liberado."
                       : enemy.type===EnemyType.BOSS_ARCHON
                       ? "¡EL ARCONTE HA CAÍDO! Los anillos de ASTERIA colapsan y el corredor queda liberado."
+                      : otherEnemy.type===EnemyType.BOSS_SOLFERNAX || enemy.type===EnemyType.BOSS_SOLFERNAX
+                      ? "¡SOLFERNAX DERROTADO! La caldera se estabiliza y el núcleo magmático recupera su equilibrio."
                       : otherEnemy.type===EnemyType.BOSS_OMEGA || enemy.type===EnemyType.BOSS_OMEGA
                       ? "¡FACTORÍA OMEGA DERROTADA! Las cadenas mecánicas se detienen y el reactor se apaga."
                       : "¡SISTEMAS DEL DEVORADOR CRÍTICAS! Reacción en cadena termodinámica detectada. ¡Sincronizando pulso de purga final!",
@@ -8170,6 +8251,8 @@ export const EnergySwarmGame: React.FC = () => {
                   "COMPANION",
                   rematch
                     ? "¡REMATCH DEL DEVORADOR COLAPSANDO! Mantén sincronía mientras sellamos esta recurrencia."
+                    : enemy.type===EnemyType.BOSS_SOLFERNAX
+                      ? "¡SOLFERNAX DERROTADO! El anillo se enfría y el núcleo magmático queda liberado."
                     : enemy.type===EnemyType.BOSS_OMEGA
                       ? "¡FACTORÍA OMEGA DERROTADA! Las cadenas mecánicas se detienen y el reactor se apaga."
                       : "¡SISTEMAS DEL DEVORADOR CRÍTICAS! Reacción en cadena termodinámica detectada. ¡Sincronizando pulso de purga final!",
@@ -8239,7 +8322,8 @@ export const EnergySwarmGame: React.FC = () => {
         enemy.type === EnemyType.BOSS_TITAN ||
         enemy.type === EnemyType.BOSS_WORM ||
         enemy.type === EnemyType.BOSS_ARCHON ||
-        enemy.type === EnemyType.BOSS_OMEGA;
+        enemy.type === EnemyType.BOSS_OMEGA ||
+        enemy.type === EnemyType.BOSS_SOLFERNAX;
       const baseDamage = isBossChassis ? 25 : 15;
       if (isBossChassis) {
         const attackType =
