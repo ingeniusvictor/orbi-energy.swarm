@@ -24,6 +24,9 @@ import {createSpanWardenAttack,shouldSpawnSpanWarden,selectSpanWardenSpawn,
   stepSpanWarden,resolveSpanWardenHit,SPAN_WARDEN_PROJECTILE_SPREAD} from "./asteriaSpanWarden";
 import {ASTERIA_WORLD_CHOICE,FERRUM_WORLD_ID,PYRA_WORLD_ID,drawFerrumWorld,ferrumSceneAt,isAsteria,isFerrum,isPyra,type PlayableWorld} from "./ferrumWorld";
 import {drawPyraWorld,pyraSceneAt} from "./pyraWorld";
+import {shouldSpawnLavaDredger,selectLavaDredgerSpawn,createLavaDredgerAttack,
+ stepLavaDredger,dredgerChargeContact,dredgerDamageMultiplier,
+ DREDGER_TRAIL_LIFE_MS,DREDGER_TRAIL_DAMAGE,DREDGER_CONTACT_DAMAGE} from "./pyraLavaDredger";
 import {shouldSpawnSlagSpear,selectSlagSpearSpawn,createSlagSpearAttack,
   stepSlagSpear,projectSlagFragments,interceptSlagLance,
   SLAG_LANCE_SPEED,SLAG_LANCE_DISTANCE,SLAG_LANCE_DAMAGE,
@@ -3356,7 +3359,15 @@ export const EnergySwarmGame: React.FC = () => {
       enemiesRef.current.some(e=>e.type===EnemyType.SLAG_SPEAR&&!e.isDead))
       ?selectSlagSpearSpawn(routeCamera,playerPosRef.current,
         WORLD_WIDTH,WORLD_HEIGHT,combatPressure.spawnSafetyRadius):null;
-    const type = slagSpawn?EnemyType.SLAG_SPEAR:
+    const dredgerSpawn=shouldSpawnLavaDredger(
+      isPyra(worldRouteRunActiveRef.current,worldRouteThemeRef.current),
+      descriptor.sourceMode,descriptor.waveNumber,waveBudgetSpawnedRef.current,
+      Boolean(forcedType),spawningMiniboss,
+      enemiesRef.current.some(e=>e.type===EnemyType.LAVA_DREDGER&&!e.isDead))
+      ?selectLavaDredgerSpawn(routeCamera,playerPosRef.current,
+        WORLD_WIDTH,WORLD_HEIGHT,combatPressure.spawnSafetyRadius):null;
+    const type = dredgerSpawn?EnemyType.LAVA_DREDGER:
+      slagSpawn?EnemyType.SLAG_SPEAR:
       emberSpawn?EnemyType.EMBER_SKATER:
       foremanSpawn?EnemyType.FERRITE_FOREMAN:
       ferrumFoe&&ferrumSpawn?EnemyType[ferrumFoe]:spanWardenSpawn
@@ -3376,7 +3387,7 @@ export const EnergySwarmGame: React.FC = () => {
       type===EnemyType.SHADE_GEAR || type===EnemyType.M9_WELDER ||
       type===EnemyType.FOUNDRY_CLAW || type===EnemyType.OXIDE_MODULATOR ||
       type===EnemyType.FERRITE_FOREMAN || type===EnemyType.EMBER_SKATER ||
-      type===EnemyType.SLAG_SPEAR
+      type===EnemyType.SLAG_SPEAR || type===EnemyType.LAVA_DREDGER
         ? null
         : resolveEvolvedEnemySpawn({
             descriptor,
@@ -3442,7 +3453,8 @@ export const EnergySwarmGame: React.FC = () => {
     }
     // Replace the legacy position ONLY for the new ASTERIA-native actor.
     // All other modes retain the existing four-side camera spawn policy.
-    if(slagSpawn){ex=slagSpawn.x;ey=slagSpawn.y;
+    if(dredgerSpawn){ex=dredgerSpawn.x;ey=dredgerSpawn.y;
+    }else if(slagSpawn){ex=slagSpawn.x;ey=slagSpawn.y;
     }else if(emberSpawn){ex=emberSpawn.x;ey=emberSpawn.y;
     }else if(foremanSpawn){ex=foremanSpawn.x;ey=foremanSpawn.y;
     }else if(ferrumFoe&&ferrumSpawn){
@@ -3524,6 +3536,10 @@ export const EnergySwarmGame: React.FC = () => {
       health=35*healthMultiplier;
       speed=.77*biomeCfg.enemySpeedMultiplier*movementSpeedMultiplier;
       size=16;color="#fdba74";
+    } else if(type===EnemyType.LAVA_DREDGER){
+      health=116*healthMultiplier;
+      speed=.59*biomeCfg.enemySpeedMultiplier*movementSpeedMultiplier;
+      size=26;color="#f97316";
     } else if (type === EnemyType.DRONE) {
       health = 20 * healthMultiplier;
       speed = 0.7 * biomeCfg.enemySpeedMultiplier * movementSpeedMultiplier;
@@ -3604,7 +3620,8 @@ export const EnergySwarmGame: React.FC = () => {
       type!==EnemyType.SHADE_GEAR && type!==EnemyType.M9_WELDER &&
       type!==EnemyType.FOUNDRY_CLAW && type!==EnemyType.OXIDE_MODULATOR &&
       type!==EnemyType.FERRITE_FOREMAN && type!==EnemyType.EMBER_SKATER &&
-      type!==EnemyType.SLAG_SPEAR && Math.random() < effectiveEliteChance;
+      type!==EnemyType.SLAG_SPEAR && type!==EnemyType.LAVA_DREDGER &&
+      Math.random() < effectiveEliteChance;
     if (isElite) {
       health *= 1.8;
       size *= 1.4;
@@ -3633,7 +3650,7 @@ export const EnergySwarmGame: React.FC = () => {
             type !== EnemyType.SHADE_GEAR && type !== EnemyType.M9_WELDER &&
             type !== EnemyType.FOUNDRY_CLAW && type !== EnemyType.OXIDE_MODULATOR &&
             type !== EnemyType.FERRITE_FOREMAN && type !== EnemyType.EMBER_SKATER &&
-            type !== EnemyType.SLAG_SPEAR,
+            type !== EnemyType.SLAG_SPEAR && type !== EnemyType.LAVA_DREDGER,
           remainingCapacity:
             Math.min(
               MAX_ENEMIES,
@@ -3709,6 +3726,7 @@ export const EnergySwarmGame: React.FC = () => {
       ferriteForemanAttack:type===EnemyType.FERRITE_FOREMAN?createForemanAttack():undefined,
       emberSkaterAttack:type===EnemyType.EMBER_SKATER?createEmberSkaterAttack():undefined,
       slagSpearAttack:type===EnemyType.SLAG_SPEAR?createSlagSpearAttack():undefined,
+      lavaDredgerAttack:type===EnemyType.LAVA_DREDGER?createLavaDredgerAttack():undefined,
       enemyFormation: enemyFormation ?? undefined,
       flashTicks: 0,
       evolvedVariantId: evolvedProfile?.id,
@@ -6294,7 +6312,41 @@ export const EnergySwarmGame: React.FC = () => {
         const dy = ty - enemy.y;
         const dist = Math.sqrt(dx * dx + dy * dy) || 1;
 
-        if(enemy.type===EnemyType.SLAG_SPEAR&&enemy.slagSpearAttack){
+        if(enemy.type===EnemyType.LAVA_DREDGER&&enemy.lavaDredgerAttack){
+          const prior=enemy.lavaDredgerAttack;
+          const step=stepLavaDredger(prior,enemy,playerPosRef.current,enemy.speed,delta);
+          enemy.x=Math.max(30,Math.min(WORLD_WIDTH-30,step.x));
+          enemy.y=Math.max(30,Math.min(WORLD_HEIGHT-30,step.y));
+          enemy.vx=step.vx;enemy.vy=step.vy;enemy.lavaDredgerAttack=step.attack;
+          if(step.warned){
+            playBossChargeSound();
+            addFloatingText("DRAGA DE LAVA // CARGA",enemy.x,enemy.y-54,"#fdba74");
+          }
+          if(step.charged){
+            playBossShardsSound();
+            addFloatingText("ESCORIA EN MOVIMIENTO",enemy.x,enemy.y-51,"#fef08a");
+          }
+          if(step.trail &&
+             Math.hypot(enemy.x-playerPosRef.current.x,
+               enemy.y-playerPosRef.current.y)>64 &&
+             projectilesRef.current.length<MAX_PROJECTILES &&
+             hostileProjectileBudgetState.count<
+               (simulationCombatPressure.projectileBudget??MAX_PROJECTILES)){
+            projectilesRef.current.push({
+              id:Math.random().toString(),x:enemy.x,y:enemy.y,vx:0,vy:0,
+              damage:DREDGER_TRAIL_DAMAGE,color:"#ea580c",size:16,
+              fromPlayer:false,life:DREDGER_TRAIL_LIFE_MS,
+              maxLife:DREDGER_TRAIL_LIFE_MS,
+            });
+            hostileProjectileBudgetState.count++;
+          }
+          if(step.exposed){
+            playEliteChargeSound();
+            addFloatingText("FLANCOS Y REACTOR EXPUESTOS",enemy.x,enemy.y-56,"#fef08a");
+          }
+          if(dredgerChargeContact(step.attack,enemy,playerPosRef.current))
+            damagePlayerFromBoss(DREDGER_CONTACT_DAMAGE,"lava_dredger_charge");
+        } else if(enemy.type===EnemyType.SLAG_SPEAR&&enemy.slagSpearAttack){
           const prior=enemy.slagSpearAttack;
           const step=stepSlagSpear(prior,enemy,playerPosRef.current,enemy.speed,delta);
           enemy.x=Math.max(16,Math.min(WORLD_WIDTH-16,step.x));
@@ -7618,6 +7670,12 @@ export const EnergySwarmGame: React.FC = () => {
                 if (!proj.convergenceTargetId) isCrit = true;
                 damageToApply *= chassis.weakpoints.exposedDamageMultiplier;
               }
+            } else if(enemy.type===EnemyType.LAVA_DREDGER&&enemy.lavaDredgerAttack){
+              const multiplier=dredgerDamageMultiplier(enemy.lavaDredgerAttack,
+                enemy,{x:proj.x,y:proj.y});
+              damageToApply*=multiplier;
+              if(multiplier<1)isShieldBlock=true;
+              if(multiplier>2&&!proj.convergenceTargetId)isCrit=true;
             } else if(enemy.type===EnemyType.FERRITE_FOREMAN&&enemy.ferriteForemanAttack){
               damageToApply*=foremanDamageMultiplier(enemy.ferriteForemanAttack);
               if(enemy.ferriteForemanAttack.stage==="EXPOSED"&&!proj.convergenceTargetId)isCrit=true;

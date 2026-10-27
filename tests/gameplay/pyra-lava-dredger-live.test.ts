@@ -41,8 +41,8 @@ test("PYRA-03: charge follows 1120ms warning, locked direction, no early hit",()
  assert.equal(s.attack.remainingMs,DREDGER_CHARGE_MS);
 });
 test("PYRA-03: at most three post-warning heat remnants per charge",()=>{
- let a={...createLavaDredgerAttack(),stage:"CHARGE" as const,
-   remainingMs:DREDGER_CHARGE_MS};
+ let a:ReturnType<typeof createLavaDredgerAttack>={
+   ...createLavaDredgerAttack(),stage:"CHARGE",remainingMs:DREDGER_CHARGE_MS};
  let count=0,exposures=0;
  for(let i=0;i<30;i++){
    const step=stepLavaDredger(a,dredger,target,.7,40);

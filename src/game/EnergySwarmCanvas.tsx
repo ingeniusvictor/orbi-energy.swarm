@@ -1402,6 +1402,32 @@ export function drawEnemiesList(
         ctx.lineTo(a.dirX*240,a.dirY*240);ctx.stroke();
         ctx.restore();
       }
+    } else if(enemy.type===EnemyType.LAVA_DREDGER&&enemy.lavaDredgerAttack){
+      const a=enemy.lavaDredgerAttack;
+      if(a.stage==="WARN"||a.stage==="CHARGE"){
+        const angle=a.facingAngle,isCharge=a.stage==="CHARGE";
+        ctx.save();ctx.rotate(angle);
+        ctx.shadowColor="#f97316";ctx.shadowBlur=14;
+        ctx.strokeStyle=isCharge?"rgba(251,146,60,.9)":"rgba(253,230,138,.91)";
+        ctx.lineWidth=isCharge?15:2.4;
+        ctx.setLineDash(isCharge?[]:[11,8]);
+        ctx.beginPath();ctx.moveTo(32,0);ctx.lineTo(340,0);ctx.stroke();
+        ctx.setLineDash([]);
+        if(!isCharge){
+          ctx.strokeStyle="rgba(251,146,60,.4)";ctx.lineWidth=42;
+          ctx.beginPath();ctx.moveTo(54,0);ctx.lineTo(310,0);ctx.stroke();
+        }
+        ctx.restore();
+      }
+      if(a.stage==="EXPOSED"){
+        ctx.save();ctx.strokeStyle="#fef08a";ctx.lineWidth=3;
+        ctx.shadowColor="#f59e0b";ctx.shadowBlur=12;
+        for(const side of [-1,1]){
+          ctx.beginPath();ctx.arc(side*enemy.size*.87,0,
+            7+2*Math.sin(time*.009),0,Math.PI*2);ctx.stroke();
+        }
+        ctx.restore();
+      }
     } else if(enemy.type===EnemyType.SLAG_SPEAR&&enemy.slagSpearAttack){
       const a=enemy.slagSpearAttack;
       if(a.stage==="WARN"){
@@ -1504,6 +1530,43 @@ export function drawEnemiesList(
     ctx.fillStyle = enemy.color;
 
     switch (enemy.type) {
+      case EnemyType.LAVA_DREDGER: {
+        const a=enemy.lavaDredgerAttack,r=enemy.size,exposed=a?.stage==="EXPOSED";
+        ctx.save();ctx.rotate(a?.facingAngle??0);
+        ctx.shadowColor="#f97316";ctx.shadowBlur=17;
+        // Wide industrial crawler tracks, ash-facing steel wedge and
+        // two lateral bright reactor cells that only open after charge.
+        for(const side of [-1,1]){
+          ctx.fillStyle="#1c1917";ctx.strokeStyle="#78716c";ctx.lineWidth=3;
+          ctx.fillRect(-r*.8,side*r*.75-r*.25,r*1.8,r*.5);
+          ctx.strokeRect(-r*.8,side*r*.75-r*.25,r*1.8,r*.5);
+          for(let n=0;n<4;n++){
+            ctx.strokeStyle="#fb923c";ctx.lineWidth=1.5;
+            ctx.beginPath();
+            ctx.moveTo(-r*.68+n*r*.4,side*r*.75-r*.23);
+            ctx.lineTo(-r*.68+n*r*.4,side*r*.75+r*.23);ctx.stroke();
+          }
+          ctx.fillStyle=exposed?"#fef08a":"#7c2d12";
+          ctx.shadowColor=exposed?"#fde047":"#f97316";
+          ctx.beginPath();ctx.arc(side*r*.84,0,r*.21,0,Math.PI*2);ctx.fill();
+        }
+        ctx.shadowColor="#ea580c";ctx.shadowBlur=12;
+        ctx.fillStyle="#292524";ctx.strokeStyle="#fdba74";ctx.lineWidth=3;
+        ctx.beginPath();
+        ctx.moveTo(r*1.26,0);ctx.lineTo(r*.58,-r*.65);
+        ctx.lineTo(-r*.95,-r*.6);ctx.lineTo(-r*.98,r*.6);
+        ctx.lineTo(r*.58,r*.65);ctx.closePath();
+        ctx.fill();ctx.stroke();
+        ctx.fillStyle="#9a3412";ctx.fillRect(-r*.36,-r*.44,r*.62,r*.88);
+        ctx.fillStyle=exposed?"#fef9c3":"#fb923c";
+        ctx.beginPath();ctx.arc(-r*.1,0,r*.28,0,Math.PI*2);ctx.fill();
+        ctx.strokeStyle="#94a3b8";ctx.lineWidth=7;
+        ctx.beginPath();ctx.moveTo(r*.56,0);ctx.lineTo(r*1.35,0);ctx.stroke();
+        ctx.fillStyle="#fdba74";
+        ctx.beginPath();ctx.moveTo(r*1.51,0);ctx.lineTo(r*1.13,-r*.25);
+        ctx.lineTo(r*1.13,r*.25);ctx.closePath();ctx.fill();
+        ctx.restore();break;
+      }
       case EnemyType.SLAG_SPEAR: {
         const a=enemy.slagSpearAttack,r=enemy.size;
         ctx.save();ctx.rotate(a?.lockedAngle??0);
