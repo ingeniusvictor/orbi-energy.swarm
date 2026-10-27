@@ -1,0 +1,59 @@
+name: PYRA-07A Solfernax Real Chromium CI
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/game/EnergySwarmGame.tsx'
+      - 'src/game/pyraSolfernax.ts'
+      - 'scripts/pyra-solfernax-e2e.mjs'
+      - 'tests/gameplay/pyra-solfernax-e2e-isolation.test.ts'
+      - '.github/workflows/pyra-solfernax-e2e.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'src/game/EnergySwarmGame.tsx'
+      - 'src/game/pyraSolfernax.ts'
+      - 'scripts/pyra-solfernax-e2e.mjs'
+      - 'tests/gameplay/pyra-solfernax-e2e-isolation.test.ts'
+      - '.github/workflows/pyra-solfernax-e2e.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  pyra-real-boss:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Canonical wave-ten owner and fixture isolation
+        run: npx tsx --test tests/gameplay/pyra-solfernax-e2e-isolation.test.ts
+      - name: Production build must not contain the CI fixture
+        run: |
+          npm run typecheck
+          npm run build
+          node scripts/check-pyra-e2e-production-isolation.mjs
+      - name: Build separate E2E-only bundle (never deploy)
+        run: npx vite build --mode pyra-e2e
+      - name: Install isolated pinned Chromium
+        run: |
+          npm install --no-save --package-lock=false playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Native Solfernax entry/intro/stage cycle on desktop and mobile
+        env:
+          ORBI_PYRA_E2E_OUTPUT: artifacts/pyra-solfernax-e2e
+        run: node scripts/pyra-solfernax-e2e.mjs
+      - name: Preserve real-browser screenshots and JSON on failure
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pyra-solfernax-real-browser-${{ github.sha }}
+          path: artifacts/pyra-solfernax-e2e/
+          retention-days: 21
+          if-no-files-found: warn

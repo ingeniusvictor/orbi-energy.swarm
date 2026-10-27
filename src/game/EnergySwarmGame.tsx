@@ -1997,8 +1997,23 @@ export const EnergySwarmGame: React.FC = () => {
       );
       setCurrentWave(currentWaveRef.current);
     } else {
+      // PYRA-07A: compile-time CI-only mode selects the native wave-ten
+      // descriptor; regular Vercel production is compiled with MODE=production.
+      // Not a spawner, HP override, award or public debug shortcut.
+      const pyraCiBossEntry = import.meta.env.MODE === "pyra-e2e" &&
+        worldRouteRunActiveRef.current &&
+        worldRouteThemeRef.current === PYRA_WORLD_ID &&
+        new URLSearchParams(window.location.search).get("pyra-e2e-boss") === "1";
+      // Keep the canonical new-run initialization verbatim for all normal
+      // gameplay paths and existing release contracts.
       currentWaveRef.current = 1;
       runtimeProgressionRef.current = createCampaignRuntimeState(1);
+      if (pyraCiBossEntry) {
+        currentWaveRef.current = BOSS_WAVE_NUMBER;
+        runtimeProgressionRef.current =
+          createCampaignRuntimeState(BOSS_WAVE_NUMBER);
+        setCurrentWave(BOSS_WAVE_NUMBER);
+      }
     }
     waveActiveRef.current = false;
     enemyFormationDirectorRef.current =
@@ -8844,6 +8859,27 @@ export const EnergySwarmGame: React.FC = () => {
         canvas.dataset.pyraLavaDredgerCount=String(dredgers);
         canvas.dataset.pyraCinderlingCount=String(cinderlings);
         canvas.dataset.pyraCalderaSeraphCount=String(seraphs);
+        // Read-only, CI-exclusive view of the genuine Campaign bossRef.
+        if (import.meta.env.MODE === "pyra-e2e") {
+          const liveBoss = bossRef.current?.type === EnemyType.BOSS_SOLFERNAX
+            ? bossRef.current : null;
+          canvas.dataset.pyraE2eBossId = liveBoss?.id ?? "NONE";
+          canvas.dataset.pyraE2eBossStage =
+            liveBoss?.solfernaxAttack?.stage ?? "NONE";
+          canvas.dataset.pyraE2eBossPhase =
+            String(liveBoss?.solfernaxAttack?.phase ?? 0);
+          canvas.dataset.pyraE2eBossHealth =
+            String(liveBoss?.health ?? 0);
+          canvas.dataset.pyraE2eBossMaxHealth =
+            String(liveBoss?.maxHealth ?? 0);
+          canvas.dataset.pyraE2eBossIntro =
+            String(liveBoss !== null && bossIntroTimeRef.current !== null);
+          canvas.dataset.pyraE2eCinematic =
+            String(bossDefeatedSequenceActiveRef.current);
+          canvas.dataset.pyraE2eRuntimeMode =
+            runtimeProgressionRef.current.mode;
+          canvas.dataset.pyraE2eWave = String(currentWaveRef.current);
+        }
       }else{
         delete canvas.dataset.pyraLandmark;
         delete canvas.dataset.pyraEmberSkaterCount;
