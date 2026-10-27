@@ -3180,8 +3180,9 @@ export const EnergySwarmGame: React.FC = () => {
           Boolean(resolveOmegaFoundryEncounter(worldRouteRunActiveRef.current,descriptor));
         const solfernaxWaveIntro=isPyra(worldRouteRunActiveRef.current,worldRouteThemeRef.current) &&
           Boolean(resolveSolfernaxEncounter(worldRouteRunActiveRef.current,descriptor));
-        const activeWaveName = solfernaxWaveIntro ? "Solfernax" : archonWaveIntro
-          ? "Threshold Archon" : omegaWaveIntro ? "Omega Foundry" : descriptor.display.name;
+        const activeWaveName = archonWaveIntro
+          ? "Threshold Archon" : omegaWaveIntro ? "Omega Foundry"
+          : solfernaxWaveIntro ? "Solfernax" : descriptor.display.name;
         setWaveName(activeWaveName);
 
         postDialogue("SYSTEM", `OLEADA ${currentWaveRef.current} ACTIVA: ${activeWaveName}`);

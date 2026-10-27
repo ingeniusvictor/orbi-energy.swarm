@@ -70,7 +70,8 @@ export function solfernaxGateShift(a:SolfernaxAttack):number{
   (SOLFERNAX_ACTIVE_MS-a.remainingMs)/SOLFERNAX_ACTIVE_MS));
  // Alternating direction each cycle. At every point the centered safe lane
  // remains >150 units wide: no full-screen damage walls.
- return (a.cycle%2===0?1:-1)*SOLFERNAX_GATE_SHIFT*(2*progress-1);
+ const shift=(a.cycle%2===0?1:-1)*SOLFERNAX_GATE_SHIFT*(2*progress-1);
+ return shift===0?0:shift;
 }
 export function solfernaxCollapseRadius(a:SolfernaxAttack):number{
  const progress=Math.max(0,Math.min(1,
