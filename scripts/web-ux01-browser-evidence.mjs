@@ -499,7 +499,8 @@ async function runPyraLiveCombat(name,width,height,touch){
     check(await canvas.getAttribute("data-ux15-live-combat")==="true",
       name+": cosmetic PYRA screen, not native combat");
     for(const key of ["data-pyra-ember-skater-count",
-      "data-pyra-slag-spear-count","data-pyra-lava-dredger-count"]){
+      "data-pyra-slag-spear-count","data-pyra-lava-dredger-count",
+      "data-pyra-cinderling-count"]){
       check(await canvas.getAttribute(key)!==null,
         name+": PYRA live enemy director readout missing "+key);
     }

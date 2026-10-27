@@ -24,6 +24,10 @@ import {createSpanWardenAttack,shouldSpawnSpanWarden,selectSpanWardenSpawn,
   stepSpanWarden,resolveSpanWardenHit,SPAN_WARDEN_PROJECTILE_SPREAD} from "./asteriaSpanWarden";
 import {ASTERIA_WORLD_CHOICE,FERRUM_WORLD_ID,PYRA_WORLD_ID,drawFerrumWorld,ferrumSceneAt,isAsteria,isFerrum,isPyra,type PlayableWorld} from "./ferrumWorld";
 import {drawPyraWorld,pyraSceneAt} from "./pyraWorld";
+import {shouldSpawnCinderling,selectCinderlingSpawn,createCinderlingAttack,
+ stepCinderling,projectCinderlingBurst,cinderlingDamageMultiplier,
+ CINDERLING_BURST_LIMIT,CINDERLING_CINDER_DAMAGE,CINDERLING_CINDER_LIFE_MS
+} from "./pyraCinderling";
 import {shouldSpawnLavaDredger,selectLavaDredgerSpawn,createLavaDredgerAttack,
  stepLavaDredger,dredgerChargeContact,dredgerDamageMultiplier,
  DREDGER_TRAIL_LIFE_MS,DREDGER_TRAIL_DAMAGE,DREDGER_CONTACT_DAMAGE} from "./pyraLavaDredger";
@@ -3366,7 +3370,15 @@ export const EnergySwarmGame: React.FC = () => {
       enemiesRef.current.some(e=>e.type===EnemyType.LAVA_DREDGER&&!e.isDead))
       ?selectLavaDredgerSpawn(routeCamera,playerPosRef.current,
         WORLD_WIDTH,WORLD_HEIGHT,combatPressure.spawnSafetyRadius):null;
-    const type = dredgerSpawn?EnemyType.LAVA_DREDGER:
+    const cinderlingSpawn=shouldSpawnCinderling(
+      isPyra(worldRouteRunActiveRef.current,worldRouteThemeRef.current),
+      descriptor.sourceMode,descriptor.waveNumber,waveBudgetSpawnedRef.current,
+      Boolean(forcedType),spawningMiniboss,
+      enemiesRef.current.some(e=>e.type===EnemyType.CINDERLING&&!e.isDead))
+      ?selectCinderlingSpawn(routeCamera,playerPosRef.current,
+        WORLD_WIDTH,WORLD_HEIGHT,combatPressure.spawnSafetyRadius):null;
+    const type = cinderlingSpawn?EnemyType.CINDERLING:
+      dredgerSpawn?EnemyType.LAVA_DREDGER:
       slagSpawn?EnemyType.SLAG_SPEAR:
       emberSpawn?EnemyType.EMBER_SKATER:
       foremanSpawn?EnemyType.FERRITE_FOREMAN:
@@ -3387,7 +3399,8 @@ export const EnergySwarmGame: React.FC = () => {
       type===EnemyType.SHADE_GEAR || type===EnemyType.M9_WELDER ||
       type===EnemyType.FOUNDRY_CLAW || type===EnemyType.OXIDE_MODULATOR ||
       type===EnemyType.FERRITE_FOREMAN || type===EnemyType.EMBER_SKATER ||
-      type===EnemyType.SLAG_SPEAR || type===EnemyType.LAVA_DREDGER
+      type===EnemyType.SLAG_SPEAR || type===EnemyType.LAVA_DREDGER ||
+      type===EnemyType.CINDERLING
         ? null
         : resolveEvolvedEnemySpawn({
             descriptor,
@@ -3453,7 +3466,8 @@ export const EnergySwarmGame: React.FC = () => {
     }
     // Replace the legacy position ONLY for the new ASTERIA-native actor.
     // All other modes retain the existing four-side camera spawn policy.
-    if(dredgerSpawn){ex=dredgerSpawn.x;ey=dredgerSpawn.y;
+    if(cinderlingSpawn){ex=cinderlingSpawn.x;ey=cinderlingSpawn.y;
+    }else if(dredgerSpawn){ex=dredgerSpawn.x;ey=dredgerSpawn.y;
     }else if(slagSpawn){ex=slagSpawn.x;ey=slagSpawn.y;
     }else if(emberSpawn){ex=emberSpawn.x;ey=emberSpawn.y;
     }else if(foremanSpawn){ex=foremanSpawn.x;ey=foremanSpawn.y;
@@ -3540,6 +3554,10 @@ export const EnergySwarmGame: React.FC = () => {
       health=116*healthMultiplier;
       speed=.59*biomeCfg.enemySpeedMultiplier*movementSpeedMultiplier;
       size=26;color="#f97316";
+    } else if(type===EnemyType.CINDERLING){
+      health=24*healthMultiplier;
+      speed=1.18*biomeCfg.enemySpeedMultiplier*movementSpeedMultiplier;
+      size=11;color="#fbbf24";
     } else if (type === EnemyType.DRONE) {
       health = 20 * healthMultiplier;
       speed = 0.7 * biomeCfg.enemySpeedMultiplier * movementSpeedMultiplier;
@@ -3621,7 +3639,7 @@ export const EnergySwarmGame: React.FC = () => {
       type!==EnemyType.FOUNDRY_CLAW && type!==EnemyType.OXIDE_MODULATOR &&
       type!==EnemyType.FERRITE_FOREMAN && type!==EnemyType.EMBER_SKATER &&
       type!==EnemyType.SLAG_SPEAR && type!==EnemyType.LAVA_DREDGER &&
-      Math.random() < effectiveEliteChance;
+      type!==EnemyType.CINDERLING && Math.random() < effectiveEliteChance;
     if (isElite) {
       health *= 1.8;
       size *= 1.4;
@@ -3650,7 +3668,8 @@ export const EnergySwarmGame: React.FC = () => {
             type !== EnemyType.SHADE_GEAR && type !== EnemyType.M9_WELDER &&
             type !== EnemyType.FOUNDRY_CLAW && type !== EnemyType.OXIDE_MODULATOR &&
             type !== EnemyType.FERRITE_FOREMAN && type !== EnemyType.EMBER_SKATER &&
-            type !== EnemyType.SLAG_SPEAR && type !== EnemyType.LAVA_DREDGER,
+            type !== EnemyType.SLAG_SPEAR && type !== EnemyType.LAVA_DREDGER &&
+            type !== EnemyType.CINDERLING,
           remainingCapacity:
             Math.min(
               MAX_ENEMIES,
@@ -3727,6 +3746,7 @@ export const EnergySwarmGame: React.FC = () => {
       emberSkaterAttack:type===EnemyType.EMBER_SKATER?createEmberSkaterAttack():undefined,
       slagSpearAttack:type===EnemyType.SLAG_SPEAR?createSlagSpearAttack():undefined,
       lavaDredgerAttack:type===EnemyType.LAVA_DREDGER?createLavaDredgerAttack():undefined,
+      cinderlingAttack:type===EnemyType.CINDERLING?createCinderlingAttack():undefined,
       enemyFormation: enemyFormation ?? undefined,
       flashTicks: 0,
       evolvedVariantId: evolvedProfile?.id,
@@ -6312,7 +6332,43 @@ export const EnergySwarmGame: React.FC = () => {
         const dy = ty - enemy.y;
         const dist = Math.sqrt(dx * dx + dy * dy) || 1;
 
-        if(enemy.type===EnemyType.LAVA_DREDGER&&enemy.lavaDredgerAttack){
+        if(enemy.type===EnemyType.CINDERLING&&enemy.cinderlingAttack){
+          const previous=enemy.cinderlingAttack;
+          const step=stepCinderling(previous,enemy,playerPosRef.current,enemy.speed,delta);
+          enemy.x=Math.max(16,Math.min(WORLD_WIDTH-16,step.x));
+          enemy.y=Math.max(16,Math.min(WORLD_HEIGHT-16,step.y));
+          enemy.vx=step.vx;enemy.vy=step.vy;enemy.cinderlingAttack=step.attack;
+          if(step.warned){
+            playDroneChargeSound();
+            addFloatingText("CINERITA / ZONA DE ATERRIZAJE",enemy.x,enemy.y-25,"#fef08a");
+          }
+          // The locked target is shown throughout MARK and LEAP. Emit exactly
+          // four non-splitting bolts on the transition into BURST, never on
+          // every subsequent simulation frame. The canonical projectile budget
+          // and contact resolver own every spark.
+          if(step.fired){
+            const burst=projectCinderlingBurst(enemy.x,enemy.y,previous.lockedAngle);
+            const remainingSlots=Math.max(0,Math.min(
+              CINDERLING_BURST_LIMIT,
+              MAX_PROJECTILES-projectilesRef.current.length,
+              (simulationCombatPressure.projectileBudget??MAX_PROJECTILES)-
+                hostileProjectileBudgetState.count));
+            for(let n=0;n<Math.min(burst.length,remainingSlots);n++){
+              const p=burst[n];
+              projectilesRef.current.push({
+                id:Math.random().toString(),x:p.x,y:p.y,vx:p.vx,vy:p.vy,
+                damage:CINDERLING_CINDER_DAMAGE,color:"#facc15",size:4.2,
+                fromPlayer:false,life:CINDERLING_CINDER_LIFE_MS,
+                maxLife:CINDERLING_CINDER_LIFE_MS,
+              });
+              hostileProjectileBudgetState.count++;
+            }
+            playBossShardsSound();
+            addFloatingText("CINDER BURST / 4",enemy.x,enemy.y-29,"#fdba74");
+          }
+          if(step.cooled)
+            addFloatingText("CINDER CORE EXPOSED",enemy.x,enemy.y-29,"#d9f99d");
+        } else if(enemy.type===EnemyType.LAVA_DREDGER&&enemy.lavaDredgerAttack){
           const prior=enemy.lavaDredgerAttack;
           const step=stepLavaDredger(prior,enemy,playerPosRef.current,enemy.speed,delta);
           enemy.x=Math.max(30,Math.min(WORLD_WIDTH-30,step.x));
@@ -7670,6 +7726,10 @@ export const EnergySwarmGame: React.FC = () => {
                 if (!proj.convergenceTargetId) isCrit = true;
                 damageToApply *= chassis.weakpoints.exposedDamageMultiplier;
               }
+            } else if(enemy.type===EnemyType.CINDERLING&&enemy.cinderlingAttack){
+              damageToApply*=cinderlingDamageMultiplier(enemy.cinderlingAttack);
+              if(enemy.cinderlingAttack.stage==="COOL"&&!proj.convergenceTargetId)
+                isCrit=true;
             } else if(enemy.type===EnemyType.LAVA_DREDGER&&enemy.lavaDredgerAttack){
               const multiplier=dredgerDamageMultiplier(enemy.lavaDredgerAttack,
                 enemy,{x:proj.x,y:proj.y});
@@ -8607,20 +8667,23 @@ export const EnergySwarmGame: React.FC = () => {
       canvas.dataset.wbe01SpanWardenPhase=enemiesRef.current.find(e=>
         e.type===EnemyType.SPAN_WARDEN&&!e.isDead)?.spanWardenAttack?.phase??"NONE";
       if(pyraActive){
-        let skaters=0,lancers=0,dredgers=0;
+        let skaters=0,lancers=0,dredgers=0,cinderlings=0;
         for(const actor of enemiesRef.current){
           if(actor.isDead)continue;
           if(actor.type===EnemyType.EMBER_SKATER)skaters++;
           else if(actor.type===EnemyType.SLAG_SPEAR)lancers++;
           else if(actor.type===EnemyType.LAVA_DREDGER)dredgers++;
+          else if(actor.type===EnemyType.CINDERLING)cinderlings++;
         }
         canvas.dataset.pyraEmberSkaterCount=String(skaters);
         canvas.dataset.pyraSlagSpearCount=String(lancers);
         canvas.dataset.pyraLavaDredgerCount=String(dredgers);
+        canvas.dataset.pyraCinderlingCount=String(cinderlings);
       }else{
         delete canvas.dataset.pyraEmberSkaterCount;
         delete canvas.dataset.pyraSlagSpearCount;
         delete canvas.dataset.pyraLavaDredgerCount;
+        delete canvas.dataset.pyraCinderlingCount;
       }
       if(ferrumActive){
         canvas.dataset.ferrumShadeGearCount=String(gear);
@@ -8637,6 +8700,7 @@ export const EnergySwarmGame: React.FC = () => {
       delete canvas.dataset.pyraEmberSkaterCount;
       delete canvas.dataset.pyraSlagSpearCount;
       delete canvas.dataset.pyraLavaDredgerCount;
+      delete canvas.dataset.pyraCinderlingCount;
       delete canvas.dataset.wbe01RailcutterScope;
       delete canvas.dataset.wbe01RailcutterCount;
       delete canvas.dataset.wbe01RailcutterPhase;

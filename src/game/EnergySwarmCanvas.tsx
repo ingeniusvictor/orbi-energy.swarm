@@ -1402,6 +1402,21 @@ export function drawEnemiesList(
         ctx.lineTo(a.dirX*240,a.dirY*240);ctx.stroke();
         ctx.restore();
       }
+    } else if(enemy.type===EnemyType.CINDERLING&&enemy.cinderlingAttack){
+      const a=enemy.cinderlingAttack;
+      if(a.stage==="MARK"||a.stage==="LEAP"){
+        const markX=a.targetX-enemy.x,markY=a.targetY-enemy.y;
+        ctx.save();
+        ctx.strokeStyle=a.stage==="MARK"?"rgba(254,240,138,.92)":"#fb923c";
+        ctx.fillStyle="rgba(249,115,22,.1)";
+        ctx.shadowColor="#f97316";ctx.shadowBlur=14;
+        ctx.lineWidth=2.4;
+        ctx.setLineDash(a.stage==="MARK"?[7,5]:[]);
+        ctx.beginPath();ctx.arc(markX,markY,24,0,Math.PI*2);
+        ctx.fill();ctx.stroke();
+        ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(markX,markY);ctx.stroke();
+        ctx.setLineDash([]);ctx.restore();
+      }
     } else if(enemy.type===EnemyType.LAVA_DREDGER&&enemy.lavaDredgerAttack){
       const a=enemy.lavaDredgerAttack;
       if(a.stage==="WARN"||a.stage==="CHARGE"){
@@ -1530,6 +1545,34 @@ export function drawEnemiesList(
     ctx.fillStyle = enemy.color;
 
     switch (enemy.type) {
+      case EnemyType.CINDERLING: {
+        const a=enemy.cinderlingAttack,r=enemy.size;
+        ctx.save();ctx.rotate(time*.002+(a?.cycles??0)*Math.PI/4);
+        ctx.shadowColor="#f59e0b";ctx.shadowBlur=a?.stage==="COOL"?8:17;
+        // Six jagged obsidian wings protect an orange cinder heart. During
+        // cooling they retract and reveal a distinctly lime-white weak core.
+        ctx.fillStyle="#26212a";ctx.strokeStyle="#fbbf24";ctx.lineWidth=2;
+        ctx.beginPath();
+        for(let n=0;n<18;n++){
+          const ang=n*Math.PI/9;
+          const radius=r*(n%3===0?1.45:.72);
+          if(n===0)ctx.moveTo(Math.cos(ang)*radius,Math.sin(ang)*radius);
+          else ctx.lineTo(Math.cos(ang)*radius,Math.sin(ang)*radius);
+        }
+        ctx.closePath();ctx.fill();ctx.stroke();
+        for(let n=0;n<6;n++){
+          const ang=n*Math.PI/3;
+          ctx.fillStyle="#9a3412";
+          ctx.beginPath();ctx.arc(Math.cos(ang)*r*.7,Math.sin(ang)*r*.7,2.2,0,Math.PI*2);
+          ctx.fill();
+        }
+        ctx.fillStyle=a?.stage==="COOL"?"#d9f99d":
+          a?.stage==="MARK"?"#fef08a":"#fb923c";
+        ctx.beginPath();ctx.arc(0,0,r*.53,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle="#450a0a";ctx.beginPath();
+        ctx.arc(0,0,r*.18,0,Math.PI*2);ctx.fill();
+        ctx.restore();break;
+      }
       case EnemyType.LAVA_DREDGER: {
         const a=enemy.lavaDredgerAttack,r=enemy.size,exposed=a?.stage==="EXPOSED";
         ctx.save();ctx.rotate(a?.facingAngle??0);
