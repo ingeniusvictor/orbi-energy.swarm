@@ -6,6 +6,8 @@
  * milestones, score, death animation and rewards. No alternate boss or timer.
  */
 export const SOLFERNAX_ENCOUNTER_ID="world:pyra:solfernax:v1";
+/** Massive reactor remains anchored against projectile pushback. */
+export const SOLFERNAX_ANCHORED_REACTOR=true as const;
 export const SOLFERNAX_PREPARE_MS=1000;
 export const SOLFERNAX_WARNING_MS=1440;
 export const SOLFERNAX_ACTIVE_MS=1180;

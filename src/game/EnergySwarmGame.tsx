@@ -8048,7 +8048,14 @@ export const EnergySwarmGame: React.FC = () => {
                   : 1.8;
             const signatureBehavior =
               enemySignatureBehaviorCacheRef.current.get(enemy);
-            const pushFactor = proj.convergenceTargetId ? 0 :
+            // PYRA-07A-2: Solfernax is a fixed reactor, not a mobile
+            // knockback target. Authentic ORBI shots used to displace its
+            // centre above the playable arena (y<0), silently losing targeting.
+            // Keep all damage/status/projectile rules and pushback for every
+            // other boss and regular enemy entirely unchanged.
+            const pushFactor =
+              enemy.type === EnemyType.BOSS_SOLFERNAX ? 0 :
+              proj.convergenceTargetId ? 0 :
               basePushFactor *
               signatureBehavior.projectilePushbackMultiplier *
               (proj.pushMultiplier ?? 1);
