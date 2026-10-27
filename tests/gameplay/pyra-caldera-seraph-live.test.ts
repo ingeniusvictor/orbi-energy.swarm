@@ -63,7 +63,8 @@ test("PYRA-05: three finite curved meteors, preview reproduces canonical traject
  assert.throws(()=>advanceCalderaMeteor(0,0,1,0,1,0,101),RangeError);
 });
 test("PYRA-05: exposed reactor finite; fire once; existing hit resolver",()=>{
- let a={...createCalderaSeraphAttack(),stage:"DISCHARGE" as const,
+ let a:ReturnType<typeof createCalderaSeraphAttack>={
+   ...createCalderaSeraphAttack(),stage:"DISCHARGE",
    remainingMs:SERAPH_DISCHARGE_MS};
  let exposedCount=0;
  for(let i=0;i<10;i++){

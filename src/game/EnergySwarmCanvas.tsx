@@ -2,6 +2,7 @@ import React from "react";
 import {ARCHON_BEACON_OFFSETS,ARCHON_BEAM_RANGE,ARCHON_ACTIVE_MS,
   projectArchonPulseRadius} from "./asteriaThresholdArchon";
 import { getEvo8WingCount } from "./orbiEvolution";
+import {traceCalderaMeteor} from "./pyraCalderaSeraph";
 import { prewarmEvo8Lot1Sprites, disposeEvo8Lot1Sprites, drawEvo8Lot1Sprite } from "./evo8PremiumSprite";
 import { prewarmPremiumEnemySprites, disposePremiumEnemySprites, drawPremiumEnemyBody } from "./premiumEnemySprites";
 import { 
@@ -1402,6 +1403,34 @@ export function drawEnemiesList(
         ctx.lineTo(a.dirX*240,a.dirY*240);ctx.stroke();
         ctx.restore();
       }
+    } else if(enemy.type===EnemyType.CALDERA_SERAPH&&enemy.calderaSeraphAttack){
+      const a=enemy.calderaSeraphAttack;
+      if(a.stage==="WARNING"){
+        ctx.save();
+        // All three paths are sampled from the same pure Euler integrator
+        // that moves live hostile meteors. No deceptive curved art.
+        ctx.setLineDash([10,7]);ctx.lineWidth=2.2;
+        for(let n=0;n<3;n++){
+          const arc=traceCalderaMeteor(enemy,a.lockedAngle,n as 0|1|2,24);
+          ctx.beginPath();
+          arc.forEach((point,i)=>{
+            if(i===0)ctx.moveTo(point.x-enemy.x,point.y-enemy.y);
+            else ctx.lineTo(point.x-enemy.x,point.y-enemy.y);
+          });
+          ctx.strokeStyle=n===1?"#fde68a":"#fb923c";
+          ctx.shadowColor="#f97316";ctx.shadowBlur=12;ctx.stroke();
+          const end=arc[arc.length-1];
+          ctx.beginPath();ctx.arc(end.x-enemy.x,end.y-enemy.y,9,0,Math.PI*2);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+      if(a.stage==="EXPOSED"){
+        ctx.save();ctx.strokeStyle="#d9f99d";
+        ctx.shadowColor="#a3e635";ctx.shadowBlur=12;ctx.lineWidth=2.6;
+        ctx.beginPath();ctx.arc(0,0,enemy.size*.59+2*Math.sin(time*.01),0,Math.PI*2);
+        ctx.stroke();ctx.restore();
+      }
     } else if(enemy.type===EnemyType.CINDERLING&&enemy.cinderlingAttack){
       const a=enemy.cinderlingAttack;
       if(a.stage==="MARK"||a.stage==="LEAP"){
@@ -1545,6 +1574,50 @@ export function drawEnemiesList(
     ctx.fillStyle = enemy.color;
 
     switch (enemy.type) {
+      case EnemyType.CALDERA_SERAPH: {
+        const a=enemy.calderaSeraphAttack,r=enemy.size;
+        const cooled=a?.stage==="EXPOSED";
+        ctx.save();ctx.rotate(a?.lockedAngle??0);
+        ctx.shadowColor=cooled?"#bef264":"#f97316";ctx.shadowBlur=17;
+        // Six independent articulated fan-wings form a magma-ray silhouette.
+        for(const side of [-1,1]){
+          for(let i=0;i<3;i++){
+            const dist=i*r*.43;
+            const wingSpan=(1.4-i*.20)*r;
+            const flex=Math.sin(time*.003+(a?.cycle??0)+i*.8)*r*.09;
+            ctx.fillStyle=i%2?"#292524":"#431407";
+            ctx.strokeStyle=cooled?"#bef264":"#fb923c";ctx.lineWidth=2.3;
+            ctx.beginPath();
+            ctx.moveTo(-r*.23+dist,-side*r*.03);
+            ctx.lineTo(-r*.5+dist,side*(wingSpan+flex));
+            ctx.lineTo(-r*.9+dist,side*(wingSpan*.7+flex));
+            ctx.lineTo(-r*.60+dist,side*r*.35);
+            ctx.closePath();ctx.fill();ctx.stroke();
+            ctx.strokeStyle="rgba(251,191,36,.8)";ctx.lineWidth=1.4;
+            ctx.beginPath();ctx.moveTo(-r*.4+dist,side*r*.25);
+            ctx.lineTo(-r*.52+dist,side*(wingSpan*.87+flex));ctx.stroke();
+          }
+        }
+        ctx.fillStyle="#292524";ctx.strokeStyle="#fdba74";ctx.lineWidth=3;
+        ctx.beginPath();ctx.moveTo(r*1.2,0);
+        ctx.quadraticCurveTo(-r*.1,-r*.88,-r*.9,-r*.23);
+        ctx.quadraticCurveTo(-r*1.05,0,-r*.9,r*.23);
+        ctx.quadraticCurveTo(-r*.1,r*.88,r*1.2,0);
+        ctx.closePath();ctx.fill();ctx.stroke();
+        ctx.fillStyle=cooled?"#d9f99d":"#fb923c";
+        ctx.beginPath();ctx.arc(r*.12,0,r*.38,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle="#292524";ctx.beginPath();ctx.arc(r*.22,0,r*.18,0,Math.PI*2);ctx.fill();
+        if(a?.stage==="CIRCULATE"||a?.stage==="WARNING"){
+          ctx.strokeStyle="#fef08a";ctx.lineWidth=2;
+          for(let n=0;n<3;n++){
+            const theta=time*.002+n*Math.PI*2/3;
+            ctx.beginPath();
+            ctx.arc(Math.cos(theta)*r*.91,Math.sin(theta)*r*.91,4.2,0,Math.PI*2);
+            ctx.stroke();
+          }
+        }
+        ctx.restore();break;
+      }
       case EnemyType.CINDERLING: {
         const a=enemy.cinderlingAttack,r=enemy.size;
         ctx.save();ctx.rotate(time*.002+(a?.cycles??0)*Math.PI/4);
@@ -2768,7 +2841,16 @@ export function drawProjectilesList(
     ctx.strokeStyle = proj.color;
 
     if (!proj.fromPlayer) {
-      if(proj.slagSpearDistanceRemaining!==undefined){
+      if(proj.seraphMeteorCurveDirection!==undefined){
+        ctx.rotate(Math.atan2(proj.vy,proj.vx));
+        ctx.shadowColor="#fb923c";ctx.shadowBlur=14;
+        ctx.strokeStyle="#f97316";ctx.lineWidth=4;
+        ctx.beginPath();ctx.moveTo(-17,0);ctx.lineTo(2,0);ctx.stroke();
+        ctx.fillStyle="#fef08a";ctx.beginPath();ctx.arc(5,0,proj.size,0,Math.PI*2);
+        ctx.fill();
+        ctx.fillStyle="#9a3412";ctx.beginPath();
+        ctx.arc(7,-3,proj.size*.35,0,Math.PI*2);ctx.fill();
+      }else if(proj.slagSpearDistanceRemaining!==undefined){
         ctx.rotate(Math.atan2(proj.vy,proj.vx));
         ctx.shadowColor="#fdba74";ctx.shadowBlur=15;
         ctx.strokeStyle="#fb923c";ctx.lineWidth=4;
