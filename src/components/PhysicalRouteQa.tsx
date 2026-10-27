@@ -366,6 +366,7 @@ export default function PhysicalRouteQa() {
         // Both evidence readings are written atomically by the SAME real
         // Canvas paint, never from React's throttled (1:8) telemetry.
         canvas.dataset.c3b12ClockMs=String(s.frame.cursor.simulatedMs);
+        canvas.dataset.c3b12RunGate=String(runningRef.current);
         canvas.dataset.c3b12PaintOrdinal=String(++evidenceThrusterPaintRef.current);
         canvas.dataset.c3b12ThrustAnimated=String(s.energyThrusterPose.throttle>.035);
         canvas.dataset.c3b12ThrustSource="CANONICAL_UX12";
@@ -379,6 +380,7 @@ export default function PhysicalRouteQa() {
         delete canvas.dataset.c3b12Thrust;
         delete canvas.dataset.c3b12ThrustLength;
         delete canvas.dataset.c3b12ClockMs;
+        delete canvas.dataset.c3b12RunGate;
         delete canvas.dataset.c3b12PaintOrdinal;
         delete canvas.dataset.c3b12ThrustAnimated;
         delete canvas.dataset.c3b12ThrustSource;

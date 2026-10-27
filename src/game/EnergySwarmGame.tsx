@@ -8547,7 +8547,8 @@ export const EnergySwarmGame: React.FC = () => {
     const asteriaCombatVisualActive = worldRouteRunActiveRef.current;
     if (asteriaCombatVisualActive) {
       const ferrumActive=isFerrum(worldRouteRunActiveRef.current,worldRouteThemeRef.current);
-      if(isPyra(worldRouteRunActiveRef.current,worldRouteThemeRef.current)){
+      const pyraActive=isPyra(worldRouteRunActiveRef.current,worldRouteThemeRef.current);
+      if(pyraActive){
         drawPyraWorld(ctx,projectRouteDistance(asteriaLiveCursorRef.current),
           panoramicViewport.width,asteriaLiveCursorRef.current.segmentOrdinal);
         canvas.dataset.ux15Visual="pyra-magma-canvas";
@@ -8605,6 +8606,22 @@ export const EnergySwarmGame: React.FC = () => {
       canvas.dataset.wbe01SpanWardenCount=String(wardens);
       canvas.dataset.wbe01SpanWardenPhase=enemiesRef.current.find(e=>
         e.type===EnemyType.SPAN_WARDEN&&!e.isDead)?.spanWardenAttack?.phase??"NONE";
+      if(pyraActive){
+        let skaters=0,lancers=0,dredgers=0;
+        for(const actor of enemiesRef.current){
+          if(actor.isDead)continue;
+          if(actor.type===EnemyType.EMBER_SKATER)skaters++;
+          else if(actor.type===EnemyType.SLAG_SPEAR)lancers++;
+          else if(actor.type===EnemyType.LAVA_DREDGER)dredgers++;
+        }
+        canvas.dataset.pyraEmberSkaterCount=String(skaters);
+        canvas.dataset.pyraSlagSpearCount=String(lancers);
+        canvas.dataset.pyraLavaDredgerCount=String(dredgers);
+      }else{
+        delete canvas.dataset.pyraEmberSkaterCount;
+        delete canvas.dataset.pyraSlagSpearCount;
+        delete canvas.dataset.pyraLavaDredgerCount;
+      }
       if(ferrumActive){
         canvas.dataset.ferrumShadeGearCount=String(gear);
         canvas.dataset.ferrumWelderCount=String(welders);
@@ -8617,6 +8634,9 @@ export const EnergySwarmGame: React.FC = () => {
         delete canvas.dataset.ferrumOxideModulatorCount;
       }
     } else {
+      delete canvas.dataset.pyraEmberSkaterCount;
+      delete canvas.dataset.pyraSlagSpearCount;
+      delete canvas.dataset.pyraLavaDredgerCount;
       delete canvas.dataset.wbe01RailcutterScope;
       delete canvas.dataset.wbe01RailcutterCount;
       delete canvas.dataset.wbe01RailcutterPhase;
