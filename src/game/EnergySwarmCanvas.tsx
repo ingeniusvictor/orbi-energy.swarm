@@ -1,4 +1,9 @@
 import React from "react";
+import {SOLFERNAX_ACTIVE_MS,SOLFERNAX_VENT_RANGE,SOLFERNAX_VENT_OFFSETS,
+ SOLFERNAX_GATE_OFFSETS,SOLFERNAX_GATE_RANGE,
+ SOLFERNAX_COLLAPSE_LANES,SOLFERNAX_COLLAPSE_MAX_RADIUS,
+ SOLFERNAX_COLLAPSE_MIN_RADIUS,solfernaxGateShift,
+ solfernaxCollapseRadius} from "./pyraSolfernax";
 import {ARCHON_BEACON_OFFSETS,ARCHON_BEAM_RANGE,ARCHON_ACTIVE_MS,
   projectArchonPulseRadius} from "./asteriaThresholdArchon";
 import { getEvo8WingCount } from "./orbiEvolution";
@@ -1109,6 +1114,71 @@ export function drawEnemiesList(
         targetDy - 28,
       );
       ctx.restore();
+    } else if(enemy.type===EnemyType.BOSS_SOLFERNAX&&enemy.solfernaxAttack){
+      const a=enemy.solfernaxAttack;
+      if(a.stage==="WARNING"||a.stage==="ACTIVE"){
+        const active=a.stage==="ACTIVE";
+        ctx.save();ctx.rotate(a.lockedAngle);
+        ctx.shadowColor="#f97316";ctx.shadowBlur=active?20:11;
+        ctx.strokeStyle=active?"rgba(251,146,60,.96)":"rgba(253,230,138,.9)";
+        ctx.lineWidth=active?10:2.6;ctx.lineCap="round";
+        ctx.setLineDash(active?[]:[12,8]);
+        if(a.phase===1){
+          // Three narrow rays with honest safe angles between the vents.
+          for(const offset of SOLFERNAX_VENT_OFFSETS){
+            const x=Math.cos(offset),y=Math.sin(offset);
+            ctx.beginPath();ctx.moveTo(x*65,y*65);
+            ctx.lineTo(x*SOLFERNAX_VENT_RANGE,y*SOLFERNAX_VENT_RANGE);
+            ctx.stroke();
+          }
+        }else if(a.phase===2){
+          const shift=active?solfernaxGateShift(a):0;
+          for(const offset of SOLFERNAX_GATE_OFFSETS){
+            if(!active){
+              ctx.fillStyle="rgba(251,191,36,.07)";
+              ctx.fillRect(70,offset-57,SOLFERNAX_GATE_RANGE-70,114);
+            }
+            ctx.beginPath();ctx.moveTo(70,offset+shift);
+            ctx.lineTo(SOLFERNAX_GATE_RANGE,offset+shift);ctx.stroke();
+            if(!active){
+              ctx.strokeStyle="rgba(251,191,36,.32)";ctx.lineWidth=1.7;
+              for(const limit of [-32,32]){
+                ctx.beginPath();ctx.moveTo(70,offset+limit);
+                ctx.lineTo(SOLFERNAX_GATE_RANGE,offset+limit);ctx.stroke();
+              }
+              ctx.strokeStyle="rgba(253,230,138,.9)";ctx.lineWidth=2.6;
+            }
+          }
+          ctx.setLineDash([]);ctx.strokeStyle="#a3e635";ctx.lineWidth=2;
+          ctx.beginPath();ctx.moveTo(80,0);
+          ctx.lineTo(SOLFERNAX_GATE_RANGE*.85,0);ctx.stroke();
+        }else{
+          // Two short arc sectors sweep radially inward. Never a 360° ring.
+          const radius=active?solfernaxCollapseRadius(a):
+            SOLFERNAX_COLLAPSE_MAX_RADIUS;
+          for(const theta of SOLFERNAX_COLLAPSE_LANES){
+            ctx.beginPath();ctx.arc(0,0,radius,theta-.29,theta+.29);
+            ctx.stroke();
+            if(!active){
+              ctx.strokeStyle="rgba(251,146,60,.32)";ctx.lineWidth=2;
+              ctx.beginPath();
+              ctx.arc(0,0,SOLFERNAX_COLLAPSE_MIN_RADIUS,theta-.29,theta+.29);
+              ctx.stroke();
+              ctx.strokeStyle="rgba(253,230,138,.9)";ctx.lineWidth=2.6;
+            }
+          }
+          ctx.setLineDash([]);ctx.strokeStyle="#a3e635";ctx.lineWidth=2.1;
+          ctx.beginPath();ctx.moveTo(100,0);ctx.lineTo(370,0);ctx.stroke();
+        }
+        ctx.setLineDash([]);ctx.restore();
+      }
+      if(a.stage==="EXPOSED"){
+        ctx.save();ctx.strokeStyle="#fef08a";ctx.lineWidth=4;
+        ctx.shadowColor="#fde047";ctx.shadowBlur=21;
+        ctx.beginPath();ctx.arc(0,0,enemy.size*.89+
+          Math.sin(time*.01)*4,0,Math.PI*2);ctx.stroke();
+        ctx.restore();
+      }
     } else if(enemy.type===EnemyType.BOSS_OMEGA&&enemy.omegaAttack){
       const a=enemy.omegaAttack;
       if(a.stage==="WARNING"||a.stage==="ACTIVE"){
@@ -1574,6 +1644,72 @@ export function drawEnemiesList(
     ctx.fillStyle = enemy.color;
 
     switch (enemy.type) {
+      case EnemyType.BOSS_SOLFERNAX: {
+        const a=enemy.solfernaxAttack,s=enemy.size;
+        const exposed=a?.stage==="EXPOSED",phase=a?.phase??1,t=time*.0015;
+        ctx.save();
+        // Horizontal annular reactor chassis: dual molten rings with original
+        // six radial vent housings. Artwork is exclusive to PYRA.
+        for(const [radius,weight,opacity] of [
+          [s*1.62,7,1],[s*1.24,4,.75],
+        ] as const){
+          ctx.save();ctx.rotate(t*(radius>s*1.5?1:-.8));
+          ctx.strokeStyle=phase===3?"#f97316":"#fb923c";
+          ctx.shadowColor="#f97316";ctx.shadowBlur=22;
+          ctx.globalAlpha=opacity;ctx.lineWidth=weight;
+          ctx.beginPath();ctx.arc(0,0,radius,0,Math.PI*2);ctx.stroke();
+          for(let i=0;i<8;i++){
+            const ang=i*Math.PI/4;
+            ctx.save();ctx.rotate(ang);
+            ctx.fillStyle=i%2?"#431407":"#9a3412";
+            ctx.strokeStyle="#fdba74";ctx.lineWidth=2;
+            ctx.beginPath();ctx.moveTo(radius-s*.16,-s*.14);
+            ctx.lineTo(radius+s*.17,-s*.11);
+            ctx.lineTo(radius+s*.27,0);
+            ctx.lineTo(radius+s*.17,s*.11);
+            ctx.lineTo(radius-s*.16,s*.14);ctx.closePath();
+            ctx.fill();ctx.stroke();ctx.restore();
+          }
+          ctx.restore();
+        }
+        // Eight hinged obsidian plates frame the living incandescent core.
+        for(let i=0;i<8;i++){
+          ctx.save();ctx.rotate(i*Math.PI/4);
+          ctx.fillStyle="#292524";ctx.strokeStyle="#fb923c";ctx.lineWidth=2.6;
+          ctx.beginPath();ctx.moveTo(s*.42,-s*.18);
+          ctx.lineTo(s*.98,-s*.28);ctx.lineTo(s*1.08,0);
+          ctx.lineTo(s*.98,s*.28);ctx.lineTo(s*.42,s*.18);
+          ctx.closePath();ctx.fill();ctx.stroke();
+          ctx.fillStyle=phase===2?"#fbbf24":"#9a3412";
+          ctx.fillRect(s*.73,-s*.06,s*.18,s*.12);
+          ctx.restore();
+        }
+        const core=ctx.createRadialGradient(0,0,s*.06,0,0,s*.74);
+        core.addColorStop(0,exposed?"#fff":"#fef08a");
+        core.addColorStop(.38,exposed?"#d9f99d":"#fb923c");
+        core.addColorStop(.76,exposed?"#84cc16":"#dc2626");
+        core.addColorStop(1,"rgba(69,10,10,.04)");
+        ctx.fillStyle=core;ctx.shadowColor=exposed?"#bef264":"#fb923c";
+        ctx.shadowBlur=exposed?31:23;
+        ctx.beginPath();ctx.arc(0,0,s*.73,0,Math.PI*2);ctx.fill();
+        ctx.strokeStyle=exposed?"#bef264":"#fef08a";ctx.lineWidth=3;
+        ctx.beginPath();ctx.arc(0,0,s*.45,0,Math.PI*2);ctx.stroke();
+        ctx.fillStyle="#1c1917";ctx.beginPath();
+        ctx.arc(0,0,s*.13,0,Math.PI*2);ctx.fill();
+        if(phase===3){
+          ctx.strokeStyle="#fef08a";ctx.lineWidth=2;
+          for(let i=0;i<4;i++){
+            const angle=time*.002+i*Math.PI/2;
+            ctx.beginPath();ctx.moveTo(Math.cos(angle)*s*.75,Math.sin(angle)*s*.75);
+            ctx.lineTo(Math.cos(angle+.12)*s*.99,Math.sin(angle+.12)*s*.99);
+            ctx.stroke();
+          }
+        }
+        ctx.shadowBlur=0;ctx.fillStyle="#fff7ed";
+        ctx.font="bold 9px monospace";ctx.textAlign="center";
+        ctx.fillText("SOLFERNAX // PHASE "+phase,0,s*1.16);
+        ctx.restore();break;
+      }
       case EnemyType.CALDERA_SERAPH: {
         const a=enemy.calderaSeraphAttack,r=enemy.size;
         const cooled=a?.stage==="EXPOSED";
