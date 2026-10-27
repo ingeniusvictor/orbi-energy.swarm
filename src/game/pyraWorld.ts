@@ -1,11 +1,13 @@
 /** PYRA-01 — magma-world parallax background on the authentic combat canvas.
  * Pure scenery: no collisions, contact hazards, actor spawning or timers.
  */
+import {drawPyraSceneLandmarks} from "./pyraWorldLandmarks";
 export const PYRA_SECTIONS=[
   "OBSIDIAN_GATE","EMBER_ESCARPMENT","LAVA_CAUSEWAY",
   "PRESSURE_FISSURE","MAGMA_SANCTUM","CORE_CALDERA",
 ] as const;
-export function pyraSceneAt(ordinal:number):typeof PYRA_SECTIONS[number]{
+export type PyraSceneId=typeof PYRA_SECTIONS[number];
+export function pyraSceneAt(ordinal:number):PyraSceneId{
   if(!Number.isSafeInteger(ordinal)||ordinal<0)
     throw new RangeError("Invalid PYRA ordinal");
   return PYRA_SECTIONS[ordinal%PYRA_SECTIONS.length];
@@ -56,6 +58,8 @@ export function drawPyraWorld(ctx:CanvasRenderingContext2D,
     ctx.strokeStyle="rgba(248,113,27,.34)";ctx.lineWidth=2;
     ctx.beginPath();ctx.moveTo(tip,368-h);ctx.lineTo(x+56,355);ctx.stroke();
   }
+  // PYRA-07: six distinct authored silhouettes under the real game actors.
+  drawPyraSceneLandmarks(ctx,pyraSceneAt(ordinal),distance,width);
   // Moving rivulets of magma are background-only visual bands.
   ctx.fillStyle="#231d25";ctx.fillRect(0,372,width,108);
   const lava=ctx.createLinearGradient(0,380,0,470);

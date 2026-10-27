@@ -41,7 +41,8 @@ test("PYRA-06 audit: all six real Campaign sectors render distinct deterministic
     const stops:string[]=[];
     const gradient=()=>({addColorStop:(_offset:number,color:string)=>{stops.push(color);}});
     const noop=()=>{};
-    const context={save:noop,restore:noop,clearRect:noop,fillRect:noop,
+    const context={save:noop,restore:noop,translate:noop,scale:noop,arc:noop,
+      clearRect:noop,fillRect:noop,
       beginPath:noop,moveTo:noop,lineTo:noop,closePath:noop,
       fill:noop,stroke:noop,createLinearGradient:gradient} as unknown as CanvasRenderingContext2D;
     assert.doesNotThrow(()=>drawPyraWorld(context,1200,1440,ordinal));
