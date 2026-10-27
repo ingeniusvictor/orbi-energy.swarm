@@ -2004,10 +2004,16 @@ export const EnergySwarmGame: React.FC = () => {
         worldRouteRunActiveRef.current &&
         worldRouteThemeRef.current === PYRA_WORLD_ID &&
         new URLSearchParams(window.location.search).get("pyra-e2e-boss") === "1";
-      currentWaveRef.current = pyraCiBossEntry ? BOSS_WAVE_NUMBER : 1;
-      runtimeProgressionRef.current =
-        createCampaignRuntimeState(currentWaveRef.current);
-      if (pyraCiBossEntry) setCurrentWave(currentWaveRef.current);
+      // Keep the canonical new-run initialization verbatim for all normal
+      // gameplay paths and existing release contracts.
+      currentWaveRef.current = 1;
+      runtimeProgressionRef.current = createCampaignRuntimeState(1);
+      if (pyraCiBossEntry) {
+        currentWaveRef.current = BOSS_WAVE_NUMBER;
+        runtimeProgressionRef.current =
+          createCampaignRuntimeState(BOSS_WAVE_NUMBER);
+        setCurrentWave(BOSS_WAVE_NUMBER);
+      }
     }
     waveActiveRef.current = false;
     enemyFormationDirectorRef.current =
