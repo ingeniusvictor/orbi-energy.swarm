@@ -2,6 +2,7 @@ import React from "react";
 import { BLACKOUT_DEVOURER_CANON } from "../game/waveDirector";
 import {ARCHON_ATTACK_NAMES} from "../game/asteriaThresholdArchon";
 import {OMEGA_ATTACK_NAMES} from "../game/ferrumOmegaFoundry";
+import {SOLFERNAX_ATTACK_NAMES} from "../game/pyraSolfernax";
 import { getBossChassisProfile } from "../game/bossChassis";
 import { getInfiniteBossFamilyProfile } from "../game/infiniteBossFamily";
 import type {
@@ -31,7 +32,8 @@ interface BossHudOverlayProps {
 const isImportantBossAttack = (attackName: string) => {
   const normalized = attackName.toLowerCase();
   return ["devourer_charge", "singularity_pulse", "rotating_eclipse_lanes",
-    "telescopic", "beacon", "overload", "piston", "assembly", "conveyor"].some(
+    "telescopic", "beacon", "overload", "piston", "assembly", "conveyor",
+    "molten", "thermal", "collapse"].some(
     (id) =>
       normalized.includes(id.replace(/_/g, " ")) ||
       normalized.includes("carga") ||
@@ -87,7 +89,18 @@ export const BossHudOverlay: React.FC<BossHudOverlayProps> = ({
         :bossAttackName===OMEGA_ATTACK_NAMES[3]
           ?(language==="es"?"Permanece entre las cintas y ataca el reactor abierto.":"Stay between belts and attack the open reactor.")
           :null:null;
-  const counterHint = omegaHint ?? archonHint ?? getBossCounterHint(bossAttackId, language);
+  const pyraHint=bossChassis==="PYRA_SOLFERNAX" && bossAttackName
+    ?bossAttackName===SOLFERNAX_ATTACK_NAMES[1]
+      ?(language==="es"?"Esquiva entre los tres respiraderos; evita sus radios marcados.":
+        "Move between the three vent rays and leave their marked paths.")
+      :bossAttackName===SOLFERNAX_ATTACK_NAMES[2]
+        ?(language==="es"?"Cruza por el carril central; las dos compuertas laterales se alternan.":
+          "Use the central corridor while the side gates alternate.")
+        :bossAttackName===SOLFERNAX_ATTACK_NAMES[3]
+          ?(language==="es"?"Evita los dos arcos que colapsan; el anillo NO se cierra por completo.":
+            "Dodge the two collapsing arcs; the ring never closes completely.")
+          :null:null;
+  const counterHint = pyraHint ?? omegaHint ?? archonHint ?? getBossCounterHint(bossAttackId, language);
   const healthPercent = Math.max(0, Math.min(100, Math.round(healthRatio * 100)));
   const showAttack =
     Boolean(bossAttackName) &&
@@ -104,7 +117,9 @@ export const BossHudOverlay: React.FC<BossHudOverlayProps> = ({
     >
       <div className="orbi-boss-heading">
         <span className="orbi-boss-kicker">
-          {bossChassis === "ASTERIA_ARCHON"
+          {bossChassis === "PYRA_SOLFERNAX"
+            ? "⚠ PYRA // MAGMA CORE REACTOR"
+            : bossChassis === "ASTERIA_ARCHON"
             ? "⚠ ASTERIA // ORBITAL THRESHOLD"
             : bossChassis === "FERRUM_OMEGA"
               ? "⚠ FERRUM // INDUSTRIAL REACTOR"

@@ -22,7 +22,29 @@ import {
 } from "./asteriaOriginalFoes";
 import {createSpanWardenAttack,shouldSpawnSpanWarden,selectSpanWardenSpawn,
   stepSpanWarden,resolveSpanWardenHit,SPAN_WARDEN_PROJECTILE_SPREAD} from "./asteriaSpanWarden";
-import {ASTERIA_WORLD_CHOICE,FERRUM_WORLD_ID,drawFerrumWorld,ferrumSceneAt,isAsteria,isFerrum,type PlayableWorld} from "./ferrumWorld";
+import {ASTERIA_WORLD_CHOICE,FERRUM_WORLD_ID,PYRA_WORLD_ID,drawFerrumWorld,ferrumSceneAt,isAsteria,isFerrum,isPyra,type PlayableWorld} from "./ferrumWorld";
+import {drawPyraWorld,pyraSceneAt} from "./pyraWorld";
+import {resolveSolfernaxEncounter,createSolfernaxAttack,getSolfernaxPhase,
+ stepSolfernax,solfernaxAttackContact,solfernaxDamageMultiplier,
+ SOLFERNAX_ATTACK_NAMES} from "./pyraSolfernax";
+import {createCalderaSeraphAttack,shouldSpawnCalderaSeraph,
+ selectCalderaSeraphSpawn,stepCalderaSeraph,projectCalderaMeteorVolley,
+ advanceCalderaMeteor,calderaSeraphDamageMultiplier,
+ SERAPH_METEOR_COUNT,SERAPH_METEOR_DAMAGE,SERAPH_METEOR_LIFE_MS,SERAPH_CURVE_MS
+} from "./pyraCalderaSeraph";
+import {shouldSpawnCinderling,selectCinderlingSpawn,createCinderlingAttack,
+ stepCinderling,projectCinderlingBurst,cinderlingDamageMultiplier,
+ CINDERLING_BURST_LIMIT,CINDERLING_CINDER_DAMAGE,CINDERLING_CINDER_LIFE_MS
+} from "./pyraCinderling";
+import {shouldSpawnLavaDredger,selectLavaDredgerSpawn,createLavaDredgerAttack,
+ stepLavaDredger,dredgerChargeContact,dredgerDamageMultiplier,
+ DREDGER_TRAIL_LIFE_MS,DREDGER_TRAIL_DAMAGE,DREDGER_CONTACT_DAMAGE} from "./pyraLavaDredger";
+import {shouldSpawnSlagSpear,selectSlagSpearSpawn,createSlagSpearAttack,
+  stepSlagSpear,projectSlagFragments,interceptSlagLance,
+  SLAG_LANCE_SPEED,SLAG_LANCE_DISTANCE,SLAG_LANCE_DAMAGE,
+  SLAG_LANCE_LIFE_MS,SLAG_FRAGMENT_DAMAGE,SLAG_FRAGMENT_LIFE_MS} from "./pyraSlagSpear";
+import {shouldSpawnEmberSkater,selectEmberSkaterSpawn,createEmberSkaterAttack,
+  stepEmberSkater,EMBER_PATCH_LIFE_MS,EMBER_PATCH_DAMAGE,EMBER_PATCH_RADIUS} from "./pyraEmberSkater";
 import {resolveFerrumFoe,selectFerrumFoeSpawn,createShadeGearAttack,createM9WelderAttack,stepShadeGear,stepM9Welder,M9_WELDER_PROJECTILE_SPEED} from "./ferrumOriginalFoes";
 import {createFoundryClawAttack,createOxideModulatorAttack,
   stepFoundryClaw,stepOxideModulator,projectFoundryTetherPull,
@@ -1925,6 +1947,8 @@ export const EnergySwarmGame: React.FC = () => {
     asteriaLiveCursorRef.current = createRouteCursor("asteria-campaign-qa");
     if(worldRouteThemeRef.current===FERRUM_WORLD_ID)
       asteriaLiveCursorRef.current = createRouteCursor("ferrum-world-02");
+    if(worldRouteThemeRef.current===PYRA_WORLD_ID)
+      asteriaLiveCursorRef.current = createRouteCursor("pyra-world-03");
     // Initial cleanups
     playerPosRef.current = { x: WORLD_WIDTH / 2, y: WORLD_HEIGHT / 2 };
     pointerRef.current = { x: WORLD_WIDTH / 2, y: WORLD_HEIGHT / 2 };
@@ -2086,6 +2110,10 @@ export const EnergySwarmGame: React.FC = () => {
   };
   const startFerrumWorldRouteGame = () => {
     worldRouteThemeRef.current=FERRUM_WORLD_ID;
+    void startGameWithMode("CAMPAIGN", true);
+  };
+  const startPyraWorldRouteGame = () => {
+    worldRouteThemeRef.current=PYRA_WORLD_ID;
     void startGameWithMode("CAMPAIGN", true);
   };
 
@@ -3075,12 +3103,17 @@ export const EnergySwarmGame: React.FC = () => {
             // Warning before boss entry!
             const ferrumBoss=isFerrum(worldRouteRunActiveRef.current,worldRouteThemeRef.current);
             const asteriaBoss=isAsteria(worldRouteRunActiveRef.current,worldRouteThemeRef.current);
-            setWaveName(ferrumBoss
+            const pyraBoss=isPyra(worldRouteRunActiveRef.current,worldRouteThemeRef.current);
+            setWaveName(pyraBoss
+              ? "BOSS WARNING: SOLFERNAX AWAKENING"
+              : ferrumBoss
               ? "BOSS WARNING: OMEGA FOUNDRY APPROACHING"
               : asteriaBoss
                 ? "BOSS WARNING: THRESHOLD ARCHON APPROACHING"
                 : "BOSS WARNING: DEVOURER APPROACHING");
-            postDialogue("COMPANION",ferrumBoss
+            postDialogue("COMPANION",pyraBoss
+              ? "¡ALERTA PYRA! Solfernax despierta en el núcleo magmático. Respeta los corredores térmicos anunciados."
+              : ferrumBoss
               ? "¡ALERTA FERRUM! La Factoría Omega camina hacia el sector con sus pistones y cintas activos."
               : asteriaBoss
                 ? "¡ALERTA ASTERIA! El Arconte del Umbral despierta entre sus anillos orbitales."
@@ -3145,8 +3178,11 @@ export const EnergySwarmGame: React.FC = () => {
         );
         const omegaWaveIntro=isFerrum(worldRouteRunActiveRef.current,worldRouteThemeRef.current) &&
           Boolean(resolveOmegaFoundryEncounter(worldRouteRunActiveRef.current,descriptor));
+        const solfernaxWaveIntro=isPyra(worldRouteRunActiveRef.current,worldRouteThemeRef.current) &&
+          Boolean(resolveSolfernaxEncounter(worldRouteRunActiveRef.current,descriptor));
         const activeWaveName = archonWaveIntro
-          ? "Threshold Archon" : omegaWaveIntro ? "Omega Foundry" : descriptor.display.name;
+          ? "Threshold Archon" : omegaWaveIntro ? "Omega Foundry"
+          : solfernaxWaveIntro ? "Solfernax" : descriptor.display.name;
         setWaveName(activeWaveName);
 
         postDialogue("SYSTEM", `OLEADA ${currentWaveRef.current} ACTIVA: ${activeWaveName}`);
@@ -3177,6 +3213,12 @@ export const EnergySwarmGame: React.FC = () => {
           subtitle:"FERRUM // Walking Assembly Sovereign",
           description:"Fábrica caminante con pistones extensibles, engranajes y reactor superior.",
           tacticalAdvice:"Evita los pistones; destruye engranajes y cruza entre las cintas.",
+          introColor:"#fb923c",
+        } : solfernaxWaveIntro && cfg ? {
+          ...cfg,name:"Solfernax",displayName:"Solfernax",
+          subtitle:"PYRA // Sovereign of the Magma Core",
+          description:"Reactor vivo dentro de un anillo de magma. Tres fases con respiraderos, compuertas térmicas y colapso controlado.",
+          tacticalAdvice:"Esquiva rutas anunciadas; deja libres los pasillos centrales y enfoca ORBI en el reactor enfriado.",
           introColor:"#fb923c",
         } : cfg);
         setTimeout(() => {
@@ -3328,7 +3370,48 @@ export const EnergySwarmGame: React.FC = () => {
     const ferrumSpawn=ferrumFoe?selectFerrumFoeSpawn(routeCamera,
       playerPosRef.current,WORLD_WIDTH,WORLD_HEIGHT,
       Math.max(170,combatPressure.spawnSafetyRadius)):null;
-    const type = foremanSpawn?EnemyType.FERRITE_FOREMAN:
+    // PYRA replaces one genuine ordinary Campaign spawn slot, never rematches.
+    const emberSpawn=shouldSpawnEmberSkater(
+      isPyra(worldRouteRunActiveRef.current,worldRouteThemeRef.current),
+      descriptor.sourceMode,descriptor.waveNumber,waveBudgetSpawnedRef.current,
+      Boolean(forcedType),spawningMiniboss,
+      enemiesRef.current.some(e=>e.type===EnemyType.EMBER_SKATER&&!e.isDead))
+      ?selectEmberSkaterSpawn(routeCamera,playerPosRef.current,
+        WORLD_WIDTH,WORLD_HEIGHT,combatPressure.spawnSafetyRadius):null;
+    const slagSpawn=shouldSpawnSlagSpear(
+      isPyra(worldRouteRunActiveRef.current,worldRouteThemeRef.current),
+      descriptor.sourceMode,descriptor.waveNumber,waveBudgetSpawnedRef.current,
+      Boolean(forcedType),spawningMiniboss,
+      enemiesRef.current.some(e=>e.type===EnemyType.SLAG_SPEAR&&!e.isDead))
+      ?selectSlagSpearSpawn(routeCamera,playerPosRef.current,
+        WORLD_WIDTH,WORLD_HEIGHT,combatPressure.spawnSafetyRadius):null;
+    const dredgerSpawn=shouldSpawnLavaDredger(
+      isPyra(worldRouteRunActiveRef.current,worldRouteThemeRef.current),
+      descriptor.sourceMode,descriptor.waveNumber,waveBudgetSpawnedRef.current,
+      Boolean(forcedType),spawningMiniboss,
+      enemiesRef.current.some(e=>e.type===EnemyType.LAVA_DREDGER&&!e.isDead))
+      ?selectLavaDredgerSpawn(routeCamera,playerPosRef.current,
+        WORLD_WIDTH,WORLD_HEIGHT,combatPressure.spawnSafetyRadius):null;
+    const cinderlingSpawn=shouldSpawnCinderling(
+      isPyra(worldRouteRunActiveRef.current,worldRouteThemeRef.current),
+      descriptor.sourceMode,descriptor.waveNumber,waveBudgetSpawnedRef.current,
+      Boolean(forcedType),spawningMiniboss,
+      enemiesRef.current.some(e=>e.type===EnemyType.CINDERLING&&!e.isDead))
+      ?selectCinderlingSpawn(routeCamera,playerPosRef.current,
+        WORLD_WIDTH,WORLD_HEIGHT,combatPressure.spawnSafetyRadius):null;
+    const seraphSpawn=shouldSpawnCalderaSeraph(
+      isPyra(worldRouteRunActiveRef.current,worldRouteThemeRef.current),
+      descriptor.sourceMode,descriptor.waveNumber,waveBudgetSpawnedRef.current,
+      Boolean(forcedType),spawningMiniboss,
+      enemiesRef.current.some(e=>e.type===EnemyType.CALDERA_SERAPH&&!e.isDead))
+      ?selectCalderaSeraphSpawn(routeCamera,playerPosRef.current,
+        WORLD_WIDTH,WORLD_HEIGHT,combatPressure.spawnSafetyRadius):null;
+    const type = seraphSpawn?EnemyType.CALDERA_SERAPH:
+      cinderlingSpawn?EnemyType.CINDERLING:
+      dredgerSpawn?EnemyType.LAVA_DREDGER:
+      slagSpawn?EnemyType.SLAG_SPEAR:
+      emberSpawn?EnemyType.EMBER_SKATER:
+      foremanSpawn?EnemyType.FERRITE_FOREMAN:
       ferrumFoe&&ferrumSpawn?EnemyType[ferrumFoe]:spanWardenSpawn
       ? EnemyType.SPAN_WARDEN
       : railcutterSpawn
@@ -3345,7 +3428,9 @@ export const EnergySwarmGame: React.FC = () => {
       spawningMiniboss || type===EnemyType.SPAN_WARDEN ||
       type===EnemyType.SHADE_GEAR || type===EnemyType.M9_WELDER ||
       type===EnemyType.FOUNDRY_CLAW || type===EnemyType.OXIDE_MODULATOR ||
-      type===EnemyType.FERRITE_FOREMAN
+      type===EnemyType.FERRITE_FOREMAN || type===EnemyType.EMBER_SKATER ||
+      type===EnemyType.SLAG_SPEAR || type===EnemyType.LAVA_DREDGER ||
+      type===EnemyType.CINDERLING || type===EnemyType.CALDERA_SERAPH
         ? null
         : resolveEvolvedEnemySpawn({
             descriptor,
@@ -3411,7 +3496,12 @@ export const EnergySwarmGame: React.FC = () => {
     }
     // Replace the legacy position ONLY for the new ASTERIA-native actor.
     // All other modes retain the existing four-side camera spawn policy.
-    if(foremanSpawn){ex=foremanSpawn.x;ey=foremanSpawn.y;
+    if(seraphSpawn){ex=seraphSpawn.x;ey=seraphSpawn.y;
+    }else if(cinderlingSpawn){ex=cinderlingSpawn.x;ey=cinderlingSpawn.y;
+    }else if(dredgerSpawn){ex=dredgerSpawn.x;ey=dredgerSpawn.y;
+    }else if(slagSpawn){ex=slagSpawn.x;ey=slagSpawn.y;
+    }else if(emberSpawn){ex=emberSpawn.x;ey=emberSpawn.y;
+    }else if(foremanSpawn){ex=foremanSpawn.x;ey=foremanSpawn.y;
     }else if(ferrumFoe&&ferrumSpawn){
       ex=ferrumSpawn.x;ey=ferrumSpawn.y;
     }else if (spanWardenSpawn) {
@@ -3483,6 +3573,26 @@ export const EnergySwarmGame: React.FC = () => {
       health=148*healthMultiplier;
       speed=.62*biomeCfg.enemySpeedMultiplier*movementSpeedMultiplier;
       size=29;color="#fbbf24";
+    } else if(type===EnemyType.EMBER_SKATER){
+      health=27*healthMultiplier;
+      speed=1.12*biomeCfg.enemySpeedMultiplier*movementSpeedMultiplier;
+      size=13;color="#fb923c";
+    } else if(type===EnemyType.SLAG_SPEAR){
+      health=35*healthMultiplier;
+      speed=.77*biomeCfg.enemySpeedMultiplier*movementSpeedMultiplier;
+      size=16;color="#fdba74";
+    } else if(type===EnemyType.LAVA_DREDGER){
+      health=116*healthMultiplier;
+      speed=.59*biomeCfg.enemySpeedMultiplier*movementSpeedMultiplier;
+      size=26;color="#f97316";
+    } else if(type===EnemyType.CINDERLING){
+      health=24*healthMultiplier;
+      speed=1.18*biomeCfg.enemySpeedMultiplier*movementSpeedMultiplier;
+      size=11;color="#fbbf24";
+    } else if(type===EnemyType.CALDERA_SERAPH){
+      health=182*healthMultiplier;
+      speed=.59*biomeCfg.enemySpeedMultiplier*movementSpeedMultiplier;
+      size=32;color="#fb923c";
     } else if (type === EnemyType.DRONE) {
       health = 20 * healthMultiplier;
       speed = 0.7 * biomeCfg.enemySpeedMultiplier * movementSpeedMultiplier;
@@ -3562,7 +3672,9 @@ export const EnergySwarmGame: React.FC = () => {
       type!==EnemyType.SPAN_WARDEN &&
       type!==EnemyType.SHADE_GEAR && type!==EnemyType.M9_WELDER &&
       type!==EnemyType.FOUNDRY_CLAW && type!==EnemyType.OXIDE_MODULATOR &&
-      type!==EnemyType.FERRITE_FOREMAN &&
+      type!==EnemyType.FERRITE_FOREMAN && type!==EnemyType.EMBER_SKATER &&
+      type!==EnemyType.SLAG_SPEAR && type!==EnemyType.LAVA_DREDGER &&
+      type!==EnemyType.CINDERLING && type!==EnemyType.CALDERA_SERAPH &&
       Math.random() < effectiveEliteChance;
     if (isElite) {
       health *= 1.8;
@@ -3591,7 +3703,10 @@ export const EnergySwarmGame: React.FC = () => {
             type !== EnemyType.SPAN_WARDEN &&
             type !== EnemyType.SHADE_GEAR && type !== EnemyType.M9_WELDER &&
             type !== EnemyType.FOUNDRY_CLAW && type !== EnemyType.OXIDE_MODULATOR &&
-            type !== EnemyType.FERRITE_FOREMAN,
+            type !== EnemyType.FERRITE_FOREMAN && type !== EnemyType.EMBER_SKATER &&
+            type !== EnemyType.SLAG_SPEAR && type !== EnemyType.LAVA_DREDGER &&
+            type !== EnemyType.CINDERLING &&
+            type !== EnemyType.CALDERA_SERAPH,
           remainingCapacity:
             Math.min(
               MAX_ENEMIES,
@@ -3665,6 +3780,11 @@ export const EnergySwarmGame: React.FC = () => {
       foundryClawAttack:type===EnemyType.FOUNDRY_CLAW?createFoundryClawAttack():undefined,
       oxideModulatorAttack:type===EnemyType.OXIDE_MODULATOR?createOxideModulatorAttack():undefined,
       ferriteForemanAttack:type===EnemyType.FERRITE_FOREMAN?createForemanAttack():undefined,
+      emberSkaterAttack:type===EnemyType.EMBER_SKATER?createEmberSkaterAttack():undefined,
+      slagSpearAttack:type===EnemyType.SLAG_SPEAR?createSlagSpearAttack():undefined,
+      lavaDredgerAttack:type===EnemyType.LAVA_DREDGER?createLavaDredgerAttack():undefined,
+      cinderlingAttack:type===EnemyType.CINDERLING?createCinderlingAttack():undefined,
+      calderaSeraphAttack:type===EnemyType.CALDERA_SERAPH?createCalderaSeraphAttack():undefined,
       enemyFormation: enemyFormation ?? undefined,
       flashTicks: 0,
       evolvedVariantId: evolvedProfile?.id,
@@ -3776,7 +3896,11 @@ export const EnergySwarmGame: React.FC = () => {
     const omegaEncounter=!isRematch && stage==="PRIMARY"
       ?resolveOmegaFoundryEncounter(isFerrum(worldRouteRunActiveRef.current,worldRouteThemeRef.current),
         getCurrentRuntimeDescriptor()):null;
-    const chassisId=omegaEncounter?"FERRUM_OMEGA":
+    const solfernaxEncounter=!isRematch && stage==="PRIMARY"
+      ?resolveSolfernaxEncounter(isPyra(worldRouteRunActiveRef.current,worldRouteThemeRef.current),
+        getCurrentRuntimeDescriptor()):null;
+    const chassisId=solfernaxEncounter?"PYRA_SOLFERNAX":
+      omegaEncounter?"FERRUM_OMEGA":
       archonEncounter?"ASTERIA_ARCHON":(raidProfile?.chassis??"DEVOURER");
     const chassisProfile = getBossChassisProfile(chassisId);
     const familyProfile =
@@ -3817,7 +3941,7 @@ export const EnergySwarmGame: React.FC = () => {
           ? `${chassisId.toLowerCase()}_${rematchProfile?.sector ?? "infinite"}`
           : isRematch
             ? `${rematchProfile?.bossIdentity.toLowerCase() ?? "infinite_boss"}_${rematchProfile?.sector ?? "infinite"}`
-            : omegaEncounter ?? archonEncounter ?? "blackout_devourer_boss",
+            : solfernaxEncounter ?? omegaEncounter ?? archonEncounter ?? "blackout_devourer_boss",
       type: chassisProfile.enemyType,
       x: WORLD_WIDTH / 2,
       y: -80,
@@ -3843,6 +3967,7 @@ export const EnergySwarmGame: React.FC = () => {
       bossChassis: chassisId,
       archonAttack:archonEncounter?createThresholdArchonAttack():undefined,
       omegaAttack:omegaEncounter?createOmegaFoundryAttack():undefined,
+      solfernaxAttack:solfernaxEncounter?createSolfernaxAttack():undefined,
       bossEncounterStage: stage,
       milestoneContactDamageMultiplier: damageMultiplier,
       milestoneDamageMultiplier: damageMultiplier,
@@ -3913,6 +4038,8 @@ export const EnergySwarmGame: React.FC = () => {
         ? `¡RAID ESCALATION! ${chassisProfile.displayName} ha entrado. Destruye ${chassisProfile.weakpoints.count} ${chassisProfile.weakpoints.hudLabel.toLowerCase()} y abre el núcleo.`
         : isRematch
           ? (familyProfile?.introDialogue ?? "¡RESONANCIA HOSTIL RECURRENTE!")
+          : solfernaxEncounter
+            ? "¡SOLFERNAX! Respiraderos, compuertas y colapso controlado. Aprovecha el núcleo enfriado tras cada ataque."
           : archonEncounter
             ? "¡ARCONTE DEL UMBRAL! Tres fases orbitales. Esquiva las líneas anunciadas y concentra ORBI en su núcleo expuesto."
             : omegaEncounter
@@ -4050,6 +4177,55 @@ export const EnergySwarmGame: React.FC = () => {
         playHeavyImpactSound();
         postDialogue("COMPANION", `¡ANOMALÍA ESTABILIZADA! Firma de ${chassisProfile.displayName} confirmada.`);
       }
+      return;
+    }
+
+    // PYRA-06: real canonical boss entity and cooldowns, with original
+    // timed hazard geometry and a post-attack ORBI reactor window.
+    if(boss.type===EnemyType.BOSS_SOLFERNAX && boss.solfernaxAttack){
+      if(phaseTransitionTimerRef.current>0){
+        phaseTransitionTimerRef.current=Math.max(0,phaseTransitionTimerRef.current-delta);
+        if(phaseTransitionTimerRef.current===0)setBossTransitionName(null);
+        return;
+      }
+      const phase=getSolfernaxPhase(boss.health,boss.maxHealth);
+      const step=stepSolfernax(boss.solfernaxAttack,boss,
+        playerPosRef.current,delta,phase);
+      boss.solfernaxAttack=step.attack;
+      if(step.phaseChanged){
+        boss.bossPhase=phase;setBossPhase(phase);
+        bossMaxPhaseReachedRef.current=Math.max(bossMaxPhaseReachedRef.current,phase);
+        phaseTransitionTimerRef.current=1650;
+        setBossTransitionName(phase===2?"FASE II: COMPUERTAS TERMICAS":
+          "FASE III: COLAPSO DEL NUCLEO");
+        setBossAttackName(null);setIsCoreExposed(false);
+        playBossPhaseTransitionSound();
+        addFloatingText(phase===2?"THERMAL GATES":"CORE COLLAPSE",
+          boss.x,boss.y-98,"#fde68a");
+        return;
+      }
+      if(step.warned){
+        setBossAttackName(SOLFERNAX_ATTACK_NAMES[phase]);
+        playBossChargeSound();
+        addFloatingText(phase===1?"RESPIRADEROS":
+          phase===2?"COMPUERTAS":"COLAPSO ANUNCIADO",
+          boss.x,boss.y-98,"#fbbf24");
+      }
+      if(step.fired)playDisruptorPulseSound();
+      if(step.exposed){
+        setIsCoreExposed(true);setBossAttackName(null);
+        playEliteChargeSound();
+        addFloatingText("REACTOR ENFRIADO / EXPUESTO",
+          boss.x,boss.y-102,"#fef08a");
+      }
+      if(!["EXPOSED","WARNING","ACTIVE"].includes(step.attack.stage))
+        setIsCoreExposed(false);
+      // Attack contact and player invulnerability still belong to the
+      // existing boss-damage API. Never damage during a warning.
+      if(solfernaxAttackContact(step.attack,boss,playerPosRef.current))
+        damagePlayerFromBoss(phase===3?15:phase===2?13:11,
+          phase===1?"solfernax_molten_vents":
+          phase===2?"solfernax_thermal_gates":"solfernax_controlled_collapse");
       return;
     }
 
@@ -6184,7 +6360,8 @@ export const EnergySwarmGame: React.FC = () => {
         enemy.type === EnemyType.BOSS_TITAN ||
         enemy.type === EnemyType.BOSS_WORM ||
         enemy.type === EnemyType.BOSS_ARCHON ||
-        enemy.type === EnemyType.BOSS_OMEGA
+        enemy.type === EnemyType.BOSS_OMEGA ||
+        enemy.type === EnemyType.BOSS_SOLFERNAX
       ) {
         updateBossAI(enemy, delta);
         enemy.speed = originalSpeed;
@@ -6250,7 +6427,169 @@ export const EnergySwarmGame: React.FC = () => {
         const dy = ty - enemy.y;
         const dist = Math.sqrt(dx * dx + dy * dy) || 1;
 
-        if (enemy.type === EnemyType.RAILCUTTER && enemy.railcutterAttack) {
+        if(enemy.type===EnemyType.CALDERA_SERAPH&&enemy.calderaSeraphAttack){
+          const previous=enemy.calderaSeraphAttack;
+          const step=stepCalderaSeraph(previous,enemy,playerPosRef.current,
+            enemy.speed,delta);
+          enemy.x=Math.max(36,Math.min(WORLD_WIDTH-36,step.x));
+          enemy.y=Math.max(36,Math.min(WORLD_HEIGHT-36,step.y));
+          enemy.vx=step.vx;enemy.vy=step.vy;
+          enemy.calderaSeraphAttack=step.attack;
+          if(step.warn){
+            playEliteChargeSound();
+            addFloatingText("SERAFIN / TRES RUTAS DE METEOROS",
+              enemy.x,enemy.y-58,"#fde68a");
+          }
+          if(step.fire){
+            const volley=projectCalderaMeteorVolley(enemy,previous.lockedAngle);
+            const count=Math.max(0,Math.min(
+              SERAPH_METEOR_COUNT,volley.length,
+              MAX_PROJECTILES-projectilesRef.current.length,
+              (simulationCombatPressure.projectileBudget??MAX_PROJECTILES)-
+                hostileProjectileBudgetState.count));
+            for(let n=0;n<count;n++){
+              const meteor=volley[n];
+              projectilesRef.current.push({
+                id:Math.random().toString(),x:meteor.x,y:meteor.y,
+                vx:meteor.vx,vy:meteor.vy,damage:SERAPH_METEOR_DAMAGE,
+                color:"#fbbf24",size:8,fromPlayer:false,
+                life:SERAPH_METEOR_LIFE_MS,maxLife:SERAPH_METEOR_LIFE_MS,
+                seraphMeteorCurveDirection:meteor.curveDirection,
+                seraphMeteorCurveRemainingMs:SERAPH_CURVE_MS,
+              });
+              hostileProjectileBudgetState.count++;
+            }
+            playBossShardsSound();
+            addFloatingText("CALDERA / METEORITOS",enemy.x,enemy.y-60,"#fb923c");
+          }
+          if(step.exposed){
+            playEliteChargeSound();
+            addFloatingText("NUCLEO ENFRIADO // EXPUESTO",
+              enemy.x,enemy.y-57,"#d9f99d");
+          }
+        } else if(enemy.type===EnemyType.CINDERLING&&enemy.cinderlingAttack){
+          const previous=enemy.cinderlingAttack;
+          const step=stepCinderling(previous,enemy,playerPosRef.current,enemy.speed,delta);
+          enemy.x=Math.max(16,Math.min(WORLD_WIDTH-16,step.x));
+          enemy.y=Math.max(16,Math.min(WORLD_HEIGHT-16,step.y));
+          enemy.vx=step.vx;enemy.vy=step.vy;enemy.cinderlingAttack=step.attack;
+          if(step.warned){
+            playDroneChargeSound();
+            addFloatingText("CINERITA / ZONA DE ATERRIZAJE",enemy.x,enemy.y-25,"#fef08a");
+          }
+          // The locked target is shown throughout MARK and LEAP. Emit exactly
+          // four non-splitting bolts on the transition into BURST, never on
+          // every subsequent simulation frame. The canonical projectile budget
+          // and contact resolver own every spark.
+          if(step.fired){
+            const burst=projectCinderlingBurst(enemy.x,enemy.y,previous.lockedAngle);
+            const remainingSlots=Math.max(0,Math.min(
+              CINDERLING_BURST_LIMIT,
+              MAX_PROJECTILES-projectilesRef.current.length,
+              (simulationCombatPressure.projectileBudget??MAX_PROJECTILES)-
+                hostileProjectileBudgetState.count));
+            for(let n=0;n<Math.min(burst.length,remainingSlots);n++){
+              const p=burst[n];
+              projectilesRef.current.push({
+                id:Math.random().toString(),x:p.x,y:p.y,vx:p.vx,vy:p.vy,
+                damage:CINDERLING_CINDER_DAMAGE,color:"#facc15",size:4.2,
+                fromPlayer:false,life:CINDERLING_CINDER_LIFE_MS,
+                maxLife:CINDERLING_CINDER_LIFE_MS,
+              });
+              hostileProjectileBudgetState.count++;
+            }
+            playBossShardsSound();
+            addFloatingText("CINDER BURST / 4",enemy.x,enemy.y-29,"#fdba74");
+          }
+          if(step.cooled)
+            addFloatingText("CINDER CORE EXPOSED",enemy.x,enemy.y-29,"#d9f99d");
+        } else if(enemy.type===EnemyType.LAVA_DREDGER&&enemy.lavaDredgerAttack){
+          const prior=enemy.lavaDredgerAttack;
+          const step=stepLavaDredger(prior,enemy,playerPosRef.current,enemy.speed,delta);
+          enemy.x=Math.max(30,Math.min(WORLD_WIDTH-30,step.x));
+          enemy.y=Math.max(30,Math.min(WORLD_HEIGHT-30,step.y));
+          enemy.vx=step.vx;enemy.vy=step.vy;enemy.lavaDredgerAttack=step.attack;
+          if(step.warned){
+            playBossChargeSound();
+            addFloatingText("DRAGA DE LAVA // CARGA",enemy.x,enemy.y-54,"#fdba74");
+          }
+          if(step.charged){
+            playBossShardsSound();
+            addFloatingText("ESCORIA EN MOVIMIENTO",enemy.x,enemy.y-51,"#fef08a");
+          }
+          if(step.trail &&
+             Math.hypot(enemy.x-playerPosRef.current.x,
+               enemy.y-playerPosRef.current.y)>64 &&
+             projectilesRef.current.length<MAX_PROJECTILES &&
+             hostileProjectileBudgetState.count<
+               (simulationCombatPressure.projectileBudget??MAX_PROJECTILES)){
+            projectilesRef.current.push({
+              id:Math.random().toString(),x:enemy.x,y:enemy.y,vx:0,vy:0,
+              damage:DREDGER_TRAIL_DAMAGE,color:"#ea580c",size:16,
+              fromPlayer:false,life:DREDGER_TRAIL_LIFE_MS,
+              maxLife:DREDGER_TRAIL_LIFE_MS,
+            });
+            hostileProjectileBudgetState.count++;
+          }
+          if(step.exposed){
+            playEliteChargeSound();
+            addFloatingText("FLANCOS Y REACTOR EXPUESTOS",enemy.x,enemy.y-56,"#fef08a");
+          }
+          if(dredgerChargeContact(step.attack,enemy,playerPosRef.current))
+            damagePlayerFromBoss(DREDGER_CONTACT_DAMAGE,"lava_dredger_charge");
+        } else if(enemy.type===EnemyType.SLAG_SPEAR&&enemy.slagSpearAttack){
+          const prior=enemy.slagSpearAttack;
+          const step=stepSlagSpear(prior,enemy,playerPosRef.current,enemy.speed,delta);
+          enemy.x=Math.max(16,Math.min(WORLD_WIDTH-16,step.x));
+          enemy.y=Math.max(16,Math.min(WORLD_HEIGHT-16,step.y));
+          enemy.vx=step.vx;enemy.vy=step.vy;enemy.slagSpearAttack=step.attack;
+          if(step.warned){
+            playDroneChargeSound();
+            addFloatingText("LANZAESCORIA // AVISO",enemy.x,enemy.y-34,"#fde68a");
+          }
+          if(step.fire && projectilesRef.current.length<MAX_PROJECTILES &&
+             hostileProjectileBudgetState.count<
+               (simulationCombatPressure.projectileBudget??MAX_PROJECTILES)){
+            projectilesRef.current.push({
+              id:Math.random().toString(),x:enemy.x,y:enemy.y,
+              vx:Math.cos(prior.lockedAngle)*SLAG_LANCE_SPEED,
+              vy:Math.sin(prior.lockedAngle)*SLAG_LANCE_SPEED,
+              damage:SLAG_LANCE_DAMAGE,color:"#fbbf24",size:7,
+              fromPlayer:false,life:SLAG_LANCE_LIFE_MS,
+              maxLife:SLAG_LANCE_LIFE_MS,
+              slagSpearDistanceRemaining:SLAG_LANCE_DISTANCE,
+            });
+            hostileProjectileBudgetState.count++;
+            playBossShardsSound();
+          }
+        } else if(enemy.type===EnemyType.EMBER_SKATER&&enemy.emberSkaterAttack){
+          const previous=enemy.emberSkaterAttack;
+          const step=stepEmberSkater(previous,enemy,playerPosRef.current,enemy.speed,delta);
+          enemy.x=Math.max(16,Math.min(WORLD_WIDTH-16,step.x));
+          enemy.y=Math.max(16,Math.min(WORLD_HEIGHT-16,step.y));
+          enemy.vx=step.vx;enemy.vy=step.vy;enemy.emberSkaterAttack=step.attack;
+          if(step.warned){
+            playDroneChargeSound();
+            addFloatingText("EMBER PATCH / WARNING",enemy.x,enemy.y-31,"#fdba74");
+          }
+          // Heat exists only after an announced warning; original hostile
+          // projectile index, budget, lifetime and player damage remain owners.
+          if(step.releaseHeat &&
+             Math.hypot(previous.lockedX-playerPosRef.current.x,
+               previous.lockedY-playerPosRef.current.y)>50 &&
+             projectilesRef.current.length<MAX_PROJECTILES &&
+             hostileProjectileBudgetState.count<
+               (simulationCombatPressure.projectileBudget??MAX_PROJECTILES)){
+            projectilesRef.current.push({
+              id:Math.random().toString(),
+              x:previous.lockedX,y:previous.lockedY,vx:0,vy:0,
+              damage:EMBER_PATCH_DAMAGE,color:"#fb923c",size:EMBER_PATCH_RADIUS,
+              fromPlayer:false,life:EMBER_PATCH_LIFE_MS,
+              maxLife:EMBER_PATCH_LIFE_MS,
+            });
+            hostileProjectileBudgetState.count++;
+          }
+        } else if (enemy.type === EnemyType.RAILCUTTER && enemy.railcutterAttack) {
           const next=stepAsteriaRailcutter(
             enemy.railcutterAttack,enemy,playerPosRef.current,
             enemy.speed,delta,
@@ -6738,14 +7077,33 @@ export const EnergySwarmGame: React.FC = () => {
         pendingCommandLinkBreakRef.current = null;
       }
 
-    // 7. Projectiles coordinates
+    // 7. Projectiles coordinates. PYRA-02 lances fork exactly once after
+    // a finite world-space travel distance, never via independent timers.
+    const slagSplitRequests:{x:number;y:number;vx:number;vy:number}[]=[];
     projectilesRef.current.forEach((proj) => {
-      proj.x += proj.vx * (delta / 16.6);
-      proj.y += proj.vy * (delta / 16.6);
+      if(!proj.fromPlayer && proj.life>0 &&
+         proj.seraphMeteorCurveDirection!==undefined &&
+         proj.seraphMeteorCurveRemainingMs!==undefined){
+        const curved=advanceCalderaMeteor(proj.x,proj.y,proj.vx,proj.vy,
+          proj.seraphMeteorCurveDirection,proj.seraphMeteorCurveRemainingMs,delta);
+        proj.x=curved.x;proj.y=curved.y;proj.vx=curved.vx;proj.vy=curved.vy;
+        proj.seraphMeteorCurveRemainingMs=curved.remainingMs;
+      }else{
+        proj.x += proj.vx * (delta / 16.6);
+        proj.y += proj.vy * (delta / 16.6);
+      }
       proj.life -= delta;
+      if(!proj.fromPlayer&&proj.life>0 &&
+         proj.slagSpearDistanceRemaining!==undefined){
+        proj.slagSpearDistanceRemaining-=Math.hypot(proj.vx,proj.vy)*(delta/16.6);
+        if(proj.slagSpearDistanceRemaining<=0){
+          proj.life=0;
+          slagSplitRequests.push(...projectSlagFragments(proj.x,proj.y,proj.vx,proj.vy));
+        }
+      }
     });
 
-    // Filter dead or expired projectiles
+    // Parent lance is retired before the two finite, non-forking children.
     compactArrayInPlace(
       projectilesRef.current,
       (projectile) =>
@@ -6755,6 +7113,24 @@ export const EnergySwarmGame: React.FC = () => {
         projectile.y >= -50 &&
         projectile.y <= WORLD_HEIGHT + 50,
     );
+    if(slagSplitRequests.length){
+      let hostileCount=0;
+      for(const active of projectilesRef.current)if(!active.fromPlayer)hostileCount++;
+      const hostileMax=Math.min(MAX_PROJECTILES,
+        simulationCombatPressure.projectileBudget??MAX_PROJECTILES);
+      for(const shard of slagSplitRequests){
+        if(hostileCount>=hostileMax||projectilesRef.current.length>=MAX_PROJECTILES)break;
+        if(shard.x<0||shard.x>WORLD_WIDTH||shard.y<0||shard.y>WORLD_HEIGHT)continue;
+        projectilesRef.current.push({
+          id:Math.random().toString(),
+          x:shard.x,y:shard.y,vx:shard.vx,vy:shard.vy,
+          damage:SLAG_FRAGMENT_DAMAGE,color:"#fb923c",size:3.7,
+          fromPlayer:false,life:SLAG_FRAGMENT_LIFE_MS,
+          maxLife:SLAG_FRAGMENT_LIFE_MS,slagSpearFragment:true,
+        });
+        hostileCount++;
+      }
+    }
 
     // 8. Particles updates
     particlesRef.current.forEach((p) => {
@@ -7350,6 +7726,21 @@ export const EnergySwarmGame: React.FC = () => {
       if (proj.life <= 0) return;
 
       if (proj.fromPlayer) {
+        // Original ORBI fire may destroy an announced PYRA lance in flight.
+        // This is projectile vs projectile only; no extra kill, loot or damage.
+        if(!proj.convergenceTargetId){
+          for(const hostile of projectilesRef.current){
+            if(hostile.life<=0||hostile.fromPlayer||
+               hostile.slagSpearDistanceRemaining===undefined)continue;
+            if(!interceptSlagLance(proj,proj.size,hostile,hostile.size))continue;
+            proj.life=0;hostile.life=0;
+            triggerExplosion(particlesRef.current,quality.maxParticles,
+              ParticleType.ENEMY_HIT,hostile.x,hostile.y,"#fb923c",7);
+            addFloatingText("LANCE BREAK",hostile.x,hostile.y-19,"#fef08a");
+            break;
+          }
+          if(proj.life<=0)return;
+        }
         // First check if hitting any Boss Shield Nodes
         let hitShieldNode = false;
         for (let s = 0; s < (proj.convergenceTargetId ? 0 : shieldNodesRef.current.length); s++) {
@@ -7458,12 +7849,18 @@ export const EnergySwarmGame: React.FC = () => {
               enemy.type === EnemyType.BOSS_TITAN ||
               enemy.type === EnemyType.BOSS_WORM ||
               enemy.type === EnemyType.BOSS_ARCHON ||
-        enemy.type === EnemyType.BOSS_OMEGA
+        enemy.type === EnemyType.BOSS_OMEGA ||
+        enemy.type === EnemyType.BOSS_SOLFERNAX
             ) {
               const chassis = getBossChassisProfile(
                 enemy.bossChassis ?? "DEVOURER",
               );
-              if(enemy.type===EnemyType.BOSS_OMEGA && enemy.omegaAttack){
+              if(enemy.type===EnemyType.BOSS_SOLFERNAX && enemy.solfernaxAttack){
+                damageToApply*=solfernaxDamageMultiplier(enemy.solfernaxAttack);
+                if(enemy.solfernaxAttack.stage==="EXPOSED"&&!proj.convergenceTargetId)
+                  isCrit=true;
+                if(enemy.solfernaxAttack.stage==="WARNING")isShieldBlock=true;
+              } else if(enemy.type===EnemyType.BOSS_OMEGA && enemy.omegaAttack){
                 damageToApply*=omegaFoundryDamageMultiplier(enemy.omegaAttack);
                 if(enemy.omegaAttack.stage==="EXPOSED"&&!proj.convergenceTargetId)isCrit=true;
                 if(enemy.omegaAttack.stage==="WARNING")isShieldBlock=true;
@@ -7479,6 +7876,21 @@ export const EnergySwarmGame: React.FC = () => {
                 if (!proj.convergenceTargetId) isCrit = true;
                 damageToApply *= chassis.weakpoints.exposedDamageMultiplier;
               }
+            } else if(enemy.type===EnemyType.CALDERA_SERAPH&&enemy.calderaSeraphAttack){
+              const multiplier=calderaSeraphDamageMultiplier(enemy.calderaSeraphAttack);
+              damageToApply*=multiplier;
+              if(multiplier<1)isShieldBlock=true;
+              if(multiplier>2&&!proj.convergenceTargetId)isCrit=true;
+            } else if(enemy.type===EnemyType.CINDERLING&&enemy.cinderlingAttack){
+              damageToApply*=cinderlingDamageMultiplier(enemy.cinderlingAttack);
+              if(enemy.cinderlingAttack.stage==="COOL"&&!proj.convergenceTargetId)
+                isCrit=true;
+            } else if(enemy.type===EnemyType.LAVA_DREDGER&&enemy.lavaDredgerAttack){
+              const multiplier=dredgerDamageMultiplier(enemy.lavaDredgerAttack,
+                enemy,{x:proj.x,y:proj.y});
+              damageToApply*=multiplier;
+              if(multiplier<1)isShieldBlock=true;
+              if(multiplier>2&&!proj.convergenceTargetId)isCrit=true;
             } else if(enemy.type===EnemyType.FERRITE_FOREMAN&&enemy.ferriteForemanAttack){
               damageToApply*=foremanDamageMultiplier(enemy.ferriteForemanAttack);
               if(enemy.ferriteForemanAttack.stage==="EXPOSED"&&!proj.convergenceTargetId)isCrit=true;
@@ -7755,6 +8167,8 @@ export const EnergySwarmGame: React.FC = () => {
                       ? "¡EL ARCONTE HA CAÍDO! Los anillos de ASTERIA colapsan y el corredor queda liberado."
                       : enemy.type===EnemyType.BOSS_ARCHON
                       ? "¡EL ARCONTE HA CAÍDO! Los anillos de ASTERIA colapsan y el corredor queda liberado."
+                      : otherEnemy.type===EnemyType.BOSS_SOLFERNAX || enemy.type===EnemyType.BOSS_SOLFERNAX
+                      ? "¡SOLFERNAX DERROTADO! La caldera se estabiliza y el núcleo magmático recupera su equilibrio."
                       : otherEnemy.type===EnemyType.BOSS_OMEGA || enemy.type===EnemyType.BOSS_OMEGA
                       ? "¡FACTORÍA OMEGA DERROTADA! Las cadenas mecánicas se detienen y el reactor se apaga."
                       : "¡SISTEMAS DEL DEVORADOR CRÍTICAS! Reacción en cadena termodinámica detectada. ¡Sincronizando pulso de purga final!",
@@ -7838,6 +8252,8 @@ export const EnergySwarmGame: React.FC = () => {
                   "COMPANION",
                   rematch
                     ? "¡REMATCH DEL DEVORADOR COLAPSANDO! Mantén sincronía mientras sellamos esta recurrencia."
+                    : enemy.type===EnemyType.BOSS_SOLFERNAX
+                      ? "¡SOLFERNAX DERROTADO! El anillo se enfría y el núcleo magmático queda liberado."
                     : enemy.type===EnemyType.BOSS_OMEGA
                       ? "¡FACTORÍA OMEGA DERROTADA! Las cadenas mecánicas se detienen y el reactor se apaga."
                       : "¡SISTEMAS DEL DEVORADOR CRÍTICAS! Reacción en cadena termodinámica detectada. ¡Sincronizando pulso de purga final!",
@@ -7907,7 +8323,8 @@ export const EnergySwarmGame: React.FC = () => {
         enemy.type === EnemyType.BOSS_TITAN ||
         enemy.type === EnemyType.BOSS_WORM ||
         enemy.type === EnemyType.BOSS_ARCHON ||
-        enemy.type === EnemyType.BOSS_OMEGA;
+        enemy.type === EnemyType.BOSS_OMEGA ||
+        enemy.type === EnemyType.BOSS_SOLFERNAX;
       const baseDamage = isBossChassis ? 25 : 15;
       if (isBossChassis) {
         const attackType =
@@ -8350,7 +8767,14 @@ export const EnergySwarmGame: React.FC = () => {
     const asteriaCombatVisualActive = worldRouteRunActiveRef.current;
     if (asteriaCombatVisualActive) {
       const ferrumActive=isFerrum(worldRouteRunActiveRef.current,worldRouteThemeRef.current);
-      if(ferrumActive){
+      const pyraActive=isPyra(worldRouteRunActiveRef.current,worldRouteThemeRef.current);
+      if(pyraActive){
+        drawPyraWorld(ctx,projectRouteDistance(asteriaLiveCursorRef.current),
+          panoramicViewport.width,asteriaLiveCursorRef.current.segmentOrdinal);
+        canvas.dataset.ux15Visual="pyra-magma-canvas";
+        canvas.dataset.ux15Scene=pyraSceneAt(asteriaLiveCursorRef.current.segmentOrdinal);
+        canvas.dataset.ux15World=PYRA_WORLD_ID;
+      }else if(ferrumActive){
         drawFerrumWorld(ctx,projectRouteDistance(asteriaLiveCursorRef.current),
           panoramicViewport.width,asteriaLiveCursorRef.current.segmentOrdinal);
         canvas.dataset.ux15Visual="ferrum-industrial-canvas";
@@ -8402,6 +8826,28 @@ export const EnergySwarmGame: React.FC = () => {
       canvas.dataset.wbe01SpanWardenCount=String(wardens);
       canvas.dataset.wbe01SpanWardenPhase=enemiesRef.current.find(e=>
         e.type===EnemyType.SPAN_WARDEN&&!e.isDead)?.spanWardenAttack?.phase??"NONE";
+      if(pyraActive){
+        let skaters=0,lancers=0,dredgers=0,cinderlings=0,seraphs=0;
+        for(const actor of enemiesRef.current){
+          if(actor.isDead)continue;
+          if(actor.type===EnemyType.EMBER_SKATER)skaters++;
+          else if(actor.type===EnemyType.SLAG_SPEAR)lancers++;
+          else if(actor.type===EnemyType.LAVA_DREDGER)dredgers++;
+          else if(actor.type===EnemyType.CINDERLING)cinderlings++;
+          else if(actor.type===EnemyType.CALDERA_SERAPH)seraphs++;
+        }
+        canvas.dataset.pyraEmberSkaterCount=String(skaters);
+        canvas.dataset.pyraSlagSpearCount=String(lancers);
+        canvas.dataset.pyraLavaDredgerCount=String(dredgers);
+        canvas.dataset.pyraCinderlingCount=String(cinderlings);
+        canvas.dataset.pyraCalderaSeraphCount=String(seraphs);
+      }else{
+        delete canvas.dataset.pyraEmberSkaterCount;
+        delete canvas.dataset.pyraSlagSpearCount;
+        delete canvas.dataset.pyraLavaDredgerCount;
+        delete canvas.dataset.pyraCinderlingCount;
+        delete canvas.dataset.pyraCalderaSeraphCount;
+      }
       if(ferrumActive){
         canvas.dataset.ferrumShadeGearCount=String(gear);
         canvas.dataset.ferrumWelderCount=String(welders);
@@ -8414,6 +8860,11 @@ export const EnergySwarmGame: React.FC = () => {
         delete canvas.dataset.ferrumOxideModulatorCount;
       }
     } else {
+      delete canvas.dataset.pyraEmberSkaterCount;
+      delete canvas.dataset.pyraSlagSpearCount;
+      delete canvas.dataset.pyraLavaDredgerCount;
+      delete canvas.dataset.pyraCinderlingCount;
+      delete canvas.dataset.pyraCalderaSeraphCount;
       delete canvas.dataset.wbe01RailcutterScope;
       delete canvas.dataset.wbe01RailcutterCount;
       delete canvas.dataset.wbe01RailcutterPhase;
@@ -9275,6 +9726,7 @@ export const EnergySwarmGame: React.FC = () => {
           onStartGame={startCampaignGame}
           onStartWorldRoute={startWorldRouteGame}
           onStartFerrumRoute={startFerrumWorldRouteGame}
+          onStartPyraRoute={startPyraWorldRouteGame}
           onStartScoreAttack={() => {
             void startGameWithMode("SCORE_ATTACK");
           }}

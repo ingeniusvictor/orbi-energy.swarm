@@ -1,7 +1,13 @@
 import React from "react";
+import {SOLFERNAX_VENT_RANGE,SOLFERNAX_VENT_OFFSETS,
+ SOLFERNAX_GATE_OFFSETS,SOLFERNAX_GATE_RANGE,
+ SOLFERNAX_COLLAPSE_LANES,SOLFERNAX_COLLAPSE_MAX_RADIUS,
+ SOLFERNAX_COLLAPSE_MIN_RADIUS,solfernaxGateShift,
+ solfernaxCollapseRadius} from "./pyraSolfernax";
 import {ARCHON_BEACON_OFFSETS,ARCHON_BEAM_RANGE,ARCHON_ACTIVE_MS,
   projectArchonPulseRadius} from "./asteriaThresholdArchon";
 import { getEvo8WingCount } from "./orbiEvolution";
+import {traceCalderaMeteor} from "./pyraCalderaSeraph";
 import { prewarmEvo8Lot1Sprites, disposeEvo8Lot1Sprites, drawEvo8Lot1Sprite } from "./evo8PremiumSprite";
 import { prewarmPremiumEnemySprites, disposePremiumEnemySprites, drawPremiumEnemyBody } from "./premiumEnemySprites";
 import { 
@@ -1108,6 +1114,71 @@ export function drawEnemiesList(
         targetDy - 28,
       );
       ctx.restore();
+    } else if(enemy.type===EnemyType.BOSS_SOLFERNAX&&enemy.solfernaxAttack){
+      const a=enemy.solfernaxAttack;
+      if(a.stage==="WARNING"||a.stage==="ACTIVE"){
+        const active=a.stage==="ACTIVE";
+        ctx.save();ctx.rotate(a.lockedAngle);
+        ctx.shadowColor="#f97316";ctx.shadowBlur=active?20:11;
+        ctx.strokeStyle=active?"rgba(251,146,60,.96)":"rgba(253,230,138,.9)";
+        ctx.lineWidth=active?10:2.6;ctx.lineCap="round";
+        ctx.setLineDash(active?[]:[12,8]);
+        if(a.phase===1){
+          // Three narrow rays with honest safe angles between the vents.
+          for(const offset of SOLFERNAX_VENT_OFFSETS){
+            const x=Math.cos(offset),y=Math.sin(offset);
+            ctx.beginPath();ctx.moveTo(x*65,y*65);
+            ctx.lineTo(x*SOLFERNAX_VENT_RANGE,y*SOLFERNAX_VENT_RANGE);
+            ctx.stroke();
+          }
+        }else if(a.phase===2){
+          const shift=active?solfernaxGateShift(a):0;
+          for(const offset of SOLFERNAX_GATE_OFFSETS){
+            if(!active){
+              ctx.fillStyle="rgba(251,191,36,.07)";
+              ctx.fillRect(70,offset-57,SOLFERNAX_GATE_RANGE-70,114);
+            }
+            ctx.beginPath();ctx.moveTo(70,offset+shift);
+            ctx.lineTo(SOLFERNAX_GATE_RANGE,offset+shift);ctx.stroke();
+            if(!active){
+              ctx.strokeStyle="rgba(251,191,36,.32)";ctx.lineWidth=1.7;
+              for(const limit of [-32,32]){
+                ctx.beginPath();ctx.moveTo(70,offset+limit);
+                ctx.lineTo(SOLFERNAX_GATE_RANGE,offset+limit);ctx.stroke();
+              }
+              ctx.strokeStyle="rgba(253,230,138,.9)";ctx.lineWidth=2.6;
+            }
+          }
+          ctx.setLineDash([]);ctx.strokeStyle="#a3e635";ctx.lineWidth=2;
+          ctx.beginPath();ctx.moveTo(80,0);
+          ctx.lineTo(SOLFERNAX_GATE_RANGE*.85,0);ctx.stroke();
+        }else{
+          // Two short arc sectors sweep radially inward. Never a 360° ring.
+          const radius=active?solfernaxCollapseRadius(a):
+            SOLFERNAX_COLLAPSE_MAX_RADIUS;
+          for(const theta of SOLFERNAX_COLLAPSE_LANES){
+            ctx.beginPath();ctx.arc(0,0,radius,theta-.29,theta+.29);
+            ctx.stroke();
+            if(!active){
+              ctx.strokeStyle="rgba(251,146,60,.32)";ctx.lineWidth=2;
+              ctx.beginPath();
+              ctx.arc(0,0,SOLFERNAX_COLLAPSE_MIN_RADIUS,theta-.29,theta+.29);
+              ctx.stroke();
+              ctx.strokeStyle="rgba(253,230,138,.9)";ctx.lineWidth=2.6;
+            }
+          }
+          ctx.setLineDash([]);ctx.strokeStyle="#a3e635";ctx.lineWidth=2.1;
+          ctx.beginPath();ctx.moveTo(100,0);ctx.lineTo(370,0);ctx.stroke();
+        }
+        ctx.setLineDash([]);ctx.restore();
+      }
+      if(a.stage==="EXPOSED"){
+        ctx.save();ctx.strokeStyle="#fef08a";ctx.lineWidth=4;
+        ctx.shadowColor="#fde047";ctx.shadowBlur=21;
+        ctx.beginPath();ctx.arc(0,0,enemy.size*.89+
+          Math.sin(time*.01)*4,0,Math.PI*2);ctx.stroke();
+        ctx.restore();
+      }
     } else if(enemy.type===EnemyType.BOSS_OMEGA&&enemy.omegaAttack){
       const a=enemy.omegaAttack;
       if(a.stage==="WARNING"||a.stage==="ACTIVE"){
@@ -1402,6 +1473,100 @@ export function drawEnemiesList(
         ctx.lineTo(a.dirX*240,a.dirY*240);ctx.stroke();
         ctx.restore();
       }
+    } else if(enemy.type===EnemyType.CALDERA_SERAPH&&enemy.calderaSeraphAttack){
+      const a=enemy.calderaSeraphAttack;
+      if(a.stage==="WARNING"){
+        ctx.save();
+        // All three paths are sampled from the same pure Euler integrator
+        // that moves live hostile meteors. No deceptive curved art.
+        ctx.setLineDash([10,7]);ctx.lineWidth=2.2;
+        for(let n=0;n<3;n++){
+          const arc=traceCalderaMeteor(enemy,a.lockedAngle,n as 0|1|2,24);
+          ctx.beginPath();
+          arc.forEach((point,i)=>{
+            if(i===0)ctx.moveTo(point.x-enemy.x,point.y-enemy.y);
+            else ctx.lineTo(point.x-enemy.x,point.y-enemy.y);
+          });
+          ctx.strokeStyle=n===1?"#fde68a":"#fb923c";
+          ctx.shadowColor="#f97316";ctx.shadowBlur=12;ctx.stroke();
+          const end=arc[arc.length-1];
+          ctx.beginPath();ctx.arc(end.x-enemy.x,end.y-enemy.y,9,0,Math.PI*2);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+      if(a.stage==="EXPOSED"){
+        ctx.save();ctx.strokeStyle="#d9f99d";
+        ctx.shadowColor="#a3e635";ctx.shadowBlur=12;ctx.lineWidth=2.6;
+        ctx.beginPath();ctx.arc(0,0,enemy.size*.59+2*Math.sin(time*.01),0,Math.PI*2);
+        ctx.stroke();ctx.restore();
+      }
+    } else if(enemy.type===EnemyType.CINDERLING&&enemy.cinderlingAttack){
+      const a=enemy.cinderlingAttack;
+      if(a.stage==="MARK"||a.stage==="LEAP"){
+        const markX=a.targetX-enemy.x,markY=a.targetY-enemy.y;
+        ctx.save();
+        ctx.strokeStyle=a.stage==="MARK"?"rgba(254,240,138,.92)":"#fb923c";
+        ctx.fillStyle="rgba(249,115,22,.1)";
+        ctx.shadowColor="#f97316";ctx.shadowBlur=14;
+        ctx.lineWidth=2.4;
+        ctx.setLineDash(a.stage==="MARK"?[7,5]:[]);
+        ctx.beginPath();ctx.arc(markX,markY,24,0,Math.PI*2);
+        ctx.fill();ctx.stroke();
+        ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(markX,markY);ctx.stroke();
+        ctx.setLineDash([]);ctx.restore();
+      }
+    } else if(enemy.type===EnemyType.LAVA_DREDGER&&enemy.lavaDredgerAttack){
+      const a=enemy.lavaDredgerAttack;
+      if(a.stage==="WARN"||a.stage==="CHARGE"){
+        const angle=a.facingAngle,isCharge=a.stage==="CHARGE";
+        ctx.save();ctx.rotate(angle);
+        ctx.shadowColor="#f97316";ctx.shadowBlur=14;
+        ctx.strokeStyle=isCharge?"rgba(251,146,60,.9)":"rgba(253,230,138,.91)";
+        ctx.lineWidth=isCharge?15:2.4;
+        ctx.setLineDash(isCharge?[]:[11,8]);
+        ctx.beginPath();ctx.moveTo(32,0);ctx.lineTo(340,0);ctx.stroke();
+        ctx.setLineDash([]);
+        if(!isCharge){
+          ctx.strokeStyle="rgba(251,146,60,.4)";ctx.lineWidth=42;
+          ctx.beginPath();ctx.moveTo(54,0);ctx.lineTo(310,0);ctx.stroke();
+        }
+        ctx.restore();
+      }
+      if(a.stage==="EXPOSED"){
+        ctx.save();ctx.strokeStyle="#fef08a";ctx.lineWidth=3;
+        ctx.shadowColor="#f59e0b";ctx.shadowBlur=12;
+        for(const side of [-1,1]){
+          ctx.beginPath();ctx.arc(side*enemy.size*.87,0,
+            7+2*Math.sin(time*.009),0,Math.PI*2);ctx.stroke();
+        }
+        ctx.restore();
+      }
+    } else if(enemy.type===EnemyType.SLAG_SPEAR&&enemy.slagSpearAttack){
+      const a=enemy.slagSpearAttack;
+      if(a.stage==="WARN"){
+        const angle=a.lockedAngle;
+        ctx.save();ctx.strokeStyle="#fde68a";ctx.lineWidth=2.2;
+        ctx.shadowColor="#f97316";ctx.shadowBlur=12;
+        ctx.setLineDash([9,7]);ctx.beginPath();
+        ctx.moveTo(0,0);ctx.lineTo(Math.cos(angle)*320,Math.sin(angle)*320);
+        ctx.stroke();ctx.setLineDash([]);
+        ctx.strokeStyle="rgba(251,146,60,.45)";ctx.lineWidth=10;
+        ctx.beginPath();ctx.moveTo(Math.cos(angle)*42,Math.sin(angle)*42);
+        ctx.lineTo(Math.cos(angle)*300,Math.sin(angle)*300);ctx.stroke();
+        ctx.restore();
+      }
+    } else if(enemy.type===EnemyType.EMBER_SKATER&&enemy.emberSkaterAttack){
+      const a=enemy.emberSkaterAttack;
+      if(a.stage==="WARNING"){
+        ctx.save();ctx.strokeStyle="rgba(253,230,138,.87)";
+        ctx.fillStyle="rgba(249,115,22,.12)";ctx.lineWidth=2.5;
+        ctx.shadowColor="#fb923c";ctx.shadowBlur=13;
+        ctx.setLineDash([9,6]);
+        ctx.beginPath();ctx.arc(a.lockedX-enemy.x,a.lockedY-enemy.y,
+          26+Math.sin(time*.012)*2,0,Math.PI*2);
+        ctx.fill();ctx.stroke();ctx.setLineDash([]);ctx.restore();
+      }
     } else if (enemy.type === EnemyType.DRONE && enemy.shootCooldown !== undefined && enemy.shootCooldown <= 35 && enemy.shootCooldown > 0) {
       // Fine target line to Foton leader (Section 3.1)
       ctx.save();
@@ -1479,6 +1644,226 @@ export function drawEnemiesList(
     ctx.fillStyle = enemy.color;
 
     switch (enemy.type) {
+      case EnemyType.BOSS_SOLFERNAX: {
+        const a=enemy.solfernaxAttack,s=enemy.size;
+        const exposed=a?.stage==="EXPOSED",phase=a?.phase??1,t=time*.0015;
+        ctx.save();
+        // Horizontal annular reactor chassis: dual molten rings with original
+        // six radial vent housings. Artwork is exclusive to PYRA.
+        for(const [radius,weight,opacity] of [
+          [s*1.62,7,1],[s*1.24,4,.75],
+        ] as const){
+          ctx.save();ctx.rotate(t*(radius>s*1.5?1:-.8));
+          ctx.strokeStyle=phase===3?"#f97316":"#fb923c";
+          ctx.shadowColor="#f97316";ctx.shadowBlur=22;
+          ctx.globalAlpha=opacity;ctx.lineWidth=weight;
+          ctx.beginPath();ctx.arc(0,0,radius,0,Math.PI*2);ctx.stroke();
+          for(let i=0;i<8;i++){
+            const ang=i*Math.PI/4;
+            ctx.save();ctx.rotate(ang);
+            ctx.fillStyle=i%2?"#431407":"#9a3412";
+            ctx.strokeStyle="#fdba74";ctx.lineWidth=2;
+            ctx.beginPath();ctx.moveTo(radius-s*.16,-s*.14);
+            ctx.lineTo(radius+s*.17,-s*.11);
+            ctx.lineTo(radius+s*.27,0);
+            ctx.lineTo(radius+s*.17,s*.11);
+            ctx.lineTo(radius-s*.16,s*.14);ctx.closePath();
+            ctx.fill();ctx.stroke();ctx.restore();
+          }
+          ctx.restore();
+        }
+        // Eight hinged obsidian plates frame the living incandescent core.
+        for(let i=0;i<8;i++){
+          ctx.save();ctx.rotate(i*Math.PI/4);
+          ctx.fillStyle="#292524";ctx.strokeStyle="#fb923c";ctx.lineWidth=2.6;
+          ctx.beginPath();ctx.moveTo(s*.42,-s*.18);
+          ctx.lineTo(s*.98,-s*.28);ctx.lineTo(s*1.08,0);
+          ctx.lineTo(s*.98,s*.28);ctx.lineTo(s*.42,s*.18);
+          ctx.closePath();ctx.fill();ctx.stroke();
+          ctx.fillStyle=phase===2?"#fbbf24":"#9a3412";
+          ctx.fillRect(s*.73,-s*.06,s*.18,s*.12);
+          ctx.restore();
+        }
+        const core=ctx.createRadialGradient(0,0,s*.06,0,0,s*.74);
+        core.addColorStop(0,exposed?"#fff":"#fef08a");
+        core.addColorStop(.38,exposed?"#d9f99d":"#fb923c");
+        core.addColorStop(.76,exposed?"#84cc16":"#dc2626");
+        core.addColorStop(1,"rgba(69,10,10,.04)");
+        ctx.fillStyle=core;ctx.shadowColor=exposed?"#bef264":"#fb923c";
+        ctx.shadowBlur=exposed?31:23;
+        ctx.beginPath();ctx.arc(0,0,s*.73,0,Math.PI*2);ctx.fill();
+        ctx.strokeStyle=exposed?"#bef264":"#fef08a";ctx.lineWidth=3;
+        ctx.beginPath();ctx.arc(0,0,s*.45,0,Math.PI*2);ctx.stroke();
+        ctx.fillStyle="#1c1917";ctx.beginPath();
+        ctx.arc(0,0,s*.13,0,Math.PI*2);ctx.fill();
+        if(phase===3){
+          ctx.strokeStyle="#fef08a";ctx.lineWidth=2;
+          for(let i=0;i<4;i++){
+            const angle=time*.002+i*Math.PI/2;
+            ctx.beginPath();ctx.moveTo(Math.cos(angle)*s*.75,Math.sin(angle)*s*.75);
+            ctx.lineTo(Math.cos(angle+.12)*s*.99,Math.sin(angle+.12)*s*.99);
+            ctx.stroke();
+          }
+        }
+        ctx.shadowBlur=0;ctx.fillStyle="#fff7ed";
+        ctx.font="bold 9px monospace";ctx.textAlign="center";
+        ctx.fillText("SOLFERNAX // PHASE "+phase,0,s*1.16);
+        ctx.restore();break;
+      }
+      case EnemyType.CALDERA_SERAPH: {
+        const a=enemy.calderaSeraphAttack,r=enemy.size;
+        const cooled=a?.stage==="EXPOSED";
+        ctx.save();ctx.rotate(a?.lockedAngle??0);
+        ctx.shadowColor=cooled?"#bef264":"#f97316";ctx.shadowBlur=17;
+        // Six independent articulated fan-wings form a magma-ray silhouette.
+        for(const side of [-1,1]){
+          for(let i=0;i<3;i++){
+            const dist=i*r*.43;
+            const wingSpan=(1.4-i*.20)*r;
+            const flex=Math.sin(time*.003+(a?.cycle??0)+i*.8)*r*.09;
+            ctx.fillStyle=i%2?"#292524":"#431407";
+            ctx.strokeStyle=cooled?"#bef264":"#fb923c";ctx.lineWidth=2.3;
+            ctx.beginPath();
+            ctx.moveTo(-r*.23+dist,-side*r*.03);
+            ctx.lineTo(-r*.5+dist,side*(wingSpan+flex));
+            ctx.lineTo(-r*.9+dist,side*(wingSpan*.7+flex));
+            ctx.lineTo(-r*.60+dist,side*r*.35);
+            ctx.closePath();ctx.fill();ctx.stroke();
+            ctx.strokeStyle="rgba(251,191,36,.8)";ctx.lineWidth=1.4;
+            ctx.beginPath();ctx.moveTo(-r*.4+dist,side*r*.25);
+            ctx.lineTo(-r*.52+dist,side*(wingSpan*.87+flex));ctx.stroke();
+          }
+        }
+        ctx.fillStyle="#292524";ctx.strokeStyle="#fdba74";ctx.lineWidth=3;
+        ctx.beginPath();ctx.moveTo(r*1.2,0);
+        ctx.quadraticCurveTo(-r*.1,-r*.88,-r*.9,-r*.23);
+        ctx.quadraticCurveTo(-r*1.05,0,-r*.9,r*.23);
+        ctx.quadraticCurveTo(-r*.1,r*.88,r*1.2,0);
+        ctx.closePath();ctx.fill();ctx.stroke();
+        ctx.fillStyle=cooled?"#d9f99d":"#fb923c";
+        ctx.beginPath();ctx.arc(r*.12,0,r*.38,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle="#292524";ctx.beginPath();ctx.arc(r*.22,0,r*.18,0,Math.PI*2);ctx.fill();
+        if(a?.stage==="CIRCULATE"||a?.stage==="WARNING"){
+          ctx.strokeStyle="#fef08a";ctx.lineWidth=2;
+          for(let n=0;n<3;n++){
+            const theta=time*.002+n*Math.PI*2/3;
+            ctx.beginPath();
+            ctx.arc(Math.cos(theta)*r*.91,Math.sin(theta)*r*.91,4.2,0,Math.PI*2);
+            ctx.stroke();
+          }
+        }
+        ctx.restore();break;
+      }
+      case EnemyType.CINDERLING: {
+        const a=enemy.cinderlingAttack,r=enemy.size;
+        ctx.save();ctx.rotate(time*.002+(a?.cycles??0)*Math.PI/4);
+        ctx.shadowColor="#f59e0b";ctx.shadowBlur=a?.stage==="COOL"?8:17;
+        // Six jagged obsidian wings protect an orange cinder heart. During
+        // cooling they retract and reveal a distinctly lime-white weak core.
+        ctx.fillStyle="#26212a";ctx.strokeStyle="#fbbf24";ctx.lineWidth=2;
+        ctx.beginPath();
+        for(let n=0;n<18;n++){
+          const ang=n*Math.PI/9;
+          const radius=r*(n%3===0?1.45:.72);
+          if(n===0)ctx.moveTo(Math.cos(ang)*radius,Math.sin(ang)*radius);
+          else ctx.lineTo(Math.cos(ang)*radius,Math.sin(ang)*radius);
+        }
+        ctx.closePath();ctx.fill();ctx.stroke();
+        for(let n=0;n<6;n++){
+          const ang=n*Math.PI/3;
+          ctx.fillStyle="#9a3412";
+          ctx.beginPath();ctx.arc(Math.cos(ang)*r*.7,Math.sin(ang)*r*.7,2.2,0,Math.PI*2);
+          ctx.fill();
+        }
+        ctx.fillStyle=a?.stage==="COOL"?"#d9f99d":
+          a?.stage==="MARK"?"#fef08a":"#fb923c";
+        ctx.beginPath();ctx.arc(0,0,r*.53,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle="#450a0a";ctx.beginPath();
+        ctx.arc(0,0,r*.18,0,Math.PI*2);ctx.fill();
+        ctx.restore();break;
+      }
+      case EnemyType.LAVA_DREDGER: {
+        const a=enemy.lavaDredgerAttack,r=enemy.size,exposed=a?.stage==="EXPOSED";
+        ctx.save();ctx.rotate(a?.facingAngle??0);
+        ctx.shadowColor="#f97316";ctx.shadowBlur=17;
+        // Wide industrial crawler tracks, ash-facing steel wedge and
+        // two lateral bright reactor cells that only open after charge.
+        for(const side of [-1,1]){
+          ctx.fillStyle="#1c1917";ctx.strokeStyle="#78716c";ctx.lineWidth=3;
+          ctx.fillRect(-r*.8,side*r*.75-r*.25,r*1.8,r*.5);
+          ctx.strokeRect(-r*.8,side*r*.75-r*.25,r*1.8,r*.5);
+          for(let n=0;n<4;n++){
+            ctx.strokeStyle="#fb923c";ctx.lineWidth=1.5;
+            ctx.beginPath();
+            ctx.moveTo(-r*.68+n*r*.4,side*r*.75-r*.23);
+            ctx.lineTo(-r*.68+n*r*.4,side*r*.75+r*.23);ctx.stroke();
+          }
+          ctx.fillStyle=exposed?"#fef08a":"#7c2d12";
+          ctx.shadowColor=exposed?"#fde047":"#f97316";
+          ctx.beginPath();ctx.arc(side*r*.84,0,r*.21,0,Math.PI*2);ctx.fill();
+        }
+        ctx.shadowColor="#ea580c";ctx.shadowBlur=12;
+        ctx.fillStyle="#292524";ctx.strokeStyle="#fdba74";ctx.lineWidth=3;
+        ctx.beginPath();
+        ctx.moveTo(r*1.26,0);ctx.lineTo(r*.58,-r*.65);
+        ctx.lineTo(-r*.95,-r*.6);ctx.lineTo(-r*.98,r*.6);
+        ctx.lineTo(r*.58,r*.65);ctx.closePath();
+        ctx.fill();ctx.stroke();
+        ctx.fillStyle="#9a3412";ctx.fillRect(-r*.36,-r*.44,r*.62,r*.88);
+        ctx.fillStyle=exposed?"#fef9c3":"#fb923c";
+        ctx.beginPath();ctx.arc(-r*.1,0,r*.28,0,Math.PI*2);ctx.fill();
+        ctx.strokeStyle="#94a3b8";ctx.lineWidth=7;
+        ctx.beginPath();ctx.moveTo(r*.56,0);ctx.lineTo(r*1.35,0);ctx.stroke();
+        ctx.fillStyle="#fdba74";
+        ctx.beginPath();ctx.moveTo(r*1.51,0);ctx.lineTo(r*1.13,-r*.25);
+        ctx.lineTo(r*1.13,r*.25);ctx.closePath();ctx.fill();
+        ctx.restore();break;
+      }
+      case EnemyType.SLAG_SPEAR: {
+        const a=enemy.slagSpearAttack,r=enemy.size;
+        ctx.save();ctx.rotate(a?.lockedAngle??0);
+        ctx.shadowColor="#f97316";ctx.shadowBlur=17;
+        // Single obsidian lancer, forked shoulders and magma spinal channel.
+        ctx.fillStyle="#1f2028";ctx.strokeStyle="#fb923c";ctx.lineWidth=2.8;
+        ctx.beginPath();ctx.moveTo(r*1.1,0);ctx.lineTo(r*.45,-r*.8);
+        ctx.lineTo(-r*.65,-r*.68);ctx.lineTo(-r*1.08,0);
+        ctx.lineTo(-r*.65,r*.68);ctx.lineTo(r*.45,r*.8);
+        ctx.closePath();ctx.fill();ctx.stroke();
+        for(const side of [-1,1]){
+          ctx.strokeStyle="#94a3b8";ctx.lineWidth=5;
+          ctx.beginPath();ctx.moveTo(r*.05,side*r*.55);
+          ctx.lineTo(r*.75,side*r*.82);ctx.lineTo(r*1.4,side*r*.31);ctx.stroke();
+        }
+        ctx.fillStyle=a?.stage==="WARN"?"#fef08a":"#fb923c";
+        ctx.fillRect(-r*.28,-r*.21,r*.85,r*.42);
+        ctx.fillStyle="#fef9c3";ctx.beginPath();
+        ctx.moveTo(r*.58,-r*.18);ctx.lineTo(r*1.18,0);ctx.lineTo(r*.58,r*.18);
+        ctx.closePath();ctx.fill();ctx.restore();break;
+      }
+      case EnemyType.EMBER_SKATER: {
+        const a=enemy.emberSkaterAttack,r=enemy.size;
+        ctx.save();ctx.rotate(time*.006*(a?.side??1));
+        ctx.shadowColor="#f97316";ctx.shadowBlur=18;
+        // Obsidian skating disc, five heat fins and a molten reactor eye.
+        ctx.fillStyle="#1c1917";ctx.strokeStyle="#fb923c";ctx.lineWidth=3;
+        ctx.beginPath();
+        for(let i=0;i<20;i++){
+          const angle=i*Math.PI/10,rad=r*(i%4===0?1.4:.93);
+          if(i===0)ctx.moveTo(rad*Math.cos(angle),rad*Math.sin(angle));
+          else ctx.lineTo(rad*Math.cos(angle),rad*Math.sin(angle));
+        }
+        ctx.closePath();ctx.fill();ctx.stroke();
+        for(let i=0;i<5;i++){
+          const angle=i*Math.PI*2/5;
+          ctx.fillStyle="#9a3412";ctx.beginPath();
+          ctx.arc(Math.cos(angle)*r*.74,Math.sin(angle)*r*.74,r*.13,0,Math.PI*2);
+          ctx.fill();
+        }
+        ctx.fillStyle=a?.stage==="WARNING"?"#fef08a":"#fb923c";
+        ctx.beginPath();ctx.arc(0,0,r*.49,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle="#450a0a";ctx.beginPath();ctx.arc(0,0,r*.19,0,Math.PI*2);ctx.fill();
+        ctx.restore();break;
+      }
       case EnemyType.FERRITE_FOREMAN: {
         const a=enemy.ferriteForemanAttack,r=enemy.size;
         ctx.save();ctx.rotate(Math.atan2(a?.facingY??0,a?.facingX??-1));
@@ -2592,9 +2977,33 @@ export function drawProjectilesList(
     ctx.strokeStyle = proj.color;
 
     if (!proj.fromPlayer) {
-      ctx.beginPath();
-      ctx.arc(0, 0, proj.size, 0, Math.PI * 2);
-      ctx.fill();
+      if(proj.seraphMeteorCurveDirection!==undefined){
+        ctx.rotate(Math.atan2(proj.vy,proj.vx));
+        ctx.shadowColor="#fb923c";ctx.shadowBlur=14;
+        ctx.strokeStyle="#f97316";ctx.lineWidth=4;
+        ctx.beginPath();ctx.moveTo(-17,0);ctx.lineTo(2,0);ctx.stroke();
+        ctx.fillStyle="#fef08a";ctx.beginPath();ctx.arc(5,0,proj.size,0,Math.PI*2);
+        ctx.fill();
+        ctx.fillStyle="#9a3412";ctx.beginPath();
+        ctx.arc(7,-3,proj.size*.35,0,Math.PI*2);ctx.fill();
+      }else if(proj.slagSpearDistanceRemaining!==undefined){
+        ctx.rotate(Math.atan2(proj.vy,proj.vx));
+        ctx.shadowColor="#fdba74";ctx.shadowBlur=15;
+        ctx.strokeStyle="#fb923c";ctx.lineWidth=4;
+        ctx.beginPath();ctx.moveTo(-15,0);ctx.lineTo(7,0);ctx.stroke();
+        ctx.fillStyle="#fef08a";ctx.beginPath();
+        ctx.moveTo(17,0);ctx.lineTo(3,-7);ctx.lineTo(3,7);
+        ctx.closePath();ctx.fill();
+      }else if(proj.slagSpearFragment){
+        ctx.rotate(Math.atan2(proj.vy,proj.vx));
+        ctx.fillStyle="#fb923c";ctx.beginPath();
+        ctx.moveTo(8,0);ctx.lineTo(-6,-4);ctx.lineTo(-6,4);
+        ctx.closePath();ctx.fill();
+      }else{
+        ctx.beginPath();
+        ctx.arc(0, 0, proj.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
       ctx.restore();
       return;
     }

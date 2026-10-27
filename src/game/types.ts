@@ -6,6 +6,12 @@ import type {FoundryClawAttack,OxideModulatorAttack} from "./ferrumAdvancedFoes"
 import type {ForemanAttack} from "./ferrumForeman";
 import type { ThresholdArchonAttack } from "./asteriaThresholdArchon";
 import type { OmegaFoundryAttack } from "./ferrumOmegaFoundry";
+import type { EmberSkaterAttack } from "./pyraEmberSkater";
+import type { SlagSpearAttack } from "./pyraSlagSpear";
+import type { LavaDredgerAttack } from "./pyraLavaDredger";
+import type { CinderlingAttack } from "./pyraCinderling";
+import type { CalderaSeraphAttack } from "./pyraCalderaSeraph";
+import type { SolfernaxAttack } from "./pyraSolfernax";
 import type { SkySpecterAttack,BeaconPrismAttack,IonSailAttack } from "./asteriaOriginalFoes";
 import type { SiegeVolleyTelegraphState } from "./siegeVolleyTelegraph";
 import type { BlackoutArchitectEngineIdentityTag } from "./blackoutArchitectEngineIdentityLifecycle";
@@ -163,6 +169,11 @@ export enum EnemyType {
   FOUNDRY_CLAW = "FOUNDRY_CLAW",
   OXIDE_MODULATOR = "OXIDE_MODULATOR",
   FERRITE_FOREMAN = "FERRITE_FOREMAN",
+  EMBER_SKATER = "EMBER_SKATER",
+  SLAG_SPEAR = "SLAG_SPEAR",
+  LAVA_DREDGER = "LAVA_DREDGER",
+  CINDERLING = "CINDERLING",
+  CALDERA_SERAPH = "CALDERA_SERAPH",
   SPLITTER = "SPLITTER",
   DISRUPTOR = "DISRUPTOR",
   BLACKOUT_ELITE = "BLACKOUT_ELITE",
@@ -177,6 +188,7 @@ export enum EnemyType {
   BOSS_WORM = "BOSS_WORM",
   BOSS_ARCHON = "BOSS_ARCHON",
   BOSS_OMEGA = "BOSS_OMEGA",
+  BOSS_SOLFERNAX = "BOSS_SOLFERNAX",
   BOSS_ARCHITECT = "BOSS_ARCHITECT"
 }
 
@@ -202,7 +214,7 @@ export type InfiniteBossIdentity =
   | "RIFT_MATRIARCH"
   | "SIEGE_CATHEDRAL";
 
-export type BossChassisId = "DEVOURER" | "TITAN_CORE" | "WORM_SEGMENTS" | "ASTERIA_ARCHON" | "FERRUM_OMEGA";
+export type BossChassisId = "DEVOURER" | "TITAN_CORE" | "WORM_SEGMENTS" | "ASTERIA_ARCHON" | "FERRUM_OMEGA" | "PYRA_SOLFERNAX";
 export type BossEncounterStage = "PRIMARY" | "RAID_ESCALATION";
 
 export interface Enemy {
@@ -262,6 +274,16 @@ export interface Enemy {
   foundryClawAttack?: FoundryClawAttack;
   oxideModulatorAttack?: OxideModulatorAttack;
   ferriteForemanAttack?: ForemanAttack;
+  /** PYRA native heated skid, with deterministic warning window. */
+  emberSkaterAttack?: EmberSkaterAttack;
+  /** PYRA-02 native fixed-axis obsidian lance attack cycle. */
+  slagSpearAttack?: SlagSpearAttack;
+  /** PYRA-03: finite, telegraphed heavy charge, heat trail and lateral opening. */
+  lavaDredgerAttack?: LavaDredgerAttack;
+  /** PYRA-04: locked, telegraphed ember landing and nonrecursive burst. */
+  cinderlingAttack?: CinderlingAttack;
+  /** PYRA-05: exclusive six-wing manta meteor elite state. */
+  calderaSeraphAttack?: CalderaSeraphAttack;
   /** Native Ferrum machine movement cue, valid only while the linked Foreman lives. */
   ferriteCommandSourceId?: string;
   ferriteCommandUntilMs?: number;
@@ -271,6 +293,8 @@ export interface Enemy {
   archonAttack?: ThresholdArchonAttack;
   /** Native FERRUM boss choreography; never mutates common runtime. */
   omegaAttack?: OmegaFoundryAttack;
+  /** PYRA final campaign boss; existing boss lifecycle owns all damage. */
+  solfernaxAttack?: SolfernaxAttack;
   /** Assembly minions still use the native SHADE_GEAR combat lifecycle. */
   omegaGearSourceId?: string;
 }
@@ -287,6 +311,13 @@ export interface Projectile {
   fromPlayer: boolean;
   life: number;
   maxLife: number;
+  /** Interceptible PYRA-02 lance remaining travel; only parent can split. */
+  slagSpearDistanceRemaining?: number;
+  /** Native two-fragment cap, preventing recursive fragmentation. */
+  slagSpearFragment?: boolean;
+  /** PYRA-05 curved meteor; canonical engine advances the trajectory. */
+  seraphMeteorCurveDirection?: -1 | 1;
+  seraphMeteorCurveRemainingMs?: number;
   // Engine-owned creation metadata, never a real collision/replay ticket.
   collisionTraceRunEpoch?: number;
   collisionTracePhysicsFrame?: number;

@@ -456,6 +456,64 @@ async function runFerrumLiveCombat(name,width,height,touch){
   }finally{await context.close();}
 }
 
+
+/** PYRA-03: third genuine Mundo Nuevo route; two exclusive enemies plus
+ * Lava Dredger must only be visible through the actual Campaign canvas.
+ */
+async function runPyraLiveCombat(name,width,height,touch){
+  const context=await browser.newContext({viewport:{width,height},
+    isMobile:touch,hasTouch:touch,deviceScaleFactor:touch?2:1,
+    reducedMotion:"reduce",serviceWorkers:"block"});
+  const page=await context.newPage();
+  page.on("pageerror",e=>diagnostics.push(name+": "+String(e)));
+  page.on("console",msg=>{if(msg.type()==="error")diagnostics.push(name+": "+msg.text());});
+  try{
+    await page.clock.install({time:new Date("2026-10-27T10:00:00Z")});
+    await page.goto(url+"/",{waitUntil:"domcontentloaded",timeout:30000});
+    const enter=page.getByTestId("orbi-mobile-enter");
+    if(await enter.isVisible()){
+      await enter.click();
+      await page.getByTestId("orbi-mobile-menu-main-play").click();
+      await page.getByTestId("orbi-mobile-pyra-world").click();
+    }else{
+      await page.locator('[data-pyra-world-start-cta="true"]').click();
+    }
+    const canvas=page.locator("#game-canvas");
+    await canvas.waitFor({state:"visible",timeout:15000});
+    check(await page.locator('[data-selected-game-mode="WORLD_ROUTE"]').count()===1,
+      name+": PYRA did not start the genuine Campaign world route");
+    check(await page.getByTestId("ux15-route-qa").count()===0,
+      name+": PYRA incorrectly opened the sandbox LAB");
+    await page.clock.runFor(6800);
+    await page.waitForFunction(()=>document.querySelector("#game-canvas")
+      ?.dataset.ux15World==="PYRA_MAGMA_CORE",null,{timeout:12000});
+    const world=await canvas.getAttribute("data-ux15-world");
+    const scene=await canvas.getAttribute("data-ux15-scene");
+    const visual=await canvas.getAttribute("data-ux15-visual");
+    const distance=Number(await canvas.getAttribute("data-ux15-route-distance"));
+    check(world==="PYRA_MAGMA_CORE",name+": selected world was not PYRA");
+    check(scene==="OBSIDIAN_GATE",name+": first volcanic sector missing");
+    check(visual==="pyra-magma-canvas",name+": volcanic panorama not drawn");
+    check(Number.isFinite(distance)&&distance>10,
+      name+": genuine Campaign route progression not advancing");
+    check(await canvas.getAttribute("data-ux15-live-combat")==="true",
+      name+": cosmetic PYRA screen, not native combat");
+    for(const key of ["data-pyra-ember-skater-count",
+      "data-pyra-slag-spear-count","data-pyra-lava-dredger-count",
+      "data-pyra-cinderling-count","data-pyra-caldera-seraph-count"]){
+      check(await canvas.getAttribute(key)!==null,
+        name+": PYRA live enemy director readout missing "+key);
+    }
+    check(Number(await canvas.getAttribute("data-wbe01-railcutter-count"))===0,
+      name+": ASTERIA Railcutter leaked into PYRA");
+    check(await canvas.getAttribute("data-ferrum-shade-gear-count")===null,
+      name+": FERRUM-only actor telemetry leaked into PYRA");
+    await shot(page,name+"-pyra-real-campaign");
+    evidence.cases.push({name,pass:true,world,scene,visual,distance,
+      liveCombat:true,pyraExclusive:true});
+  }finally{await context.close();}
+}
+
 /** UX15-C3A-2: isolated PHYSICAL player/camera, not the legacy gameplay.
  * Ground acceptance in real simulation-owned player, camera and origin epoch.
  */
@@ -1620,14 +1678,34 @@ async function runFotonPropulsionQa(name,width,height,touch){
   await page.waitForFunction(()=>document.querySelector(
     '[data-testid="ux15-physical-canvas"]')?.dataset.c3b12Thrust==="CRUISE",
     null,{timeout:12000});
+  const beforePausePaint=Number(await canvas.getAttribute("data-c3b12-paint-ordinal"));
   await page.getByTestId("ux15-physical-pause").click();
-  await page.waitForTimeout(450);
-  const pausedTicks=await lab.getAttribute("data-physics-ticks");
-  const pausedLength=await canvas.getAttribute("data-c3b12-thrust-length");
-  await page.waitForTimeout(550);
-  check(await lab.getAttribute("data-physics-ticks")===pausedTicks,
-    name+": clock ran during pause");
-  check(await canvas.getAttribute("data-c3b12-thrust-length")===pausedLength,
+  await page.waitForFunction(()=>document.querySelector(
+    '[data-testid="ux15-physical-canvas"]')?.dataset.c3b12RunGate==="false",
+    null,{timeout:12000});
+  // Under mobile SwiftShader the 1:8 React telemetry can lag actual Canvas
+  // frames. Certify two AFTER-PAUSE paints using the SAME canvas-clock source.
+  await page.waitForFunction(previous=>{
+    const d=document.querySelector('[data-testid="ux15-physical-canvas"]')?.dataset;
+    return d&&Number(d.c3b12PaintOrdinal)>=previous+2;
+  },beforePausePaint,{timeout:20000});
+  const frozen=await canvas.evaluate(el=>({
+    clock:el.dataset.c3b12ClockMs,
+    reach:el.dataset.c3b12ThrustLength,
+    paint:Number(el.dataset.c3b12PaintOrdinal),
+  }));
+  await page.waitForFunction(previous=>{
+    const d=document.querySelector('[data-testid="ux15-physical-canvas"]')?.dataset;
+    return d&&Number(d.c3b12PaintOrdinal)>=previous+2;
+  },frozen.paint,{timeout:20000});
+  const after=await canvas.evaluate(el=>({
+    clock:el.dataset.c3b12ClockMs,
+    reach:el.dataset.c3b12ThrustLength,
+  }));
+  check(after.clock===frozen.clock,
+    name+": actual Canvas simulated clock advanced during pause"+
+    " ("+frozen.clock+" => "+after.clock+")");
+  check(after.reach===frozen.reach,
     name+": exhaust animation ran independently of simulated clock");
   check(await lab.getAttribute("data-c3b11-wave3-active")==="false",
     name+": Wave3 was incorrectly unlocked by exhaust");
@@ -1662,6 +1740,8 @@ try {
   await runAsteriaCombat("ux15c1-real-game-mobile-844x390",844,390,true);
   await runFerrumLiveCombat("ferrum01-real-game-desktop-1440x900",1440,900,false);
   await runFerrumLiveCombat("ferrum01-real-game-mobile-844x390",844,390,true);
+  await runPyraLiveCombat("pyra03-real-game-desktop-1440x900",1440,900,false);
+  await runPyraLiveCombat("pyra03-real-game-mobile-844x390",844,390,true);
   await runPhysicalRouteQa("ux15c3a2-physical-desktop-1440x900",1440,900,false);
   await runPhysicalRouteQa("ux15c3a2-physical-mobile-844x390",844,390,true);
   await runDynamicRouteQa("ux15c3b1-dynamic-desktop-1440x900",1440,900,false);

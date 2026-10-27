@@ -29,6 +29,7 @@ interface Props {
   onScoreAttack: () => void;
   onWorldRoute: () => void;
   onFerrumRoute: () => void;
+  onPyraRoute: () => void;
   nanoCredits?: number;
   purifiedEnergy?: number;
   hasInfiniteRecord: boolean;
@@ -71,7 +72,7 @@ const modes = [
 
 export const PremiumNativeNavigation: React.FC<Props> = ({
   layer, section, tab, language, onLanguage, onEnter, onBack, onOpen,
-  onPlay, onScoreAttack, onWorldRoute, onFerrumRoute, nanoCredits = 0, purifiedEnergy = 0, hasInfiniteRecord,
+  onPlay, onScoreAttack, onWorldRoute, onFerrumRoute, onPyraRoute, nanoCredits = 0, purifiedEnergy = 0, hasInfiniteRecord,
   audioMuted, musicEnabled, soundEffectsEnabled, onAudioToggle, onMusicToggle, onEffectsToggle,
 }) => {
   const es = language === "es";
@@ -209,10 +210,16 @@ export const PremiumNativeNavigation: React.FC<Props> = ({
                           onClick={mode.key === "campaign" ? onPlay : mode.key === "route" ? onWorldRoute : onScoreAttack}
                           onFocus={() => setSelectedMode(mode.key)}><Play size={15} fill="currentColor" />{es ? "INICIAR" : "START"}<ChevronRight size={16}/></button>
                         {mode.key === "route" && (
-                          <button type="button" data-testid="orbi-mobile-ferrum-world"
-                            className="orbi-ux10c-mode-start" onClick={onFerrumRoute}>
-                            <Play size={15} fill="currentColor"/> FERRUM · {es ? "CIUDAD MECÁNICA" : "MECHANICAL CITY"} <ChevronRight size={16}/>
-                          </button>
+                          <>
+                            <button type="button" data-testid="orbi-mobile-ferrum-world"
+                              className="orbi-ux10c-mode-start" onClick={onFerrumRoute}>
+                              <Play size={15} fill="currentColor"/> FERRUM · {es ? "CIUDAD MECÁNICA" : "MECHANICAL CITY"} <ChevronRight size={16}/>
+                            </button>
+                            <button type="button" data-testid="orbi-mobile-pyra-world"
+                              className="orbi-ux10c-mode-start" onClick={onPyraRoute}>
+                              <Play size={15} fill="currentColor"/> PYRA · {es ? "NÚCLEO MAGMÁTICO · ALFA" : "MAGMA CORE · ALPHA"} <ChevronRight size={16}/>
+                            </button>
+                          </>
                         )}
                       </>
                     )}
