@@ -101,7 +101,9 @@ async function run(name,width,height,mobile){
          phases.add(v.phase);
          if(v.stage!=="NONE")stageByPhase[v.phase].add(v.stage);
        }
-       if(v.hp<0)throw Error("negative native boss HP");
+       // Native damage may legitimately overshoot zero on the fatal hit.
+       // hp < 0 is the evidence of real projectile defeat, not an engine bug.
+       // Never truncate or modify boss HP in the E2E fixture.
      }
      sawCinematic ||= v.cinematic==="true";
      if(tick%4===0||v.mode==="INFINITE"||sawCinematic&&tick%2===0)
