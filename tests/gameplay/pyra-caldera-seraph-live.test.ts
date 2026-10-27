@@ -24,6 +24,7 @@ test("PYRA-05: three meteor lanes locked for full 1240ms warning",()=>{
  let a=createCalderaSeraphAttack();
  let step=stepCalderaSeraph(a,origin,target,.6,40);
  assert.equal(step.attack.stage,"CIRCULATE");a=step.attack;
+ assert.equal(a.remainingMs,SERAPH_CIRCULATE_MS);
  for(let n=0;n<17;n++){
   step=stepCalderaSeraph(a,origin,target,.6,40);
   assert.equal(step.fire,false);a=step.attack;
