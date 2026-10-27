@@ -7,6 +7,7 @@ import type {ForemanAttack} from "./ferrumForeman";
 import type { ThresholdArchonAttack } from "./asteriaThresholdArchon";
 import type { OmegaFoundryAttack } from "./ferrumOmegaFoundry";
 import type { EmberSkaterAttack } from "./pyraEmberSkater";
+import type { SlagSpearAttack } from "./pyraSlagSpear";
 import type { SkySpecterAttack,BeaconPrismAttack,IonSailAttack } from "./asteriaOriginalFoes";
 import type { SiegeVolleyTelegraphState } from "./siegeVolleyTelegraph";
 import type { BlackoutArchitectEngineIdentityTag } from "./blackoutArchitectEngineIdentityLifecycle";
@@ -165,6 +166,7 @@ export enum EnemyType {
   OXIDE_MODULATOR = "OXIDE_MODULATOR",
   FERRITE_FOREMAN = "FERRITE_FOREMAN",
   EMBER_SKATER = "EMBER_SKATER",
+  SLAG_SPEAR = "SLAG_SPEAR",
   SPLITTER = "SPLITTER",
   DISRUPTOR = "DISRUPTOR",
   BLACKOUT_ELITE = "BLACKOUT_ELITE",
@@ -266,6 +268,8 @@ export interface Enemy {
   ferriteForemanAttack?: ForemanAttack;
   /** PYRA native heated skid, with deterministic warning window. */
   emberSkaterAttack?: EmberSkaterAttack;
+  /** PYRA-02 native fixed-axis obsidian lance attack cycle. */
+  slagSpearAttack?: SlagSpearAttack;
   /** Native Ferrum machine movement cue, valid only while the linked Foreman lives. */
   ferriteCommandSourceId?: string;
   ferriteCommandUntilMs?: number;
@@ -291,6 +295,10 @@ export interface Projectile {
   fromPlayer: boolean;
   life: number;
   maxLife: number;
+  /** Interceptible PYRA-02 lance remaining travel; only parent can split. */
+  slagSpearDistanceRemaining?: number;
+  /** Native two-fragment cap, preventing recursive fragmentation. */
+  slagSpearFragment?: boolean;
   // Engine-owned creation metadata, never a real collision/replay ticket.
   collisionTraceRunEpoch?: number;
   collisionTracePhysicsFrame?: number;

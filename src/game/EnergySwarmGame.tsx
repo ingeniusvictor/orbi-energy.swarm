@@ -24,6 +24,10 @@ import {createSpanWardenAttack,shouldSpawnSpanWarden,selectSpanWardenSpawn,
   stepSpanWarden,resolveSpanWardenHit,SPAN_WARDEN_PROJECTILE_SPREAD} from "./asteriaSpanWarden";
 import {ASTERIA_WORLD_CHOICE,FERRUM_WORLD_ID,PYRA_WORLD_ID,drawFerrumWorld,ferrumSceneAt,isAsteria,isFerrum,isPyra,type PlayableWorld} from "./ferrumWorld";
 import {drawPyraWorld,pyraSceneAt} from "./pyraWorld";
+import {shouldSpawnSlagSpear,selectSlagSpearSpawn,createSlagSpearAttack,
+  stepSlagSpear,projectSlagFragments,interceptSlagLance,
+  SLAG_LANCE_SPEED,SLAG_LANCE_DISTANCE,SLAG_LANCE_DAMAGE,
+  SLAG_LANCE_LIFE_MS,SLAG_FRAGMENT_DAMAGE,SLAG_FRAGMENT_LIFE_MS} from "./pyraSlagSpear";
 import {shouldSpawnEmberSkater,selectEmberSkaterSpawn,createEmberSkaterAttack,
   stepEmberSkater,EMBER_PATCH_LIFE_MS,EMBER_PATCH_DAMAGE,EMBER_PATCH_RADIUS} from "./pyraEmberSkater";
 import {resolveFerrumFoe,selectFerrumFoeSpawn,createShadeGearAttack,createM9WelderAttack,stepShadeGear,stepM9Welder,M9_WELDER_PROJECTILE_SPEED} from "./ferrumOriginalFoes";
@@ -3345,7 +3349,15 @@ export const EnergySwarmGame: React.FC = () => {
       enemiesRef.current.some(e=>e.type===EnemyType.EMBER_SKATER&&!e.isDead))
       ?selectEmberSkaterSpawn(routeCamera,playerPosRef.current,
         WORLD_WIDTH,WORLD_HEIGHT,combatPressure.spawnSafetyRadius):null;
-    const type = emberSpawn?EnemyType.EMBER_SKATER:
+    const slagSpawn=shouldSpawnSlagSpear(
+      isPyra(worldRouteRunActiveRef.current,worldRouteThemeRef.current),
+      descriptor.sourceMode,descriptor.waveNumber,waveBudgetSpawnedRef.current,
+      Boolean(forcedType),spawningMiniboss,
+      enemiesRef.current.some(e=>e.type===EnemyType.SLAG_SPEAR&&!e.isDead))
+      ?selectSlagSpearSpawn(routeCamera,playerPosRef.current,
+        WORLD_WIDTH,WORLD_HEIGHT,combatPressure.spawnSafetyRadius):null;
+    const type = slagSpawn?EnemyType.SLAG_SPEAR:
+      emberSpawn?EnemyType.EMBER_SKATER:
       foremanSpawn?EnemyType.FERRITE_FOREMAN:
       ferrumFoe&&ferrumSpawn?EnemyType[ferrumFoe]:spanWardenSpawn
       ? EnemyType.SPAN_WARDEN
@@ -3363,7 +3375,8 @@ export const EnergySwarmGame: React.FC = () => {
       spawningMiniboss || type===EnemyType.SPAN_WARDEN ||
       type===EnemyType.SHADE_GEAR || type===EnemyType.M9_WELDER ||
       type===EnemyType.FOUNDRY_CLAW || type===EnemyType.OXIDE_MODULATOR ||
-      type===EnemyType.FERRITE_FOREMAN || type===EnemyType.EMBER_SKATER
+      type===EnemyType.FERRITE_FOREMAN || type===EnemyType.EMBER_SKATER ||
+      type===EnemyType.SLAG_SPEAR
         ? null
         : resolveEvolvedEnemySpawn({
             descriptor,
@@ -3429,7 +3442,8 @@ export const EnergySwarmGame: React.FC = () => {
     }
     // Replace the legacy position ONLY for the new ASTERIA-native actor.
     // All other modes retain the existing four-side camera spawn policy.
-    if(emberSpawn){ex=emberSpawn.x;ey=emberSpawn.y;
+    if(slagSpawn){ex=slagSpawn.x;ey=slagSpawn.y;
+    }else if(emberSpawn){ex=emberSpawn.x;ey=emberSpawn.y;
     }else if(foremanSpawn){ex=foremanSpawn.x;ey=foremanSpawn.y;
     }else if(ferrumFoe&&ferrumSpawn){
       ex=ferrumSpawn.x;ey=ferrumSpawn.y;
@@ -3506,6 +3520,10 @@ export const EnergySwarmGame: React.FC = () => {
       health=27*healthMultiplier;
       speed=1.12*biomeCfg.enemySpeedMultiplier*movementSpeedMultiplier;
       size=13;color="#fb923c";
+    } else if(type===EnemyType.SLAG_SPEAR){
+      health=35*healthMultiplier;
+      speed=.77*biomeCfg.enemySpeedMultiplier*movementSpeedMultiplier;
+      size=16;color="#fdba74";
     } else if (type === EnemyType.DRONE) {
       health = 20 * healthMultiplier;
       speed = 0.7 * biomeCfg.enemySpeedMultiplier * movementSpeedMultiplier;
@@ -3586,7 +3604,7 @@ export const EnergySwarmGame: React.FC = () => {
       type!==EnemyType.SHADE_GEAR && type!==EnemyType.M9_WELDER &&
       type!==EnemyType.FOUNDRY_CLAW && type!==EnemyType.OXIDE_MODULATOR &&
       type!==EnemyType.FERRITE_FOREMAN && type!==EnemyType.EMBER_SKATER &&
-      Math.random() < effectiveEliteChance;
+      type!==EnemyType.SLAG_SPEAR && Math.random() < effectiveEliteChance;
     if (isElite) {
       health *= 1.8;
       size *= 1.4;
@@ -3614,7 +3632,8 @@ export const EnergySwarmGame: React.FC = () => {
             type !== EnemyType.SPAN_WARDEN &&
             type !== EnemyType.SHADE_GEAR && type !== EnemyType.M9_WELDER &&
             type !== EnemyType.FOUNDRY_CLAW && type !== EnemyType.OXIDE_MODULATOR &&
-            type !== EnemyType.FERRITE_FOREMAN && type !== EnemyType.EMBER_SKATER,
+            type !== EnemyType.FERRITE_FOREMAN && type !== EnemyType.EMBER_SKATER &&
+            type !== EnemyType.SLAG_SPEAR,
           remainingCapacity:
             Math.min(
               MAX_ENEMIES,
@@ -3689,6 +3708,7 @@ export const EnergySwarmGame: React.FC = () => {
       oxideModulatorAttack:type===EnemyType.OXIDE_MODULATOR?createOxideModulatorAttack():undefined,
       ferriteForemanAttack:type===EnemyType.FERRITE_FOREMAN?createForemanAttack():undefined,
       emberSkaterAttack:type===EnemyType.EMBER_SKATER?createEmberSkaterAttack():undefined,
+      slagSpearAttack:type===EnemyType.SLAG_SPEAR?createSlagSpearAttack():undefined,
       enemyFormation: enemyFormation ?? undefined,
       flashTicks: 0,
       evolvedVariantId: evolvedProfile?.id,
@@ -6274,7 +6294,32 @@ export const EnergySwarmGame: React.FC = () => {
         const dy = ty - enemy.y;
         const dist = Math.sqrt(dx * dx + dy * dy) || 1;
 
-        if(enemy.type===EnemyType.EMBER_SKATER&&enemy.emberSkaterAttack){
+        if(enemy.type===EnemyType.SLAG_SPEAR&&enemy.slagSpearAttack){
+          const prior=enemy.slagSpearAttack;
+          const step=stepSlagSpear(prior,enemy,playerPosRef.current,enemy.speed,delta);
+          enemy.x=Math.max(16,Math.min(WORLD_WIDTH-16,step.x));
+          enemy.y=Math.max(16,Math.min(WORLD_HEIGHT-16,step.y));
+          enemy.vx=step.vx;enemy.vy=step.vy;enemy.slagSpearAttack=step.attack;
+          if(step.warned){
+            playDroneChargeSound();
+            addFloatingText("LANZAESCORIA // AVISO",enemy.x,enemy.y-34,"#fde68a");
+          }
+          if(step.fire && projectilesRef.current.length<MAX_PROJECTILES &&
+             hostileProjectileBudgetState.count<
+               (simulationCombatPressure.projectileBudget??MAX_PROJECTILES)){
+            projectilesRef.current.push({
+              id:Math.random().toString(),x:enemy.x,y:enemy.y,
+              vx:Math.cos(prior.lockedAngle)*SLAG_LANCE_SPEED,
+              vy:Math.sin(prior.lockedAngle)*SLAG_LANCE_SPEED,
+              damage:SLAG_LANCE_DAMAGE,color:"#fbbf24",size:7,
+              fromPlayer:false,life:SLAG_LANCE_LIFE_MS,
+              maxLife:SLAG_LANCE_LIFE_MS,
+              slagSpearDistanceRemaining:SLAG_LANCE_DISTANCE,
+            });
+            hostileProjectileBudgetState.count++;
+            playBossShardsSound();
+          }
+        } else if(enemy.type===EnemyType.EMBER_SKATER&&enemy.emberSkaterAttack){
           const previous=enemy.emberSkaterAttack;
           const step=stepEmberSkater(previous,enemy,playerPosRef.current,enemy.speed,delta);
           enemy.x=Math.max(16,Math.min(WORLD_WIDTH-16,step.x));
@@ -6789,14 +6834,24 @@ export const EnergySwarmGame: React.FC = () => {
         pendingCommandLinkBreakRef.current = null;
       }
 
-    // 7. Projectiles coordinates
+    // 7. Projectiles coordinates. PYRA-02 lances fork exactly once after
+    // a finite world-space travel distance, never via independent timers.
+    const slagSplitRequests:{x:number;y:number;vx:number;vy:number}[]=[];
     projectilesRef.current.forEach((proj) => {
       proj.x += proj.vx * (delta / 16.6);
       proj.y += proj.vy * (delta / 16.6);
       proj.life -= delta;
+      if(!proj.fromPlayer&&proj.life>0 &&
+         proj.slagSpearDistanceRemaining!==undefined){
+        proj.slagSpearDistanceRemaining-=Math.hypot(proj.vx,proj.vy)*(delta/16.6);
+        if(proj.slagSpearDistanceRemaining<=0){
+          proj.life=0;
+          slagSplitRequests.push(...projectSlagFragments(proj.x,proj.y,proj.vx,proj.vy));
+        }
+      }
     });
 
-    // Filter dead or expired projectiles
+    // Parent lance is retired before the two finite, non-forking children.
     compactArrayInPlace(
       projectilesRef.current,
       (projectile) =>
@@ -6806,6 +6861,24 @@ export const EnergySwarmGame: React.FC = () => {
         projectile.y >= -50 &&
         projectile.y <= WORLD_HEIGHT + 50,
     );
+    if(slagSplitRequests.length){
+      let hostileCount=0;
+      for(const active of projectilesRef.current)if(!active.fromPlayer)hostileCount++;
+      const hostileMax=Math.min(MAX_PROJECTILES,
+        simulationCombatPressure.projectileBudget??MAX_PROJECTILES);
+      for(const shard of slagSplitRequests){
+        if(hostileCount>=hostileMax||projectilesRef.current.length>=MAX_PROJECTILES)break;
+        if(shard.x<0||shard.x>WORLD_WIDTH||shard.y<0||shard.y>WORLD_HEIGHT)continue;
+        projectilesRef.current.push({
+          id:Math.random().toString(),
+          x:shard.x,y:shard.y,vx:shard.vx,vy:shard.vy,
+          damage:SLAG_FRAGMENT_DAMAGE,color:"#fb923c",size:3.7,
+          fromPlayer:false,life:SLAG_FRAGMENT_LIFE_MS,
+          maxLife:SLAG_FRAGMENT_LIFE_MS,slagSpearFragment:true,
+        });
+        hostileCount++;
+      }
+    }
 
     // 8. Particles updates
     particlesRef.current.forEach((p) => {
@@ -7401,6 +7474,21 @@ export const EnergySwarmGame: React.FC = () => {
       if (proj.life <= 0) return;
 
       if (proj.fromPlayer) {
+        // Original ORBI fire may destroy an announced PYRA lance in flight.
+        // This is projectile vs projectile only; no extra kill, loot or damage.
+        if(!proj.convergenceTargetId){
+          for(const hostile of projectilesRef.current){
+            if(hostile.life<=0||hostile.fromPlayer||
+               hostile.slagSpearDistanceRemaining===undefined)continue;
+            if(!interceptSlagLance(proj,proj.size,hostile,hostile.size))continue;
+            proj.life=0;hostile.life=0;
+            triggerExplosion(particlesRef.current,quality.maxParticles,
+              ParticleType.ENEMY_HIT,hostile.x,hostile.y,"#fb923c",7);
+            addFloatingText("LANCE BREAK",hostile.x,hostile.y-19,"#fef08a");
+            break;
+          }
+          if(proj.life<=0)return;
+        }
         // First check if hitting any Boss Shield Nodes
         let hitShieldNode = false;
         for (let s = 0; s < (proj.convergenceTargetId ? 0 : shieldNodesRef.current.length); s++) {

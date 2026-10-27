@@ -1402,6 +1402,20 @@ export function drawEnemiesList(
         ctx.lineTo(a.dirX*240,a.dirY*240);ctx.stroke();
         ctx.restore();
       }
+    } else if(enemy.type===EnemyType.SLAG_SPEAR&&enemy.slagSpearAttack){
+      const a=enemy.slagSpearAttack;
+      if(a.stage==="WARN"){
+        const angle=a.lockedAngle;
+        ctx.save();ctx.strokeStyle="#fde68a";ctx.lineWidth=2.2;
+        ctx.shadowColor="#f97316";ctx.shadowBlur=12;
+        ctx.setLineDash([9,7]);ctx.beginPath();
+        ctx.moveTo(0,0);ctx.lineTo(Math.cos(angle)*320,Math.sin(angle)*320);
+        ctx.stroke();ctx.setLineDash([]);
+        ctx.strokeStyle="rgba(251,146,60,.45)";ctx.lineWidth=10;
+        ctx.beginPath();ctx.moveTo(Math.cos(angle)*42,Math.sin(angle)*42);
+        ctx.lineTo(Math.cos(angle)*300,Math.sin(angle)*300);ctx.stroke();
+        ctx.restore();
+      }
     } else if(enemy.type===EnemyType.EMBER_SKATER&&enemy.emberSkaterAttack){
       const a=enemy.emberSkaterAttack;
       if(a.stage==="WARNING"){
@@ -1490,6 +1504,27 @@ export function drawEnemiesList(
     ctx.fillStyle = enemy.color;
 
     switch (enemy.type) {
+      case EnemyType.SLAG_SPEAR: {
+        const a=enemy.slagSpearAttack,r=enemy.size;
+        ctx.save();ctx.rotate(a?.lockedAngle??0);
+        ctx.shadowColor="#f97316";ctx.shadowBlur=17;
+        // Single obsidian lancer, forked shoulders and magma spinal channel.
+        ctx.fillStyle="#1f2028";ctx.strokeStyle="#fb923c";ctx.lineWidth=2.8;
+        ctx.beginPath();ctx.moveTo(r*1.1,0);ctx.lineTo(r*.45,-r*.8);
+        ctx.lineTo(-r*.65,-r*.68);ctx.lineTo(-r*1.08,0);
+        ctx.lineTo(-r*.65,r*.68);ctx.lineTo(r*.45,r*.8);
+        ctx.closePath();ctx.fill();ctx.stroke();
+        for(const side of [-1,1]){
+          ctx.strokeStyle="#94a3b8";ctx.lineWidth=5;
+          ctx.beginPath();ctx.moveTo(r*.05,side*r*.55);
+          ctx.lineTo(r*.75,side*r*.82);ctx.lineTo(r*1.4,side*r*.31);ctx.stroke();
+        }
+        ctx.fillStyle=a?.stage==="WARN"?"#fef08a":"#fb923c";
+        ctx.fillRect(-r*.28,-r*.21,r*.85,r*.42);
+        ctx.fillStyle="#fef9c3";ctx.beginPath();
+        ctx.moveTo(r*.58,-r*.18);ctx.lineTo(r*1.18,0);ctx.lineTo(r*.58,r*.18);
+        ctx.closePath();ctx.fill();ctx.restore();break;
+      }
       case EnemyType.EMBER_SKATER: {
         const a=enemy.emberSkaterAttack,r=enemy.size;
         ctx.save();ctx.rotate(time*.006*(a?.side??1));
@@ -2627,9 +2662,24 @@ export function drawProjectilesList(
     ctx.strokeStyle = proj.color;
 
     if (!proj.fromPlayer) {
-      ctx.beginPath();
-      ctx.arc(0, 0, proj.size, 0, Math.PI * 2);
-      ctx.fill();
+      if(proj.slagSpearDistanceRemaining!==undefined){
+        ctx.rotate(Math.atan2(proj.vy,proj.vx));
+        ctx.shadowColor="#fdba74";ctx.shadowBlur=15;
+        ctx.strokeStyle="#fb923c";ctx.lineWidth=4;
+        ctx.beginPath();ctx.moveTo(-15,0);ctx.lineTo(7,0);ctx.stroke();
+        ctx.fillStyle="#fef08a";ctx.beginPath();
+        ctx.moveTo(17,0);ctx.lineTo(3,-7);ctx.lineTo(3,7);
+        ctx.closePath();ctx.fill();
+      }else if(proj.slagSpearFragment){
+        ctx.rotate(Math.atan2(proj.vy,proj.vx));
+        ctx.fillStyle="#fb923c";ctx.beginPath();
+        ctx.moveTo(8,0);ctx.lineTo(-6,-4);ctx.lineTo(-6,4);
+        ctx.closePath();ctx.fill();
+      }else{
+        ctx.beginPath();
+        ctx.arc(0, 0, proj.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
       ctx.restore();
       return;
     }
