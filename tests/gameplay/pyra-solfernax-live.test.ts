@@ -86,8 +86,8 @@ test("PYRA-06: all phases preserve available safe routes",()=>{
  assert.equal(solfernaxAttackContact(collapse,boss,player),false);
 });
 test("PYRA-06: phase transition freezes telegraph and reopens a real reactor",()=>{
- let a={...createSolfernaxAttack(),stage:"ACTIVE" as const,
-  remainingMs:100,lockedAngle:0};
+ let a:ReturnType<typeof createSolfernaxAttack>={
+  ...createSolfernaxAttack(),stage:"ACTIVE",remainingMs:100,lockedAngle:0};
  let s=stepSolfernax(a,boss,player,100,1);a=s.attack;
  assert.equal(s.exposed,true);assert.equal(a.stage,"EXPOSED");
  assert.equal(a.remainingMs,SOLFERNAX_EXPOSED_MS);
