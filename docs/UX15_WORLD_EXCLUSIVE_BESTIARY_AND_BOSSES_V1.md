@@ -54,9 +54,15 @@
 | NORMAL · **Brasero Móvil / Ember Skater** | Disco de piedra fundida y núcleo rojo | Deja parches cálidos anunciados que se disipan rápidamente; desplazarse evita el sobrecalentamiento |
 | NORMAL · **Lanzaescoria / Slag Spear** | Aguja de obsidiana con lanzador térmico | Dispara una lanza lenta que se fragmenta tras recorrer cierta distancia; disparar a la lanza o cambiar de altura |
 | NORMAL · **Draga de Lava / Lava Dredger** | Vehículo blindado con mandíbula de roca | Carga lentamente y arrastra una cortina térmica detrás; gran ventana de daño en el costado |
-| NORMAL · **Cinerita / Cinderling** | Escarabajo mineral brillante, caparazón poroso | Se divide una sola vez en esquirlas pequeñas con tope de enemigos; señal de fractura visible |
+| NORMAL · **Cinerita / Cinderling** | Saltador mineral de obsidiana, seis puntas radiantes y núcleo incandescente | Marca durante 1.040 ms un aterrizaje fijo; salta y libera una única ráfaga cardinal de hasta cuatro cenizas bajo el presupuesto global de proyectiles. Queda vulnerable al enfriarse; diagonales libres. **Diseño de producción PYRA-04**, en lugar de generar enemigos al fragmentarse |
 | ÉLITE · **Serafín de Caldera / Caldera Seraph** | Manta mecánica de magma con seis alas | Hace circular tres meteoros siguiendo trayectorias marcadas; su núcleo se enfría tras una descarga |
 | JEFE · **Solfernax / Solfernax** | Reactor vivo dentro de un anillo de magma | Fase 1: respiraderos direccionales; fase 2: compuertas térmicas alternadas; fase 3: colapso controlado con núcleo expuesto, sin pantalla completamente bloqueada |
+
+### PYRA-04 — Decisión de canon de producción (auditoría PYRA-06)
+
+La propuesta conceptual inicial de **Cinerita** era fragmentarse una sola vez en enemigos pequeños. Ese diseño **no se implementó**. La versión funcional PYRA-04 del PR #780 establece como canon de producción un **salto con aterrizaje fijado y anunciado, una ráfaga finita de cenizas y una ventana de núcleo enfriado**. La emisión de cenizas representa una dispersión visual de su material, **no** una fragmentación en actores. La regla «se divide en esquirlas pequeñas» de la propuesta original queda sustituida, no pendiente ni contabilizada como característica entregada.
+
+**Motivo técnico y jugable:** permite un arquetipo de posicionamiento y contraataque distinto del SPLITTER clásico sin invocar enemigos hijos fuera del presupuesto de Campaña, sin riesgo de duplicar bajas/recompensas y sin crear colisiones ni relojes paralelos. El aviso y los impactos usan el motor real. El límite de cuatro proyectiles depende además de la capacidad global disponible (puede emitir menos). Cualquier futuro enemigo con división física de actores requerirá otro contrato, identidad, pruebas de tope global y aprobación de contenido independiente.
 
 ## MUNDO 04 — NEREA · JARDINES HYDRO
 

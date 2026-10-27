@@ -10,6 +10,15 @@ export function pyraSceneAt(ordinal:number):typeof PYRA_SECTIONS[number]{
     throw new RangeError("Invalid PYRA ordinal");
   return PYRA_SECTIONS[ordinal%PYRA_SECTIONS.length];
 }
+/** Six authored volcanic moods. Geometry remains deterministic scenery only. */
+const PYRA_SCENE_PALETTES=[
+  {sky:"#100b1d",mid:"#39202b",horizon:"#86351b",far:"#312031",spire:"#302332",spireAlt:"#211b2b",lava0:"#7c2d12",lava1:"#ea580c",lava2:"#fbbf24",basalt:"#27212a",rim:"#fdba74"},
+  {sky:"#190d19",mid:"#55201d",horizon:"#b54718",far:"#43242c",spire:"#35212d",spireAlt:"#271a22",lava0:"#9a3412",lava1:"#f97316",lava2:"#fde047",basalt:"#322127",rim:"#fda45c"},
+  {sky:"#180d15",mid:"#61271a",horizon:"#b45309",far:"#432625",spire:"#42252a",spireAlt:"#2c1c23",lava0:"#b45309",lava1:"#fb923c",lava2:"#fef08a",basalt:"#30252a",rim:"#fbbf24"},
+  {sky:"#200d24",mid:"#58243c",horizon:"#9a3412",far:"#40233e",spire:"#3f2145",spireAlt:"#2b2037",lava0:"#7c2d12",lava1:"#dc2626",lava2:"#fb923c",basalt:"#352336",rim:"#fdba74"},
+  {sky:"#200c12",mid:"#732519",horizon:"#c2410c",far:"#482025",spire:"#451e26",spireAlt:"#291b24",lava0:"#991b1b",lava1:"#ea580c",lava2:"#fde68a",basalt:"#322026",rim:"#fbbf24"},
+  {sky:"#0e0a1b",mid:"#411634",horizon:"#a42c14",far:"#30203f",spire:"#37203d",spireAlt:"#221a31",lava0:"#881337",lava1:"#f43f5e",lava2:"#fdba74",basalt:"#292137",rim:"#fef08a"},
+] as const;
 const wrap=(x:number,w:number)=>((x%w)+w)%w;
 const hash=(n:number)=>Math.imul((n|0)^0x3c6ef372,2246822519)>>>0;
 export function drawPyraWorld(ctx:CanvasRenderingContext2D,
@@ -18,16 +27,17 @@ export function drawPyraWorld(ctx:CanvasRenderingContext2D,
     width<800||width>2400||!Number.isSafeInteger(ordinal)||ordinal<0)
     throw new RangeError("Invalid PYRA backdrop");
   const H=480;
+  const palette=PYRA_SCENE_PALETTES[ordinal%PYRA_SECTIONS.length];
   ctx.save();ctx.clearRect(0,0,width,H);
   const sky=ctx.createLinearGradient(0,0,0,H);
-  sky.addColorStop(0,"#100b1d");sky.addColorStop(.5,"#39202b");
-  sky.addColorStop(.81,"#86351b");sky.addColorStop(1,"#e85b17");
+  sky.addColorStop(0,palette.sky);sky.addColorStop(.5,palette.mid);
+  sky.addColorStop(.81,palette.horizon);sky.addColorStop(1,"#e85b17");
   ctx.fillStyle=sky;ctx.fillRect(0,0,width,H);
   const farCell=210,farShift=wrap(distance*.12,farCell);
   const farStart=Math.floor(distance*.12/farCell);
   for(let i=-2;i<=Math.ceil(width/farCell)+2;i++){
     const seed=hash(farStart+i+137),x=i*farCell-farShift,h=70+seed%95;
-    ctx.fillStyle="#312031";ctx.beginPath();
+    ctx.fillStyle=palette.far;ctx.beginPath();
     ctx.moveTo(x-55,333);ctx.lineTo(x+farCell*.48,333-h);
     ctx.lineTo(x+farCell+65,333);ctx.closePath();ctx.fill();
     ctx.strokeStyle="rgba(251,146,60,.16)";ctx.lineWidth=2;
@@ -40,7 +50,7 @@ export function drawPyraWorld(ctx:CanvasRenderingContext2D,
   for(let i=-2;i<=Math.ceil(width/spireWidth)+2;i++){
     const n=hash(start+i+43),x=i*spireWidth-shift;
     const h=92+n%135,tip=x+42+n%28;
-    ctx.fillStyle=n%3===0?"#302332":"#211b2b";
+    ctx.fillStyle=n%3===0?palette.spire:palette.spireAlt;
     ctx.beginPath();ctx.moveTo(x,368);ctx.lineTo(tip,368-h);
     ctx.lineTo(x+94,368);ctx.closePath();ctx.fill();
     ctx.strokeStyle="rgba(248,113,27,.34)";ctx.lineWidth=2;
@@ -49,8 +59,8 @@ export function drawPyraWorld(ctx:CanvasRenderingContext2D,
   // Moving rivulets of magma are background-only visual bands.
   ctx.fillStyle="#231d25";ctx.fillRect(0,372,width,108);
   const lava=ctx.createLinearGradient(0,380,0,470);
-  lava.addColorStop(0,"#7c2d12");lava.addColorStop(.6,"#ea580c");
-  lava.addColorStop(1,"#fbbf24");
+  lava.addColorStop(0,palette.lava0);lava.addColorStop(.6,palette.lava1);
+  lava.addColorStop(1,palette.lava2);
   ctx.fillStyle=lava;ctx.fillRect(0,416,width,64);
   const lavaShift=wrap(distance*.63,118);
   ctx.strokeStyle="rgba(254,240,138,.76)";ctx.lineWidth=4;
@@ -59,8 +69,8 @@ export function drawPyraWorld(ctx:CanvasRenderingContext2D,
     ctx.lineTo(x+79,450);ctx.lineTo(x+116,441);ctx.stroke();
   }
   // Basalt stepping ridge. ENERGY movement/collision stays unchanged.
-  ctx.fillStyle="#27212a";ctx.fillRect(0,371,width,44);
-  ctx.strokeStyle="#fdba74";ctx.lineWidth=2.3;
+  ctx.fillStyle=palette.basalt;ctx.fillRect(0,371,width,44);
+  ctx.strokeStyle=palette.rim;ctx.lineWidth=2.3;
   ctx.beginPath();ctx.moveTo(0,374);ctx.lineTo(width,374);ctx.stroke();
   const slab=wrap(distance*.75,91);
   ctx.strokeStyle="rgba(251,146,60,.5)";ctx.lineWidth=2;

@@ -111,3 +111,40 @@ test("PYRA-06: direct canonical boss ownership, visuals and victory signals",()=
  assert.match(canvas,/enemy.solfernaxAttack/);
  assert.ok(chassis.includes("PYRA_SOLFERNAX"));
 });
+
+
+test("PYRA-06 audit: complete 3-phase boss cycles remain finite with native damage windows",()=>{
+  let a=createSolfernaxAttack();
+  for(const phase of [1,2,3] as const){
+    if(phase!==1){
+      const transition=stepSolfernax(a,boss,player,40,phase);
+      assert.equal(transition.phaseChanged,true);
+      assert.equal(transition.contact,false);
+      assert.equal(transition.attack.stage,"PREPARE");
+      a=transition.attack;
+    }
+    const visited=new Set<string>();
+    let warnings=0,attacks=0,openings=0,advanced=false;
+    const originalCycle=a.cycle;
+    for(let tick=0;tick<240;tick++){
+      const s=stepSolfernax(a,boss,player,40,phase);
+      visited.add(s.attack.stage);
+      warnings+=Number(s.warned);attacks+=Number(s.fired);
+      openings+=Number(s.exposed);
+      if(s.attack.stage!=="ACTIVE")assert.equal(s.contact,false);
+      a=s.attack;
+      if(a.cycle>originalCycle){advanced=true;break;}
+    }
+    assert.equal(advanced,true,"full cycle must terminate");
+    assert.equal(warnings,1);assert.equal(attacks,1);assert.equal(openings,1);
+    assert.deepEqual([...visited].sort(),["ACTIVE","EXPOSED","PREPARE","RECOVER","WARNING"].sort());
+    for(const remainingMs of [1180,840,520,200,20]){
+      const sample={...a,phase,stage:"ACTIVE" as const,remainingMs,lockedAngle:0};
+      const hits=Array.from({length:72},(_,i)=>{
+        const ang=i*Math.PI/36;
+        return solfernaxAttackContact(sample,boss,{x:boss.x+260*Math.cos(ang),y:boss.y+260*Math.sin(ang)});
+      });
+      assert.ok(hits.some(v=>!v),"an escape lane must remain at every active timestamp");
+    }
+  }
+});

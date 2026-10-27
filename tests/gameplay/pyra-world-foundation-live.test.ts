@@ -33,3 +33,22 @@ test("PYRA-01: real route launcher in desktop, portrait and landscape + canonica
   assert.match(game,/const asteriaCombatVisualActive = worldRouteRunActiveRef.current/);
   assert.match(game,/updateBossAI\(enemy, delta\)/);
 });
+
+
+test("PYRA-06 audit: all six real Campaign sectors render distinct deterministic magma skies",()=>{
+  const skies:string[]=[];
+  for(let ordinal=0;ordinal<PYRA_SECTIONS.length;ordinal++){
+    const stops:string[]=[];
+    const gradient=()=>({addColorStop:(_offset:number,color:string)=>{stops.push(color);}});
+    const noop=()=>{};
+    const context={save:noop,restore:noop,clearRect:noop,fillRect:noop,
+      beginPath:noop,moveTo:noop,lineTo:noop,closePath:noop,
+      fill:noop,stroke:noop,createLinearGradient:gradient} as unknown as CanvasRenderingContext2D;
+    assert.doesNotThrow(()=>drawPyraWorld(context,1200,1440,ordinal));
+    assert.ok(stops.length>=6,"both magma/sky gradients must render");
+    skies.push(stops[0]);
+    assert.equal(pyraSceneAt(ordinal),PYRA_SECTIONS[ordinal]);
+  }
+  assert.equal(new Set(skies).size,6,"each sector requires its own authored sky identity");
+  assert.throws(()=>drawPyraWorld({} as CanvasRenderingContext2D,0,1440,-1),RangeError);
+});
