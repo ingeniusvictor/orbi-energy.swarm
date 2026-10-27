@@ -9,6 +9,7 @@ import type { OmegaFoundryAttack } from "./ferrumOmegaFoundry";
 import type { EmberSkaterAttack } from "./pyraEmberSkater";
 import type { SlagSpearAttack } from "./pyraSlagSpear";
 import type { LavaDredgerAttack } from "./pyraLavaDredger";
+import type { CinderlingAttack } from "./pyraCinderling";
 import type { SkySpecterAttack,BeaconPrismAttack,IonSailAttack } from "./asteriaOriginalFoes";
 import type { SiegeVolleyTelegraphState } from "./siegeVolleyTelegraph";
 import type { BlackoutArchitectEngineIdentityTag } from "./blackoutArchitectEngineIdentityLifecycle";
@@ -169,6 +170,7 @@ export enum EnemyType {
   EMBER_SKATER = "EMBER_SKATER",
   SLAG_SPEAR = "SLAG_SPEAR",
   LAVA_DREDGER = "LAVA_DREDGER",
+  CINDERLING = "CINDERLING",
   SPLITTER = "SPLITTER",
   DISRUPTOR = "DISRUPTOR",
   BLACKOUT_ELITE = "BLACKOUT_ELITE",
@@ -274,6 +276,8 @@ export interface Enemy {
   slagSpearAttack?: SlagSpearAttack;
   /** PYRA-03: finite, telegraphed heavy charge, heat trail and lateral opening. */
   lavaDredgerAttack?: LavaDredgerAttack;
+  /** PYRA-04: locked, telegraphed ember landing and nonrecursive burst. */
+  cinderlingAttack?: CinderlingAttack;
   /** Native Ferrum machine movement cue, valid only while the linked Foreman lives. */
   ferriteCommandSourceId?: string;
   ferriteCommandUntilMs?: number;
