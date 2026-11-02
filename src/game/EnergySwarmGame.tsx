@@ -307,6 +307,7 @@ import {
 } from "./fotonThreatTracking";
 import {
   createShuffledCollectibleEnergyCycle,
+  ORBI_COLLECTIBLE_ENERGY_IDS,
   getCollectibleEnergyDefinition,
   getOrbiEnergyByAffinity,
   getOrbiEnergyDefinition,
@@ -2075,6 +2076,22 @@ export const EnergySwarmGame: React.FC = () => {
 
     // Recruits initial Orbi member
     addSwarmMember();
+    // PYRA-07A-2: E2E-only late-campaign fixture. Replay ordinary ORBI
+    // acquisitions through the original doctrine/EVO8/GAIA engine.
+    // Does not fabricate shots, damage, boss HP, rewards or timing.
+    if (import.meta.env.MODE === "pyra-e2e" &&
+        worldRouteRunActiveRef.current &&
+        worldRouteThemeRef.current === PYRA_WORLD_ID &&
+        new URLSearchParams(window.location.search).get("pyra-e2e-boss") === "1" &&
+        new URLSearchParams(window.location.search).get("pyra-e2e-victory") === "1") {
+      for (const energyId of ORBI_COLLECTIBLE_ENERGY_IDS) {
+        addSwarmMember(undefined, undefined, energyId);
+        for (let n=0;n<5;n++) addSwarmMember(undefined, undefined, energyId);
+      }
+      // Legal in-bounds FOTON encounter position, normal collision/AI.
+      playerPosRef.current = {x:800,y:340};
+      pointerRef.current = {x:800,y:340};
+    }
 
     // Reset run-local telemetry without mutating persistent React profile state.
     runEnemiesDestroyedRef.current = 0;
@@ -8031,7 +8048,14 @@ export const EnergySwarmGame: React.FC = () => {
                   : 1.8;
             const signatureBehavior =
               enemySignatureBehaviorCacheRef.current.get(enemy);
-            const pushFactor = proj.convergenceTargetId ? 0 :
+            // PYRA-07A-2: Solfernax is a fixed reactor, not a mobile
+            // knockback target. Authentic ORBI shots used to displace its
+            // centre above the playable arena (y<0), silently losing targeting.
+            // Keep all damage/status/projectile rules and pushback for every
+            // other boss and regular enemy entirely unchanged.
+            const pushFactor =
+              enemy.type === EnemyType.BOSS_SOLFERNAX ? 0 :
+              proj.convergenceTargetId ? 0 :
               basePushFactor *
               signatureBehavior.projectilePushbackMultiplier *
               (proj.pushMultiplier ?? 1);
@@ -8879,6 +8903,37 @@ export const EnergySwarmGame: React.FC = () => {
           canvas.dataset.pyraE2eRuntimeMode =
             runtimeProgressionRef.current.mode;
           canvas.dataset.pyraE2eWave = String(currentWaveRef.current);
+          canvas.dataset.pyraE2eSwarmSize = String(swarmRef.current.length);
+          canvas.dataset.pyraE2eShield = String(shieldRef.current);
+          canvas.dataset.pyraE2eShots =
+            String(collisionTracePlayerShotRef.current);
+          canvas.dataset.pyraE2eDamageDealt = String(bossDamageDealtRef.current);
+          canvas.dataset.pyraE2eDefeats =
+            String(runEnemiesDestroyedRef.current);
+          canvas.dataset.pyraE2eVictoryCommitted =
+            String(runCommitLedgerRef.current.campaignVictoryCommitted);
+          canvas.dataset.pyraE2eVictoryCount =
+            String(statsRef.current?.totalVictories ?? 0);
+          // Diagnostic readouts: why the original swarm stops acquiring targets.
+          canvas.dataset.pyraE2eBossX = String(liveBoss?.x ?? 0);
+          canvas.dataset.pyraE2eBossY = String(liveBoss?.y ?? 0);
+          canvas.dataset.pyraE2ePlayerX = String(playerPosRef.current.x);
+          canvas.dataset.pyraE2ePlayerY = String(playerPosRef.current.y);
+          canvas.dataset.pyraE2eWaveActive = String(waveActiveRef.current);
+          canvas.dataset.pyraE2eBossInEnemies = String(
+            Boolean(liveBoss && enemiesRef.current.includes(liveBoss))
+          );
+          canvas.dataset.pyraE2eNearestFollower = String(
+            liveBoss && swarmRef.current.length
+              ? Math.min(...swarmRef.current.map(m =>
+                  Math.hypot(m.x-liveBoss.x,m.y-liveBoss.y)))
+              : -1
+          );
+          canvas.dataset.pyraE2eMinCooldown = String(
+            swarmRef.current.length
+              ? Math.min(...swarmRef.current.map(m => m.shootCooldown))
+              : -1
+          );
         }
       }else{
         delete canvas.dataset.pyraLandmark;

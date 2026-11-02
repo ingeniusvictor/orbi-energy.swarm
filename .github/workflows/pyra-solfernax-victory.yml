@@ -1,0 +1,59 @@
+name: PYRA-07A-2 Full Real Solfernax Victory Chromium
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/game/EnergySwarmGame.tsx'
+      - 'scripts/pyra-solfernax-victory-e2e.mjs'
+      - 'scripts/check-pyra-e2e-production-isolation.mjs'
+      - 'tests/gameplay/pyra-solfernax-victory-ci.test.ts'
+      - '.github/workflows/pyra-solfernax-victory.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'src/game/EnergySwarmGame.tsx'
+      - 'scripts/pyra-solfernax-victory-e2e.mjs'
+      - 'scripts/check-pyra-e2e-production-isolation.mjs'
+      - 'tests/gameplay/pyra-solfernax-victory-ci.test.ts'
+      - '.github/workflows/pyra-solfernax-victory.yml'
+permissions:
+  contents: read
+jobs:
+  pyra-real-victory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Validate native battle fixture scope
+        run: npx tsx --test tests/gameplay/pyra-solfernax-victory-ci.test.ts
+      - name: Verify production isolation
+        run: |
+          npm run typecheck
+          npm run build
+          node scripts/check-pyra-e2e-production-isolation.mjs
+      - name: Compile private test-only wave-ten package
+        run: npx vite build --mode pyra-e2e
+      - name: Install pinned Chromium
+        run: |
+          npm install --no-save --package-lock=false playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Actual ORBI battle 3 phases death and Infinite handoff desktop mobile
+        env:
+          ORBI_PYRA_VICTORY_OUTPUT: artifacts/pyra-solfernax-victory
+        run: |
+          node --check scripts/pyra-solfernax-victory-e2e.mjs
+          node scripts/pyra-solfernax-victory-e2e.mjs
+      - name: Upload JSON and screenshots even when test fails
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pyra-solfernax-victory-real-chromium-${{ github.sha }}
+          path: artifacts/pyra-solfernax-victory/
+          if-no-files-found: warn
+          retention-days: 21

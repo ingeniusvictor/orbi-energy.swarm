@@ -17,5 +17,9 @@ for(const path of assets){
   "CI-only wave-ten query leaked into production asset "+path);
  assert.equal(src.includes("pyraE2eBossId"),false,
   "CI-only boss telemetry leaked into production asset "+path);
+ assert.equal(src.includes("pyra-e2e-victory"),false,
+  "CI-only real-victory preparation leaked into production asset "+path);
+ assert.equal(src.includes("pyraE2eSwarmSize"),false,
+  "CI-only victory telemetry leaked into production asset "+path);
 }
 console.log("PYRA CI FIXTURE ISOLATION: PASS",assets.length,"JS bundles");
