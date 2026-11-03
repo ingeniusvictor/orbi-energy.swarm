@@ -7,6 +7,7 @@ import {
   DialogueMessage, QualityPreset, WaveConfig, type RunArchiveEntry,
   type OrbiAffinity, type OrbiCombatRole, type OrbiEnergyId, type BossEncounterStage
 } from "./types";
+import { projectWorldEnemyDeathAccent } from "./worldEnemyMotion";
 
 import { projectPanoramicCanvasViewport } from "./panoramicCanvasViewport";
 import { createRouteCursor, projectRouteDistance } from "./worldRouteCore";
@@ -8187,6 +8188,16 @@ export const EnergySwarmGame: React.FC = () => {
                       otherEnemy.isBoss ? 45 : 14,
                       otherEnemy.isBoss ? 3.5 : 2.0
                     );
+                    // Four family-colored shards at most; existing capped pool,
+                    // exact same native death, drops, score and boss cinematic.
+                    const otherDeathAccent = projectWorldEnemyDeathAccent(otherEnemy);
+                    if (otherDeathAccent) {
+                      triggerExplosion(
+                        particlesRef.current, quality.maxParticles,
+                        ParticleType.ENEMY_HIT, otherEnemy.x, otherEnemy.y,
+                        otherDeathAccent.color, otherDeathAccent.particles
+                      );
+                    }
 
                     if (otherEnemy.isBoss) {
                       const rematch =
@@ -8274,6 +8285,14 @@ export const EnergySwarmGame: React.FC = () => {
                 enemy.isBoss ? 45 : 14,
                 enemy.isBoss ? 3.5 : 2.0
               );
+              const deathAccent = projectWorldEnemyDeathAccent(enemy);
+              if (deathAccent) {
+                triggerExplosion(
+                  particlesRef.current, quality.maxParticles,
+                  ParticleType.ENEMY_HIT, enemy.x, enemy.y,
+                  deathAccent.color, deathAccent.particles
+                );
+              }
 
               // Spawn drops
               if (enemy.isBoss) {
