@@ -145,8 +145,12 @@ export function drawWorldEnemyMotionFeedback(
     ctx.lineWidth = 1.8;
     ctx.globalAlpha = 0.2 + motion.warning * 0.35;
     ctx.beginPath();
-    ctx.arc(0, 0, size * 1.36, -1.18, 1.18);
-    ctx.arc(0, 0, size * 1.36, Math.PI - 1.18, Math.PI + 1.18);
+    const radius = size * 1.36;
+    ctx.arc(0, 0, radius, -1.18, 1.18);
+    // Begin a separate subpath: do not draw a misleading cross-body chord.
+    ctx.moveTo(Math.cos(Math.PI - 1.18) * radius,
+      Math.sin(Math.PI - 1.18) * radius);
+    ctx.arc(0, 0, radius, Math.PI - 1.18, Math.PI + 1.18);
     ctx.stroke();
   }
   if (motion.hit > 0) {
