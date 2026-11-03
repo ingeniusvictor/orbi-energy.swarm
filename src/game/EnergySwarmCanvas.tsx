@@ -10,6 +10,7 @@ import { getEvo8WingCount } from "./orbiEvolution";
 import {traceCalderaMeteor} from "./pyraCalderaSeraph";
 import { prewarmEvo8Lot1Sprites, disposeEvo8Lot1Sprites, drawEvo8Lot1Sprite } from "./evo8PremiumSprite";
 import { prewarmPremiumEnemySprites, disposePremiumEnemySprites, drawPremiumEnemyBody } from "./premiumEnemySprites";
+import { projectWorldEnemyMotion, drawWorldEnemyMotionFeedback } from "./worldEnemyMotion";
 import { 
   OrbiMember, Enemy, Projectile, Resource, BiomeType, 
   FormationType, EnemyType, OrbiType, QualityPreset
@@ -937,6 +938,9 @@ export function drawEnemiesList(
 
     ctx.save();
     ctx.translate(enemy.x, enemy.y);
+    // Three-world visual identity; existing warning zones stay world-aligned.
+    const worldMotion = projectWorldEnemyMotion(enemy, time);
+    if (worldMotion) drawWorldEnemyMotionFeedback(ctx, enemy.size, worldMotion);
 
     if (enemy.milestoneKind === "MINIBOSS") {
       const milestonePulse =
@@ -1643,6 +1647,13 @@ export function drawEnemiesList(
     }
     ctx.fillStyle = enemy.color;
 
+    // Animate only the body, never the hitbox, warnings, formations or HP bar.
+    if (worldMotion) {
+      ctx.save();
+      ctx.translate(0, worldMotion.bobY);
+      ctx.rotate(worldMotion.tilt);
+      ctx.scale(worldMotion.scaleX, worldMotion.scaleY);
+    }
     switch (enemy.type) {
       case EnemyType.BOSS_SOLFERNAX: {
         const a=enemy.solfernaxAttack,s=enemy.size;
@@ -2845,6 +2856,8 @@ export function drawEnemiesList(
         break;
       }
     }
+
+    if (worldMotion) ctx.restore();
 
     // Distinct, bounded visual coating on allies linked by the live Modulator.
     // No duplicate collision bodies or extra projectiles.
